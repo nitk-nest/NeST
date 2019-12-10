@@ -132,6 +132,9 @@ def add_route(host_name, dest_ip, next_hop_ip, via_int):
     """
     exec_subprocess('ip netns exec {} ip route add {} via {} dev {}'.format(host_name, dest_ip, next_hop_ip, via_int))
 
+def set_interface_mode(ns_name, dev_name, mode):
+    exec_subprocess('ip netns exec ' + ns_name + ' ip link set dev ' + dev_name + ' ' + mode)
+
 # Only bandwith and latency is considered
 # Assuming tc on egress 
 # Using Netem
