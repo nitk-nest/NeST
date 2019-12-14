@@ -4,6 +4,8 @@
 # Define network topology creation helpers
 from .address import Address
 from .engine import add_route
+from .engine import en_ip_forwarding
+from .engine import create_ns
 
 class Namespace:
     """
@@ -18,6 +20,9 @@ class Namespace:
 
         # generate a unique id for the namespace
         self.id = id(self)
+
+        # create a namespace with the unique id
+        create_ns(self.id)
 
         # initialize an empty list to keep track of
         # interfaces on it
@@ -67,4 +72,4 @@ class Router(Namespace):
         Namespace.__init__(self)
 
         # Enable forwarding
-        enable_forwarding(Node.id)
+        en_ip_forwarding(self.id)

@@ -16,7 +16,7 @@ class Address:
         # NOTE: This should also handle ipv6. Requires testing to confirm.
 
         if addr_str.isupper():      # A special string in place of address
-            if address_string == 'DEFAULT':
+            if addr_str == 'DEFAULT':
                 self.ip_addr = addr_str.to_lower()
             else:
                 raise ValueError(addr_str+' is not a special IP string. Perhaps you meant DEFAULT?')
