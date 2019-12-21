@@ -97,22 +97,6 @@ def create_router(router_name):
     create_ns(router_name)
     en_ip_forwarding(router_name)
 
-def connect(peer_name=None, router_name1=None, router_name2=None):
-    """
-    Connects two namespaces(a peer with a router or two routers) and
-    returns the created interface names
-    """
-    if(peer_name):
-        peer_int = peer_name + '-' + router_name1
-        router_int = router_name1 + '-' + peer_name
-        setup_veth(peer_name, router_name1, peer_int, router_int)
-        return (peer_int, router_int)
-    else:
-        router1_int = router_name1 + '-' + router_name2
-        router2_int = router_name2 + '-' + router_name1
-        setup_veth(router_name1, router_name2, router1_int, router2_int)
-        return (router1_int, router2_int)
-
 def assign_ip(host_name, dev_name, ip_address):
     """
     Assigns ip address `ip_address` to interface
@@ -145,3 +129,19 @@ def add_traffic_control(host_name, dev_name, rate, latency):
     `latency` of the link
     """
     exec_subprocess('ip netns exec {} tc qdisc add dev {} root netem rate {} latency {}'.format(host_name, dev_name, rate, latency))
+
+def run_iperf_server(ns_name):
+    """
+    Run Iperf Server
+    `ns_name` is the name of the server namespace
+    """
+    #TODO: iperf3?
+    exec_subprocess('ip netns {} iperf -s'.format(ns_name))
+
+def run_iperf_client(ns_name, server_ip):
+    """
+    Run Iperf Client
+    `ns_name` is the name of the client namespace
+    `server_ip` is the ip of server to which it has to connect
+    """
+    exec_subprocess('ip netns {} iperf -c {}'.format(ns_name, server_ip))

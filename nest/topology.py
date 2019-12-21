@@ -3,30 +3,39 @@
 
 # Define network topology creation helpers
 from .address import Address
-from .engine import add_route
-from .engine import en_ip_forwarding
-from .engine import create_ns
+import engine
+from .interface import Interface, Veth
 
 class Namespace:
     """
     Base namespace class which is inherited by `Node` and `Router` classes
     """
 
-    def __init__(self):
+    def __init__(self, default=False):
         """
         Constructor to initialize an unique id for the namespace
         and an empty list
         """
 
-        # generate a unique id for the namespace
-        self.id = id(self)
+        if(default == False):
+            # Generate a unique id for the namespace
+            self.id = id(self)
 
-        # create a namespace with the unique id
-        create_ns(self.id)
+            # Create a namespace with the unique id
+            engine.create_ns(self.id)
+        else:
+            self.id = 'default'
 
-        # initialize an empty list to keep track of
-        # interfaces on it
+        # Initialize an empty list to keep track of
+        # Interfaces on it
         self.interfaces = []
+
+    def is_default(self):
+
+        if self.id == 'default':
+            return True
+        else:
+            return False
 
     def add_route(self, dest_addr, next_hop_addr, via_interface):
         """
@@ -42,28 +51,19 @@ class Namespace:
         """
 
         if type(dest_addr) == 'str':
-            try:
-                dest_addr = Address(dest_addr)
-            except: 
-                # TODO: Raise a valid error
-                pass
+            dest_addr = Address(dest_addr)
 
         if type(next_hop_addr == 'Address'):
-            try:
-                next_hop_addr = Address(next_hop_addr)
-            except:
-                # TODO: Raise a valid errot
-                pass
-
+            next_hop_addr = Address(next_hop_addr)
         
-        add_route(self.id, dest_addr.get_addr(), next_hop_addr.get_addr(), via_interface.get_id())
+        engine.add_route(self.id, dest_addr.get_addr(), next_hop_addr.get_addr(), via_interface.get_id())
         
 
 class Node(Namespace):
 
     def __init__(self):
-        pass
-        # Create namespace in iproute2
+
+        Namespace.__init__(self)
 
 class Router(Namespace):
 
@@ -72,4 +72,20 @@ class Router(Namespace):
         Namespace.__init__(self)
 
         # Enable forwarding
-        en_ip_forwarding(self.id)
+        engine.en_ip_forwarding(self.id)
+
+def connect(ns1, ns2):
+    """
+    Connect namespaces `ns1` and `ns2`
+    """
+    
+    # Create 2 interfaces
+    veth = Veth()
+    (int1, int2) = veth.get_interfaces()
+    
+    int1.set_namespace(ns1)
+    int2.set_namespace(ns2)
+
+    int1.set_mode('UP')
+    int2.set_mode('UP')
+
