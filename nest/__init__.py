@@ -3,12 +3,13 @@
 
 import sys
 from .arguments import parse
-from .topology import Node, Router, connect
-from .interface import Interface, Veth
+from .topology import Node, Router, Interface, Veth, connect
 from .address import Address
+from . import engine # TODO: Added for debugging, remove this
 
 def run_nest():
     parse(sys.argv[1:])
+r = Router()
 
-
+# print(Node())
     

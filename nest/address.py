@@ -17,10 +17,10 @@ class Address:
 
         if addr_str.isupper():      # A special string in place of address
             if addr_str == 'DEFAULT':
-                self.ip_addr = addr_str.to_lower()
+                self.ip_addr = addr_str.lower()
             else:
                 raise ValueError(addr_str+' is not a special IP string. Perhaps you meant DEFAULT?')
-        elif '/' in addr_str:       # A interface address
+        elif '/' in addr_str:       # An interface address
             ipaddress.ip_interface(addr_str)    # raises exception in invalid case
             self.ip_addr = addr_str
         else:                       # An IP address  
