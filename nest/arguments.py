@@ -17,7 +17,10 @@ parser.add_argument('--version', action='version', version=Argument.VERSION)
 
 def parse(arg):
     """
-    Parse commandline arguments `arg`
+    Parses commandline arguments
+
+    :param arg: commandline arguments
+    :type arg: String
     """
     arguments = parser.parse_args(arg, namespace=Argument)
     

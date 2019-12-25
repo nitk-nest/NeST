@@ -8,9 +8,10 @@ class Address:
 
     def __init__(self, addr_str):
         """
-        addr_str: The string representing the address
-        The constructor validates the entered ip
-        address.
+        :param addr_str: The string representing the address
+                         The constructor validates the entered ip
+                         address.
+        :type add_str: String
         """
        
         # NOTE: This should also handle ipv6. Requires testing to confirm.
@@ -28,4 +29,7 @@ class Address:
             self.ip_addr = addr_str
     
     def get_addr(self):
+        """
+        getter for ip_addr
+        """
         return self.ip_addr

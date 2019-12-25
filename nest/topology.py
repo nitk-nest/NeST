@@ -14,6 +14,8 @@ class Namespace:
         """
         Constructor to initialize an unique id for the namespace
         and an empty list
+
+        :param default: to indicate the default namedspace
         """
 
         if(default == False):
@@ -30,6 +32,10 @@ class Namespace:
         # self.interfaces = []
 
     def is_default(self):
+        """
+        Checks if the namespace is same as the default
+        namespace.
+        """
 
         if self.id == 'default':
             return True
@@ -63,12 +69,20 @@ class Namespace:
         
 
 class Node(Namespace):
+    """
+    This class represents the end devices on a network. It inherits
+    the Namespace class
+    """
 
     def __init__(self):
 
         Namespace.__init__(self)
 
 class Router(Namespace):
+    """
+    This class represents the intermediate routers in a networks. It inherits 
+    the Namespace class
+    """
 
     def __init__(self):
 
@@ -96,6 +110,9 @@ class Interface:
         """
         setter for the namespace associated 
         with the interface
+
+        :param namespace: the namespace where the interface is installed
+        :type namespace: Namespace
         """
 
         engine.add_int_to_ns(namespace.get_id(), self.id)
@@ -145,6 +162,9 @@ class Interface:
 
 
 class Veth:
+    """
+    Handle creation of Veth pairs
+    """
 
     def __init__(self):
 
@@ -160,7 +180,11 @@ class Veth:
 
 def connect(ns1, ns2):
     """
-    Connect namespaces `ns1` and `ns2`
+    Connects two namespaces
+
+    :param ns1, ns2: namespaces part of a connection
+    :type ns1, ns2: Namespace 
+    :returns: A tuple containing two interfaces
     """
     
     # Create 2 interfaces
