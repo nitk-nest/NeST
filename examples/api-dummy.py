@@ -14,7 +14,7 @@ from nest import *
 #
 # Topology:
 #
-# n0 -- r0 -- n1
+# n0 -- r0 -- r1 -- n1
 #
 ##############################
 
@@ -26,12 +26,14 @@ n1 = Node()
 
 # Create routers
 r0 = Router()
+r1 = Router()
 
 print('Node and router created')
 
 # Add connections
 (n0_r0, r0_n0) = connect(n0, r0)
-(n1_r0, r0_n1) = connect(n1, r0)
+(r0_r1, r1_r0) = connect(r0, r1)
+(r1_n1, n1_r1) = connect(r1, n1)
 
 print('Connections made')
 
@@ -41,16 +43,18 @@ Address('10.0.0.4/24')
 # Assign address
 n0_r0.set_address(Address('10.0.0.1/24'))
 r0_n0.set_address(Address('10.0.0.2/24'))
-n1_r0.set_address(Address('10.0.1.1/24'))
-r0_n1.set_address(Address('10.0.1.2/24'))
+r0_r1.set_address(Address('10.0.1.1/24'))
+r1_r0.set_address(Address('10.0.1.2/24'))
+r1_n1.set_address(Address('10.0.2.1/24'))
+n1_r1.set_address(Address('10.0.2.2/24'))
 
 print('Addresses are assigned')
 
-# engine.exec_subprocess('ip -all netns del') # TODO: Temporary cleanup routine.
-                                            # Replace with more robust stuff
+# engine.exec_subprocess('ip -all netns del') 
+# # TODO: Temporary cleanup routine.
+# Replace with more robust stuff
 
 # Add routes
-# n0.add_route(Address('DEFAULT'), Address('10.0.0.2'), r0_n0) # ip route add default via 10.0.0.2 dev r0_n0
-# r1.add_route(Address('DEFAULT'), Address('10.0.0.1'), n0_r0)
-# r1.add_route(Address('10.0.3.2'), Address('10.0.1.2'), r0_r1)
-# and other routes...
+n0.add_route('10.0.2.2', '10.0.0.2', n0_r0)
+r0.add_route('10.0.2.2', '10.0.1.2', r0_n0)
+r1.add_route('10.0.2.2', '10.0.1.2', r1_n1)

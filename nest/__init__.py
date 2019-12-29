@@ -9,7 +9,6 @@ from . import engine # TODO: Added for debugging, remove this
 
 def run_nest():
     parse(sys.argv[1:])
-r = Router()
 
 # print(Node())
     

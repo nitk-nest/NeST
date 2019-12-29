@@ -59,10 +59,10 @@ class Namespace:
         :type via_interface: Interface
         """
 
-        if type(dest_addr) == 'str':
+        if type(dest_addr) == str:
             dest_addr = Address(dest_addr)
 
-        if type(next_hop_addr == 'Address'):
+        if type(next_hop_addr == str):
             next_hop_addr = Address(next_hop_addr)
         
         engine.add_route(self.id, dest_addr.get_addr(), next_hop_addr.get_addr(), via_interface.get_id())
@@ -134,7 +134,7 @@ class Interface:
         :type address: Address or string
         """
    
-        if type(address) == 'str':
+        if type(address) == str:
             address = Address(address)
             
         if self.namespace.is_default() is False:
