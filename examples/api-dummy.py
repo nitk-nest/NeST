@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019 NITK Surathkal
+# Copyright (c) 2019-2020 NITK Surathkal
 
 ########################
 # SHOULD BE RUN AS ROOT
