@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
-# !/bin/bash
+#!/bin/bash
 
 # Checks if the user is a root user or not
 if [ ${USER} != "root" ]

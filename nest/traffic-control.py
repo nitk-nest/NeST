@@ -2,6 +2,8 @@
 # Copyright (c) 2019-2020 NITK Surathkal
 
 from . import engine
+from . import errors
+from . import topology
 
 # Filter supported types
 _support = {
@@ -11,8 +13,7 @@ _support = {
 
 class Filter:
 
-    def __init__(self, protocol, priority, filtertype, flowid,
-                parent=None, filter=None):
+    def __init__(self, protocol, priority, filtertype, flowid, parent=None, filter=None):
         """
         Constructor to design a Filter to assign to a Class
         or Qdisc
@@ -46,26 +47,28 @@ class Filter:
             raise ValueError('filter cannot be None! Pass a dictionary of parameters')
 
         #TODO: Invoke engine function to setup the filter
-        
 
-        def _verify_helper(self, parameter_name, parameter, type_name, 
-                    expected_type, supported_parameters = None):
+
+class Qdisc:
+
+    def __init__(self, qdisc, interface, parent = None, handle = None, **kwargs)
         """
-        Helper to verify parameters passed to the constructor
+        Constructor to add a qdisc (Queueing Discipline) to an interface (device)
 
-        :param parameter_name: Name of the parameter being verified
-        :type parameter_name: string
-        :param parameter: parameter to be verified
-        :param type_name: Name of the type in string
-        :type type_name: string
-        :param expected_type: expected type of the parameter
-        :param supported_parameters: set of supported parameters
-        :type supported_parameters: list{string}
+        :param qdisc: The qdisc which needs to be added to the interface
+        :type qdisc: string
+        :param interface: The interface to which the qdisc is to be added
+        :type interface: Interface class
+        :param parent: id of the parent class in major:minor form(optional)
+        :type parent: string
+        :param handle: id of the filter
+        :type handle: string
+        :param **kwargs: qdisc specific paramters 
+        :type **kwargs: dictionary
         """
 
-        if type(parameter) is not expected_type:
-            raise ValueError('{} expects type {}'.format(parameter_name, type_name))
+        # Verify all the paramaters
+        _verify_helper('qdisc', qdisc, 'string', str)
+        _verify_helper('interface', interface, 'Interface class', Interface)
         
-        if supported_parameters is not None and 
-            parameter not in supported_parameters:
-            raise ValueError('{} is not a supported {}'.format(parameter, parameter_name))
+        
