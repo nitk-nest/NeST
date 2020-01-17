@@ -4,25 +4,28 @@
 # Define network topology creation helpers
 from .address import Address
 from . import engine
+from . import error_handling
 
 class Namespace:
     """
     Base namespace class which is inherited by `Node` and `Router` classes
     """
 
-    def __init__(self, default=False):
+    def __init__(self, ns_name = ''):
         """
         Constructor to initialize an unique id for the namespace
         and an empty list
 
-        :param default: to indicate the default namedspace
+        :param ns_name: The name of the namespace to be created
+        :type ns_name: string
         """
 
-        if(default == False):
-            # Generate a unique id for the namespace
-            self.id = str(id(self))
 
-            # Create a namespace with the unique id
+        if(ns_name != ''):
+            # Creating a variable for the name
+            self.id = ns_name
+
+            # Create a namespace with the name
             engine.create_ns(self.id)
         else:
             self.id = 'default'
@@ -74,9 +77,9 @@ class Node(Namespace):
     the Namespace class
     """
 
-    def __init__(self):
+    def __init__(self, node_name):
 
-        Namespace.__init__(self)
+        Namespace.__init__(self, node_name)
 
 class Router(Namespace):
     """
@@ -84,20 +87,20 @@ class Router(Namespace):
     the Namespace class
     """
 
-    def __init__(self):
+    def __init__(self, router_name):
 
-        Namespace.__init__(self)
+        Namespace.__init__(self, router_name)
 
         # Enable forwarding
         engine.en_ip_forwarding(self.id)
 
 class Interface:
     
-    def __init__(self):
+    def __init__(self, interface_name):
 
         # Generate a unique interface id
-        self.id = str(id(self))
-        self.namespace = Namespace(default=True)
+        self.id = interface_name
+        self.namespace = Namespace()
 
     def get_id(self):
         """
@@ -166,10 +169,10 @@ class Veth:
     Handle creation of Veth pairs
     """
 
-    def __init__(self):
+    def __init__(self, interface1_name, interface2_name):
 
-        self.interface1 = Interface()
-        self.interface2 = Interface()
+        self.interface1 = Interface(interface1_name)
+        self.interface2 = Interface(interface2_name)
 
         # Create the veth
         engine.create_veth(self.interface1.get_id(), self.interface2.get_id())
@@ -178,7 +181,7 @@ class Veth:
 
         return (self.interface1, self.interface2)
 
-def connect(ns1, ns2):
+def connect(ns1, ns2, interface1_name = '', interface2_name = ''):
     """
     Connects two namespaces
 
@@ -188,7 +191,12 @@ def connect(ns1, ns2):
     """
     
     # Create 2 interfaces
-    veth = Veth()
+
+    if interface1_name == '' and interface2_name == '':
+        #TODO: Generate the names and 
+        pass
+
+    veth = Veth(interface1_name, interface2_name)
     (int1, int2) = veth.get_interfaces()
     
     int1.set_namespace(ns1)

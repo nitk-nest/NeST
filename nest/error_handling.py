@@ -5,7 +5,7 @@
 # This file contains all error checks and messages
 ##################################################
 
-def _verify_helper(self, parameter_name, parameter, type_name, expected_type, supported_parameters = None):
+def type_verify(parameter_name, parameter, type_name, expected_type, supported_parameters = None):
         """
         Helper to verify parameters passed to the constructor
 
@@ -22,6 +22,5 @@ def _verify_helper(self, parameter_name, parameter, type_name, expected_type, su
         if type(parameter) is not expected_type:
             raise ValueError('{} expects type {}'.format(parameter_name, type_name))
         
-        if supported_parameters is not None and 
-            parameter not in supported_parameters:
+        if supported_parameters is not None and parameter not in supported_parameters:
             raise ValueError('{} is not a supported {}'.format(parameter, parameter_name))

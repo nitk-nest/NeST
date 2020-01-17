@@ -200,7 +200,7 @@ def run_iperf_client(ns_name, server_ip):
     """
     exec_subprocess('ip netns {} iperf -c {}'.format(ns_name, server_ip))
 
-def add_qdisc(ns_name, dev_name, qdisc, parent='', handle='',**kwargs):
+def add_qdisc(ns_name, dev_name, qdisc, parent = '', handle = '',**kwargs):
     """
     Add a qdisc on an interface
 
@@ -230,7 +230,36 @@ def add_qdisc(ns_name, dev_name, qdisc, parent='', handle='',**kwargs):
     
     exec_subprocess('ip netns exec {} tc qdisc add dev {} {} {} {} {}'.format(ns_name, dev_name, parent, handle, qdisc, qdisc_params))
 
-def add_class(ns_name, dev_name, parent, qdisc, classid='', **kwargs):
+
+#TODO: Other functions of qdisc, class, filter
+
+#TODO: Check the functionality and correctness of all delete functions for qdisc, class, filter
+# def delete_qdisc(ns_name, dev_name, parent = '', handle = ''):
+#     """
+#     Add a qdisc on an interface
+
+#     :param ns_name: name of the namespace
+#     :type ns_name: string
+#     :dev_name: name of the interface
+#     :type dev_name: string
+#     :param qdisc: qdisc used on the interface
+#     :type qdisc: string
+#     :param parent: id of the parent class in major:minor form(optional)
+#     :type parent: string
+#     :param handle: id of the qdisc in major:0 form
+#     :type handle: string
+#     """
+
+#     if parent and parent != 'root':
+#         parent = 'parent ' + parent
+
+#     if handle:
+#         handle = 'handle ' + handle
+
+#     exec_subprocess('ip netns exec {} tc qdisc add dev {} {} {}'.format(ns_name, dev_name, parent, handle))
+
+
+def add_class(ns_name, dev_name, parent, qdisc, classid = '', **kwargs):
     """
     Add a class to a qdisc
 
@@ -257,7 +286,28 @@ def add_class(ns_name, dev_name, parent, qdisc, classid='', **kwargs):
     
     exec_subprocess('ip netns exec {} tc class add dev {} parent {} {} {} {}'.format(ns_name, dev_name, parent, classid, qdisc, qdisc_params))
 
-def add_filter(ns_name, dev_name, protocol, prio, filtertype, flowid, parent='', handle='', **kwargs):
+# def del_class(ns_name, dev_name, parent, qdisc, classid = ''):
+#     """
+#     Add a class to a qdisc
+
+#     :param ns_name: name of the namespace
+#     :type ns_name: string
+#     :dev_name: name of the interface
+#     :type dev_name: string
+#     :param parent: id of the parent class in major:minor form(optional)
+#     :type parent: string
+#     :param qdisc: qdisc used on the interface
+#     :type qdisc: string
+#     :param classid: id of the class in major:minor form
+#     :type classid: string
+#     """
+
+#     if classid:
+#         classid = 'classid ' + classid
+    
+#     exec_subprocess('ip netns exec {} tc class add dev {} parent {} {} {}'.format(ns_name, dev_name, parent, classid, qdisc))
+
+def add_filter(ns_name, dev_name, protocol, prio, filtertype, flowid, parent = '', handle = '', **kwargs):
     """
     Add a filter to a class
 
@@ -297,7 +347,42 @@ def add_filter(ns_name, dev_name, protocol, prio, filtertype, flowid, parent='',
     exec_subprocess('ip netns exec {} tc filter add dev {} {} {} protocol {} prio {} {} {} flowid {}'
                     .format(ns_name, dev_name, parent, handle, protocol, prio, filtertype, filter_params, flowid))
 
-    
 
 
-    
+# def del_filter(ns_name, dev_name, protocol, prio, filtertype, flowid, parent = '', handle = ''):
+#     """
+#     Add a filter to a class
+
+#     :param ns_name: name of the namespace
+#     :type ns_name: string
+#     :dev_name: name of the interface
+#     :type dev_name: string
+#     :param protocol: protocol used
+#     :type protocol: string
+#     :param prio: priority
+#     :type prio: string
+#     :param filtertype: one of the available filters
+#     :type filtertype: string
+#     :param flowid: classid of the class where the traffic is enqueued if the traffic passes the filter
+#     :type flowid: string
+#     :param parent: id of the parent class in major:minor form(optional)
+#     :type parent: string
+#     :param handle: id of the filter
+#     :type handle: string
+#     :param qdisc: qdisc used on the interface
+#     :type qdisc: string
+#     """
+
+#     if parent and parent != 'root':
+#         parent = 'parent ' + parent
+
+#     if handle:
+#         handle = 'handle ' + handle
+
+#     filter_params = ''
+
+#     for param, value in kwargs.items():
+#         filter_params = param +' ' + value +' '
+
+#     exec_subprocess('ip netns exec {} tc filter add dev {} {} {} protocol {} prio {} {} {} flowid {}'
+#                     .format(ns_name, dev_name, parent, handle, protocol, prio, filtertype, filter_params, flowid))
