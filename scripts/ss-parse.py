@@ -136,7 +136,7 @@ def parse_and_plot(filename, parameter):
 	
 # TODO: Integrate with nest
 
-def run_ss(destination_ip, run_time)
+def parse_ss(destination_ip, run_time)
 	param_list = ['cwnd', 'rwnd', 'rtt', 'ssthresh', 'rto']
 	destination = '10.1.1.1/24'
     RUN_TIME = run_time
