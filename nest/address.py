@@ -34,6 +34,13 @@ class Address:
         """
         return self.ip_addr
 
+    def get_abs_addr(self):
+        # TODO: Make this better
+        if '/' in self.ip_addr:
+            return self.ip_addr.split('/')[0]
+        else:
+            return self.get_addr()
+
 class Subnet:
 
     def __init__(self, addr_str):
@@ -46,4 +53,5 @@ class Subnet:
     def get_next_addr(self):
         
         self.counter += 1
-        return self.net_addr[self.counter]
+        address = self.net_addr[self.counter]
+        return Address(address.compressed + '/' + str(self.net_addr.prefixlen))

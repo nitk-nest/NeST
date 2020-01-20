@@ -64,10 +64,10 @@ class Namespace:
         if type(dest_addr) == str:
             dest_addr = Address(dest_addr)
 
-        if type(next_hop_addr == str):
+        if type(next_hop_addr) == str:
             next_hop_addr = Address(next_hop_addr)
         
-        engine.add_route(self.id, dest_addr.get_addr(), next_hop_addr.get_addr(), via_interface.get_id())
+        engine.add_route(self.id, dest_addr.get_abs_addr(), next_hop_addr.get_abs_addr(), via_interface.get_id())
         
     def add_interface(self, interface):
         """
@@ -79,7 +79,7 @@ class Namespace:
 
         self.interface_list.append(interface)
         interface._set_namespace(self)
-        engine.add_int_to_ns(self.get_id, interface.get_id())
+        engine.add_int_to_ns(self.get_id(), interface.get_id())
 
 class Node(Namespace):
     """
@@ -112,6 +112,7 @@ class Interface:
         self.id = interface_name
         self.namespace = Namespace()
         self.pair = None
+        self.address = None
 
     def _set_pair(self, interface):
         """
@@ -147,7 +148,6 @@ class Interface:
         :type namespace: Namespace
         """
 
-        engine.add_int_to_ns(namespace.get_id(), self.id)
         self.namespace = namespace
 
     def get_namespace(self):
@@ -158,6 +158,14 @@ class Interface:
 
         return self.namespace
     
+    def get_address(self):
+        """
+        getter for the address associated
+        with the interface
+        """
+
+        return self.address
+
     def set_address(self, address):
         """
         Assigns ip adress to an interface
@@ -171,6 +179,7 @@ class Interface:
             
         if self.namespace.is_default() is False:
             engine.assign_ip(self.get_namespace().get_id(), self.get_id(), address.get_addr())
+            self.address = address
         else:
             # Create our own error class
             raise NotImplementedError('You should assign the interface to node or router before assigning address to it.')
@@ -257,8 +266,8 @@ def number_of_connections(ns1, ns2):
     if len(ns1.interface_list) > len(ns2.interface_list):
         ns1, ns2 = ns2, ns1
     
-    for i in range(ns1.interface_list):
-        if ns1.interface_list[i].get_pair.get_namespace == ns2:
+    for interface in ns1.interface_list:
+        if interface.get_pair().get_namespace() == ns2:
             connections = connections + 1
 
     return connections
