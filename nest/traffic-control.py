@@ -35,7 +35,7 @@ class Qdisc:
         error_handling.type_verify('parent', parent, 'string', str)
         error_handling.type_verify('handle', handle, 'string', str)
 
-        engine.add_qdisc(dev_name.ns_name, dev_name, qdisc, parent, handle, kwargs)
+        engine.add_qdisc(dev_name.ns_name, dev_name, qdisc, parent, handle, **kwargs)
 
 
 class Class:
@@ -62,7 +62,7 @@ class Class:
         error_handling.type_verify('parent', parent, 'string', str)
         error_handling.type_verify('classid', classid, 'string', str)
 
-        engine.add_class(dev_name.ns_name, dev_name, parent, qdisc, classid, kwargs)
+        engine.add_class(dev_name.ns_name, dev_name, parent, qdisc, classid, **kwargs)
 
 
 class Filter:

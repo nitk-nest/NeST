@@ -30,9 +30,8 @@ class Namespace:
         else:
             self.id = 'default'
 
-        # Initialize an empty list to keep track of
-        # Interfaces on it
-        # self.interfaces = []
+        # Initialize an empty list of interfaces to keep track of interfaces on it
+        self.interface_list = []
 
     def is_default(self):
         """
@@ -70,6 +69,17 @@ class Namespace:
         
         engine.add_route(self.id, dest_addr.get_addr(), next_hop_addr.get_addr(), via_interface.get_id())
         
+    def add_interface(self, interface):
+        """
+        Adds an interface to the namespace
+
+        :param interface: Interface to be added to the namespace
+        :type interface: Interface
+        """
+
+        self.interface_list.append(interface)
+        interface._set_namespace(self)
+        engine.add_int_to_ns(self.get_id, interface.get_id())
 
 class Node(Namespace):
     """
@@ -96,11 +106,30 @@ class Router(Namespace):
 
 class Interface:
     
-    def __init__(self, interface_name):
+    def __init__(self, interface_name, pair = ''):
 
         # Generate a unique interface id
         self.id = interface_name
         self.namespace = Namespace()
+        self.pair = None
+
+    def _set_pair(self, interface):
+        """
+        setter for the other end of the interface that it is connected to
+        :param interface_name: The interface to which this interface is connected to
+        :type interface_name: Interface
+        """
+
+        self.pair = interface
+
+    def get_pair(self):
+        """
+        getter for the interface to which this interface is connected to
+        :return: Interface to which this interface is connected to
+        :r_type: Interface
+        """
+
+        return self.pair
 
     def get_id(self):
         """
@@ -109,12 +138,12 @@ class Interface:
 
         return self.id
 
-    def set_namespace(self, namespace):
+    def _set_namespace(self, namespace):
         """
         setter for the namespace associated 
         with the interface
 
-        :param namespace: the namespace where the interface is installed
+        :param namespace: The namespace where the interface is installed
         :type namespace: Namespace
         """
 
@@ -174,6 +203,9 @@ class Veth:
         self.interface1 = Interface(interface1_name)
         self.interface2 = Interface(interface2_name)
 
+        self.interface1._set_pair(self.interface2)
+        self.interface2._set_pair(self.interface1)
+
         # Create the veth
         engine.create_veth(self.interface1.get_id(), self.interface2.get_id())
 
@@ -181,29 +213,52 @@ class Veth:
 
         return (self.interface1, self.interface2)
 
+
 def connect(ns1, ns2, interface1_name = '', interface2_name = ''):
     """
     Connects two namespaces
 
     :param ns1, ns2: namespaces part of a connection
     :type ns1, ns2: Namespace 
-    :returns: A tuple containing two interfaces
+    :return: A tuple containing two interfaces
+    :r_type: (Interface, Interface)
     """
     
     # Create 2 interfaces
 
     if interface1_name == '' and interface2_name == '':
-        #TODO: Generate the names and 
-        pass
+        connections = number_of_connections(ns1, ns2)
+        interface1_name = ns1.get_id() + '-' + ns2.get_id() + '-' + str(connections)
+        interface2_name = ns2.get_id() + '-' + ns1.get_id() + '-' + str(connections)
 
     veth = Veth(interface1_name, interface2_name)
     (int1, int2) = veth.get_interfaces()
-    
-    int1.set_namespace(ns1)
-    int2.set_namespace(ns2)
+
+    ns1.add_interface(int1)
+    ns2.add_interface(int2)
 
     int1.set_mode('UP')
     int2.set_mode('UP')
 
     return (int1, int2)
 
+def number_of_connections(ns1, ns2):
+    """
+    This function gives the number of connections between the two namespaces
+
+    :param ns1, ns2: Namespaces between which connections are needed
+    :type ns1, ns2: Namespace
+    :return: Number of connections between the two namespaces
+    :r_tpye: int
+    """
+
+    connections = 0
+
+    if len(ns1.interface_list) > len(ns2.interface_list):
+        ns1, ns2 = ns2, ns1
+    
+    for i in range(ns1.interface_list):
+        if ns1.interface_list[i].get_pair.get_namespace == ns2:
+            connections = connections + 1
+
+    return connections

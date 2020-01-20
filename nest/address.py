@@ -46,4 +46,4 @@ class Subnet:
     def get_next_addr(self):
         
         self.counter += 1
-        return net_addr[counter]
+        return self.net_addr[self.counter]
