@@ -10,6 +10,7 @@ import utils
 INTERVAL = 0.2
 RUN_TIME = 60
 
+
 def run_ss(cmd):
 	"""
 	runs the ss command
@@ -19,16 +20,18 @@ def run_ss(cmd):
 
 	:return output of the ss command
 	"""
-	proc = subprocess.Popen(cmd.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	proc = subprocess.Popen(cmd.split(), stdin=subprocess.PIPE,
+	                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	(stdout, stderr) = proc.communicate()
-	
-	#if there is an error
-	if stderr: 
+
+	# if there is an error
+	if stderr:
 		return None
 
 	return stdout.decode();  # stdout is a bytes-like object. Hence the usage of decode()
 
-def parse(param_list, destination_ip):
+
+def parse(ns_name, param_list, destination_ip):
 	"""
 	parses the required data from ss command's output
 
@@ -37,15 +40,16 @@ def parse(param_list, destination_ip):
 	:param destination_ip: destination ip address of the socket
 	:type destination_ip: string
 
-	return 
+	return
 	"""
-	command = 'ss -i dst {}'.format(destination_ip)
+	command = 'ip netns exec {} ss -i dst {}'.format(ns_name, destination_ip)
 	json_stats = {}
 	cur_time = 0.0
 
+
 	# list to store the stats obtained at every interval
 	stats_list = list()
-	
+
 	# This loop runs the ss command every `INTERVAL`s for `RUN_TIME`s
 	while cur_time <= RUN_TIME:
 		stats = run_ss(command)
@@ -57,14 +61,15 @@ def parse(param_list, destination_ip):
 
 			# result list stores all the string that is matched by the `pattern`
 			result_list = re.findall(pattern, stats)
-			
-			pattern = r'^' + re.escape(param) + r'[:\s]' # pattern to match the required param in result_list
+
+			# pattern to match the required param in result_list
+			pattern = r'^' + re.escape(param) + r'[:\s]'
 			val = ''
 			for result in result_list:
 				result = result.strip()
 				if re.search(pattern, result):
 					val = re.sub(pattern, '', result)
-			
+
 			# rtt has both avg and dev rtt separated by a /
 			if param == 'rtt':
 				avg_rtt = val.split('/')[0]
@@ -81,7 +86,7 @@ def parse(param_list, destination_ip):
 		stats_list.append(time_dict)
 		time.sleep(INTERVAL)
 		cur_time = cur_time + INTERVAL
-	
+
 	# convert the stats list to a json array
 	json_stats = json.dumps(stats_list, indent=4)
 
@@ -103,6 +108,7 @@ def output_to_file(json_stats):
 
 	parse_and_plot(filename, 'cwnd')
 
+
 def parse_and_plot(filename, parameter):
 	"""
 
@@ -117,7 +123,7 @@ def parse_and_plot(filename, parameter):
 
 	# stats stores the json object as list of dicts with timestamp as keys
 	stats = json.load(f)
-	
+
 	x = list()
 	y = list()
 
@@ -133,11 +139,13 @@ def parse_and_plot(filename, parameter):
 	utils.plot(x, y, xlabel='time', ylabel=parameter)
 	# print(data)
 	f.close()
-	
+
 # TODO: Integrate with nest
 
-def parse_ss(destination_ip, run_time)
+
+def parse_ss(ns_name, destination_ip, run_time):
 	param_list = ['cwnd', 'rwnd', 'rtt', 'ssthresh', 'rto']
-	destination = '10.1.1.1/24'
-    RUN_TIME = run_time
-	parse(param_list, destination)
+	destination = '10.1.1.1'
+	global RUN_TIME
+	RUN_TIME = run_time
+	parse(ns_name, param_list, destination)
