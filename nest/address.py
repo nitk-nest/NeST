@@ -33,3 +33,17 @@ class Address:
         getter for ip_addr
         """
         return self.ip_addr
+
+class Subnet:
+
+    def __init__(self, addr_str):
+
+        # TODO: Check if addr_str is in proper format
+
+        self.net_addr = ipaddress.ip_network(addr_str)
+        self.counter = 0
+
+    def get_next_addr(self):
+        
+        self.counter += 1
+        return net_addr[counter]
