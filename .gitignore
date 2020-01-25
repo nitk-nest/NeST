@@ -1,4 +1,12 @@
+#python cache files
 __pycache__
 *.pyc
+
+#python virtual environment files
 venv/
+
+#vscode settings
 .vscode/
+
+#configuration files
+*.json
