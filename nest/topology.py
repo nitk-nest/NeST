@@ -23,7 +23,8 @@ class Namespace:
 
         if(ns_name != ''):
             # Creating a variable for the name
-            self.id = ns_name
+            self.name = ns_name
+            self.id = str(id(self))
 
             # Create a namespace with the name
             engine.create_ns(self.id)
@@ -109,7 +110,8 @@ class Interface:
     def __init__(self, interface_name, pair = ''):
 
         # Generate a unique interface id
-        self.id = interface_name
+        self.name = interface_name
+        self.id = str(id(self))
         self.namespace = Namespace()
         self.pair = None
         self.address = None
