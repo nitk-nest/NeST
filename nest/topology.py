@@ -5,6 +5,8 @@
 from .address import Address
 from . import engine
 from . import error_handling
+from .id_generator import ID_GEN
+from .configuration import Configuration
 
 class Namespace:
     """
@@ -24,7 +26,7 @@ class Namespace:
         if(ns_name != ''):
             # Creating a variable for the name
             self.name = ns_name
-            self.id = str(id(self))
+            self.id = ID_GEN.get_id()
 
             # Create a namespace with the name
             engine.create_ns(self.id)
@@ -91,6 +93,9 @@ class Node(Namespace):
     def __init__(self, node_name):
 
         Namespace.__init__(self, node_name)
+        
+        # Add node to configuration
+        Configuration(self, "Node")
 
 class Router(Namespace):
     """
@@ -102,6 +107,9 @@ class Router(Namespace):
 
         Namespace.__init__(self, router_name)
 
+        # Add Rounter to configuration
+        Configuration(self, "Router")
+
         # Enable forwarding
         engine.en_ip_forwarding(self.id)
 
@@ -111,7 +119,7 @@ class Interface:
 
         # Generate a unique interface id
         self.name = interface_name
-        self.id = str(id(self))
+        self.id = ID_GEN.get_id()
         self.namespace = Namespace()
         self.pair = None
         self.address = None

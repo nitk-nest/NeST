@@ -3,6 +3,7 @@
 
 import time
 import json
+import atexit
 
 class Configuration():
 
@@ -10,8 +11,8 @@ class Configuration():
     config = {}
 
     def __init__(self, namespace, host_type, test='', destination='', stats_to_plot=[]):
-        self.namespace_id = namespace.id
         self.namespace_name = namespace.name
+        self.host_type = host_type
         self.test = test
         self.destination = destination
         self.stats_to_plot = stats_to_plot
@@ -32,3 +33,6 @@ class Configuration():
 
         with open(filename, 'w') as f:
             f.write(json_config)
+
+# Generate json dump on exit
+atexit.register(lambda : Configuration.generate_config_file())
