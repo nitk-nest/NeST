@@ -21,12 +21,12 @@ from nest import *
 ###### TOPOLOGY CREATION ######
 
 # Create nodes
-n0 = Node()
-n1 = Node()
+n0 = Node('n0')
+n1 = Node('n1')
 
 # Create routers
-r0 = Router()
-r1 = Router()
+r0 = Router('r0')
+r1 = Router('r1')
 
 print('Node and router created')
 
@@ -56,5 +56,8 @@ print('Addresses are assigned')
 
 # Add routes
 n0.add_route('10.0.2.2', '10.0.0.2', n0_r0)
-r0.add_route('10.0.2.2', '10.0.1.2', r0_n0)
-r1.add_route('10.0.2.2', '10.0.1.2', r1_n1)
+r0.add_route('10.0.2.2', '10.0.1.2', r0_r1)
+
+print('Routing completed')
+
+n0_r0_htb = Qdisc(n0_r0, 'htb', 'root', '1:')
