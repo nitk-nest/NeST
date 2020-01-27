@@ -7,6 +7,7 @@ from . import engine
 from . import error_handling
 from .id_generator import ID_GEN
 from .configuration import Configuration
+from . import traffic_control
 
 class Namespace:
     """
@@ -84,6 +85,7 @@ class Namespace:
         interface._set_namespace(self)
         engine.add_int_to_ns(self.get_id(), interface.get_id())
 
+
 class Node(Namespace):
     """
     This class represents the end devices on a network. It inherits
@@ -123,6 +125,8 @@ class Interface:
         self.namespace = Namespace()
         self.pair = None
         self.address = None
+        self.qdisc_list = []
+        self.class_list = []
 
     def _set_pair(self, interface):
         """
@@ -210,6 +214,44 @@ class Interface:
                 raise NotImplementedError('You should assign the interface to node or router before setting it\'s mode')
         else:
              raise ValueError(mode+' is not a valid mode (it has to be either "UP" or "DOWN")')
+
+    def add_qdisc(self, qdisc, parent = 'root', handle = '', **kwargs):
+        """
+        Constructor to add a qdisc (Queueing Discipline) to this interface
+
+        :param qdisc: The qdisc which needs to be added to the interface
+        :type qdisc: string
+        :param dev: The interface to which the qdisc is to be added
+        :type dev: Interface class
+        :param parent: id of the parent class in major:minor form(optional)
+        :type parent: string
+        :param handle: id of the filter
+        :type handle: string
+        :param **kwargs: qdisc specific paramters 
+        :type **kwargs: dictionary
+        """
+
+        self.qdisc_list.append(traffic_control.Qdisc(self.get_id(), self.namespace.get_id(), qdisc, parent, handle, **kwargs))
+
+    def add_class(self, qdisc, parent = 'root', classid = '', **kwargs):
+        """
+        Constructor to create an object that represents a class
+
+        :param dev_id: The id of the interface to which the qdisc is to be added
+        :type dev_id: String
+        :param namespace_id: The id of the namespace that the device belongs to
+        :type namespace_id: String
+        :param qdisc: The qdisc which needs to be added to the interface
+        :type qdisc: string
+        :param parent: id of the parent class in major:minor form(optional)
+        :type parent: string
+        :param classid: id of the class
+        :type classid: string
+        :param **kwargs: class specific paramters 
+        :type **kwargs: dictionary
+        """
+
+        self.class_list.append(traffic_control.Class(self.get_id(), self.namespace.get_id(), qdisc, parent, classid, **kwargs))
 
 
 class Veth:

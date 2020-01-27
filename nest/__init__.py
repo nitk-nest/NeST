@@ -6,7 +6,9 @@ import sys, uuid
 from .arguments import parse
 from .topology import Node, Router, Interface, Veth, connect
 from .address import Address, Subnet
+from .traffic_control import Qdisc, Class, Filter
 from . import engine # TODO: Added for debugging, remove this
+from . import id_generator
 
 def run_nest():
     parse(sys.argv[1:])

@@ -226,7 +226,7 @@ def add_qdisc(ns_name, dev_name, qdisc, parent = '', handle = '',**kwargs):
 
     qdisc_params = ''
     for param, value in kwargs.items():
-        qdisc_params = param + ' ' + value + ' '
+        qdisc_params += param + ' ' + value + ' '
     
     exec_subprocess('ip netns exec {} tc qdisc add dev {} {} {} {} {}'.format(ns_name, dev_name, parent, handle, qdisc, qdisc_params))
 
@@ -282,7 +282,7 @@ def add_class(ns_name, dev_name, parent, qdisc, classid = '', **kwargs):
 
     qdisc_params = ''
     for param, value in kwargs.items():
-        qdisc_params = param + ' ' + value + ' '
+        qdisc_params += param + ' ' + value + ' '
     
     exec_subprocess('ip netns exec {} tc class add dev {} parent {} {} {} {}'.format(ns_name, dev_name, parent, classid, qdisc, qdisc_params))
 
@@ -342,7 +342,7 @@ def add_filter(ns_name, dev_name, protocol, prio, filtertype, flowid, parent = '
     filter_params = ''
 
     for param, value in kwargs.items():
-        filter_params = param +' ' + value +' '
+        filter_params += param +' ' + value +' '
 
     exec_subprocess('ip netns exec {} tc filter add dev {} {} {} protocol {} prio {} {} {} flowid {}'
                     .format(ns_name, dev_name, parent, handle, protocol, prio, filtertype, filter_params, flowid))
