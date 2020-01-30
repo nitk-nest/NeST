@@ -27,7 +27,7 @@ def run_netperf(ns_name, destination_ip):
 
 
 def fetch_host_stats(ns_name, config):
-    pass
+    parse_ss(ns_name, config['destination'], config['stats_to_plot'] , 2)
 
 
 def fetch_router_stats(ns_name):
