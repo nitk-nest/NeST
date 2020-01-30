@@ -231,9 +231,7 @@ def add_qdisc(ns_name, dev_name, qdisc, parent = '', handle = '',**kwargs):
     exec_subprocess('ip netns exec {} tc qdisc add dev {} {} {} {} {}'.format(ns_name, dev_name, parent, handle, qdisc, qdisc_params))
 
 
-#TODO: Other functions of qdisc, class, filter
 
-#TODO: Check the functionality and correctness of all delete functions for qdisc, class, filter
 # def delete_qdisc(ns_name, dev_name, parent = '', handle = ''):
 #     """
 #     Add a qdisc on an interface
@@ -307,7 +305,7 @@ def add_class(ns_name, dev_name, parent, qdisc, classid = '', **kwargs):
     
 #     exec_subprocess('ip netns exec {} tc class add dev {} parent {} {} {}'.format(ns_name, dev_name, parent, classid, qdisc))
 
-def add_filter(ns_name, dev_name, protocol, prio, filtertype, flowid, parent = '', handle = '', **kwargs):
+def add_filter(ns_name, dev_name, protocol, priority, filtertype, flowid, parent = '', handle = '', **kwargs):
     """
     Add a filter to a class
 
@@ -317,8 +315,8 @@ def add_filter(ns_name, dev_name, protocol, prio, filtertype, flowid, parent = '
     :type dev_name: string
     :param protocol: protocol used
     :type protocol: string
-    :param prio: priority
-    :type prio: string
+    :param priority: priority
+    :type priority: string
     :param filtertype: one of the available filters
     :type filtertype: string
     :param flowid: classid of the class where the traffic is enqueued if the traffic passes the filter
@@ -345,11 +343,11 @@ def add_filter(ns_name, dev_name, protocol, prio, filtertype, flowid, parent = '
         filter_params += param +' ' + value +' '
 
     exec_subprocess('ip netns exec {} tc filter add dev {} {} {} protocol {} prio {} {} {} flowid {}'
-                    .format(ns_name, dev_name, parent, handle, protocol, prio, filtertype, filter_params, flowid))
+                    .format(ns_name, dev_name, parent, handle, protocol, priority, filtertype, filter_params, flowid))
 
 
 
-# def del_filter(ns_name, dev_name, protocol, prio, filtertype, flowid, parent = '', handle = ''):
+# def del_filter(ns_name, dev_name, protocol, priority, filtertype, flowid, parent = '', handle = ''):
 #     """
 #     Add a filter to a class
 
@@ -359,8 +357,8 @@ def add_filter(ns_name, dev_name, protocol, prio, filtertype, flowid, parent = '
 #     :type dev_name: string
 #     :param protocol: protocol used
 #     :type protocol: string
-#     :param prio: priority
-#     :type prio: string
+#     :param priority: priority
+#     :type priority: string
 #     :param filtertype: one of the available filters
 #     :type filtertype: string
 #     :param flowid: classid of the class where the traffic is enqueued if the traffic passes the filter
@@ -384,5 +382,5 @@ def add_filter(ns_name, dev_name, protocol, prio, filtertype, flowid, parent = '
 #     for param, value in kwargs.items():
 #         filter_params = param +' ' + value +' '
 
-#     exec_subprocess('ip netns exec {} tc filter add dev {} {} {} protocol {} prio {} {} {} flowid {}'
-#                     .format(ns_name, dev_name, parent, handle, protocol, prio, filtertype, filter_params, flowid))
+#     exec_subprocess('ip netns exec {} tc filter add dev {} {} {} protocol {} priority {} {} {} flowid {}'
+#                     .format(ns_name, dev_name, parent, handle, protocol, priority, filtertype, filter_params, flowid))

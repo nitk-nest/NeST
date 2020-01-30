@@ -127,6 +127,7 @@ class Interface:
         self.address = None
         self.qdisc_list = []
         self.class_list = []
+        self.filter_list = []
 
     def _set_pair(self, interface):
         """
@@ -231,16 +232,12 @@ class Interface:
         :type **kwargs: dictionary
         """
 
-        self.qdisc_list.append(traffic_control.Qdisc(self.get_id(), self.namespace.get_id(), qdisc, parent, handle, **kwargs))
+        self.qdisc_list.append(traffic_control.Qdisc(self.namespace.get_id(), self.get_id(), qdisc, parent, handle, **kwargs))
 
     def add_class(self, qdisc, parent = 'root', classid = '', **kwargs):
         """
         Constructor to create an object that represents a class
 
-        :param dev_id: The id of the interface to which the qdisc is to be added
-        :type dev_id: String
-        :param namespace_id: The id of the namespace that the device belongs to
-        :type namespace_id: String
         :param qdisc: The qdisc which needs to be added to the interface
         :type qdisc: string
         :param parent: id of the parent class in major:minor form(optional)
@@ -251,7 +248,34 @@ class Interface:
         :type **kwargs: dictionary
         """
 
-        self.class_list.append(traffic_control.Class(self.get_id(), self.namespace.get_id(), qdisc, parent, classid, **kwargs))
+        self.class_list.append(traffic_control.Class(self.namespace.get_id(), self.get_id(), qdisc, parent, classid, **kwargs))
+
+    def add_filter(self, protocol, priority, filtertype, flowid, parent='root', handle = '',  **kwargs):
+        """
+        Constructor to design a Filter to assign to a Class
+        or Qdisc
+
+        :param protocol: protocol used
+        :type protocol: string
+        :param priority: priority of the filter
+        :type priority: int
+        :param filtertype: one of the available filters
+        :type filtertype: string
+        :param flowid: classid of the class where the traffic is enqueued 
+                       if the traffic passes the filter
+        :type flowid: Class
+        :param parent: id of the parent class in major:minor form(optional)
+        :type parent: string
+        :param handle: id of the filter
+        :type handle: string
+        :param filter: filter parameters
+        :type filter: dictionary
+        :param **kwargs: filter specific paramters 
+        :type **kwargs: dictionary
+        """
+
+        #TODO: Reduce arguements to the engine functions by finding parent and handle automatically
+        self.filter_list.append(traffic_control.Filter(self.namespace.get_id(), self.get_id(), protocol, priority, filtertype, flowid, parent, handle, **kwargs))
 
 
 class Veth:

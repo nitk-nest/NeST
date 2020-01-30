@@ -12,10 +12,14 @@ _support = {
 
 class Qdisc:
 
-    def __init__(self, dev_id, namespace_id, qdisc, parent = 'root', handle = '', **kwargs):
+    def __init__(self, namespace_id , dev_id, qdisc, parent = 'root', handle = '', **kwargs):
         """
         Constructor to add a qdisc (Queueing Discipline) to an interface (device)
 
+        :param namespace_id: The id of the namespace to which the interface belongs to
+        :type namespace_id: String
+        :param dev_id: The id of the interface to which the qdisc is to be added
+        :type dev_id: String
         :param qdisc: The qdisc which needs to be added to the interface
         :type qdisc: string
         :param dev_id: The id of the interface to which the qdisc is to be added
@@ -31,8 +35,10 @@ class Qdisc:
         """
 
         # Verify all the paramaters
+
+        error_handling.type_verify('namespace_id', namespace_id, 'string', str)
+        error_handling.type_verify('dev_id', dev_id, 'string', str)
         error_handling.type_verify('qdisc', qdisc, 'string', str)
-        error_handling.type_verify('dev_id', dev_id, 'Interface class', str)
         error_handling.type_verify('namespace_id', namespace_id, 'Interface class', str)
         error_handling.type_verify('parent', parent, 'string', str)
         error_handling.type_verify('handle', handle, 'string', str)
@@ -42,10 +48,12 @@ class Qdisc:
 
 class Class:
 
-    def __init__(self, dev_id, namespace_id, qdisc, parent = 'root', classid = '', **kwargs):
+    def __init__(self, namespace_id , dev_id, qdisc, parent = 'root', classid = '', **kwargs):
         """
         Constructor to create an object that represents a class
 
+        :param namespace_id: The id of the namespace to which the interface belongs to
+        :type namespace_id: String
         :param dev_id: The id of the interface to which the qdisc is to be added
         :type dev_id: String
         :param namespace_id: The id of the namespace that the device belongs to
@@ -61,8 +69,9 @@ class Class:
         """
 
         # Verify all the parameters
+        error_handling.type_verify('namespace_id', namespace_id, 'string', str)
+        error_handling.type_verify('dev_id', dev_id, 'string', str)
         error_handling.type_verify('qdisc', qdisc, 'string', str)
-        error_handling.type_verify('dev_id', dev_id, 'Interface class', str)
         error_handling.type_verify('namespace_id', namespace_id, 'Interface class', str)
         error_handling.type_verify('parent', parent, 'string', str)
         error_handling.type_verify('classid', classid, 'string', str)
@@ -72,11 +81,15 @@ class Class:
 
 class Filter:
 
-    def __init__(self, protocol, priority, filtertype, flowid, parent='root', filter=None):
+    def __init__(self, namespace_id , dev_id, protocol, priority, filtertype, flowid, parent='root', handle = '',  **kwargs):
         """
         Constructor to design a Filter to assign to a Class
         or Qdisc
 
+        :param namespace_id: The id of the namespace to which the interface belongs to
+        :type namespace_id: String
+        :param dev_id: The id of the interface to which the qdisc is to be added
+        :type dev_id: String
         :param protocol: protocol used
         :type protocol: string
         :param priority: priority of the filter
@@ -88,17 +101,22 @@ class Filter:
         :type flowid: Class
         :param parent: id of the parent class in major:minor form(optional)
         :type parent: string
+        :param handle: id of the filter
+        :type handle: string
         :param filter: filter parameters
         :type filter: dictionary
+        :param **kwargs: filter specific paramters 
+        :type **kwargs: dictionary
         """
 
         # Verify all parameters
+        error_handling.type_verify('namespace_id', namespace_id, 'string', str)
+        error_handling.type_verify('dev_id', dev_id, 'string', str)
         error_handling.type_verify('protocol', protocol, 'string', str, supported_parameters=['protocol'])
         error_handling.type_verify('priority', priority, 'int', int)
         error_handling.type_verify('filtertype', filtertype, 'string', str, supported_parameters=['filtertype'])
+        error_handling.type_verify('flowid', flowid, 'Class', Class)
+        error_handling.type_verify('parent', parent, 'string', str)
+        error_handling.type_verify('handle', handle, 'string', str)
 
-        if filter is None:
-            # TODO: better error msg
-            raise ValueError('filter cannot be None! Pass a dictionary of parameters')
-
-        #TODO: Invoke engine function to setup the filter
+        engine.add_filter(namespace_id, dev_id, protocol, priority, filtertype, flowid, parent, handle, **kwargs)
