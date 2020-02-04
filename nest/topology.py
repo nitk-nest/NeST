@@ -81,7 +81,8 @@ class Namespace:
         if type(next_hop_addr) == str:
             next_hop_addr = Address(next_hop_addr)
         
-        engine.add_route(self.id, dest_addr.get_abs_addr(), next_hop_addr.get_abs_addr(), via_interface.get_id())
+        engine.add_route(self.id, dest_addr.get_addr(without_subnet=True), next_hop_addr.get_addr(without_subnet=True), 
+            via_interface.get_id())
         
     def add_interface(self, interface):
         """

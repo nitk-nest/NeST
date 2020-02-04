@@ -5,6 +5,11 @@
 import ipaddress
 
 class Address:
+    """
+    Validate address.
+
+    TODO: Untested for IPv6
+    """
 
     def __init__(self, addr_str):
         """
@@ -26,32 +31,36 @@ class Address:
             self.ip_addr = addr_str
         else:                       # An IP address  
             ipaddress.ip_address(addr_str)      # raises exception in invalid case
-            self.ip_addr = addr_str
+            self.ip_addr = addr_str+'/32'
     
-    def get_addr(self):
+    def get_addr(self, without_subnet=False):
         """
-        getter for ip_addr
+        Getter for ip_addr
         """
-        return self.ip_addr
 
-    def get_abs_addr(self):
-        # TODO: Make this better
-        if '/' in self.ip_addr:
+        if without_subnet:
             return self.ip_addr.split('/')[0]
         else:
-            return self.get_addr()
+            return self.ip_addr
 
 class Subnet:
+    """
+    For generating sequential addresses in a subnet
+
+    NOTE: Supported only for IPv4 addresses
+    """
 
     def __init__(self, addr_str):
 
-        # TODO: Check if addr_str is in proper format
-
-        self.net_addr = ipaddress.ip_network(addr_str)
-        self.counter = 0
+        if '/' in addr_str:
+            self.net_addr = ipaddress.ip_network(addr_str)
+            self.counter = 0
 
     def get_next_addr(self):
-        
+        """
+        Get next address in sequence in the subnet
+        """
+
         self.counter += 1
         address = self.net_addr[self.counter]
         return Address(address.compressed + '/' + str(self.net_addr.prefixlen))
