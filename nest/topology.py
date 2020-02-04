@@ -16,8 +16,8 @@ class Namespace:
 
     def __init__(self, ns_name = ''):
         """
-        Constructor to initialize an unique id for the namespace
-        and an empty list
+        Constructor to initialize an unique id, name and a empty
+        list of interfaces for the namespace
 
         :param ns_name: The name of the namespace to be created
         :type ns_name: string
@@ -49,8 +49,18 @@ class Namespace:
             return False
 
     def get_id(self):
+        """
+        Get the (unique) id of the namespace
+        """
 
         return self.id
+
+    def get_name(self):
+        """
+        Get the (user-assigned) name of the namespace
+        """
+
+        return self.name
 
     def add_route(self, dest_addr, next_hop_addr, via_interface):
         """
@@ -131,7 +141,8 @@ class Interface:
 
     def _set_pair(self, interface):
         """
-        setter for the other end of the interface that it is connected to
+        Setter for the other end of the interface that it is connected to
+
         :param interface_name: The interface to which this interface is connected to
         :type interface_name: Interface
         """
@@ -140,23 +151,24 @@ class Interface:
 
     def get_pair(self):
         """
-        getter for the interface to which this interface is connected to
+        Getter for the interface to which this interface is connected to
+        
         :return: Interface to which this interface is connected to
-        :r_type: Interface
+            
         """
 
         return self.pair
 
     def get_id(self):
         """
-        getter for interface id
+        Getter for interface id
         """
 
         return self.id
 
     def _set_namespace(self, namespace):
         """
-        setter for the namespace associated 
+        Setter for the namespace associated 
         with the interface
 
         :param namespace: The namespace where the interface is installed
@@ -167,7 +179,7 @@ class Interface:
 
     def get_namespace(self):
         """
-        getter for the namespace associated 
+        Getter for the namespace associated 
         with the interface
         """
 
@@ -175,7 +187,7 @@ class Interface:
     
     def get_address(self):
         """
-        getter for the address associated
+        Getter for the address associated
         with the interface
         """
 
@@ -218,7 +230,7 @@ class Interface:
 
     def add_qdisc(self, qdisc, parent = 'root', handle = '', **kwargs):
         """
-        Constructor to add a qdisc (Queueing Discipline) to this interface
+        Add a qdisc (Queueing Discipline) to this interface
 
         :param qdisc: The qdisc which needs to be added to the interface
         :type qdisc: string
@@ -236,7 +248,7 @@ class Interface:
 
     def add_class(self, qdisc, parent = 'root', classid = '', **kwargs):
         """
-        Constructor to create an object that represents a class
+        Create an object that represents a class
 
         :param qdisc: The qdisc which needs to be added to the interface
         :type qdisc: string
@@ -252,8 +264,7 @@ class Interface:
 
     def add_filter(self, protocol, priority, filtertype, flowid, parent='root', handle = '',  **kwargs):
         """
-        Constructor to design a Filter to assign to a Class
-        or Qdisc
+        Design a Filter to assign to a Class or Qdisc
 
         :param protocol: protocol used
         :type protocol: string
@@ -284,6 +295,15 @@ class Veth:
     """
 
     def __init__(self, interface1_name, interface2_name):
+        """
+        Constructor to create a veth pair between
+        `interface1_name` and `interface2_name`
+
+        :param interface1_name: Name for interface1 (an endpoint of veth)
+        :type interface1_name: string
+        :param interface1_name: Name for interface2 (other endpoint of veth)
+        :type interface1_name: string
+        """
 
         self.interface1 = Interface(interface1_name)
         self.interface2 = Interface(interface2_name)
@@ -295,6 +315,9 @@ class Veth:
         engine.create_veth(self.interface1.get_id(), self.interface2.get_id())
 
     def get_interfaces(self):
+        """
+        Get tuple of endpoint interfaces
+        """
 
         return (self.interface1, self.interface2)
 

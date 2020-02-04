@@ -6,11 +6,28 @@ import json
 import atexit
 
 class Configuration():
+    """
+    Static class responsible for creating JSON 
+    configuration file for a given topology
+    """
 
     # static dict to hold all the Configuration objects
     config = {}
 
     def __init__(self, namespace, host_type, test='', destination='', stats_to_plot=[]):
+        """
+        Constructor which adds namespace to `Configuration.config` 
+        static object
+
+        :param namespace: Namespace object
+        :type namespace: Namespace
+        :param host_type: 'Node' or 'Router'
+        :type host_type: string
+        :param test: Test to be run on the namespace
+        :type test: string
+
+        **TODO**: Add comments to other parameters
+        """
         self.namespace_name = namespace.name
         self.host_type = host_type
         self.test = test
@@ -21,6 +38,10 @@ class Configuration():
     
     @staticmethod
     def generate_config_file(filename=None):
+        """
+        Generate JSON config file for the given topology
+        """
+
         # generate a file name based on timestamp
         if filename is None:
             filename = 'config-' + time.strftime('%d-%m-%Y-%H:%M:%S') + '.json'
