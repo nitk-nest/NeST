@@ -72,10 +72,12 @@ def parse(ns_name, param_list, destination_ip):
 				result = result.strip()
 				if re.search(pattern, result):
 					val = re.sub(pattern, '', result)
+					# remove the units at the end
+					val = re.sub(r'[A-Za-z]', '', val)
 
-			# rtt has both avg and dev rtt separated by a /
 			
 			try:
+				# rtt has both avg and dev rtt separated by a /
 				if param == 'rtt':
 					avg_rtt = val.split('/')[0]
 					dev_rtt = val.split('/')[1]
@@ -161,7 +163,7 @@ def parse_and_plot(filename, parameters):
 
 
 def parse_ss(ns_name, destination_ip, stats_to_plot, run_time):
-	param_list = ['cwnd', 'rwnd', 'rtt', 'ssthresh', 'rto', 'lastack']
+	param_list = ['cwnd', 'rwnd', 'rtt', 'ssthresh', 'rto', 'delivery_rate']
 	global RUN_TIME
 	RUN_TIME = run_time
 	global STATS_TO_PLOT 

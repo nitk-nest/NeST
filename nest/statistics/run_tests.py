@@ -21,7 +21,6 @@ def run_netserver(ns_name):
 
 
 def run_netperf(ns_name, destination_ip):
-    print(destination_ip)
     cmd = 'ip netns exec {} netperf -H {}'.format(ns_name, destination_ip)
     run_test_commands(cmd)
 
@@ -34,17 +33,11 @@ def fetch_router_stats(ns_name):
     pass
 
 
-def parse_config():
+def parse_config(config_files):
     """
 
     Parses the config files to run tests accordingly
     """
-
-    parser = argparse.ArgumentParser(description='Parser for config filenames')
-    # add a positional argument for filenames
-    parser.add_argument('files', type=str, nargs='+', help='config file names')
-    args = parser.parse_args()
-    config_files = args.files
 
     # Loop through all the config files, convert each config file to
     # a dict and run netserver or/and netperf depending on the type of
