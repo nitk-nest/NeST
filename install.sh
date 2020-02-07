@@ -13,14 +13,8 @@ fi
 
 curr_path="$(pwd)"
 
-# To start from a new line
-echo "" >> ~/.bashrc
-
-# Letting nest.py to be executed from any folder
-sudo -u ${SUDO_USER} bash -c "echo export PATH=\$PATH:${curr_path}/ >> ~/.bashrc"
-
-# Letting nest.py executed also using nest command
-sudo -u ${SUDO_USER} bash -c "echo alias nest=\'run-nest.py\' >> ~/.bashrc"
+# "Install" nest
+ln -s $curr_path/run-nest.py /usr/bin/nest
 
 # Add nest manpage to system
 mkdir -p /usr/local/man/man1
