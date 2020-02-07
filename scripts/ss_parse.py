@@ -5,7 +5,7 @@ import re
 import subprocess
 import json
 import time
-import utils
+from . import utils
 import numpy as np
 
 INTERVAL = 0.2

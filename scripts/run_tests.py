@@ -7,7 +7,7 @@
 import subprocess
 import argparse
 import json
-from ss_parse import parse_ss
+from .ss_parse import parse_ss
 
 
 def run_test_commands(cmd):
@@ -62,7 +62,3 @@ def parse_config():
                     run_netserver(ns_name)
                     run_netperf(ns_name, values['destination'])
                     fetch_host_stats(ns_name, values)
-
-
-if __name__ == '__main__':
-    parse_config()
