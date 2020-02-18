@@ -145,6 +145,9 @@ right_router.add_route('DEFAULT', left_router_connection.get_address(),
                         right_router_connection)
 
 
+# Generate config file at the end of topology
+Configuration.generate_config_file()
+
 ######  RUN TESTS ######
 
 # (API not finalised from here on)

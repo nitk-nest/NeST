@@ -29,3 +29,8 @@ n0_n1.add_class('htb', '1:', '1:1', rate = '100kbps', ceil = '100kbps', burst = 
 n0_n1.add_class('htb', '1:1', '1:10', rate = '30kbps', ceil = '100kbps', burst = '2k')
 n0_n1.add_class('htb', '1:1', '1:11', rate = '10kbps', ceil = '100kbps', burst = '2k')
 n0_n1.add_class('htb', '1:1', '1:12', rate = '60kbps', ceil = '100kbps', burst = '2k')
+
+# Generate config file at the end of topology
+# TODO: Think of a better approach
+
+Configuration.generate_config_file()
