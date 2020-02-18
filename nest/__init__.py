@@ -9,6 +9,7 @@ from .address import Address, Subnet
 from .traffic_control import Qdisc, Class, Filter
 from . import engine # TODO: Added for debugging, remove this
 from . import id_generator
+from .configuration import Configuration # TODO: Added temporarily
 
 def run_nest():
     parse(sys.argv[1:])

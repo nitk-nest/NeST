@@ -3,7 +3,7 @@
 
 import time
 import json
-import atexit
+# import atexit
 
 class Configuration():
     """
@@ -56,4 +56,9 @@ class Configuration():
             f.write(json_config)
 
 # Generate json dump on exit
-atexit.register(lambda : Configuration.generate_config_file())
+
+# NOTE: This is not a good solution since a config file is generated
+# everytime nest command is run. Even if a topology file is not given
+# as input
+
+# atexit.register(lambda : Configuration.generate_config_file())
