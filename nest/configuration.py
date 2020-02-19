@@ -3,6 +3,7 @@
 
 import time
 import json
+import os, pwd, grp
 # import atexit
 
 class Configuration():
@@ -13,6 +14,10 @@ class Configuration():
 
     # static dict to hold all the Configuration objects
     config = {}
+
+    # User and group ID of user running `nest`
+    _user_id = ''
+    _group_id = ''
 
     def __init__(self, namespace, host_type = '', test='', destination='', stats_to_plot=[]):
         """
@@ -112,6 +117,28 @@ class Configuration():
         Configuration.config[namespace.id]['destination'] = new_destination
 
     @staticmethod
+    def _set_user_id(user_id):
+        """
+        Set current user id
+
+        :param user_id: user id of current user
+        :type current_user: int
+        """
+
+        Configuration._user_id = user_id
+
+    @staticmethod
+    def _set_group_id(group_id):
+        """
+        Set current group id
+
+        :param current_user: group id of current user
+        :type current_user: int
+        """
+
+        Configuration._group_id = group_id
+
+    @staticmethod
     def generate_config_file(filename=None):
         """
         Generate JSON config file for the given topology
@@ -132,6 +159,11 @@ class Configuration():
 
         with open(filename, 'w') as f:
             f.write(json_config)
+        
+        # Change file permissions to that of user
+        user_id = Configuration._user_id
+        group_id = Configuration._group_id
+        os.chown(filename, user_id, group_id)
 
 # Generate json dump on exit
 
