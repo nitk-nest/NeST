@@ -106,9 +106,29 @@ class Node(Namespace):
     def __init__(self, node_name):
 
         Namespace.__init__(self, node_name)
-        
-        # Add node to configuration
-        Configuration(self, "Node")
+
+        Configuration(self, "NODE")
+    
+    def install_server(self):
+        """
+        Install server on the node
+        """
+
+        Configuration._add_server(self)
+
+    def send_packets_to(self, dest_addr):
+        """
+        Send packets from the node to `dest_addr`
+
+        :param dest_addr: Address to send packets to
+        :type dest_addr: Address or string
+        """
+
+        if type(dest_addr) == str:
+            dest_addr = Address(dest_addr)
+
+        Configuration._add_client(self)
+        Configuration._set_destination(self, dest_addr.get_addr(without_subnet=True))
 
 class Router(Namespace):
     """
@@ -121,7 +141,7 @@ class Router(Namespace):
         Namespace.__init__(self, router_name)
 
         # Add Rounter to configuration
-        Configuration(self, "Router")
+        Configuration(self, "ROUTER")
 
         # Enable forwarding
         engine.en_ip_forwarding(self.id)

@@ -14,7 +14,7 @@ class Configuration():
     # static dict to hold all the Configuration objects
     config = {}
 
-    def __init__(self, namespace, host_type, test='', destination='', stats_to_plot=[]):
+    def __init__(self, namespace, host_type = '', test='', destination='', stats_to_plot=[]):
         """
         Constructor which adds namespace to `Configuration.config` 
         static object
@@ -28,6 +28,7 @@ class Configuration():
 
         **TODO**: Add comments to other parameters
         """
+
         self.namespace_name = namespace.name
         self.host_type = host_type
         self.test = test
@@ -37,9 +38,86 @@ class Configuration():
         Configuration.config[namespace.id] = self.__dict__
     
     @staticmethod
+    def _get_host_type(namespace):
+        """
+        Getter for host_type of a namespace
+
+        :param namespace: Get host type of `this` namespace
+        :type namespace: Namespace
+
+        :return: host_type of namespace
+        :r_type: string
+        """
+
+        return Configuration.config[namespace.id]['host_type']
+
+    @staticmethod
+    def _set_host_type(namespace, new_host_type):
+        """
+        Update host_type of a namespace in `config`
+
+        :param new_host_type: New host type to update to
+        :type new_host_type: string
+        """
+
+        Configuration.config[namespace.id]['host_type'] = new_host_type
+
+    @staticmethod
+    def _add_server(namespace):
+        """
+        Add server application to namespace in Configuration
+
+        :param namespace: Add server application in this `namespace`
+        :type namespace: Namespace
+        """
+
+        host_type = Configuration._get_host_type(namespace)
+        
+        if host_type == 'CLIENT':
+            host_type = 'SERVER_' + host_type
+        else:
+            host_type = 'SERVER'
+
+        Configuration._set_host_type(namespace, host_type)
+
+    @staticmethod
+    def _add_client(namespace):
+        """
+        Add client application to namespace in Configuration
+
+        :param namespace: Add client application in this `namespace`
+        :type namespace: Namespace
+        """
+
+        host_type = Configuration._get_host_type(namespace)
+        
+        if host_type == 'SERVER':
+            host_type = host_type + "_CLIENT" 
+        else:
+            host_type = 'CLIENT'
+
+        Configuration._set_host_type(namespace, host_type)
+
+    @staticmethod
+    def _set_destination(namespace, new_destination):
+        """
+        Update destination of a namespace in `config`
+
+        :param namespace: Update destination of this `namespace`
+        :type namespace: Namespace
+        :param new_destination: New destination to update to
+        :type new_destination: string
+        """
+
+        Configuration.config[namespace.id]['destination'] = new_destination
+
+    @staticmethod
     def generate_config_file(filename=None):
         """
         Generate JSON config file for the given topology
+
+        :param filename: File name of config file
+        :type filename: string
         """
 
         # generate a file name based on timestamp
