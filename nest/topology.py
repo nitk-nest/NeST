@@ -267,6 +267,9 @@ class Interface:
 
         self.qdisc_list.append(traffic_control.Qdisc(self.namespace.get_id(), self.get_id(), qdisc, parent, handle, **kwargs))
 
+
+        return self.qdisc_list[-1]
+
     def add_class(self, qdisc, parent = 'root', classid = '', **kwargs):
         """
         Create an object that represents a class
@@ -283,7 +286,10 @@ class Interface:
 
         self.class_list.append(traffic_control.Class(self.namespace.get_id(), self.get_id(), qdisc, parent, classid, **kwargs))
 
-    def add_filter(self, protocol, priority, filtertype, flowid, parent='root', handle = '',  **kwargs):
+        return self.class_list[-1]
+
+
+    def add_filter(self, priority, filtertype, flowid, protocol = 'ip', parent='root', handle = '',  **kwargs):
         """
         Design a Filter to assign to a Class or Qdisc
 
@@ -309,6 +315,63 @@ class Interface:
         #TODO: Reduce arguements to the engine functions by finding parent and handle automatically
         self.filter_list.append(traffic_control.Filter(self.namespace.get_id(), self.get_id(), protocol, priority, filtertype, flowid, parent, handle, **kwargs))
 
+        return self.filter_list[-1]
+
+    def set_min_bandwidth(self, min_rate):
+        """
+        Sets a minimum bandwidth for the inteeface
+        It is done by adding a htb qdisc and a rate parameter to the class
+
+        :param min_rate: The minimum rate that has to be set in kbit
+        :type min_rate: int
+
+        """
+
+        #TODO: Check if there exists a delay and if exists, make sure it is handled in the right way
+
+        default_route = {'default' : '1'}
+        self.add_qdisc('htb', 'root', '1:', **default_route)
+
+        bandwidth_map = {'rate' : str(min_rate) + 'kbit'}
+        self.add_class('htb', '1:', '1:1', **bandwidth_map)
+
+    def set_max_bandwidth(self, max_rate):
+        """
+        Sets a max bandwidth for the inteeface
+        It is done by adding a htb qdisc and a ceil parameter to the class
+
+        :param max_rate: The minimum rate that has to be set in kbit
+        :type max_rate: int
+
+        """
+
+        #TODO: Check if there exists a delay and min_rate and if exists, make sure it is handled in the right way
+
+        default_route = {'default' : '1'}
+        self.add_qdisc('htb', 'root', '1:', **default_route)
+
+        bandwidth_map = {
+                            'rate' : str(max_rate) + 'kbit',
+                            'ceil' : str(max_rate) + 'kbit'}
+        self.add_class('htb', '1:', '1:1', **bandwidth_map)
+
+    def set_delay(self, delay):
+        """
+        Adds a delay to the link between two namespaces
+        It is done by adding a delay in the interface
+
+        :param delay: The delay to be added in milliseconds
+        :type delay: int
+
+        """
+
+        #TODO: Make adding delay possible without bandwidth being set
+
+        delay_map = {'delay' : str(delay) + 'ms'}
+
+        self.add_qdisc('netem', '1:1', '11:', **delay_map)
+
+        
 
 class Veth:
     """

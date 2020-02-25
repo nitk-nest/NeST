@@ -232,29 +232,29 @@ def add_qdisc(ns_name, dev_name, qdisc, parent = '', handle = '',**kwargs):
 
 
 
-# def delete_qdisc(ns_name, dev_name, parent = '', handle = ''):
-#     """
-#     Add a qdisc on an interface
+def delete_qdisc(ns_name, dev_name, parent = '', handle = ''):
+    """
+    Add a qdisc on an interface
 
-#     :param ns_name: name of the namespace
-#     :type ns_name: string
-#     :dev_name: name of the interface
-#     :type dev_name: string
-#     :param qdisc: qdisc used on the interface
-#     :type qdisc: string
-#     :param parent: id of the parent class in major:minor form(optional)
-#     :type parent: string
-#     :param handle: id of the qdisc in major:0 form
-#     :type handle: string
-#     """
+    :param ns_name: name of the namespace
+    :type ns_name: string
+    :dev_name: name of the interface
+    :type dev_name: string
+    :param qdisc: qdisc used on the interface
+    :type qdisc: string
+    :param parent: id of the parent class in major:minor form(optional)
+    :type parent: string
+    :param handle: id of the qdisc in major:0 form
+    :type handle: string
+    """
 
-#     if parent and parent != 'root':
-#         parent = 'parent ' + parent
+    if parent and parent != 'root':
+        parent = 'parent ' + parent
 
-#     if handle:
-#         handle = 'handle ' + handle
+    if handle:
+        handle = 'handle ' + handle
 
-#     exec_subprocess('ip netns exec {} tc qdisc add dev {} {} {}'.format(ns_name, dev_name, parent, handle))
+    exec_subprocess('ip netns exec {} tc qdisc add dev {} {} {}'.format(ns_name, dev_name, parent, handle))
 
 
 def add_class(ns_name, dev_name, parent, qdisc, classid = '', **kwargs):

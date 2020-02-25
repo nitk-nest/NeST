@@ -34,6 +34,12 @@ class Qdisc:
         :type **kwargs: dictionary
         """
 
+        self.namespace_id = namespace_id
+        self.dev_id = dev_id
+        self.qdisc = qdisc
+        self.parent = parent
+        self.handle = handle
+
         # Verify all the paramaters
 
         error_handling.type_verify('namespace_id', namespace_id, 'string', str)
@@ -68,7 +74,14 @@ class Class:
         :type **kwargs: dictionary
         """
 
+        self.namespace_id = namespace_id
+        self.dev_id = dev_id
+        self.qdisc = qdisc
+        self.parent = parent
+        self.classid = classid
+
         # Verify all the parameters
+
         error_handling.type_verify('namespace_id', namespace_id, 'string', str)
         error_handling.type_verify('dev_id', dev_id, 'string', str)
         error_handling.type_verify('qdisc', qdisc, 'string', str)
@@ -109,7 +122,17 @@ class Filter:
         :type **kwargs: dictionary
         """
 
+        self.namespace_id = namespace_id
+        self.dev_id = dev_id
+        self.protocol = protocol
+        self.priority = priority
+        self.filtertype = filtertype
+        self.flowid = flowid
+        self.parent = parent
+        self.handle = handle
+
         # Verify all parameters
+
         error_handling.type_verify('namespace_id', namespace_id, 'string', str)
         error_handling.type_verify('dev_id', dev_id, 'string', str)
         error_handling.type_verify('protocol', protocol, 'string', str, supported_parameters=['protocol'])
