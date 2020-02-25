@@ -148,6 +148,7 @@ class Configuration():
         """
 
         # generate a file name based on timestamp
+        Configuration.sort_config()
         if filename is None:
             filename = 'config-' + time.strftime('%d-%m-%Y-%H:%M:%S') + '.json'
         # check if filename has json extension
@@ -164,6 +165,40 @@ class Configuration():
         user_id = Configuration._user_id
         group_id = Configuration._group_id
         os.chown(filename, user_id, group_id)
+
+    def sort_config():
+        """
+        Sorts the configuration dict such that all the server
+        devices are in the start of the file. This is required 
+        as all the servers are to be run first 
+        """
+        config_copy = Configuration.config
+        config_list = [(k, v) for k, v in config_copy.items()]
+        # print(config_list[0][1])
+        start = 0
+        end = len(config_list) - 1
+        count = 0
+
+        while start < end:
+            if config_list[start][1]['host_type'] == 'SERVER' and config_list[end][1]['host_type'] != 'SERVER':
+                start = start + 1
+                end = end -1
+                continue
+
+            if config_list[start][1]['host_type'] == 'SERVER':
+                start = start + 1
+            elif config_list[end][1]['host_type'] != 'SERVER':
+                end = end - 1
+            else:
+                temp = config_list[start]
+                config_list[start] = config_list[end]
+                config_list[end] = temp
+                start = start + 1
+                end = end - 1
+
+        print(config_list)
+        Configuration.config = dict(config_list)
+
 
 # Generate json dump on exit
 
