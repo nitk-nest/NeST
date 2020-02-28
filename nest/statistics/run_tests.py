@@ -4,27 +4,10 @@
 # Script to be run for running tests on the namespaces
 # with the json file configurations as command line arguments
 
-import subprocess
-import argparse
 import json
 from .ss_parse import parse_ss
 from .tc_parse import parse_qdisc
-
-
-def run_test_commands(cmd):
-    proc = subprocess.Popen(
-        cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-
-def run_netserver(ns_name):
-    cmd = 'ip netns exec {} netserver'.format(ns_name)
-    run_test_commands(cmd)
-
-
-def run_netperf(ns_name, destination_ip):
-    cmd = 'ip netns exec {} netperf -H {}'.format(ns_name, destination_ip)
-    run_test_commands(cmd)
-
+from .netperf import run_netperf, run_netserver
 
 def fetch_host_stats(ns_name, config):
     parse_ss(ns_name, config['destination'], config['stats_to_plot'] , 2)
