@@ -8,7 +8,7 @@
 import os
 import subprocess
 
-def exec_subprocess(cmd, block = True):
+def exec_subprocess(cmd, block = True, debug = False):
     """
     executes a command
 
@@ -18,6 +18,11 @@ def exec_subprocess(cmd, block = True):
                     should be executed asynchronously
     :type block: boolean
     """
+
+    # Logging
+    if debug:
+        print('[DEBUG] ' + cmd)
+
     temp = subprocess.Popen(cmd.split())
     if block:
         temp.communicate()
@@ -72,6 +77,16 @@ def create_veth(dev_name1, dev_name2):
     """
     exec_subprocess('ip link add ' + dev_name1 +' type veth peer name ' + dev_name2)
 
+def create_ifb(dev_name):
+    """
+    Create a IFB
+
+    :param dev_name: interface names
+    :type dev_name: string
+    """
+
+    exec_subprocess('ip link add {} type ifb'.format(dev_name))
+
 def add_int_to_ns(ns_name, dev_name):
     """
     Add interface to a namespace
@@ -111,6 +126,20 @@ def setup_veth(ns_name1, ns_name2, dev_name1, dev_name2):
     add_int_to_ns(ns_name2, dev_name2)
     set_int_up(ns_name1, dev_name1)
     set_int_up(ns_name2, dev_name2)
+
+def setup_ifb(ns_name, dev_name):
+    """
+    Sets up an IFB device. The device is setup as well.
+    
+    :param ns_name: namespace name
+    :type ns_name: string
+    :param dev_name: name of IFB
+    :type dev_name: string
+    """
+
+    create_ifb(dev_name)
+    add_int_to_ns(ns_name, dev_name)
+    set_int_up(ns_name, dev_name)
 
 def create_peer(peer_name):
     """
@@ -305,7 +334,7 @@ def add_class(ns_name, dev_name, parent, qdisc, classid = '', **kwargs):
     
 #     exec_subprocess('ip netns exec {} tc class add dev {} parent {} {} {}'.format(ns_name, dev_name, parent, classid, qdisc))
 
-def add_filter(ns_name, dev_name, protocol, priority, filtertype, flowid, parent = '', handle = '', **kwargs):
+def add_filter(ns_name, dev_name, protocol, priority, filtertype, parent = '', handle = '', **kwargs):
     """
     Add a filter to a class
 
@@ -319,8 +348,6 @@ def add_filter(ns_name, dev_name, protocol, priority, filtertype, flowid, parent
     :type priority: string
     :param filtertype: one of the available filters
     :type filtertype: string
-    :param flowid: classid of the class where the traffic is enqueued if the traffic passes the filter
-    :type flowid: string
     :param parent: id of the parent class in major:minor form(optional)
     :type parent: string
     :param handle: id of the filter
@@ -342,8 +369,8 @@ def add_filter(ns_name, dev_name, protocol, priority, filtertype, flowid, parent
     for param, value in kwargs.items():
         filter_params += param +' ' + value +' '
 
-    exec_subprocess('ip netns exec {} tc filter add dev {} {} {} protocol {} prio {} {} {} flowid {}'
-                    .format(ns_name, dev_name, parent, handle, protocol, priority, filtertype, filter_params, flowid))
+    exec_subprocess('ip netns exec {} tc filter add dev {} {} {} protocol {} prio {} {} {}'
+                    .format(ns_name, dev_name, parent, handle, protocol, priority, filtertype, filter_params))
 
 
 

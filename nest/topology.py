@@ -164,17 +164,23 @@ class Router(Namespace):
 
 class Interface:
     
-    def __init__(self, interface_name, pair = ''):
+    def __init__(self, interface_name, namespace):
 
         # Generate a unique interface id
         self.name = interface_name
         self.id = ID_GEN.get_id()
-        self.namespace = Namespace()
+        self.namespace = namespace
         self.pair = None
         self.address = None
+
+        self.mirred_to_ifb = False
+        self.ifb = None
+
+        # NOTE: These lists required?
         self.qdisc_list = []
         self.class_list = []
         self.filter_list = []
+
 
     def _set_pair(self, interface):
         """
@@ -333,6 +339,42 @@ class Interface:
 
         return self.filter_list[-1]
 
+    def _create_ifb(self):
+
+        self.ifb = Interface('ifb', self.namespace)
+        engine.setup_ifb(self.ifb.get_namespace().get_id(), self.ifb.get_id())
+
+    def _mirred_to_ifb(self):
+        
+        self.mirred_to_ifb = True
+
+        self._create_ifb()
+
+
+        default_route = {
+            'default' : '1'
+        }
+        
+        self.add_qdisc('htb', 'root', '1:', **default_route)
+
+        default_bandwidth = {
+            'rate' : '10mbit'
+        }
+
+        self.add_class('htb', '1:', '1:1', **default_bandwidth)
+
+        self.add_qdisc('netem', '1:1', '11:')
+
+        action_redirect = {
+            'match' : 'u32 0 0',  # from man page examples
+            'action' : 'mirred',
+            'egress' : 'redirect',
+            'dev' : self.ifb.get_id()
+        }
+
+        # NOTE: Use Filter API
+        engine.add_filter(self.namespace.get_id(), self.get_id(), 'ip', '1', 'u32', parent = '1:', **action_redirect)
+
     def set_min_bandwidth(self, min_rate):
         """
         Sets a minimum bandwidth for the inteeface
@@ -345,31 +387,33 @@ class Interface:
 
         #TODO: Check if there exists a delay and if exists, make sure it is handled in the right way
 
-        default_route = {'default' : '1'}
-        self.add_qdisc('htb', 'root', '1:', **default_route)
+        if self.mirred_to_ifb is False:
+            self._mirred_to_ifb()
 
-        bandwidth_map = {'rate' : str(min_rate) + 'kbit'}
-        self.add_class('htb', '1:', '1:1', **bandwidth_map)
+        # TODO: Create engine API
+        engine.exec_subprocess('ip netns exec {} tc class change dev {} parent {}' \
+            ' classid {} htb rate {}'.format(self.get_namespace().get_id(), self.get_id(), 
+            '1:', '1:1', min_rate))
 
-    def set_max_bandwidth(self, max_rate):
-        """
-        Sets a max bandwidth for the inteeface
-        It is done by adding a htb qdisc and a ceil parameter to the class
+    # def set_max_bandwidth(self, max_rate):
+    #     """
+    #     Sets a max bandwidth for the inteeface
+    #     It is done by adding a htb qdisc and a ceil parameter to the class
 
-        :param max_rate: The minimum rate that has to be set in kbit
-        :type max_rate: int
+    #     :param max_rate: The minimum rate that has to be set in kbit
+    #     :type max_rate: int
 
-        """
+    #     """
 
-        #TODO: Check if there exists a delay and min_rate and if exists, make sure it is handled in the right way
+    #     #TODO: Check if there exists a delay and min_rate and if exists, make sure it is handled in the right way
 
-        default_route = {'default' : '1'}
-        self.add_qdisc('htb', 'root', '1:', **default_route)
+    #     default_route = {'default' : '1'}
+    #     self.add_qdisc('htb', 'root', '1:', **default_route)
 
-        bandwidth_map = {
-                            'rate' : str(max_rate) + 'kbit',
-                            'ceil' : str(max_rate) + 'kbit'}
-        self.add_class('htb', '1:', '1:1', **bandwidth_map)
+    #     bandwidth_map = {
+    #                         'rate' : str(max_rate) + 'kbit',
+    #                         'ceil' : str(max_rate) + 'kbit'}
+    #     self.add_class('htb', '1:', '1:1', **bandwidth_map)
 
     def set_delay(self, delay):
         """
@@ -381,32 +425,47 @@ class Interface:
 
         """
 
+        #TODO: It is not intuitive to add delay to an interface
         #TODO: Make adding delay possible without bandwidth being set
 
-        delay_map = {'delay' : str(delay) + 'ms'}
+        if self.mirred_to_ifb is False:
+            self._mirred_to_ifb()
 
-        self.add_qdisc('netem', '1:1', '11:', **delay_map)
+        # TODO: Create engine API
+        engine.exec_subprocess('ip netns exec {} tc qdisc change dev {} parent {}' \
+            ' handle {} netem delay {}'.format(self.get_namespace().get_id(), self.get_id(), 
+            '1:1', '11:', delay))
 
         
+    def set_qdisc(self, qdisc):
+
+        if self._mirred_to_ifb is False:
+            self._mirred_to_ifb()
+
+        self.ifb.add_qdisc('codel')
 
 class Veth:
     """
     Handle creation of Veth pairs
     """
 
-    def __init__(self, interface1_name, interface2_name):
+    def __init__(self, ns1, ns2, interface1_name, interface2_name):
         """
         Constructor to create a veth pair between
         `interface1_name` and `interface2_name`
 
+        :param ns1: Namespace to which interface1 belongs to
+        :type ns1: Namespace
+        :param ns2: Namespace to which interface2 belongs to
+        :type ns2: Namespace
         :param interface1_name: Name for interface1 (an endpoint of veth)
         :type interface1_name: string
         :param interface1_name: Name for interface2 (other endpoint of veth)
         :type interface1_name: string
         """
 
-        self.interface1 = Interface(interface1_name)
-        self.interface2 = Interface(interface2_name)
+        self.interface1 = Interface(interface1_name, ns1)
+        self.interface2 = Interface(interface2_name, ns2)
 
         self.interface1._set_pair(self.interface2)
         self.interface2._set_pair(self.interface1)
@@ -439,7 +498,7 @@ def connect(ns1, ns2, interface1_name = '', interface2_name = ''):
         interface1_name = ns1.get_id() + '-' + ns2.get_id() + '-' + str(connections)
         interface2_name = ns2.get_id() + '-' + ns1.get_id() + '-' + str(connections)
 
-    veth = Veth(interface1_name, interface2_name)
+    veth = Veth(ns1, ns2, interface1_name, interface2_name)
     (int1, int2) = veth.get_interfaces()
 
     ns1.add_interface(int1)
