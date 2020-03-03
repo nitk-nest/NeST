@@ -44,7 +44,7 @@ def parse(ns_name, param_list, destination_ip):
 
 	return
 	"""
-	command = 'ip netns exec {} ss -i dst {}'.format(ns_name, destination_ip)
+	command = 'ip netns exec {} ss -i dst {}:{}'.format(ns_name, destination_ip, '12865') #NOTE: Assumed that netserver runs on default port
 	json_stats = {}
 	cur_time = 0.0
 

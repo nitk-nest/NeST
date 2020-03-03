@@ -129,6 +129,14 @@ class Node(Namespace):
 
         Configuration._add_client(self)
         Configuration._set_destination(self, dest_addr.get_addr(without_subnet=True))
+    
+    def add_stats_to_plot(self, stat):
+        """
+        :param stat: statistic to be plotted
+        :type stat: string
+        """
+
+        Configuration._add_stats_to_plot(self, stat)
 
 class Router(Namespace):
     """
@@ -145,6 +153,14 @@ class Router(Namespace):
 
         # Enable forwarding
         engine.en_ip_forwarding(self.id)
+
+    def add_stats_to_plot(self, stat):
+        """
+        :param stat: statistic to be plotted
+        :type stat: string
+        """
+
+        Configuration._add_stats_to_plot(self, stat)
 
 class Interface:
     

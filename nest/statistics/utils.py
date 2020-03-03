@@ -48,6 +48,7 @@ def sub_plots(x, y, xlabel='', ylabel=[]):
     # if only one paramter is to be plotted
     if y.shape[0] == 1:
         a.plot(x, y[0, :])
+        a.set_title(ylabel[0])
         plt.show()
         return
 

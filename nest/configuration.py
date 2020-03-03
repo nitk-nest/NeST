@@ -4,6 +4,7 @@
 import time
 import json
 import os, pwd, grp
+import copy
 # import atexit
 
 class Configuration():
@@ -139,6 +140,23 @@ class Configuration():
         Configuration._group_id = group_id
 
     @staticmethod
+    def _add_stats_to_plot(namespace, stat):
+        """
+        Add stats required to be plotted
+
+        :param namespace: router or client namespace
+        :type namespace: Node or Router
+        :param stat: statistic to be plotted
+        :type stat: string
+        """
+
+        prev_stats = copy.deepcopy(Configuration.config[namespace.id]['stats_to_plot'])
+        prev_stats.append(stat)
+        # stats can be plotted only for client or router
+        if Configuration._get_host_type(namespace) != 'SERVER':
+            Configuration.config[namespace.id]['stats_to_plot'] = prev_stats
+
+    @staticmethod
     def generate_config_file(filename=None):
         """
         Generate JSON config file for the given topology
@@ -196,7 +214,6 @@ class Configuration():
                 start = start + 1
                 end = end - 1
 
-        print(config_list)
         Configuration.config = dict(config_list)
 
 
