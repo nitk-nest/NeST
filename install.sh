@@ -14,7 +14,7 @@ fi
 curr_path="$(pwd)"
 
 # "Install" nest
-ln -s $curr_path/run-nest.py /usr/bin/nest
+ln -s "$curr_path/run-nest.py" /usr/bin/nest
 
 # Add nest manpage to system
 mkdir -p /usr/local/man/man1
