@@ -8,7 +8,7 @@
 import os
 import subprocess
 
-def exec_subprocess(cmd, block = True, debug = False):
+def exec_subprocess(cmd, block = True, verbose = False):
     """
     executes a command
 
@@ -20,8 +20,8 @@ def exec_subprocess(cmd, block = True, debug = False):
     """
 
     # Logging
-    if debug:
-        print('[DEBUG] ' + cmd)
+    if verbose:
+        print('[INFO] ' + cmd)
 
     temp = subprocess.Popen(cmd.split())
     if block:
@@ -259,7 +259,65 @@ def add_qdisc(ns_name, dev_name, qdisc, parent = '', handle = '',**kwargs):
     
     exec_subprocess('ip netns exec {} tc qdisc add dev {} {} {} {} {}'.format(ns_name, dev_name, parent, handle, qdisc, qdisc_params))
 
+def change_qdisc(ns_name, dev_name, qdisc, parent = '', handle = '',**kwargs):
+    """
+    Change a qdisc that is already present on an interface
 
+    :param ns_name: name of the namespace
+    :type ns_name: string
+    :dev_name: name of the interface
+    :type dev_name: string
+    :param qdisc: qdisc used on the interface
+    :type qdisc: string
+    :param parent: id of the parent class in major:minor form(optional)
+    :type parent: string
+    :param handle: id of the qdisc in major:0 form
+    :type handle: string
+    :param **kwargs: qdisc specific paramters 
+    :type **kwargs: dictionary
+    """
+
+    if parent and parent != 'root':
+        parent = 'parent ' + parent
+
+    if handle:
+        handle = 'handle ' + handle
+
+    qdisc_params = ''
+    for param, value in kwargs.items():
+        qdisc_params += param + ' ' + value + ' '
+    
+    exec_subprocess('ip netns exec {} tc qdisc change dev {} {} {} {} {}'.format(ns_name, dev_name, parent, handle, qdisc, qdisc_params))
+
+def replace_qdisc(ns_name, dev_name, qdisc, parent = '', handle = '',**kwargs):
+    """
+    Replace a qdisc that is already present on an interface
+
+    :param ns_name: name of the namespace
+    :type ns_name: string
+    :dev_name: name of the interface
+    :type dev_name: string
+    :param qdisc: qdisc used on the interface
+    :type qdisc: string
+    :param parent: id of the parent class in major:minor form(optional)
+    :type parent: string
+    :param handle: id of the qdisc in major:0 form
+    :type handle: string
+    :param **kwargs: qdisc specific paramters 
+    :type **kwargs: dictionary
+    """
+
+    if parent and parent != 'root':
+        parent = 'parent ' + parent
+
+    if handle:
+        handle = 'handle ' + handle
+
+    qdisc_params = ''
+    for param, value in kwargs.items():
+        qdisc_params += param + ' ' + value + ' '
+    
+    exec_subprocess('ip netns exec {} tc qdisc replace dev {} {} {} {} {}'.format(ns_name, dev_name, parent, handle, qdisc, qdisc_params))
 
 def delete_qdisc(ns_name, dev_name, parent = '', handle = ''):
     """
@@ -313,6 +371,35 @@ def add_class(ns_name, dev_name, parent, qdisc, classid = '', **kwargs):
     
     exec_subprocess('ip netns exec {} tc class add dev {} parent {} {} {} {}'.format(ns_name, dev_name, parent, classid, qdisc, qdisc_params))
 
+
+def change_class(ns_name, dev_name, parent, qdisc, classid = '', **kwargs):
+    """
+    Change a class that is already present on an interface
+
+    :param ns_name: name of the namespace
+    :type ns_name: string
+    :dev_name: name of the interface
+    :type dev_name: string
+    :param parent: id of the parent class in major:minor form(optional)
+    :type parent: string
+    :param qdisc: qdisc used on the interface
+    :type qdisc: string
+    :param classid: id of the class in major:minor form
+    :type classid: string
+    :param **kwargs: qdisc specific paramters 
+    :type **kwargs: dictionary
+    """
+
+    if classid:
+        classid = 'classid ' + classid
+
+    qdisc_params = ''
+    for param, value in kwargs.items():
+        qdisc_params += param + ' ' + value + ' '
+    
+    exec_subprocess('ip netns exec {} tc class change dev {} parent {} {} {} {}'.format(ns_name, dev_name, parent, classid, qdisc, qdisc_params))
+
+
 # def del_class(ns_name, dev_name, parent, qdisc, classid = ''):
 #     """
 #     Add a class to a qdisc
@@ -357,6 +444,8 @@ def add_filter(ns_name, dev_name, protocol, priority, filtertype, parent = '', h
     :param **kwargs: qdisc specific paramters 
     :type **kwargs: dictionary
     """
+
+    # TODO: Check if protocol can be removed from the arguments since it's always ip
 
     if parent and parent != 'root':
         parent = 'parent ' + parent

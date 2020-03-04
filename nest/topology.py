@@ -164,16 +164,28 @@ class Router(Namespace):
 
 class Interface:
     
-    def __init__(self, interface_name, namespace):
+    def __init__(self, interface_name, pair = ''):
 
         # Generate a unique interface id
+        """
+        name is only used to display it to the user
+        id is the actual backend name
+        namespace is of namespace class and not a string
+        pair is another object of Interface class to which this is connected
+
+        set_structure tells us if ifb, a default qdisc, netem and htb are added
+        ifb is an object of interface class which tells the ifb associated with this interface
+
+        qdisc_list, class_list, filter_list gives a list of all those as respective classes 
+        """
+
         self.name = interface_name
         self.id = ID_GEN.get_id()
-        self.namespace = namespace
+        self.namespace = Namespace()
         self.pair = None
         self.address = None
 
-        self.mirred_to_ifb = False
+        self.set_structure = False
         self.ifb = None
 
         # NOTE: These lists required?
@@ -339,29 +351,49 @@ class Interface:
 
         return self.filter_list[-1]
 
-    def _create_ifb(self):
+    def _create_ifb(self, dev_name):
+        """
+        Creates a IFB for the interface so that a Qdisc can be installed on it
 
-        self.ifb = Interface('ifb', self.namespace)
+        :param dev_name: The interface to which the ifb was added
+        :type dev_naem: string
+
+        """
+
+        self.ifb = Interface('ifb-' + dev_name)
+        self.ifb._set_namespace(self.namespace)
         engine.setup_ifb(self.ifb.get_namespace().get_id(), self.ifb.get_id())
 
-    def _mirred_to_ifb(self):
+    def _set_structure(self):
+        """
+        Sets a proper sturcture to the interface by creating htb class with default bandwidth and
+        a netem qdisc as a child. It also adds an IFB mirred action and a qdisc can be added to it
+        (default bandwidth = 1024mbit) 
+
+        """
         
-        self.mirred_to_ifb = True
+        self.set_structure = True
 
-        self._create_ifb()
-
+        self._create_ifb(self.id)
 
         default_route = {
             'default' : '1'
         }
+
+        self.ifb.add_qdisc('htb', 'root', '1:', **default_route)
         
         self.add_qdisc('htb', 'root', '1:', **default_route)
 
+        # TODO: find how to set a good bandwitdh
         default_bandwidth = {
-            'rate' : '10mbit'
+            'rate' : '1024mbit'
         }
 
+        self.ifb.add_class('htb', '1:', '1:1', **default_bandwidth)
+
         self.add_class('htb', '1:', '1:1', **default_bandwidth)
+
+        self.ifb.add_qdisc('pfifo', '1:1', '11:')
 
         self.add_qdisc('netem', '1:1', '11:')
 
@@ -385,35 +417,24 @@ class Interface:
 
         """
 
-        #TODO: Check if there exists a delay and if exists, make sure it is handled in the right way
+        # TODO: Check if there exists a delay and if exists, make sure it is handled in the right way
+        # TODO: Check if this is a redundant condition
+        # TODO: Let user set the unit
 
-        if self.mirred_to_ifb is False:
-            self._mirred_to_ifb()
+        if self.set_structure is False:
+            self._set_structure()
 
-        # TODO: Create engine API
-        engine.exec_subprocess('ip netns exec {} tc class change dev {} parent {}' \
-            ' classid {} htb rate {}'.format(self.get_namespace().get_id(), self.get_id(), 
-            '1:', '1:1', min_rate))
+        min_bandwidth_parameter = {
+            'rate' : str(min_rate) + 'kbit'
+        }
 
-    # def set_max_bandwidth(self, max_rate):
-    #     """
-    #     Sets a max bandwidth for the inteeface
-    #     It is done by adding a htb qdisc and a ceil parameter to the class
+        # TODO: Check the created API
+        engine.change_class(self.namespace.get_id(), self.get_id(), '1:', 'htb', '1:1', **min_bandwidth_parameter)
 
-    #     :param max_rate: The minimum rate that has to be set in kbit
-    #     :type max_rate: int
 
-    #     """
-
-    #     #TODO: Check if there exists a delay and min_rate and if exists, make sure it is handled in the right way
-
-    #     default_route = {'default' : '1'}
-    #     self.add_qdisc('htb', 'root', '1:', **default_route)
-
-    #     bandwidth_map = {
-    #                         'rate' : str(max_rate) + 'kbit',
-    #                         'ceil' : str(max_rate) + 'kbit'}
-    #     self.add_class('htb', '1:', '1:1', **bandwidth_map)
+        # engine.exec_subprocess('ip netns exec {} tc class change dev {} parent {}' \
+        #     ' classid {} htb rate {}'.format(self.get_namespace().get_id(), self.get_id(), 
+        #     '1:', '1:1', min_rate))
 
     def set_delay(self, delay):
         """
@@ -425,24 +446,37 @@ class Interface:
 
         """
 
-        #TODO: It is not intuitive to add delay to an interface
-        #TODO: Make adding delay possible without bandwidth being set
+        # TODO: It is not intuitive to add delay to an interface
+        # TODO: Make adding delay possible without bandwidth being set
+        # TODO: Check if this is a redundant condition
+        # TODO: Let user set the unit
 
-        if self.mirred_to_ifb is False:
-            self._mirred_to_ifb()
+        if self.set_structure is False:
+            self._set_structure()
 
-        # TODO: Create engine API
-        engine.exec_subprocess('ip netns exec {} tc qdisc change dev {} parent {}' \
-            ' handle {} netem delay {}'.format(self.get_namespace().get_id(), self.get_id(), 
-            '1:1', '11:', delay))
+        delay_parameter = {
+            'delay' : str(delay) + 'ms'
+        }
+
+        engine.change_qdisc(self.namespace.get_id(),self.get_id(), 'netem', '1:1', '11:', **delay_parameter)
+
+        # TODO: Verify created API
+        # engine.exec_subprocess('ip netns exec {} tc qdisc change dev {} parent {}' \
+        #     ' handle {} netem delay {}'.format(self.get_namespace().get_id(), self.get_id(), 
+        #     '1:1', '11:', delay))
 
         
-    def set_qdisc(self, qdisc):
+    def set_qdisc(self, qdisc, **kwargs):
+        """
+        Adds the Queueing algorithm to the interface
+        :param qdisc: The Queueing algorithm to be added
+        :type qdisc: string
+        """
+        # TODO: Check if this is a redundant condition
+        if self.set_structure is False:
+            self._set_structure()
 
-        if self._mirred_to_ifb is False:
-            self._mirred_to_ifb()
-
-        self.ifb.add_qdisc('codel')
+        engine.change_qdisc(self.namespace.get_id(), self.ifb.get_id(), qdisc, '1:1', '11:', **kwargs)
 
 class Veth:
     """
@@ -464,14 +498,16 @@ class Veth:
         :type interface1_name: string
         """
 
-        self.interface1 = Interface(interface1_name, ns1)
-        self.interface2 = Interface(interface2_name, ns2)
+        self.interface1 = Interface(interface1_name)
+        self.interface2 = Interface(interface2_name)
 
         self.interface1._set_pair(self.interface2)
         self.interface2._set_pair(self.interface1)
 
         # Create the veth
         engine.create_veth(self.interface1.get_id(), self.interface2.get_id())
+
+
 
     def get_interfaces(self):
         """
@@ -503,6 +539,10 @@ def connect(ns1, ns2, interface1_name = '', interface2_name = ''):
 
     ns1.add_interface(int1)
     ns2.add_interface(int2)
+
+    # Set the proper structure for the veth
+    int1._set_structure()
+    int2._set_structure()
 
     int1.set_mode('UP')
     int2.set_mode('UP')
