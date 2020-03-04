@@ -24,9 +24,9 @@ n1 = Node('n1')
 n0_n1.set_address('10.0.0.1/24')
 n1_n0.set_address('10.0.0.2/24')
 
-n0_n1.set_min_bandwidth('5mbit')
-n0_n1.set_delay('200ms')
-n0_n1.set_qdisc('codel')
+n0_n1.set_min_bandwidth(5)  # mbit
+n0_n1.set_delay(200)        # ms
+n0_n1.set_qdisc('pfifo')
 
 # n0_n1.add_qdisc('htb', 'root', '1:', default = '12')
 # n0_n1.add_class('htb', '1:', '1:1', rate = '100kbps', ceil = '100kbps', burst = '2k')
