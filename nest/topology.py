@@ -27,7 +27,7 @@ class Namespace:
         if(ns_name != ''):
             # Creating a variable for the name
             self.name = ns_name
-            self.id = ID_GEN.get_id()
+            self.id = ID_GEN.get_id(ns_name)
 
             # Create a namespace with the name
             engine.create_ns(self.id)
@@ -109,6 +109,15 @@ class Node(Namespace):
 
         Configuration(self, "NODE")
     
+    def enable_ip_forwarding(self):
+        """
+        Enable IP forwarding in Node.
+        This gives flexibility to user to use a 
+        Node as a Router.
+        """
+
+        engine.en_ip_forwarding(self.id)
+
     def install_server(self):
         """
         Install server on the node
@@ -180,7 +189,7 @@ class Interface:
         """
 
         self.name = interface_name
-        self.id = ID_GEN.get_id()
+        self.id = ID_GEN.get_id(interface_name)
         self.namespace = Namespace()
         self.pair = None
         self.address = None
