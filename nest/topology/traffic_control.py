@@ -10,6 +10,9 @@ _support = {
     'filtertype': ['u32'],
 }
 
+# NOTE: Call to error_handling not necessary since
+# it is being called in topology.py (as soon as the
+# the user calls the API)
 class Qdisc:
 
     def __init__(self, namespace_id , dev_id, qdisc, parent = 'root', handle = '', **kwargs):

@@ -105,6 +105,8 @@ class Node(Namespace):
 
     def __init__(self, node_name):
 
+        error_handling.type_verify('node_name', node_name, 'string', str)
+
         Namespace.__init__(self, node_name)
 
         Configuration(self, "NODE")
@@ -145,6 +147,8 @@ class Node(Namespace):
         :type stat: string
         """
 
+        error_handling.type_verify('stat', stat, 'string', str)
+
         Configuration._add_stats_to_plot(self, stat)
 
 class Router(Namespace):
@@ -154,6 +158,8 @@ class Router(Namespace):
     """
 
     def __init__(self, router_name):
+
+        error_handling.type_verify('router_name', router_name, 'string', str)
 
         Namespace.__init__(self, router_name)
 
@@ -174,8 +180,6 @@ class Router(Namespace):
 class Interface:
     
     def __init__(self, interface_name, pair = ''):
-
-        # Generate a unique interface id
         """
         name is only used to display it to the user
         id is the actual backend name
@@ -185,8 +189,13 @@ class Interface:
         set_structure tells us if ifb, a default qdisc, netem and htb are added
         ifb is an object of interface class which tells the ifb associated with this interface
 
-        qdisc_list, class_list, filter_list gives a list of all those as respective classes 
+        qdisc_list, class_list, filter_list gives a list of all those as respective classes
+
+        TODO: Add parameter list
         """
+
+        error_handling.type_verify('interface_name', interface_name, 'string',str)
+        error_handling.type_verify('pair', pair, 'string',str)
 
         self.name = interface_name
         self.id = ID_GEN.get_id(interface_name)
@@ -283,6 +292,8 @@ class Interface:
         :type mode: string
         """
 
+        error_handling.type_verify('mode', mode, 'string', str)
+
         if mode == 'UP' or mode == 'DOWN':
             if self.namespace.is_default() is False:
                 engine.set_interface_mode(self.get_namespace().get_id(), self.get_id(), mode.lower())
@@ -308,6 +319,12 @@ class Interface:
         :type **kwargs: dictionary
         """
 
+        # TODO: Verify type of **kwargs
+
+        error_handling.type_verify('qdisc', qdisc, 'string', str)
+        error_handling.type_verify('parent', parent, 'string', str)
+        error_handling.type_verify('handle', handle, 'string', str)
+
         self.qdisc_list.append(traffic_control.Qdisc(self.namespace.get_id(), self.get_id(), qdisc, parent, handle, **kwargs))
 
 
@@ -326,6 +343,12 @@ class Interface:
         :param **kwargs: class specific paramters 
         :type **kwargs: dictionary
         """
+
+        # TODO: Verify type of kwargs
+
+        error_handling.type_verify('qdisc', qdisc, 'string', str)
+        error_handling.type_verify('parent', parent, 'string', str)
+        error_handling.type_verify('classid', classid, 'string', str)
 
         self.class_list.append(traffic_control.Class(self.namespace.get_id(), self.get_id(), qdisc, parent, classid, **kwargs))
 
@@ -355,56 +378,38 @@ class Interface:
         :type **kwargs: dictionary
         """
 
-        #TODO: Reduce arguements to the engine functions by finding parent and handle automatically
+        # TODO: Verify type of parameters
+        # TODO: Reduce arguements to the engine functions by finding parent and handle automatically
+        
         self.filter_list.append(traffic_control.Filter(self.namespace.get_id(), self.get_id(), protocol, priority, filtertype, flowid, parent, handle, **kwargs))
 
         return self.filter_list[-1]
 
-    def _create_ifb(self, dev_name):
+    def _create_and_mirred_to_ifb(self, dev_name):
         """
         Creates a IFB for the interface so that a Qdisc can be installed on it
+        Mirrors packets to be sent out of the interface first to itself (IFB)
+        Assumes the interface has already invoked _set_structure()
 
         :param dev_name: The interface to which the ifb was added
         :type dev_naem: string
-
         """
 
         self.ifb = Interface('ifb-' + dev_name)
         self.ifb._set_namespace(self.namespace)
         engine.setup_ifb(self.ifb.get_namespace().get_id(), self.ifb.get_id())
 
-    def _set_structure(self):
-        """
-        Sets a proper sturcture to the interface by creating htb class with default bandwidth and
-        a netem qdisc as a child. It also adds an IFB mirred action and a qdisc can be added to it
-        (default bandwidth = 1024mbit) 
-
-        """
-        
-        self.set_structure = True
-
-        self._create_ifb(self.id)
-
         default_route = {
             'default' : '1'
         }
-
-        self.ifb.add_qdisc('htb', 'root', '1:', **default_route)
-        
-        self.add_qdisc('htb', 'root', '1:', **default_route)
-
         # TODO: find how to set a good bandwitdh
         default_bandwidth = {
             'rate' : '1024mbit'
         }
 
+        self.ifb.add_qdisc('htb', 'root', '1:', **default_route)
         self.ifb.add_class('htb', '1:', '1:1', **default_bandwidth)
-
-        self.add_class('htb', '1:', '1:1', **default_bandwidth)
-
         self.ifb.add_qdisc('pfifo', '1:1', '11:')
-
-        self.add_qdisc('netem', '1:1', '11:')
 
         action_redirect = {
             'match' : 'u32 0 0',  # from man page examples
@@ -416,6 +421,31 @@ class Interface:
         # NOTE: Use Filter API
         engine.add_filter(self.namespace.get_id(), self.get_id(), 'ip', '1', 'u32', parent = '1:', **action_redirect)
 
+    def _set_structure(self):
+        """
+        Sets a proper sturcture to the interface by creating htb class with default bandwidth and
+        a netem qdisc as a child.
+        (default bandwidth = 1024mbit) 
+
+        """
+        
+        self.set_structure = True
+
+        default_route = {
+            'default' : '1'
+        }
+        
+        self.add_qdisc('htb', 'root', '1:', **default_route)
+
+        # TODO: find how to set a good bandwitdh
+        default_bandwidth = {
+            'rate' : '1024mbit'
+        }
+
+        self.add_class('htb', '1:', '1:1', **default_bandwidth)
+
+        self.add_qdisc('netem', '1:1', '11:')
+
     def set_min_bandwidth(self, min_rate):
         """
         Sets a minimum bandwidth for the inteeface
@@ -423,12 +453,13 @@ class Interface:
 
         :param min_rate: The minimum rate that has to be set in kbit
         :type min_rate: int
-
         """
 
         # TODO: Check if there exists a delay and if exists, make sure it is handled in the right way
         # TODO: Check if this is a redundant condition
         # TODO: Let user set the unit
+        
+        error_handling.type_verify('min_rate', min_rate, 'int', int)
 
         if self.set_structure is False:
             self._set_structure()
@@ -452,13 +483,14 @@ class Interface:
 
         :param delay: The delay to be added in milliseconds
         :type delay: int
-
         """
 
         # TODO: It is not intuitive to add delay to an interface
         # TODO: Make adding delay possible without bandwidth being set
         # TODO: Check if this is a redundant condition
         # TODO: Let user set the unit
+        
+        error_handling.type_verify('delay', delay, 'int', int)
 
         if self.set_structure is False:
             self._set_structure()
@@ -481,9 +513,16 @@ class Interface:
         :param qdisc: The Queueing algorithm to be added
         :type qdisc: string
         """
+
         # TODO: Check if this is a redundant condition
+        
+        error_handling.type_verify('qdisc', qdisc, 'string', str)
+
         if self.set_structure is False:
             self._set_structure()
+
+        if self.ifb is None:
+            self._create_and_mirred_to_ifb(self.name)
 
         engine.change_qdisc(self.namespace.get_id(), self.ifb.get_id(), qdisc, '1:1', '11:', **kwargs)
 
@@ -516,9 +555,7 @@ class Veth:
         # Create the veth
         engine.create_veth(self.interface1.get_id(), self.interface2.get_id())
 
-
-
-    def get_interfaces(self):
+    def _get_interfaces(self):
         """
         Get tuple of endpoint interfaces
         """
@@ -536,15 +573,20 @@ def connect(ns1, ns2, interface1_name = '', interface2_name = ''):
     :r_type: (Interface, Interface)
     """
     
+    error_handling.type_verify('ns1', ns1, 'Namespace', [Node, Router])
+    error_handling.type_verify('ns2', ns2, 'Namespace', [Node, Router])
+    error_handling.type_verify('interface1_name', interface1_name, 'string', str)
+    error_handling.type_verify('interface2_name', interface2_name, 'string', str)
+
     # Create 2 interfaces
 
     if interface1_name == '' and interface2_name == '':
-        connections = number_of_connections(ns1, ns2)
+        connections = _number_of_connections(ns1, ns2)
         interface1_name = ns1.get_id() + '-' + ns2.get_id() + '-' + str(connections)
         interface2_name = ns2.get_id() + '-' + ns1.get_id() + '-' + str(connections)
 
     veth = Veth(ns1, ns2, interface1_name, interface2_name)
-    (int1, int2) = veth.get_interfaces()
+    (int1, int2) = veth._get_interfaces()
 
     ns1.add_interface(int1)
     ns2.add_interface(int2)
@@ -558,7 +600,7 @@ def connect(ns1, ns2, interface1_name = '', interface2_name = ''):
 
     return (int1, int2)
 
-def number_of_connections(ns1, ns2):
+def _number_of_connections(ns1, ns2):
     """
     This function gives the number of connections between the two namespaces
 

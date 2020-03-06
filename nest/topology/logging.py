@@ -6,17 +6,34 @@ from .. import engine
 from .id_generator import ID_GEN
 import atexit
 
+
+def _pretty_print_list_of_dict(list_of_dict, key):
+
+    counter = 0
+    for d in list_of_dict:
+            if d[key]:
+                print('[%s] %s' % (str(counter), d[key]))
+            counter += 1
+
 def _print_logs():
     """
     Print logs provided by engine.LOGS
     """
 
     if engine.log_level > 0:
-        for log in engine.LOGS:
-            print('[COMMAND] ' + log['cmd'])
-            print('[STDOUT] ' + log['stdout'])
-            print('[STDERR] ' + log['stderr'])
-            print('')
+
+        print('iproute2 commands run:\n')
+        _pretty_print_list_of_dict(engine.LOGS, 'cmd')
+        print()
+    
+        print('stdout:\n')
+        _pretty_print_list_of_dict(engine.LOGS, 'stdout')
+        print()
+
+        print('stderr:\n')
+        _pretty_print_list_of_dict(engine.LOGS, 'stderr')
+        
+
 
 def set_log_level(log_level):
     """
