@@ -6,7 +6,10 @@ from .. import engine
 from .id_generator import ID_GEN
 import atexit
 
-def print_logs():
+def _print_logs():
+    """
+    Print logs provided by engine.LOGS
+    """
 
     if engine.log_level > 0:
         for log in engine.LOGS:
@@ -16,6 +19,15 @@ def print_logs():
             print('')
 
 def set_log_level(log_level):
+    """
+    Set log level
+    0: No logging (default)
+    1: Log the iproute2 commands run
+    2: 1 + use user given names for iproute2 commands 
+
+    :param ns_name: The name of the namespace to be created
+    :type ns_name: string
+    """
 
     error_handling.type_verify('log level', log_level, 'int', int)
     
@@ -23,6 +35,6 @@ def set_log_level(log_level):
         raise ValueError('Invalid value error')
     elif 1 <= log_level <= 2:
         engine.log_level = log_level
-        atexit.register(lambda: print_logs())
+        atexit.register(lambda: _print_logs())
         if log_level == 2:
-            ID_GEN.disable_abstraction()
+            ID_GEN.disable_unique_id()

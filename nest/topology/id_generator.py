@@ -9,7 +9,11 @@ class ID_GEN:
     topology_id = ""
     counter = 0
 
-    abstraction = True
+    # If true, then ID_GEN.get_id will give back
+    # unique id
+    # Else, it will return back the original name
+    # is was invoked with
+    is_unique_id = True
 
     def __init__(self, topology_id, abstraction = True):
         """
@@ -29,19 +33,26 @@ class ID_GEN:
         NOTE: Update doc
         Geneartes unique id on each call
         """
-        if ID_GEN.abstraction:
+        if ID_GEN.is_unique_id:
             ID_GEN.counter += 1
             return ID_GEN.topology_id+"-"+str(ID_GEN.counter)
         else:
             return name
 
     @staticmethod
-    def enable_abstraction():
+    def enable_unique_id():
+        """
+        If disabled, enable generation of 
+        unique id
+        """
 
-        ID_GEN.abstraction = True
+        ID_GEN.is_unique_id = True
 
     @staticmethod
-    def disable_abstraction():
+    def disable_unique_id():
+        """
+        If enabled, disable generation of unique id
+        """
 
-        ID_GEN.abstraction = False
+        ID_GEN.is_unique_id = False
     

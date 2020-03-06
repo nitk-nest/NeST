@@ -21,6 +21,8 @@ def exec_subprocess(cmd, block = True, verbose = False):
     :param block: A flag to indicate whether the command 
                     should be executed asynchronously
     :type block: boolean
+    :param verbose: if commands run should be printed
+    :type verbose: boolean
     """
 
     # Logging

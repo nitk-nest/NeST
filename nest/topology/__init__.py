@@ -7,7 +7,17 @@ from . import logging
 from ..configuration import Configuration
 
 def setup():
+    """
+    Setup done when nest.topology is imported
 
+    1. Update configuration with SUDO user and
+       group id
+    2. Generate unique topology id for the
+       'to be created' topology
+    """
+
+    # Imported within setup so that client
+    # doesn't 'see' these packages
     import os, uuid
     from . import id_generator
     from .. import engine
