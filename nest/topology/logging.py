@@ -2,7 +2,7 @@
 # Copyright (c) 2019-2020 NITK Surathkal
 
 from . import error_handling
-from . import engine
+from .. import engine
 from .id_generator import ID_GEN
 import atexit
 

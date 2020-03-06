@@ -8,7 +8,7 @@ import sys
 
 sys.path.append('../')
 
-from nest import *
+from nest.topology import *
 
 ##############################
 #
@@ -60,4 +60,4 @@ r0.add_route('10.0.2.2', '10.0.1.2', r0_r1)
 
 print('Routing completed')
 
-n0_r0_htb = Qdisc(n0_r0, 'htb', 'root', '1:')
+# n0_r0_htb = Qdisc(n0_r0, 'htb', 'root', '1:')

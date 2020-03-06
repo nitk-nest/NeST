@@ -4,7 +4,7 @@
 #!/usr/bin/env python3
 
 import os, sys, subprocess
-from nest import run_nest
+from nest.cmd import run_nest
 
 if __name__ == '__main__':
     # Check if we have root access

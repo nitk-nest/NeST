@@ -2,8 +2,8 @@
 # Copyright (c) 2019-2020 NITK Surathkal
 
 import argparse, sys
-from . import statistics
-from . import engine
+from .. import statistics
+from .. import engine
 
 class Argument(argparse.Namespace):
     VERSION = '1.0.0'
