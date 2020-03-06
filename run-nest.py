@@ -11,6 +11,5 @@ if __name__ == '__main__':
     if os.geteuid() == 0:
         run_nest()
     else:
-        # Else ask for password and rerun as root
-        print("!!!Root access required!!!")
-        subprocess.call(['sudo', '-k', 'python3'] + sys.argv) # "sudo -k" always prompts for password
+        # Else complain
+        print("nest: Permission denied")
