@@ -1,13 +1,17 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
-##########################################
-# Note: This script should be run as root
-##########################################
-
 import os
 import subprocess
 
+# Contain the entire log of commands run with stdout
+# and stderr
+# NOTE: Will be useful to be imported as variable to
+# arguments.py if user requests more logging
+LOGS = []
+log_level = 0
+
+# NOTE: verbose or log_level?
 def exec_subprocess(cmd, block = True, verbose = False):
     """
     executes a command
@@ -23,9 +27,19 @@ def exec_subprocess(cmd, block = True, verbose = False):
     if verbose:
         print('[INFO] ' + cmd)
 
-    temp = subprocess.Popen(cmd.split())
+    proc = subprocess.Popen(cmd.split(), stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    # proc = subprocess.Popen(cmd.split())
     if block:
-        temp.communicate()
+        (stdout, stderr) = proc.communicate()
+        # proc.communicate()
+
+        if log_level > 0:
+            LOGS.append({
+                'cmd' : cmd,
+                'stdout' : stdout.decode(),
+                'stderr' : stderr.decode()
+            })
+
     else:
         pass
 

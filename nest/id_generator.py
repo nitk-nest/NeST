@@ -9,8 +9,11 @@ class ID_GEN:
     topology_id = ""
     counter = 0
 
-    def __init__(self, topology_id):
+    abstraction = True
+
+    def __init__(self, topology_id, abstraction = True):
         """
+        NOTE: Update doc
         Constructor to initialize the topology id
         for the class
 
@@ -18,11 +21,27 @@ class ID_GEN:
         :type topology_id: string
         """
         ID_GEN.topology_id = topology_id
+        ID_GEN.abstraction = True
 
     @staticmethod
-    def get_id():
+    def get_id(name):
         """
+        NOTE: Update doc
         Geneartes unique id on each call
         """
-        ID_GEN.counter += 1
-        return ID_GEN.topology_id+"-"+str(ID_GEN.counter)
+        if ID_GEN.abstraction:
+            ID_GEN.counter += 1
+            return ID_GEN.topology_id+"-"+str(ID_GEN.counter)
+        else:
+            return name
+
+    @staticmethod
+    def enable_abstraction():
+
+        ID_GEN.abstraction = True
+
+    @staticmethod
+    def disable_abstraction():
+
+        ID_GEN.abstraction = False
+    
