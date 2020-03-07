@@ -448,24 +448,24 @@ class Interface:
 
     def set_min_bandwidth(self, min_rate):
         """
-        Sets a minimum bandwidth for the inteeface
+        Sets a minimum bandwidth for the interface
         It is done by adding a htb qdisc and a rate parameter to the class
 
         :param min_rate: The minimum rate that has to be set in kbit
-        :type min_rate: int
+        :type min_rate: string
         """
 
         # TODO: Check if there exists a delay and if exists, make sure it is handled in the right way
         # TODO: Check if this is a redundant condition
         # TODO: Let user set the unit
         
-        error_handling.type_verify('min_rate', min_rate, 'int', int)
+        error_handling.type_verify('min_rate', min_rate, 'str', str)
 
         if self.set_structure is False:
             self._set_structure()
 
         min_bandwidth_parameter = {
-            'rate' : str(min_rate) + 'kbit'
+            'rate' : min_rate
         }
 
         # TODO: Check the created API
@@ -481,8 +481,8 @@ class Interface:
         Adds a delay to the link between two namespaces
         It is done by adding a delay in the interface
 
-        :param delay: The delay to be added in milliseconds
-        :type delay: int
+        :param delay: The delay to be added
+        :type delay: str
         """
 
         # TODO: It is not intuitive to add delay to an interface
@@ -490,13 +490,13 @@ class Interface:
         # TODO: Check if this is a redundant condition
         # TODO: Let user set the unit
         
-        error_handling.type_verify('delay', delay, 'int', int)
+        error_handling.type_verify('delay', delay, 'string', str)
 
         if self.set_structure is False:
             self._set_structure()
 
         delay_parameter = {
-            'delay' : str(delay) + 'ms'
+            'delay' : delay
         }
 
         engine.change_qdisc(self.namespace.get_id(),self.get_id(), 'netem', '1:1', '11:', **delay_parameter)
@@ -524,7 +524,27 @@ class Interface:
         if self.ifb is None:
             self._create_and_mirred_to_ifb(self.name)
 
-        engine.change_qdisc(self.namespace.get_id(), self.ifb.get_id(), qdisc, '1:1', '11:', **kwargs)
+        engine.delete_qdisc(self.namespace.get_id(), self.ifb.get_id(), '1:1', '11:')
+        engine.add_qdisc(self.namespace.get_id(), self.ifb.get_id(), qdisc, '1:1', '11:', **kwargs)
+        # engine.change_qdisc(self.namespace.get_id(), self.ifb.get_id(), qdisc, '1:1', '11:', **kwargs)
+
+    def set_attributes(self, bandwidth, delay, qdisc = None):
+        """
+        Add attributes bandwidth, delay and qdisc to interface
+
+        :param bandwidth: Packet outgoing rate
+        :type delay: string
+        :param delay: Delay before packet is sent out
+        :type delay: string
+        :param qdisc: The Queueing algorithm to be added to interface
+        :type qdisc: string
+        """
+
+        self.set_min_bandwidth(bandwidth)
+        self.set_delay(delay)
+
+        if qdisc is not None:
+            self.set_qdisc(qdisc)
 
 class Veth:
     """

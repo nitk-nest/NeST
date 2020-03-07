@@ -9,10 +9,14 @@ import atexit
 
 def _pretty_print_list_of_dict(list_of_dict, key):
 
+    # NOTE: Seems hacky but works
+    width = len(str(len(list_of_dict)))
+
     counter = 0
     for d in list_of_dict:
             if d[key]:
-                print('[%s] %s' % (str(counter), d[key]))
+                print('[{counter:{width}d}] {key}'.format(counter = counter, 
+                        width = width, key = d[key]))
             counter += 1
 
 def _print_logs():

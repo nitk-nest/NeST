@@ -357,7 +357,7 @@ def delete_qdisc(ns_name, dev_name, parent = '', handle = ''):
     if handle:
         handle = 'handle ' + handle
 
-    exec_subprocess('ip netns exec {} tc qdisc add dev {} {} {}'.format(ns_name, dev_name, parent, handle))
+    exec_subprocess('ip netns exec {} tc qdisc del dev {} {} {}'.format(ns_name, dev_name, parent, handle))
 
 
 def add_class(ns_name, dev_name, parent, qdisc, classid = '', **kwargs):
