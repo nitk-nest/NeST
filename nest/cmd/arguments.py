@@ -2,7 +2,7 @@
 # Copyright (c) 2019-2020 NITK Surathkal
 
 import argparse, sys
-from .. import statistics
+from .. import test
 from .. import engine
 
 class Argument(argparse.Namespace):
@@ -73,4 +73,4 @@ def run_tests(config_files):
     """
 
     for config_file in config_files:
-        statistics.parse_config(config_files)
+        test._parse_config_files(config_files)

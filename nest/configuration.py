@@ -157,6 +157,15 @@ class Configuration():
             Configuration.config[namespace.id]['stats_to_plot'] = prev_stats
 
     @staticmethod
+    def dump_config():
+        """
+
+        """
+
+        Configuration.sort_config()
+        return Configuration.config
+
+    @staticmethod
     def generate_config_file(filename=None):
         """
         Generate JSON config file for the given topology
