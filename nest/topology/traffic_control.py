@@ -54,6 +54,10 @@ class Qdisc:
 
         engine.add_qdisc(namespace_id, dev_id, qdisc, parent, handle, **kwargs)
 
+    # NOTE: This function doesn't work. Figure out why.
+    # def __del__(self):
+    #     engine.delete_qdisc(self.namespace_id, self.dev_id, self.parent, self.handle)
+
 
 class Class:
 
@@ -79,7 +83,7 @@ class Class:
 
         self.namespace_id = namespace_id
         self.dev_id = dev_id
-        self.qdisc = qdisc
+        self.qdisc = qdisc          # NOTE: should be renamed to knid
         self.parent = parent
         self.classid = classid
 

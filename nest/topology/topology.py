@@ -34,6 +34,9 @@ class Namespace:
         else:
             self.id = 'default'
 
+        # Add namespace to Configuration
+        Configuration.add_namespace(self.get_id(), self.get_name())
+
         # Initialize an empty list of interfaces to keep track of interfaces on it
         self.interface_list = []
 
@@ -96,6 +99,9 @@ class Namespace:
         interface._set_namespace(self)
         engine.add_int_to_ns(self.get_id(), interface.get_id())
 
+        # Add interface to Configuration
+        Configuration.add_interface(self.get_id(), interface.get_id(), interface.get_name())
+
 
 class Node(Namespace):
     """
@@ -108,8 +114,6 @@ class Node(Namespace):
         error_handling.type_verify('node_name', node_name, 'string', str)
 
         Namespace.__init__(self, node_name)
-
-        Configuration(self, "NODE")
     
     def enable_ip_forwarding(self):
         """
@@ -119,37 +123,6 @@ class Node(Namespace):
         """
 
         engine.en_ip_forwarding(self.id)
-
-    def install_server(self):
-        """
-        Install server on the node
-        """
-
-        Configuration._add_server(self)
-
-    def send_packets_to(self, dest_addr):
-        """
-        Send packets from the node to `dest_addr`
-
-        :param dest_addr: Address to send packets to
-        :type dest_addr: Address or string
-        """
-
-        if type(dest_addr) == str:
-            dest_addr = Address(dest_addr)
-
-        Configuration._add_client(self)
-        Configuration._set_destination(self, dest_addr.get_addr(without_subnet=True))
-    
-    def add_stats_to_plot(self, stat):
-        """
-        :param stat: statistic to be plotted
-        :type stat: string
-        """
-
-        error_handling.type_verify('stat', stat, 'string', str)
-
-        Configuration._add_stats_to_plot(self, stat)
 
 class Router(Namespace):
     """
@@ -163,19 +136,8 @@ class Router(Namespace):
 
         Namespace.__init__(self, router_name)
 
-        # Add Rounter to configuration
-        Configuration(self, "ROUTER")
-
         # Enable forwarding
         engine.en_ip_forwarding(self.id)
-
-    def add_stats_to_plot(self, stat):
-        """
-        :param stat: statistic to be plotted
-        :type stat: string
-        """
-
-        Configuration._add_stats_to_plot(self, stat)
 
 class Interface:
     
@@ -199,7 +161,7 @@ class Interface:
 
         self.name = interface_name
         self.id = ID_GEN.get_id(interface_name)
-        self.namespace = Namespace()
+        self.namespace = None
         self.pair = None
         self.address = None
 
@@ -238,6 +200,13 @@ class Interface:
         """
 
         return self.id
+
+    def get_name(self):
+        """
+        Getter for getting name of interface
+        """
+
+        return self.name
 
     def _set_namespace(self, namespace):
         """
@@ -321,14 +290,35 @@ class Interface:
 
         # TODO: Verify type of **kwargs
 
+        # NOTE: Not necessary since API is not exposed to User for now
         error_handling.type_verify('qdisc', qdisc, 'string', str)
         error_handling.type_verify('parent', parent, 'string', str)
         error_handling.type_verify('handle', handle, 'string', str)
 
         self.qdisc_list.append(traffic_control.Qdisc(self.namespace.get_id(), self.get_id(), qdisc, parent, handle, **kwargs))
 
+        # Add qdisc to configuration
+        Configuration.add_qdisc(self.namespace.get_id(), self.get_id(), qdisc, handle, parent = parent)
 
         return self.qdisc_list[-1]
+
+    def delete_qdisc(self, handle):
+        """
+        Delete qdisc (Queueing Discipline) from this interface
+
+        :param handle: Handle of the qdisc to be deleted
+        :type handle: string
+        """
+
+        # Handle this better by using the destructor in traffic-control
+        counter = 0
+        for qdisc in self.qdisc_list:
+            if qdisc.handle == handle:
+                engine.delete_qdisc(qdisc.namespace_id, qdisc.dev_id, qdisc.parent, qdisc.handle)
+                Configuration.delete_qdisc(self.namespace.get_id(), self.get_id(), handle)
+                self.qdisc_list.pop(counter)
+                break
+            counter += 1
 
     def add_class(self, qdisc, parent = 'root', classid = '', **kwargs):
         """
@@ -381,7 +371,8 @@ class Interface:
         # TODO: Verify type of parameters
         # TODO: Reduce arguements to the engine functions by finding parent and handle automatically
         
-        self.filter_list.append(traffic_control.Filter(self.namespace.get_id(), self.get_id(), protocol, priority, filtertype, flowid, parent, handle, **kwargs))
+        self.filter_list.append(traffic_control.Filter(self.namespace.get_id(), self.get_id(), protocol, 
+            priority, filtertype, flowid, parent, handle, **kwargs))
 
         return self.filter_list[-1]
 
@@ -392,16 +383,22 @@ class Interface:
         Assumes the interface has already invoked _set_structure()
 
         :param dev_name: The interface to which the ifb was added
-        :type dev_naem: string
+        :type dev_name: string
         """
 
         self.ifb = Interface('ifb-' + dev_name)
-        self.ifb._set_namespace(self.namespace)
-        engine.setup_ifb(self.ifb.get_namespace().get_id(), self.ifb.get_id())
+        engine.create_ifb(self.ifb.get_id())
+
+        # Add ifb to namespace
+        self.namespace.add_interface(self.ifb)
+
+        # Set interface up
+        self.ifb.set_mode('UP')
 
         default_route = {
             'default' : '1'
         }
+
         # TODO: find how to set a good bandwitdh
         default_bandwidth = {
             'rate' : '1024mbit'
@@ -471,11 +468,6 @@ class Interface:
         # TODO: Check the created API
         engine.change_class(self.namespace.get_id(), self.get_id(), '1:', 'htb', '1:1', **min_bandwidth_parameter)
 
-
-        # engine.exec_subprocess('ip netns exec {} tc class change dev {} parent {}' \
-        #     ' classid {} htb rate {}'.format(self.get_namespace().get_id(), self.get_id(), 
-        #     '1:', '1:1', min_rate))
-
     def set_delay(self, delay):
         """
         Adds a delay to the link between two namespaces
@@ -500,12 +492,6 @@ class Interface:
         }
 
         engine.change_qdisc(self.namespace.get_id(),self.get_id(), 'netem', '1:1', '11:', **delay_parameter)
-
-        # TODO: Verify created API
-        # engine.exec_subprocess('ip netns exec {} tc qdisc change dev {} parent {}' \
-        #     ' handle {} netem delay {}'.format(self.get_namespace().get_id(), self.get_id(), 
-        #     '1:1', '11:', delay))
-
         
     def set_qdisc(self, qdisc, **kwargs):
         """
@@ -524,9 +510,8 @@ class Interface:
         if self.ifb is None:
             self._create_and_mirred_to_ifb(self.name)
 
-        engine.delete_qdisc(self.namespace.get_id(), self.ifb.get_id(), '1:1', '11:')
-        engine.add_qdisc(self.namespace.get_id(), self.ifb.get_id(), qdisc, '1:1', '11:', **kwargs)
-        # engine.change_qdisc(self.namespace.get_id(), self.ifb.get_id(), qdisc, '1:1', '11:', **kwargs)
+        self.ifb.delete_qdisc('11:')
+        self.ifb.add_qdisc(qdisc, '1:1', '11:', **kwargs)
 
     def set_attributes(self, bandwidth, delay, qdisc = None):
         """
@@ -602,8 +587,8 @@ def connect(ns1, ns2, interface1_name = '', interface2_name = ''):
 
     if interface1_name == '' and interface2_name == '':
         connections = _number_of_connections(ns1, ns2)
-        interface1_name = ns1.get_id() + '-' + ns2.get_id() + '-' + str(connections)
-        interface2_name = ns2.get_id() + '-' + ns1.get_id() + '-' + str(connections)
+        interface1_name = ns1.get_name() + '-' + ns2.get_name() + '-' + str(connections)
+        interface2_name = ns2.get_name() + '-' + ns1.get_name() + '-' + str(connections)
 
     veth = Veth(ns1, ns2, interface1_name, interface2_name)
     (int1, int2) = veth._get_interfaces()

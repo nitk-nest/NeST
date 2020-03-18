@@ -9,6 +9,7 @@ import sys
 sys.path.append('../')
 
 from nest.topology import *
+from nest.test import *
 
 ################################################
 # Topology
@@ -19,7 +20,7 @@ from nest.topology import *
 
 ### Set log level ###
 
-logging.set_log_level(2)
+# logging.set_log_level(2)
 
 ### Create Nodes ###
 
@@ -72,3 +73,12 @@ eth_r2p2.set_attributes('100mbit', '5ms')
 # Bottleneck link
 eth_r1r2.set_attributes('10mbit', '40ms', 'pie')
 eth_r2r1.set_attributes('10mbit', '40ms')
+
+### Add test to run ###
+
+test = Test('tcp_4up')
+test.add_flow(peer1, peer2, eth_p2r2.get_address(), 0, 30, 4)
+
+### Run the test! ###
+
+test.run()

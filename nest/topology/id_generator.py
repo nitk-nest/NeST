@@ -15,9 +15,8 @@ class ID_GEN:
     # is was invoked with
     is_unique_id = True
 
-    def __init__(self, topology_id, abstraction = True):
+    def __init__(self, topology_id):
         """
-        NOTE: Update doc
         Constructor to initialize the topology id
         for the class
 
@@ -25,7 +24,6 @@ class ID_GEN:
         :type topology_id: string
         """
         ID_GEN.topology_id = topology_id
-        ID_GEN.abstraction = True
 
     @staticmethod
     def get_id(name):

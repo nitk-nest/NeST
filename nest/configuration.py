@@ -1,235 +1,271 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
-import time
-import json
-import os, pwd, grp
-import copy
-# import atexit
+# Keep track of all information required to provide 
+# services by module. It's essentially a fancy global
+# variable :P
 
+# Information kept track are of
+# 1. User
+# 2. Topology
+# 3. Tests to be run
+
+class User():
+    """
+    User info like user_id and group_id stored here.
+    """
+
+    user_id = ''
+    group_id = ''
+
+    def __init__(self, user_id, group_id):
+        """
+        Initialize user info
+
+        :param user_id: User ID
+        :type user_id: int
+        :param group_id: User Group ID
+        :type group_id: int
+        """
+        
+        User.user_id = user_id
+        User.group_id = group_id
 class Configuration():
-    """
-    Static class responsible for creating JSON 
-    configuration file for a given topology
-    """
 
-    # static dict to hold all the Configuration objects
-    config = {}
+    # config contains the info about topology created
+    # and the tests to be run
+    config = {
+        'namespaces': [],
+        'tests': []
+    }
 
-    # User and group ID of user running `nest`
-    _user_id = ''
-    _group_id = ''
+    # Pointer to config['namespaces']
+    # Used for efficiency
+    namespaces_pointer = {}
 
-    def __init__(self, namespace, host_type = '', test='', destination='', stats_to_plot=[]):
+    def __init__():
+        pass
+
+    @staticmethod
+    def add_namespace(id, ns_name):
         """
-        Constructor which adds namespace to `Configuration.config` 
-        static object
+        Add namespace to config
 
-        :param namespace: Namespace object
-        :type namespace: Namespace
-        :param host_type: 'Node' or 'Router'
-        :type host_type: string
-        :param test: Test to be run on the namespace
-        :type test: string
-
-        **TODO**: Add comments to other parameters
+        :param id: namepspace id
+        :type id: string
+        :param ns_name: namespace name
+        :type ns_name: string
         """
 
-        self.namespace_name = namespace.name
-        self.host_type = host_type
-        self.test = test
-        self.destination = destination
-        self.stats_to_plot = stats_to_plot
+        namespaces = Configuration.get_namespaces()
 
-        Configuration.config[namespace.id] = self.__dict__
+        namespaces.append({
+            'id': id,
+            'name': ns_name,
+            'interfaces': []
+        })
+
+        Configuration.namespaces_pointer[id] = {
+            'pos': len(namespaces)-1,
+            'interfaces_pointer': {}
+        }
     
     @staticmethod
-    def _get_host_type(namespace):
+    def add_interface(ns_id, id, int_name):
         """
-        Getter for host_type of a namespace
+        Add interface to config
 
-        :param namespace: Get host type of `this` namespace
-        :type namespace: Namespace
-
-        :return: host_type of namespace
-        :r_type: string
+        :param ns_id: namepspace id
+        :type ns_id: string
+        :param id: interface id
+        :type id: string
+        :param int_name: interface name
+        :type id: string
         """
 
-        return Configuration.config[namespace.id]['host_type']
+        # TODO: classes not added yet to list
+        interfaces = Configuration.get_interfaces(ns_id)
+
+        interfaces.append({
+            'id': id,
+            'name': int_name,
+            'qdiscs': []
+        }) 
+
+        Configuration.namespaces_pointer[ns_id]['interfaces_pointer'][id] = {
+            'pos': len(interfaces)-1
+        }
 
     @staticmethod
-    def _set_host_type(namespace, new_host_type):
+    def add_qdisc(ns_id, int_id, kind, handle, parent = ''):
         """
-        Update host_type of a namespace in `config`
+        Add qdisc to config
 
-        :param new_host_type: New host type to update to
-        :type new_host_type: string
+        :param ns_id: namepspace id
+        :type ns_id: string
+        :param int_id: interface id
+        :type int_id: string
+        :param kind: qdisc kind
+        :type kind: string
+        :param handle: qdisc handle
+        :type handle: string
+        :param parent: qdisc parent
+        :type parent: string
         """
 
-        Configuration.config[namespace.id]['host_type'] = new_host_type
+        qdiscs = Configuration.get_qdiscs(ns_id, int_id)
+        qdiscs.append({
+            'kind': kind,
+            'handle': handle,
+            'parent': parent
+        })
 
     @staticmethod
-    def _add_server(namespace):
+    def delete_qdisc(ns_id, int_id, handle):
         """
-        Add server application to namespace in Configuration
+        Delete qdisc from config
 
-        :param namespace: Add server application in this `namespace`
-        :type namespace: Namespace
+        :param ns_id: namepspace id
+        :type ns_id: string
+        :param int_id: interface id
+        :type int_id: string
+        :param handle: qdisc handle
+        :type handle: string
         """
 
-        host_type = Configuration._get_host_type(namespace)
+        qdiscs = Configuration.get_qdiscs(ns_id, int_id)
+        counter = 0
+        for qdisc in qdiscs:
+            if qdisc['handle'] == handle:
+                qdiscs.pop(counter)
+                break
+            counter += 1
+
+    @staticmethod
+    def add_test(name, src_ns, dst_ns, dst_addr, start_t, stop_t, n_flows):
+        """
+        Add test to config
+
+        :param name: test name
+        :type name: string
+        :param src_ns: source namespace
+        :type src_ns: string
+        :param dst_ns: destination namespace
+        :type dst_ns: string
+        :param start_t: Start time
+        :type start_t: int
+        :param stop_t: Stop time
+        :type stop_t: int
+        :param n_flows: number of flows
+        :type n_flows: int
+        """
         
-        if host_type == 'CLIENT':
-            host_type = 'SERVER_' + host_type
-        else:
-            host_type = 'SERVER'
+        tests = Configuration.get_tests()
+        tests.append({
+            'name': name,
+            'src_ns': src_ns,
+            'dst_ns': dst_ns,
+            'dst_addr': dst_addr,
+            'start_t': start_t,
+            'stop_t': stop_t,
+            'n_flows': n_flows
+        })
 
-        Configuration._set_host_type(namespace, host_type)
-
-    @staticmethod
-    def _add_client(namespace):
-        """
-        Add client application to namespace in Configuration
-
-        :param namespace: Add client application in this `namespace`
-        :type namespace: Namespace
-        """
-
-        host_type = Configuration._get_host_type(namespace)
-        
-        if host_type == 'SERVER':
-            host_type = host_type + "_CLIENT" 
-        else:
-            host_type = 'CLIENT'
-
-        Configuration._set_host_type(namespace, host_type)
 
     @staticmethod
-    def _set_destination(namespace, new_destination):
-        """
-        Update destination of a namespace in `config`
-
-        :param namespace: Update destination of this `namespace`
-        :type namespace: Namespace
-        :param new_destination: New destination to update to
-        :type new_destination: string
-        """
-
-        Configuration.config[namespace.id]['destination'] = new_destination
-
-    @staticmethod
-    def _set_user_id(user_id):
-        """
-        Set current user id
-
-        :param user_id: user id of current user
-        :type current_user: int
-        """
-
-        Configuration._user_id = user_id
-
-    @staticmethod
-    def _set_group_id(group_id):
-        """
-        Set current group id
-
-        :param current_user: group id of current user
-        :type current_user: int
-        """
-
-        Configuration._group_id = group_id
-
-    @staticmethod
-    def _add_stats_to_plot(namespace, stat):
-        """
-        Add stats required to be plotted
-
-        :param namespace: router or client namespace
-        :type namespace: Node or Router
-        :param stat: statistic to be plotted
-        :type stat: string
-        """
-
-        prev_stats = copy.deepcopy(Configuration.config[namespace.id]['stats_to_plot'])
-        prev_stats.append(stat)
-        # stats can be plotted only for client or router
-        if Configuration._get_host_type(namespace) != 'SERVER':
-            Configuration.config[namespace.id]['stats_to_plot'] = prev_stats
-
-    @staticmethod
-    def dump_config():
-        """
-
-        """
-
-        Configuration.sort_config()
+    def get_config():
         return Configuration.config
 
     @staticmethod
-    def generate_config_file(filename=None):
+    def get_tests():
+        return Configuration.config['tests']
+
+    @staticmethod
+    def get_namespaces():
+        return Configuration.config['namespaces']
+
+    @staticmethod
+    def get_namespace(ns_id, with_interfaces_pointer = False):
         """
-        Generate JSON config file for the given topology
+        Get namespace given it's id
 
-        :param filename: File name of config file
-        :type filename: string
+        :param ns_id: namespace id
+        :type ns_id: string
+        :param with_interfaces_pointer: If should return interfaces_pointer for the namespace
+        :type with_interfaces_pointer: bool
         """
 
-        # generate a file name based on timestamp
-        Configuration.sort_config()
-        if filename is None:
-            filename = 'config-' + time.strftime('%d-%m-%Y-%H:%M:%S') + '.json'
-        # check if filename has json extension
-        elif filename[-5:] != '.json':
-            filename += '.json'
+        namespaces = Configuration.get_namespaces()
+        namespace_pointer = Configuration.namespaces_pointer[ns_id]
+        namespace = namespaces[namespace_pointer['pos']]
 
+        if with_interfaces_pointer:
+            return (namespace_pointer['interfaces_pointer'], namespace)
+        else:
+            return namespace
+
+    @staticmethod
+    def get_interfaces(ns_id):
+        """
+        Get all interfaces in the namespace
+
+        :param ns_id: namespace id
+        :type ns_id: string
+        """
+
+        namespace = Configuration.get_namespace(ns_id)
+        interfaces = namespace['interfaces']
         
-        json_config = json.dumps(Configuration.config, indent=4)
+        return interfaces
 
-        with open(filename, 'w') as f:
-            f.write(json_config)
-        
-        # Change file permissions to that of user
-        user_id = Configuration._user_id
-        group_id = Configuration._group_id
-        os.chown(filename, user_id, group_id)
-
-    def sort_config():
+    @staticmethod
+    def get_interface(ns_id, int_id):
         """
-        Sorts the configuration dict such that all the server
-        devices are in the start of the file. This is required 
-        as all the servers are to be run first 
+        Get interface in namespace `ns_id` with interface
+        `int_id`
+
+        :param ns_id: namespace id
+        :type ns_id: string
+        :param int_id: interface id
+        :type int_id: string
         """
-        config_copy = Configuration.config
-        config_list = [(k, v) for k, v in config_copy.items()]
-        # print(config_list[0][1])
-        start = 0
-        end = len(config_list) - 1
-        count = 0
 
-        while start < end:
-            if config_list[start][1]['host_type'] == 'SERVER' and config_list[end][1]['host_type'] != 'SERVER':
-                start = start + 1
-                end = end -1
-                continue
+        (interfaces_pointer, namespace) = Configuration.get_namespace(ns_id, with_interfaces_pointer=True)
+        interfaces = Configuration.get_interfaces(ns_id)
+        interface_pointer = interfaces_pointer[int_id]
+        interface = interfaces[interface_pointer['pos']]
 
-            if config_list[start][1]['host_type'] == 'SERVER':
-                start = start + 1
-            elif config_list[end][1]['host_type'] != 'SERVER':
-                end = end - 1
-            else:
-                temp = config_list[start]
-                config_list[start] = config_list[end]
-                config_list[end] = temp
-                start = start + 1
-                end = end - 1
+        return interface
 
-        Configuration.config = dict(config_list)
+    @staticmethod
+    def get_qdiscs(ns_id, int_id):
+        """
+        Get qdiscs in namespace `ns_id` with interface
+        `int_id`
 
+        :param ns_id: namespace id
+        :type ns_id: string
+        :param int_id: interface id
+        :type int_id: string
+        """
 
-# Generate json dump on exit
+        interface = Configuration.get_interface(ns_id, int_id)
+        qdiscs = interface['qdiscs']
 
-# NOTE: This is not a good solution since a config file is generated
-# everytime nest command is run. Even if a topology file is not given
-# as input
+        return qdiscs
 
-# atexit.register(lambda : Configuration.generate_config_file())
+    def dump():
+        """
+        Dump generated config. (for debugging purposes)
+        """
+
+        import json
+
+        print('Config')
+        print('------')
+        print(json.dumps(Configuration.config, indent = 4))
+
+        # print()
+        # print('Pointers')
+        # print('--------')
+        # print(json.dumps(Configuration.namespaces_pointer, indent = 4))
