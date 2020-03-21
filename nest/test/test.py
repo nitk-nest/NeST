@@ -50,7 +50,7 @@ class Test():
         Run the test
         """
 
-        Configuration.dump()
-        # run_tests.parse_config()
+        # Configuration.dump()
+        run_tests.parse_config()
         
 

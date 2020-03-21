@@ -5,8 +5,11 @@ import re
 import subprocess
 import json
 import time
-from . import utils
 import numpy as np
+
+from . import utils
+import nest.topology.id_generator as id_generator
+from .results import SsResults
 
 INTERVAL = 0.2
 RUN_TIME = 60
@@ -44,7 +47,7 @@ def parse(ns_name, param_list, destination_ip):
 
 	return
 	"""
-	command = 'ip netns exec {} ss -i dst {}:{}'.format(ns_name, destination_ip, '12865') #NOTE: Assumed that netserver runs on default port
+	command = 'ip netns exec {} ss -i {} dst {}'.format(ns_name, 'dport != 12865 and sport != 12865' , destination_ip) #NOTE: Assumed that netserver runs on default port
 	json_stats = {}
 	cur_time = 0.0
 
@@ -58,64 +61,47 @@ def parse(ns_name, param_list, destination_ip):
 
 
 		# a dictionary where stats are stored with param name as key
-		stats_dict = {}
+		stats_dict_list = []
 		for param in param_list:
 			pattern = r'\s' + re.escape(param) + r'[\s:]\w+\.?\w*(?:[\/\,]\w+\.?\w*)*\s'
 
 			# result list stores all the string that is matched by the `pattern`
 			result_list = re.findall(pattern, stats)
 
+			#fill the empty list with empty dicts
+			if len(stats_dict_list) == 0:
+				stats_dict_list = [{} for i in range(len(result_list))]
+
+
 			# pattern to match the required param in result_list
 			pattern = r'^' + re.escape(param) + r'[:\s]'
 			val = ''
-			for result in result_list:
-				result = result.strip()
+			for i in range(len(result_list)):
+				result = result_list[i].strip()
 				if re.search(pattern, result):
 					val = re.sub(pattern, '', result)
 					# remove the units at the end
 					val = re.sub(r'[A-Za-z]', '', val)
+				try:
+					# rtt has both avg and dev rtt separated by a /
+					if param == 'rtt':
+						avg_rtt = val.split('/')[0]
+						dev_rtt = val.split('/')[1]
+						stats_dict_list[i]['rtt'] = avg_rtt
+						stats_dict_list[i]['dev_rtt'] = dev_rtt
+					else:
+						stats_dict_list[i][param] = val
+				except:
+					pass
 
-			
-			try:
-				# rtt has both avg and dev rtt separated by a /
-				if param == 'rtt':
-					avg_rtt = val.split('/')[0]
-					dev_rtt = val.split('/')[1]
-					stats_dict['rtt'] = avg_rtt
-					stats_dict['dev_rtt'] = dev_rtt
-				else:
-					stats_dict[param] = val
-			except:
-				pass
-
-		# a dictionary to store the stats_dict with timestamp as key
+		# a dictionary to store the stats_dict_list with timestamp as key
 		time_dict = {}
-		time_dict[cur_time] = stats_dict
+		time_dict[cur_time] = stats_dict_list
 		stats_list.append(time_dict)
 		time.sleep(INTERVAL)
 		cur_time = cur_time + INTERVAL
 
-	# convert the stats list to a json array
-	json_stats = json.dumps(stats_list, indent=4)
-
-	output_to_file(json_stats)
-
-
-def output_to_file(json_stats):
-	"""
-	outputs statistics to a json file
-
-	:param json_stats: parsed ss statistics
-	:type json_stats: json
-	"""
-
-	timestamp = time.strftime("%d-%m-%Y-%H:%M:%S")
-	filename = str(timestamp) + ' ss-parse-results.json'
-	with open(filename, 'w') as f:
-		f.write(json_stats)
-
-	if len(STATS_TO_PLOT) > 0:
-		parse_and_plot(filename, STATS_TO_PLOT)
+	SsResults.add_result(ns_name, stats_list)
 
 
 def parse_and_plot(filename, parameters):
@@ -150,7 +136,6 @@ def parse_and_plot(filename, parameters):
 			for param, value in val.items():
 				if param in parameters:
 					try:
-						print(param_map[param], index)
 						y[param_map[param], index] = float(value)
 					except:
 						y[param_map[param], index] = 0.0
@@ -162,12 +147,16 @@ def parse_and_plot(filename, parameters):
 # TODO: Integrate with nest
 
 
-def parse_ss(ns_name, destination_ip, stats_to_plot, run_time):
+def parse_ss(ns_name, destination_ip, stats_to_plot, start_time, run_time):
 	param_list = ['cwnd', 'rwnd', 'rtt', 'ssthresh', 'rto', 'delivery_rate']
 	global RUN_TIME
 	RUN_TIME = run_time
 	global STATS_TO_PLOT 
 	STATS_TO_PLOT = stats_to_plot
+	
+	if(start_time != 0):
+		time.sleep(start_time)
+
 	parse(ns_name, param_list, destination_ip)
 
 
