@@ -65,26 +65,29 @@ class Namespace:
 
         return self.name
 
-    def add_route(self, dest_addr, next_hop_addr, via_interface):
+    def add_route(self, dest_addr, via_interface , next_hop_addr = ''):
         """
         Adds a route to the routing table of the namespace with
         the given parameters
 
-        :param dest_addr: Destination ip address of the namespace
+        :param dest_addr: Destination ip address of the namespace or DEFAULT for all adresses
         :type dest_addr: Address or string
-        :param next_hop_address: ip address of the next hop router
-        :type next_hop_address: Address or string
         :param via_interface: interface on the namespace used to route
         :type via_interface: Interface
+        :param next_hop_address: ip address of the next hop router
+        :type next_hop_address: Address or string
         """
 
         if type(dest_addr) == str:
             dest_addr = Address(dest_addr)
 
-        if type(next_hop_addr) == str:
-            next_hop_addr = Address(next_hop_addr)
+        if next_hop_addr != '':
+            if type(next_hop_addr) == str:
+                next_hop_addr = Address(next_hop_addr)
+        else :
+            next_hop_addr = via_interface.get_pair().get_address()  
         
-        engine.add_route(self.id, dest_addr.get_addr(without_subnet=True), next_hop_addr.get_addr(without_subnet=True), 
+        engine.add_route(self.id, dest_addr.get_addr(with_subnet=False), next_hop_addr.get_addr(with_subnet=False), 
             via_interface.get_id())
         
     def add_interface(self, interface):

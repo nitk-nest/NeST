@@ -33,12 +33,12 @@ r_n1.set_address('10.1.1.2/24')
 r_n2.set_address('10.1.2.1/24')
 n2_r.set_address('10.1.2.2/24')
 
-n1.add_route('DEFAULT', '10.1.1.2', n1_r)
-n2.add_route('DEFAULT', '10.1.2.1', n2_r)
+n1.add_route('DEFAULT', n1_r)
+n2.add_route('DEFAULT', n2_r)
 
-test = Test('tcp_1up')
-test.add_flow(n1, n2, n2_r.get_address(), 0, 20, 1)
-test.run()
+# test = Test('tcp_1up')
+# test.add_flow(n1, n2, n2_r.get_address(), 0, 20, 1)
+# test.run()
  
 # Configuration.generate_config_file(filename='PRP2')
 

@@ -33,15 +33,15 @@ class Address:
             ipaddress.ip_address(addr_str)      # raises exception in invalid case
             self.ip_addr = addr_str+'/32'
     
-    def get_addr(self, without_subnet=False):
+    def get_addr(self, with_subnet=True):
         """
         Getter for ip_addr
         """
 
-        if without_subnet:
-            return self.ip_addr.split('/')[0]
-        else:
+        if with_subnet:
             return self.ip_addr
+        else:
+            return self.ip_addr.split('/')[0]
 
 class Subnet:
     """

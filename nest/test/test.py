@@ -42,7 +42,7 @@ class Test():
             destination_address = Address(destination_address)
 
         # TODO: Verify if source_node and destination_node is actually a node
-        Configuration.add_test(self.name, source_node.get_id(), destination_node.get_id(), destination_address.get_addr(without_subnet=True),
+        Configuration.add_test(self.name, source_node.get_id(), destination_node.get_id(), destination_address.get_addr(with_subnet=False),
             start_time, stop_time, number_of_flows)
 
     def run(self):
