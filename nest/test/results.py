@@ -3,18 +3,21 @@
 
 import json
 import time
-from multiprocessing import Manager
+from multiprocessing import Manager, Lock, Queue
 
+# Shared varibles to aggregate results
+ss_results_q = Queue()
+ss_results_q.put({})
+ss_lock = Lock()
+
+netperf_results_q = Queue()
+netperf_results_q.put({})
+netperf_lock = Lock()
 
 class SsResults:
     """
     This class aggregates the ss stats from the entire test environment
     """
-
-    # a shared dict for the ss processes to add their results
-    # the dict is of the form { ns_name: list of ss statistics for each flow in the namespace }
-    ss_results = Manager().dict()  
-
     @staticmethod
     def add_result(ns_name, result):
         """
@@ -24,18 +27,23 @@ class SsResults:
         :param result: parsed ss stats
         :type result: dict
         """
-        if ns_name in SsResults.ss_results:
-            SsResults.ss_results[ns_name].append(result)
-        else:
-            SsResults.ss_results[ns_name] = [result]
-
+        if ss_lock:
+            item = ss_results_q.get()
+            if ns_name not in item:
+                item[ns_name] = [result]
+            else:
+                temp = item[ns_name]
+                temp.append(result)
+                item[ns_name] = temp
+            ss_results_q.put(item)
 
     @staticmethod
     def output_to_file():
         """
         Outputs the aggregated ss stats to file
         """
-        json_stats = json.dumps(SsResults.ss_results.copy(), indent=4)
+        ss_results = ss_results_q.get()
+        json_stats = json.dumps(ss_results, indent=4)
         timestamp = time.strftime("%d-%m-%Y-%H:%M:%S")
         filename = str(timestamp) + ' ss-parse-results.json'
         with open(filename, 'w') as f:
@@ -45,10 +53,6 @@ class NetperfResults:
     """
     This class aggregates the netperf stats from the entire test environment
     """
-
-    
-    netperf_results = Manager().dict()
-
     @staticmethod
     def add_result(interface_name, result):
         """
@@ -59,14 +63,24 @@ class NetperfResults:
         :param result: parsed netperf stats
         :type result: dict
         """
-        NetperfResults.netperf_results[interface_name] = result
+        if netperf_lock:    
+            item = netperf_results_q.get()
+            if interface_name not in item:
+                item[interface_name] = [result]
+            else:
+                temp = item[interface_name]
+                temp.append(result)
+                item[interface_name] = temp
+
+            netperf_results_q.put(item)
 
     @staticmethod
     def output_to_file():
         """
         Outputs the aggregated netperf stats to file
         """
-        json_stats = json.dumps(NetperfResults.netperf_results.copy(), indent=4)
+        netperf_results = netperf_results_q.get()
+        json_stats = json.dumps(netperf_results, indent=4)
         timestamp = time.strftime("%d-%m-%Y-%H:%M:%S")
         filename = str(timestamp) + ' netperf-parse-results.json'
         with open(filename, 'w') as f:

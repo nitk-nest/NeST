@@ -54,13 +54,25 @@ def _parse_config_from_dict(config):
     workers = []
     tests = config['tests']
 
+    ss_run = {}
+    
     for test in tests:
         run_netserver(test['dst_ns'])
         # create new processes to be run simultaneously
         # here Process is used instead of Thread to take advantage to multiple cores
         for i in range(test['n_flows']):
             workers.append(Process(target=run_netperf, args=(test['src_ns'], test['dst_addr'], test['start_t'], test['stop_t']-test['start_t'])))
-        workers.append(Process(target=parse_ss, args=(test['src_ns'], test['dst_addr'], [], test['start_t'], test['stop_t'] - test['start_t'])))
+        # workers.append(Process(target=parse_ss, args=(test['src_ns'], test['dst_addr'], [], test['start_t'], test['stop_t'] - test['start_t'])))
+        
+        # Find the start time and stop time to run ss command in `src_ns` to a `dst_addr`
+        if (test['src_ns'], test['dst_addr']) not in ss_run:
+            ss_run[(test['src_ns'], test['dst_addr'])] = (test['start_t'], test['stop_t'])
+        else:
+            (min_start, max_stop) = ss_run[(test['src_ns'], test['dst_addr'])]
+            ss_run[(test['src_ns'], test['dst_addr'])] = (min(min_start, test['start_t']), max(max_stop, test['stop_t']))
+
+    for key, value in ss_run.items():
+        workers.append(Process(target=parse_ss, args=(key[0], key[1], [], value[0], value[1] - value[0])))
 
     # start all the processes
     for worker in workers:

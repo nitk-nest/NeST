@@ -83,18 +83,18 @@ def parse_stats(raw_stats, ns_name):
                    for stat in throughput_stats]
 
     # pattern that matches the netperf output corresponding to interval
-    interval_pattern = r'NETPERF_INTERVAL\[\d+]=\d+\.\d+'
-    interval_stats = re.findall(interval_pattern, raw_stats)
+    timestamp_pattern = r'NETPERF_ENDING\[\d+]=\d+\.\d+'
+    timestamp_stats = re.findall(timestamp_pattern, raw_stats)
     # pattern to extract interval value from the string
-    extract_interval_pattern = r'NETPERF_INTERVAL\[\d+]='
+    extract_interval_pattern = r'NETPERF_ENDING\[\d+]='
     # convert the values to float
-    intervals = [float(re.sub(extract_interval_pattern, '', stat))
-                 for stat in interval_stats]
+    timestamps = [float(re.sub(extract_interval_pattern, '', stat))
+                 for stat in timestamp_stats]
 
-    # convert intervals to timestamps by adding previous values in the list
-    timestamps = list(intervals)
-    for i in range(1, len(timestamps)):
-        timestamps[i] = timestamps[i] + timestamps[i-1]
+    # # convert intervals to timestamps by adding previous values in the list
+    # timestamps = list(timestamps)
+    # for i in range(1, len(timestamps)):
+    #     timestamps[i] = timestamps[i] + timestamps[i-1]
 
     # a dict of the form { interval: throughput }
     stats_dict = {}
@@ -107,9 +107,6 @@ def parse_stats(raw_stats, ns_name):
     interface_name_exp = re.search(interface_pattern, raw_stats).group()
     extract_interface_pattern = r'LOCAL_INTERFACE_NAME='
     interface_name = re.sub(extract_interface_pattern, '', interface_name_exp)
-
-    print(stats_dict)
-
     NetperfResults.add_result(interface_name, stats_dict)
 
 
