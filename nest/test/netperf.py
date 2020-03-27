@@ -62,7 +62,7 @@ def run_netserver(ns_name):
     run_test_commands(cmd)
 
 
-def parse_stats(raw_stats, ns_name):
+def parse_stats(raw_stats, ns_name, lock):
     """
     parse netperf output
 
@@ -75,7 +75,6 @@ def parse_stats(raw_stats, ns_name):
     # pattern that matches the netperf output corresponding to throughput
     throughput_pattern = r'NETPERF_INTERIM_RESULT\[\d+]=\d+\.\d+'
     throughput_stats = re.findall(throughput_pattern, raw_stats)
-    print(throughput_stats)
     # pattern to extract throughput value from the string
     extract_throughput_pattern = r'NETPERF_INTERIM_RESULT\[\d+]='
     # convert the values to float
@@ -107,10 +106,13 @@ def parse_stats(raw_stats, ns_name):
     interface_name_exp = re.search(interface_pattern, raw_stats).group()
     extract_interface_pattern = r'LOCAL_INTERFACE_NAME='
     interface_name = re.sub(extract_interface_pattern, '', interface_name_exp)
+
+    lock.acquire()
     NetperfResults.add_result(interface_name, stats_dict)
+    lock.release()
 
 
-def run_netperf(ns_name, destination_ip, start_time, run_time=10):
+def run_netperf(ns_name, destination_ip, start_time, lock, run_time=10):
     """
         Run netperf in `ns_name`
 
@@ -128,6 +130,5 @@ def run_netperf(ns_name, destination_ip, start_time, run_time=10):
 
     if(start_time != 0):
         time.sleep(start_time)
-
     raw_stats = run_test_commands(cmd, block=True)
-    parse_stats(raw_stats, ns_name)
+    parse_stats(raw_stats, ns_name, lock)

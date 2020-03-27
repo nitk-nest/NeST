@@ -36,7 +36,7 @@ def run_ss(cmd):
     return stdout.decode();  # stdout is a bytes-like object. Hence the usage of decode()
 
 
-def parse(ns_name, param_list, destination_ip):
+def parse(ns_name, param_list, destination_ip, lock):
     """
     parses the required data from ss command's output
 
@@ -55,7 +55,7 @@ def parse(ns_name, param_list, destination_ip):
     start_time = time.time()
     
     # This loop runs the ss command every `INTERVAL`s for `RUN_TIME`s
-    while time.time() <= start_time+RUN_TIME:
+    while time.time() <= (start_time+RUN_TIME):
         stats = run_ss(command)
         port_pattern = re.escape(destination_ip) + r':\d+'
         port_list = re.findall(port_pattern, stats)
@@ -95,9 +95,9 @@ def parse(ns_name, param_list, destination_ip):
                     pass
         time.sleep(INTERVAL)
 
-
+    lock.acquire()
     SsResults.add_result(ns_name, {destination_ip: stats_dict_list})
-
+    lock.release()
 
 def parse_and_plot(filename, parameters):
     """
@@ -142,7 +142,7 @@ def parse_and_plot(filename, parameters):
 # TODO: Integrate with nest
 
 
-def parse_ss(ns_name, destination_ip, stats_to_plot, start_time, run_time):
+def parse_ss(ns_name, destination_ip, stats_to_plot, start_time, run_time, lock):
     param_list = ['cwnd', 'rwnd', 'rtt', 'ssthresh', 'rto', 'delivery_rate']
     global RUN_TIME
     RUN_TIME = run_time
@@ -152,7 +152,7 @@ def parse_ss(ns_name, destination_ip, stats_to_plot, start_time, run_time):
     if(start_time != 0):
         time.sleep(start_time)
 
-    parse(ns_name, param_list, destination_ip)
+    parse(ns_name, param_list, destination_ip, lock)
 
 
 

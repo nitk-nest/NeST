@@ -5,14 +5,12 @@ import json
 import time
 from multiprocessing import Manager, Lock, Queue
 
-# Shared varibles to aggregate results
-ss_results_q = Queue()
+# Shared variables to aggregate results
+ss_results_q = Manager().Queue()
 ss_results_q.put({})
-ss_lock = Lock()
 
-netperf_results_q = Queue()
+netperf_results_q = Manager().Queue()
 netperf_results_q.put({})
-netperf_lock = Lock()
 
 class SsResults:
     """
@@ -27,15 +25,14 @@ class SsResults:
         :param result: parsed ss stats
         :type result: dict
         """
-        if ss_lock:
-            item = ss_results_q.get()
-            if ns_name not in item:
-                item[ns_name] = [result]
-            else:
-                temp = item[ns_name]
-                temp.append(result)
-                item[ns_name] = temp
-            ss_results_q.put(item)
+        item = ss_results_q.get()
+        if ns_name not in item:
+            item[ns_name] = [result]
+        else:
+            temp = item[ns_name]
+            temp.append(result)
+            item[ns_name] = temp
+        ss_results_q.put(item)
 
     @staticmethod
     def output_to_file():
@@ -63,16 +60,15 @@ class NetperfResults:
         :param result: parsed netperf stats
         :type result: dict
         """
-        if netperf_lock:    
-            item = netperf_results_q.get()
-            if interface_name not in item:
-                item[interface_name] = [result]
-            else:
-                temp = item[interface_name]
-                temp.append(result)
-                item[interface_name] = temp
+        item = netperf_results_q.get()
+        if interface_name not in item:
+            item[interface_name] = [result]
+        else:
+            temp = item[interface_name]
+            temp.append(result)
+            item[interface_name] = temp
 
-            netperf_results_q.put(item)
+        netperf_results_q.put(item)
 
     @staticmethod
     def output_to_file():
