@@ -53,11 +53,11 @@ eth_p2r2.set_address('10.0.3.4/24')
 
 ### Routing ###
 
-peer1.add_route('DEFAULT', eth_r1p1.get_address(), eth_p1r1)
-peer2.add_route('DEFAULT', eth_r2p2.get_address(), eth_p2r2)
+peer1.add_route('DEFAULT', eth_p1r1)
+peer2.add_route('DEFAULT', eth_p2r2)
 
-router1.add_route('DEFAULT', eth_r2r1.get_address(), eth_r1r2)
-router2.add_route('DEFAULT', eth_r1r2.get_address(), eth_r2r1)
+router1.add_route('DEFAULT', eth_r1r2)
+router2.add_route('DEFAULT', eth_r2r1)
 
 ### Add bandwidth, delay and qdisc at interface ###
 
@@ -72,13 +72,40 @@ eth_r2p2.set_attributes('100mbit', '5ms')
 
 # Bottleneck link
 eth_r1r2.set_attributes('10mbit', '40ms', 'pie')
-eth_r2r1.set_attributes('10mbit', '40ms')
+eth_r2r1.set_attributes('10mbit', '40ms', 'codel') 
+# Added codel to test 'test' functionality
 
 ### Add test to run ###
 
-test = Test('tcp_4up')
-test.add_flow(peer1, peer2, eth_p2r2.get_address(), 0, 30, 4)
+# 'Flow objects' to be added to relevant tests
+flow1 = Flow(peer1, peer2, eth_p2r2.get_address(), 0, 10, 4)
+flow2 = Flow(peer2, peer1, eth_p1r1.get_address(), 0, 10, 4)
+
+# First test
+test1 = Test('tcp_4up')
+test1.add_flow(flow1)
+test1.require_node_stats(peer1, ['cwnd'])
+test1.require_qdisc_stats(eth_r1r2, ['qlen'])
+
+# Second test
+test2 = Test('tcp_4down')
+test2.add_flow(flow2)
+test2.require_node_stats(peer2, ['rtt'])
+test2.require_qdisc_stats(eth_r2r1, ['latency'])
+
+# Third test
+test3 = Test('tcp_4up&down')
+test3.add_flow(flow1)
+test3.add_flow(flow2)
+# or even: test3.add_flows([flow1, flow2])
+# might be useful if several tests have many
+# common flows
+test3.require_node_stats(peer1, ['cwnd', 'rtt'])
+test3.require_node_stats(peer2, ['cwnd', 'rtt'])
 
 ### Run the test! ###
 
-test.run()
+# Run these tests sequentially; seperately
+test1.run()
+# test2.run()
+# test3.run()
