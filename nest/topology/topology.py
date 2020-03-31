@@ -171,7 +171,6 @@ class Interface:
         self.set_structure = False
         self.ifb = None
 
-        # NOTE: These lists required?
         self.qdisc_list = []
         self.class_list = []
         self.filter_list = []
@@ -274,6 +273,20 @@ class Interface:
                 raise NotImplementedError('You should assign the interface to node or router before setting it\'s mode')
         else:
              raise ValueError(mode+' is not a valid mode (it has to be either "UP" or "DOWN")')
+
+    def get_qdisc(self):
+        """
+        Return the qdisc (if) set by the user.
+        Note that this is the qdisc set inside
+        the IFB.
+        """
+
+        if self.ifb is not None:
+            for qdisc in self.ifb.qdisc_list:
+                if qdisc.parent == '1:1' and qdisc.handle == '11:':
+                    return qdisc
+        else:
+            return None
 
     def add_qdisc(self, qdisc, parent = 'root', handle = '', **kwargs):
         """
@@ -407,6 +420,8 @@ class Interface:
             'rate' : '1024mbit'
         }
 
+        # TODO: Standardize this; seems like arbitrary handle values
+        # were chosen.
         self.ifb.add_qdisc('htb', 'root', '1:', **default_route)
         self.ifb.add_class('htb', '1:', '1:1', **default_bandwidth)
         self.ifb.add_qdisc('pfifo', '1:1', '11:')
