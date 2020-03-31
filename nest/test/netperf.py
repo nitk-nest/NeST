@@ -15,11 +15,12 @@ from .results import NetperfResults
 RUNTIME = 10
 INTERVAL = 0.2
 
+# NOTE: LOCAL_INTERFACE_* deprecated in netperf 2.7.0
 NETPERF_TCP_OPTIONS = [
     "THROUGHPUT", "LOCAL_CONG_CONTROL", "REMOTE_CONG_CONTROL", "TRANSPORT_MSS", "LOCAL_TRANSPORT_RETRANS",
     "REMOTE_TRANSPORT_RETRANS", "LOCAL_SOCKET_TOS", "REMOTE_SOCKET_TOS", "DIRECTION", "ELAPSED_TIME",
     "PROTOCOL", "LOCAL_SEND_SIZE", "LOCAL_RECV_SIZE", "REMOTE_SEND_SIZE", "REMOTE_RECV_SIZE", "LOCAL_BYTES_SENT",
-    "LOCAL_BYTES_RECVD", "REMOTE_BYTES_SENT", "REMOTE_BYTES_RECVD", "LOCAL_INTERFACE_NAME", "LOCAL_INTERFACE_DEVICE"
+    "LOCAL_BYTES_RECVD", "REMOTE_BYTES_SENT", "REMOTE_BYTES_RECVD"
 ]
 
 DEFAULT_NETPERF_OPTIONS = [
@@ -102,13 +103,13 @@ def parse_stats(raw_stats, ns_name, lock):
         stats_dict[timestamps[i]] = throughputs[i]
 
     # pattern to match the interface name
-    interface_pattern = r'LOCAL_INTERFACE_NAME=.+'
-    interface_name_exp = re.search(interface_pattern, raw_stats).group()
-    extract_interface_pattern = r'LOCAL_INTERFACE_NAME='
-    interface_name = re.sub(extract_interface_pattern, '', interface_name_exp)
+    # interface_pattern = r'LOCAL_INTERFACE_NAME=.+'
+    # interface_name_exp = re.search(interface_pattern, raw_stats).group()
+    # extract_interface_pattern = r'LOCAL_INTERFACE_NAME='
+    # interface_name = re.sub(extract_interface_pattern, '', interface_name_exp)
 
     lock.acquire()
-    NetperfResults.add_result(interface_name, stats_dict)
+    NetperfResults.add_result(ns_name, stats_dict)
     lock.release()
 
 

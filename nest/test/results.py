@@ -51,22 +51,22 @@ class NetperfResults:
     This class aggregates the netperf stats from the entire test environment
     """
     @staticmethod
-    def add_result(interface_name, result):
+    def add_result(ns_name, result):
         """
         Adds the netperf `result` to the shared `netperf_results`
 
-        :param interface_name: interface id of the flow
-        :type interface_name: string
+        :param ns_name: namespace id of the flow
+        :type ns_name: string
         :param result: parsed netperf stats
         :type result: dict
         """
         item = netperf_results_q.get()
-        if interface_name not in item:
-            item[interface_name] = [result]
+        if ns_name not in item:
+            item[ns_name] = [result]
         else:
-            temp = item[interface_name]
+            temp = item[ns_name]
             temp.append(result)
-            item[interface_name] = temp
+            item[ns_name] = temp
 
         netperf_results_q.put(item)
 
