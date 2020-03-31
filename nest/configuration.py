@@ -8,7 +8,6 @@
 # Information kept track are of
 # 1. User
 # 2. Topology
-# 3. Tests to be run
 
 class User():
     """
@@ -30,14 +29,19 @@ class User():
         
         User.user_id = user_id
         User.group_id = group_id
+
 class Configuration():
 
     # config contains the info about topology created
-    # and the tests to be run
     config = {
         'namespaces': [],
-        'tests': []
     }
+    # NOTE:
+    # To figure out the contents of each dict keyword,
+    # checkout the add_keyword function.
+    # For eg, to get the contents of qdisc parameter,
+    # checkout add_qdisc function
+
 
     # Pointer to config['namespaces']
     # Used for efficiency
@@ -142,43 +146,8 @@ class Configuration():
             counter += 1
 
     @staticmethod
-    def add_test(name, src_ns, dst_ns, dst_addr, start_t, stop_t, n_flows):
-        """
-        Add test to config
-
-        :param name: test name
-        :type name: string
-        :param src_ns: source namespace
-        :type src_ns: string
-        :param dst_ns: destination namespace
-        :type dst_ns: string
-        :param start_t: Start time
-        :type start_t: int
-        :param stop_t: Stop time
-        :type stop_t: int
-        :param n_flows: number of flows
-        :type n_flows: int
-        """
-        
-        tests = Configuration.get_tests()
-        tests.append({
-            'name': name,
-            'src_ns': src_ns,
-            'dst_ns': dst_ns,
-            'dst_addr': dst_addr,
-            'start_t': start_t,
-            'stop_t': stop_t,
-            'n_flows': n_flows
-        })
-
-
-    @staticmethod
     def get_config():
         return Configuration.config
-
-    @staticmethod
-    def get_tests():
-        return Configuration.config['tests']
 
     @staticmethod
     def get_namespaces():
