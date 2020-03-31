@@ -14,6 +14,7 @@ from .netperf import run_netperf, run_netserver
 from ..configuration import Configuration
 from .results import SsResults, NetperfResults
 from .test import Test
+from .. import engine
 
 def fetch_host_stats(ns_name, config):
     parse_ss(ns_name, config['destination'], config['stats_to_plot'] , 2)
@@ -67,10 +68,21 @@ def parse_config(test):
     # wait for all the processes to finish
     for worker in workers:
         worker.join()
-
+    
     SsResults.output_to_file()
     NetperfResults.output_to_file()
 
+    ### Cleanup ###
+    # TODO: Make cleanup more explicit rather than
+    # as part of parse_config?
+
+    # Remove results of the test
+    SsResults.remove_all_results()
+    NetperfResults.remove_all_results()
+
+    # Kill any running processes in namespaces
+    for namespace in Configuration.get_namespaces():
+        engine.kill_all_processes(namespace['id'])
 
 # NOTE: The below function is no longer supported
 # It's a headache to get this and 'test' parsing option

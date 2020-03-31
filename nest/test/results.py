@@ -35,6 +35,14 @@ class SsResults:
         ss_results_q.put(item)
 
     @staticmethod
+    def remove_all_results():
+        """
+        Remove all results obtained from the test
+        """ 
+
+        ss_results_q.put({})
+
+    @staticmethod
     def output_to_file():
         """
         Outputs the aggregated ss stats to file
@@ -69,6 +77,15 @@ class NetperfResults:
             item[ns_name] = temp
 
         netperf_results_q.put(item)
+
+    @staticmethod
+    def remove_all_results():
+        """
+        Remove all results obtained from the test
+        """ 
+
+        netperf_results_q.put({})
+
 
     @staticmethod
     def output_to_file():
