@@ -2,7 +2,7 @@
 # Copyright (c) 2019-2020 NITK Surathkal
 
 from .. import engine
-from . import error_handling
+from .. import error_handling
 
 # Filter supported types
 _support = {
