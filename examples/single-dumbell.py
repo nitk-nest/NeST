@@ -107,5 +107,5 @@ test3.require_node_stats(peer2, ['cwnd', 'rtt'])
 
 # Run these tests sequentially; seperately
 test1.run()
-# test2.run()
-# test3.run()
+test2.run()
+test3.run()
