@@ -531,7 +531,7 @@ class Interface:
         self.ifb.delete_qdisc('11:')
         self.ifb.add_qdisc(qdisc, '1:1', '11:', **kwargs)
 
-    def set_attributes(self, bandwidth, delay, qdisc = None):
+    def set_attributes(self, bandwidth, delay, qdisc = None, **kwargs):
         """
         Add attributes bandwidth, delay and qdisc to interface
 
@@ -547,7 +547,7 @@ class Interface:
         self.set_delay(delay)
 
         if qdisc is not None:
-            self.set_qdisc(qdisc)
+            self.set_qdisc(qdisc, **kwargs)
 
 class Veth:
     """

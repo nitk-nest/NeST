@@ -13,6 +13,16 @@ from nest.test import *
 
 #############################################
 # This is an implementation of gfc-1 topology
+# GFC Topology:
+#                      d2      f2      a2    c2      e2
+#                       \       \       \    /       /
+#                        \       \       \  /       /
+#                         \       \       \/       /
+#         a1------r1------r2------r3------r4------r5------b2
+#                 /       /\       \       \
+#                /       /  \       \       \
+#               /       /    \       \       \
+#              d1      b1    f1      c1      e1
 #############################################
 
 a1 = Node('a1')
@@ -127,3 +137,65 @@ r4.add_route('10.0.1.0/24', r4_r3)
 r3.add_route('10.0.1.0/24', r3_r2)
 r2.add_route('10.0.2.0/24', r3_r2)
 r2.add_route('10.0.1.0/24', r2_r1)
+
+# node_router_bandwidth = input('Enter the link access bandwidth')
+# print(node_router_bandwidth)
+
+# r1_r2_bandwidth = input('Enter the bandwidth between router r1 and r2')
+
+# r2_r3_bandwidth = input('Enter the bandwidth between router r2 and r3')
+
+# r3_r4_bandwidth = input('Enter the bandwidth between router r3 and r4')
+
+# r4_r5_bandwidth = input('Enter the bandwidth between router r4 and r5')
+
+# qdisc = input('Enter the Queueing algorithm for the nodes')
+
+sample_bandwidth = '50'
+sample_delay = '100'
+sample_qdisc = 'pfifo'
+
+a1_r1.set_attributes(sample_bandwidth, sample_delay)
+r1_a1.set_attributes(sample_bandwidth, sample_delay)
+
+b1_r2.set_attributes(sample_bandwidth, sample_delay)
+r2_b1.set_attributes(sample_bandwidth, sample_delay)
+
+d1_r1.set_attributes(sample_bandwidth, sample_delay)
+r1_d1.set_attributes(sample_bandwidth, sample_delay)
+
+f1_r2.set_attributes(sample_bandwidth, sample_delay)
+r2_f1.set_attributes(sample_bandwidth, sample_delay)
+
+c1_r3.set_attributes(sample_bandwidth, sample_delay)
+r3_c1.set_attributes(sample_bandwidth, sample_delay)
+
+e1_r4.set_attributes(sample_bandwidth, sample_delay)
+r4_e1.set_attributes(sample_bandwidth, sample_delay)
+
+qdisc_args = {
+    'ce_threshold' : '1.6ms',
+    'limit' : '1000',
+    'target' : '100ms',
+    'ecn' : ''
+}
+r1_r2.set_attributes(sample_bandwidth, sample_delay, 'pfifo', **qdisc_args)
+r2_r1.set_attributes(sample_bandwidth, sample_delay, 'pfifo')
+r2_r3.set_attributes(sample_bandwidth, sample_delay, 'pfifo', **qdisc_args)
+r3_r2.set_attributes(sample_bandwidth, sample_delay, 'pfifo')
+r3_r4.set_attributes(sample_bandwidth, sample_delay, 'pfifo', **qdisc_args)
+r4_r3.set_attributes(sample_bandwidth, sample_delay, 'pfifo')
+r4_r5.set_attributes(sample_bandwidth, sample_delay, 'pfifo', **qdisc_args)
+r5_r4.set_attributes(sample_bandwidth, sample_delay, 'pfifo')
+e2_r5.set_attributes(sample_bandwidth, sample_delay, 'pfifo')
+r5_e2.set_attributes(sample_bandwidth, sample_delay, 'pfifo')
+c2_r4.set_attributes(sample_bandwidth, sample_delay, 'pfifo')
+r4_c2.set_attributes(sample_bandwidth, sample_delay, 'pfifo')
+f2_r3.set_attributes(sample_bandwidth, sample_delay, 'pfifo')
+r3_f2.set_attributes(sample_bandwidth, sample_delay, 'pfifo')
+d2_r2.set_attributes(sample_bandwidth, sample_delay, 'pfifo')
+r2_d2.set_attributes(sample_bandwidth, sample_delay, 'pfifo')
+b2_r5.set_attributes(sample_bandwidth, sample_delay, 'pfifo')
+r5_b2.set_attributes(sample_bandwidth, sample_delay, 'pfifo')
+a2_r4.set_attributes(sample_bandwidth, sample_delay, 'pfifo')
+r4_a2.set_attributes(sample_bandwidth, sample_delay, 'pfifo')
