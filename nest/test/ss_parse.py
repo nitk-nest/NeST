@@ -65,9 +65,9 @@ def parse(ns_name, param_list, destination_ip, lock):
         
         for port in port_list:
             if port not in stats_dict_list:
-                stats_dict_list[port] = [{cur_timestamp: {}}]
+                stats_dict_list[port] = [{"timestamp": str(cur_timestamp)}]
             else:
-                stats_dict_list[port].append({cur_timestamp: {}})
+                stats_dict_list[port].append({"timestamp": str(cur_timestamp)})
 
         for param in param_list:
             pattern = r'\s' + re.escape(param) + r'[\s:]\w+\.?\w*(?:[\/\,]\w+\.?\w*)*\s'
@@ -87,10 +87,10 @@ def parse(ns_name, param_list, destination_ip, lock):
                     if param == 'rtt':
                         avg_rtt = val.split('/')[0]
                         dev_rtt = val.split('/')[1]
-                        stats_dict_list[port_list[i]][-1][cur_timestamp]['rtt'] = avg_rtt
-                        stats_dict_list[port_list[i]][-1][cur_timestamp]['dev_rtt'] = dev_rtt
+                        stats_dict_list[port_list[i]][-1]['rtt'] = avg_rtt
+                        stats_dict_list[port_list[i]][-1]['dev_rtt'] = dev_rtt
                     else:
-                        stats_dict_list[port_list[i]][-1][cur_timestamp][param] = val
+                        stats_dict_list[port_list[i]][-1][param] = val
                 except:
                     pass
         time.sleep(INTERVAL)
