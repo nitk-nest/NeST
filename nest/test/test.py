@@ -162,6 +162,13 @@ class Test():
 
         return self.flows
 
+    def get_name(self):
+        """
+        Getter for name of test
+        """
+
+        return self.name
+
     def run(self):
         """
         Run the test

@@ -10,3 +10,6 @@ venv/
 
 #configuration files
 *.json
+
+#png images
+*.png

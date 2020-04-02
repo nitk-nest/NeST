@@ -15,6 +15,7 @@ from ..configuration import Configuration
 from .results import SsResults, NetperfResults
 from .test import Test
 from .. import engine
+from .plot import plot_ss
 
 def fetch_host_stats(ns_name, config):
     parse_ss(ns_name, config['destination'], config['stats_to_plot'] , 2)
@@ -71,6 +72,9 @@ def parse_config(test):
     
     SsResults.output_to_file()
     NetperfResults.output_to_file()
+
+    # Dump plots as images
+    plot_ss(test.get_name(), SsResults.get_results())    
 
     ### Cleanup ###
     # TODO: Make cleanup more explicit rather than
