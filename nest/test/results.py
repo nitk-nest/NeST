@@ -38,16 +38,25 @@ class SsResults:
     def remove_all_results():
         """
         Remove all results obtained from the test
-        """ 
-
+        """
+        ss_results_q.get()
         ss_results_q.put({})
+    
+    @staticmethod
+    def get_results():
+        """
+        Get results obtained in the test so far
+        """
+        ss_results = ss_results_q.get()
+        ss_results_q.put(ss_results)
+        return ss_results
 
     @staticmethod
     def output_to_file():
         """
         Outputs the aggregated ss stats to file
         """
-        ss_results = ss_results_q.get()
+        ss_results = SsResults.get_results()
         json_stats = json.dumps(ss_results, indent=4)
         timestamp = time.strftime("%d-%m-%Y-%H:%M:%S")
         filename = str(timestamp) + ' ss-parse-results.json'
@@ -83,16 +92,24 @@ class NetperfResults:
         """
         Remove all results obtained from the test
         """ 
-
+        netperf_results_q.get()
         netperf_results_q.put({})
 
+    @staticmethod
+    def get_results():
+        """
+        Get results obtained in the test so far
+        """
+        netperf_results = netperf_results_q.get()
+        netperf_results_q.put(netperf_results)
+        return netperf_results
 
     @staticmethod
     def output_to_file():
         """
         Outputs the aggregated netperf stats to file
         """
-        netperf_results = netperf_results_q.get()
+        netperf_results = NetperfResults.get_results()
         json_stats = json.dumps(netperf_results, indent=4)
         timestamp = time.strftime("%d-%m-%Y-%H:%M:%S")
         filename = str(timestamp) + ' netperf-parse-results.json'
