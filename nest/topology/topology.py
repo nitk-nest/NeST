@@ -171,6 +171,9 @@ class Interface:
         self.set_structure = False
         self.ifb = None
 
+        # TODO: These are not rightly updated
+        # set_delay and set_bandwidth invoke the
+        # engine function directly
         self.qdisc_list = []
         self.class_list = []
         self.filter_list = []
@@ -279,7 +282,7 @@ class Interface:
         Return the qdisc (if) set by the user.
         Note that this is the qdisc set inside
         the IFB.
-        """
+        """        
 
         if self.ifb is not None:
             for qdisc in self.ifb.qdisc_list:
@@ -484,6 +487,7 @@ class Interface:
         }
 
         # TODO: Check the created API
+        # TODO: This should be handled by self.change_class
         engine.change_class(self.namespace.get_id(), self.get_id(), '1:', 'htb', '1:1', **min_bandwidth_parameter)
 
     def set_delay(self, delay):
@@ -509,15 +513,23 @@ class Interface:
             'delay' : delay
         }
 
+        # TODO: This should be handled by self.change_qdisc
+        # It could lead to a potential bug!
         engine.change_qdisc(self.namespace.get_id(),self.get_id(), 'netem', '1:1', '11:', **delay_parameter)
         
-    def set_qdisc(self, qdisc, **kwargs):
+    def set_qdisc(self, qdisc, min_rate, **kwargs):
         """
         Adds the Queueing algorithm to the interface
         :param qdisc: The Queueing algorithm to be added
         :type qdisc: string
+        
+        TODO: Add doc for min_rate
         """
-
+        
+        # TODO: Don't use this API directly. If it used,
+        # then the bandwidth should be same as link bandwidth
+        # (A temporary bug fix is causing this issue. Look for 
+        # a permanent solution)
         # TODO: Check if this is a redundant condition
         
         error_handling.type_verify('qdisc', qdisc, 'string', str)
@@ -528,6 +540,12 @@ class Interface:
         if self.ifb is None:
             self._create_and_mirred_to_ifb(self.name)
 
+        min_bandwidth_parameter = {
+            'rate' : min_rate
+        }
+
+        engine.change_class(self.namespace.get_id(), self.ifb.get_id(), '1:', 'htb', '1:1', **min_bandwidth_parameter)
+        
         self.ifb.delete_qdisc('11:')
         self.ifb.add_qdisc(qdisc, '1:1', '11:', **kwargs)
 
@@ -547,7 +565,7 @@ class Interface:
         self.set_delay(delay)
 
         if qdisc is not None:
-            self.set_qdisc(qdisc, **kwargs)
+            self.set_qdisc(qdisc, bandwidth, **kwargs)
 
 class Veth:
     """
