@@ -61,7 +61,7 @@ router2.add_route('DEFAULT', eth_r2r1)
 
 ### Add bandwidth, delay and qdisc at interface ###
 
-# NOTE: Adding link properties, bandwidth and delay
+# TODO: Adding link properties, bandwidth and delay
 # to interface, might lead to confusion.
 
 eth_p1r1.set_attributes('100mbit', '5ms')
@@ -72,8 +72,7 @@ eth_r2p2.set_attributes('100mbit', '5ms')
 
 # Bottleneck link
 eth_r1r2.set_attributes('10mbit', '40ms', 'pie')
-eth_r2r1.set_attributes('10mbit', '40ms', 'codel') 
-# Added codel to test 'test' functionality
+eth_r2r1.set_attributes('10mbit', '40ms', 'pie') 
 
 ### Add test to run ###
 
@@ -97,9 +96,6 @@ test2.require_qdisc_stats(eth_r2r1, ['latency'])
 test3 = Test('tcp_4up&down')
 test3.add_flow(flow1)
 test3.add_flow(flow2)
-# or even: test3.add_flows([flow1, flow2])
-# might be useful if several tests have many
-# common flows
 test3.require_node_stats(peer1, ['cwnd', 'rtt'])
 test3.require_node_stats(peer2, ['cwnd', 'rtt'])
 
@@ -107,5 +103,12 @@ test3.require_node_stats(peer2, ['cwnd', 'rtt'])
 
 # Run these tests sequentially; seperately
 test1.run()
-test2.run()
-test3.run()
+
+# TODO: Running multiple tests haven't been
+# tested properly yet
+# TODO: Running to multiple flows in a test 
+# is leading to unexpected behaviour. These needs
+# to be looked at closely
+
+# test2.run()
+# test3.run()
