@@ -12,24 +12,33 @@ LOGS = []
 log_level = 0
 
 # NOTE: verbose or log_level?
-def exec_subprocess(cmd, block = True, verbose = False):
+def exec_subprocess(cmd, block = True, shell = False, verbose = False):
     """
     executes a command
 
     :param cmd: command to be executed
-    :type cmd: String
+    :type cmd: string
     :param block: A flag to indicate whether the command 
                     should be executed asynchronously
     :type block: boolean
+    :param shell: Spawns a shell and executes the command if true
+    :type shell: boolean
     :param verbose: if commands run should be printed
     :type verbose: boolean
     """
+
+    # TODO: Commands with pipes are easily executed when 
+    # they are run within a shell.
+    # But it may not be the most efficient way.
 
     # Logging
     if verbose:
         print('[INFO] ' + cmd)
 
-    proc = subprocess.Popen(cmd.split(), stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    if shell is False:
+        cmd = cmd.split()
+
+    proc = subprocess.Popen(cmd, stdout = subprocess.PIPE, stderr = subprocess.PIPE, shell = shell)
     # proc = subprocess.Popen(cmd.split())
     if block:
         (stdout, stderr) = proc.communicate()
@@ -217,7 +226,7 @@ def kill_all_processes(ns_name):
     :type ns_name: string
     """
 
-    exec_subprocess('kill $(ip netns pids {ns_name})'.format(ns_name = ns_name))
+    exec_subprocess('ip netns pids {ns_name} | xargs kill'.format(ns_name = ns_name), shell = True)
 
 # Only bandwith and latency is considered
 # Assuming tc on egress 
