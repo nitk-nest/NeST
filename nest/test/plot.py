@@ -2,6 +2,15 @@
 # Copyright (c) 2019-2020 NITK Surathkal
 
 import matplotlib.pyplot as plt
+import matplotlib.style as style
+
+def _set_plot_theme():
+    """
+    The matplotlib plot theme
+    """
+
+    style.use('seaborn-paper')
+    style.use('ggplot')
 
 def _get_list_of_ss_params():
     """
@@ -89,7 +98,9 @@ def plot_ss(test_name, parsed_data):
     :param parsed_data: JSON data parsed from ss
     :type parsed_data: Dict
     """
-    
+
+    _set_plot_theme()
+
     for node in parsed_data:
         node_data = parsed_data[node]
         for connection in node_data:
