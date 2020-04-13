@@ -11,7 +11,7 @@ import time
 from .ss_parse import parse_ss
 from .tc_parse import parse_qdisc
 from .netperf import run_netperf, run_netserver
-from ..topology_map import Configuration
+from ..topology_map import TopologyMap
 from .results import SsResults, NetperfResults
 from .test import Test
 from .. import engine
@@ -28,14 +28,12 @@ def fetch_router_stats(ns_name, config):
 
 def parse_config(test):
     """
-    Retreives the config dict and calls the parsing function
+    Retrieves the test object and calls the parsing function
 
     :param test: The test attributes
     :type test: Test
     """
 
-    config = Configuration.get_config()
-    
     workers = []
     flows = test.get_flows()
 
@@ -85,7 +83,7 @@ def parse_config(test):
     NetperfResults.remove_all_results()
 
     # Kill any running processes in namespaces
-    for namespace in Configuration.get_namespaces():
+    for namespace in TopologyMap.get_namespaces():
         engine.kill_all_processes(namespace['id'])
 
 # NOTE: The below function is no longer supported

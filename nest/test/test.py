@@ -5,7 +5,7 @@
 # on a given topology
 
 from ..topology import Address, Node, Router, Interface
-from ..topology_map import Configuration
+from ..topology_map import TopologyMap
 from . import run_tests
 from .. import error_handling
 
@@ -294,6 +294,6 @@ class Test():
         Run the test
         """
 
-        # Configuration.dump()
+        # TopologyMap.dump()
         print('Running test ' + self.name)
         run_tests.parse_config(self) 

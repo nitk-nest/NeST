@@ -6,7 +6,7 @@ from .address import Address
 from .. import engine
 from .. import error_handling
 from .id_generator import ID_GEN
-from ..topology_map import Configuration
+from ..topology_map import TopologyMap
 from . import traffic_control
 
 class Namespace:
@@ -34,8 +34,8 @@ class Namespace:
         else:
             self.id = 'default'
 
-        # Add namespace to Configuration
-        Configuration.add_namespace(self.get_id(), self.get_name())
+        # Add namespace to TopologyMap
+        TopologyMap.add_namespace(self.get_id(), self.get_name())
 
         # Initialize an empty list of interfaces to keep track of interfaces on it
         self.interface_list = []
@@ -102,8 +102,8 @@ class Namespace:
         interface._set_namespace(self)
         engine.add_int_to_ns(self.get_id(), interface.get_id())
 
-        # Add interface to Configuration
-        Configuration.add_interface(self.get_id(), interface.get_id(), interface.get_name())
+        # Add interface to TopologyMap
+        TopologyMap.add_interface(self.get_id(), interface.get_id(), interface.get_name())
 
     def configure_tcp_param(self, param, value):
         """
@@ -362,8 +362,8 @@ class Interface:
 
         self.qdisc_list.append(traffic_control.Qdisc(self.namespace.get_id(), self.get_id(), qdisc, parent, handle, **kwargs))
 
-        # Add qdisc to configuration
-        Configuration.add_qdisc(self.namespace.get_id(), self.get_id(), qdisc, handle, parent = parent)
+        # Add qdisc to TopologyMap
+        TopologyMap.add_qdisc(self.namespace.get_id(), self.get_id(), qdisc, handle, parent = parent)
 
         return self.qdisc_list[-1]
 
@@ -380,7 +380,7 @@ class Interface:
         for qdisc in self.qdisc_list:
             if qdisc.handle == handle:
                 engine.delete_qdisc(qdisc.namespace_id, qdisc.dev_id, qdisc.parent, qdisc.handle)
-                Configuration.delete_qdisc(self.namespace.get_id(), self.get_id(), handle)
+                TopologyMap.delete_qdisc(self.namespace.get_id(), self.get_id(), handle)
                 self.qdisc_list.pop(counter)
                 break
             counter += 1

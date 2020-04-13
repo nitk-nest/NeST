@@ -30,10 +30,10 @@ class User():
         User.user_id = user_id
         User.group_id = group_id
 
-class Configuration():
+class TopologyMap():
 
-    # config contains the info about topology created
-    config = {
+    # topology_map contains the info about topology created
+    topology_map = {
         'namespaces': [],
     }
     # NOTE:
@@ -43,7 +43,7 @@ class Configuration():
     # checkout add_qdisc function
 
 
-    # Pointer to config['namespaces']
+    # Pointer to topology_map['namespaces']
     # Used for efficiency
     namespaces_pointer = {}
 
@@ -53,7 +53,7 @@ class Configuration():
     @staticmethod
     def add_namespace(id, ns_name):
         """
-        Add namespace to config
+        Add namespace to topology_map
 
         :param id: namepspace id
         :type id: string
@@ -61,7 +61,7 @@ class Configuration():
         :type ns_name: string
         """
 
-        namespaces = Configuration.get_namespaces()
+        namespaces = TopologyMap.get_namespaces()
 
         namespaces.append({
             'id': id,
@@ -69,7 +69,7 @@ class Configuration():
             'interfaces': []
         })
 
-        Configuration.namespaces_pointer[id] = {
+        TopologyMap.namespaces_pointer[id] = {
             'pos': len(namespaces)-1,
             'interfaces_pointer': {}
         }
@@ -77,7 +77,7 @@ class Configuration():
     @staticmethod
     def add_interface(ns_id, id, int_name):
         """
-        Add interface to config
+        Add interface to topology_map
 
         :param ns_id: namepspace id
         :type ns_id: string
@@ -88,7 +88,7 @@ class Configuration():
         """
 
         # TODO: classes not added yet to list
-        interfaces = Configuration.get_interfaces(ns_id)
+        interfaces = TopologyMap.get_interfaces(ns_id)
 
         interfaces.append({
             'id': id,
@@ -96,14 +96,14 @@ class Configuration():
             'qdiscs': []
         }) 
 
-        Configuration.namespaces_pointer[ns_id]['interfaces_pointer'][id] = {
+        TopologyMap.namespaces_pointer[ns_id]['interfaces_pointer'][id] = {
             'pos': len(interfaces)-1
         }
 
     @staticmethod
     def add_qdisc(ns_id, int_id, kind, handle, parent = ''):
         """
-        Add qdisc to config
+        Add qdisc to topology_map
 
         :param ns_id: namepspace id
         :type ns_id: string
@@ -117,7 +117,7 @@ class Configuration():
         :type parent: string
         """
 
-        qdiscs = Configuration.get_qdiscs(ns_id, int_id)
+        qdiscs = TopologyMap.get_qdiscs(ns_id, int_id)
         qdiscs.append({
             'kind': kind,
             'handle': handle,
@@ -127,7 +127,7 @@ class Configuration():
     @staticmethod
     def delete_qdisc(ns_id, int_id, handle):
         """
-        Delete qdisc from config
+        Delete qdisc from topology_map
 
         :param ns_id: namepspace id
         :type ns_id: string
@@ -137,7 +137,7 @@ class Configuration():
         :type handle: string
         """
 
-        qdiscs = Configuration.get_qdiscs(ns_id, int_id)
+        qdiscs = TopologyMap.get_qdiscs(ns_id, int_id)
         counter = 0
         for qdisc in qdiscs:
             if qdisc['handle'] == handle:
@@ -146,12 +146,12 @@ class Configuration():
             counter += 1
 
     @staticmethod
-    def get_config():
-        return Configuration.config
+    def get_topology_map():
+        return TopologyMap.topology_map
 
     @staticmethod
     def get_namespaces():
-        return Configuration.config['namespaces']
+        return TopologyMap.topology_map['namespaces']
 
     @staticmethod
     def get_namespace(ns_id, with_interfaces_pointer = False):
@@ -164,8 +164,8 @@ class Configuration():
         :type with_interfaces_pointer: bool
         """
 
-        namespaces = Configuration.get_namespaces()
-        namespace_pointer = Configuration.namespaces_pointer[ns_id]
+        namespaces = TopologyMap.get_namespaces()
+        namespace_pointer = TopologyMap.namespaces_pointer[ns_id]
         namespace = namespaces[namespace_pointer['pos']]
 
         if with_interfaces_pointer:
@@ -182,7 +182,7 @@ class Configuration():
         :type ns_id: string
         """
 
-        namespace = Configuration.get_namespace(ns_id)
+        namespace = TopologyMap.get_namespace(ns_id)
         interfaces = namespace['interfaces']
         
         return interfaces
@@ -199,8 +199,8 @@ class Configuration():
         :type int_id: string
         """
 
-        (interfaces_pointer, namespace) = Configuration.get_namespace(ns_id, with_interfaces_pointer=True)
-        interfaces = Configuration.get_interfaces(ns_id)
+        (interfaces_pointer, namespace) = TopologyMap.get_namespace(ns_id, with_interfaces_pointer=True)
+        interfaces = TopologyMap.get_interfaces(ns_id)
         interface_pointer = interfaces_pointer[int_id]
         interface = interfaces[interface_pointer['pos']]
 
@@ -218,23 +218,23 @@ class Configuration():
         :type int_id: string
         """
 
-        interface = Configuration.get_interface(ns_id, int_id)
+        interface = TopologyMap.get_interface(ns_id, int_id)
         qdiscs = interface['qdiscs']
 
         return qdiscs
 
     def dump():
         """
-        Dump generated config. (for debugging purposes)
+        Dump generated topology_map. (for debugging purposes)
         """
 
         import json
 
         print('Config')
         print('------')
-        print(json.dumps(Configuration.config, indent = 4))
+        print(json.dumps(TopologyMap.topology_map, indent = 4))
 
         # print()
         # print('Pointers')
         # print('--------')
-        # print(json.dumps(Configuration.namespaces_pointer, indent = 4))
+        # print(json.dumps(TopologyMap.namespaces_pointer, indent = 4))
