@@ -113,7 +113,7 @@ def parse_stats(raw_stats, ns_name, lock):
     lock.release()
 
 
-def run_netperf(ns_name, destination_ip, start_time, lock, run_time=10):
+def run_netperf(ns_name, destination_ip, start_time, lock, cong_alg, run_time=10):
     """
         Run netperf in `ns_name`
 
@@ -126,8 +126,8 @@ def run_netperf(ns_name, destination_ip, start_time, lock, run_time=10):
     DEFAULT_NETPERF_OPTIONS[4] = '-l {}'.format(run_time)  # change the default runtime
 
     cmd = 'ip netns exec {ns_name} netperf {options} -H {destination}' \
-        ' -- -k {test_options}'.format(ns_name=ns_name, options = " ".join(DEFAULT_NETPERF_OPTIONS),
-                                       destination= destination_ip, test_options=",".join(NETPERF_TCP_OPTIONS))
+        ' -- -K {cong_alg} -k {test_options}'.format(ns_name=ns_name, options = " ".join(DEFAULT_NETPERF_OPTIONS),
+                                       destination= destination_ip, cong_alg=cong_alg, test_options=",".join(NETPERF_TCP_OPTIONS))
 
     if(start_time != 0):
         time.sleep(start_time)

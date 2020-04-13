@@ -44,12 +44,12 @@ def parse_config(test):
     netperf_lock = Lock()
     
     for flow in flows:
-        [src_ns, dst_ns, dst_addr, start_t, stop_t, n_flows] = flow._get_props()
+        [src_ns, dst_ns, dst_addr, start_t, stop_t, n_flows, cong_alg] = flow._get_props()
         run_netserver(dst_ns)
         # create new processes to be run simultaneously
         # here Process is used instead of Thread to take advantage to multiple cores
         for i in range(n_flows):
-            workers.append(Process(target=run_netperf, args=(src_ns, dst_addr, start_t, netperf_lock, stop_t-start_t)))
+            workers.append(Process(target=run_netperf, args=(src_ns, dst_addr, start_t, netperf_lock, cong_alg, stop_t-start_t)))
         # workers.append(Process(target=parse_ss, args=(test['src_ns'], test['dst_addr'], [], test['start_t'], test['stop_t'] - test['start_t'])))
         
         # Find the start time and stop time to run ss command in `src_ns` to a `dst_addr`

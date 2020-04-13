@@ -12,7 +12,7 @@ LOGS = []
 log_level = 0
 
 # NOTE: verbose or log_level?
-def exec_subprocess(cmd, block = True, shell = False, verbose = False):
+def exec_subprocess(cmd, block = True, shell = False, verbose = False, output = False):
     """
     executes a command
 
@@ -25,6 +25,8 @@ def exec_subprocess(cmd, block = True, shell = False, verbose = False):
     :type shell: boolean
     :param verbose: if commands run should be printed
     :type verbose: boolean
+    :param output: True if the output of the `cmd` is to be returned
+    :type output: boolean
     """
 
     # TODO: Commands with pipes are easily executed when 
@@ -50,6 +52,8 @@ def exec_subprocess(cmd, block = True, shell = False, verbose = False):
                 'stdout' : stdout.decode(),
                 'stderr' : stderr.decode()
             })
+        if output:
+            return stdout.decode()
 
     else:
         pass
@@ -495,6 +499,36 @@ def add_filter(ns_name, dev_name, protocol, priority, filtertype, parent = '', h
 
     exec_subprocess('ip netns exec {} tc filter add dev {} {} {} protocol {} prio {} {} {}'
                     .format(ns_name, dev_name, parent, handle, protocol, priority, filtertype, filter_params))
+
+def configure_kernel_param(ns_name, prefix, param, value):
+    """
+    Configure kernel parameters using sysctl
+
+    :param ns_name: name of the namespace
+    :type ns_name: string
+    :param prefix: path for the sysctl command
+    :type prefix: string
+    :param param: kernel parameter to be configured
+    :type param: string
+    :param value: value of the parameter
+    :type param: string
+    """
+    exec_subprocess('ip netns exec {} sysctl -q -w {}{}={}'.format(ns_name, prefix, param, value))
+
+def read_kernel_param(ns_name, prefix, param):
+    """
+    Read kernel parameters using sysctl
+
+    :param ns_name: name of the namespace
+    :type ns_name: string
+    :param prefix: path for the sysctl command
+    :type prefix: string
+    :param param: kernel parameter to be read
+    :type param: string
+    :returns string -- value of the `param`
+    """
+    return exec_subprocess('ip netns exec {} sysctl -n {}{}'.format(ns_name, prefix, param), output=True)
+
 
 
 

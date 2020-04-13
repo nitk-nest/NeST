@@ -105,6 +105,52 @@ class Namespace:
         # Add interface to Configuration
         Configuration.add_interface(self.get_id(), interface.get_id(), interface.get_name())
 
+    def configure_tcp_param(self, param, value):
+        """
+        Configures tcp parameretes available at /proc/sys/net/ipv4/tcp_*.
+        Eg. window_scaling, wmem, ecn, etc.
+        :param param: tcp parameter to be configured
+        :type param: string
+        :param value: value of the parameter
+        :type param: string
+        """
+
+        engine.configure_kernel_param(self.get_id(), 'net.ipv4.tcp_', param, value)
+
+    def configure_udp_param(self, param, value):
+        """
+        Configures udp parameretes available at /proc/sys/net/ipv4/udp_*.
+        They are early_demux, l3mdev_accept, mem, rmem_min, wmem_min
+        :param param: udp parameter to be configured
+        :type param: string
+        :param value: value of the parameter
+        :type param: string
+        """
+
+        engine.configure_kernel_param(self.get_id(), 'net.ipv4.udp_', param, value)
+
+    def read_tcp_param(self, param):
+        """
+        read tcp_parameters available at /proc/sys/net/ipv4/tcp_*
+        Eg. window_scaling, wmem, ecn, etc.
+        :param param: tcp parameter to be read
+        :type param: string
+        :returns string -- value of the tcp parameters
+        """
+
+        return engine.read_kernel_param(self.get_id(), 'net.ipv4.tcp_', param)
+
+    def read_udp_param(self, param):
+        """
+        read tcp_parameters available at /proc/sys/net/ipv4/udp_*
+        They are early_demux, l3mdev_accept, rmem_min, wmem_min
+        :param param: udp parameter to be read
+        :type param: string
+        :returns string -- value of the udp parameters
+        """
+
+        return engine.read_kernel_param(self.get_id(), 'net.ipv4.udp_', param)
+
 
 class Node(Namespace):
     """

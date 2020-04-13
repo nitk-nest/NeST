@@ -14,7 +14,7 @@ class Flow():
     Defines a flow in the topology
     """
 
-    def __init__(self, source_node, destination_node, destination_address, start_time, stop_time, number_of_flows):
+    def __init__(self, source_node, destination_node, destination_address, start_time, stop_time, number_of_flows, cong_alg='cubic'):
         """
         'Flow' object in the topology
 
@@ -30,6 +30,8 @@ class Flow():
         :type stop_time: int
         :param number_of_flows: Number of flows
         :type number_of_flows: int
+        :param cong_alg: congestion algorithm to be used during the flow. Defaults to cubic
+        :type cong_alg: string
         """
 
         # Verify types of all args
@@ -48,17 +50,18 @@ class Flow():
         self.start_time = start_time
         self.stop_time = stop_time
         self.number_of_flows = number_of_flows
+        self.cong_alg = cong_alg
 
 
     def _get_props(self):
         """
         Get flow properties.
-        NOTE: To be used internelly
+        NOTE: To be used internally
         """
 
         return [self.source_node.get_id(), self.destination_node.get_id(),
                 self.destination_address.get_addr(with_subnet=False), 
-                self.start_time, self.stop_time, self.number_of_flows]
+                self.start_time, self.stop_time, self.number_of_flows, self.cong_alg]
 
 class Test():
 
