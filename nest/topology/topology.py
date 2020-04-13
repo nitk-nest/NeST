@@ -6,7 +6,7 @@ from .address import Address
 from .. import engine
 from .. import error_handling
 from .id_generator import ID_GEN
-from ..configuration import Configuration
+from ..topology_map import Configuration
 from . import traffic_control
 
 class Namespace:

@@ -13,7 +13,7 @@ def setup():
     # Imported within setup so that client
     # doesn't 'see' these packages
     import os, sys
-    from .configuration import User
+    from .topology_map import User
 
     if os.geteuid() != 0:
         print('nest: python package requires root access', file=sys.stderr)

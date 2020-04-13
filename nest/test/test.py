@@ -5,7 +5,7 @@
 # on a given topology
 
 from ..topology import Address, Node, Router, Interface
-from ..configuration import Configuration
+from ..topology_map import Configuration
 from . import run_tests
 from .. import error_handling
 

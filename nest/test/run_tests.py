@@ -11,7 +11,7 @@ import time
 from .ss_parse import parse_ss
 from .tc_parse import parse_qdisc
 from .netperf import run_netperf, run_netserver
-from ..configuration import Configuration
+from ..topology_map import Configuration
 from .results import SsResults, NetperfResults
 from .test import Test
 from .. import engine
