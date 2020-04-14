@@ -4,6 +4,9 @@
 import sys
 from .arguments import parse, run_args
 
+# NOTE: nest cmd support is removed for now
+# Support maybe added later
+
 def run_nest():
     """
     Parses the args passed to nest command
@@ -11,6 +14,9 @@ def run_nest():
     If there are error in flags, then display
     necessary error message.
     """
+
+    raise NotImplementedError("Running nest in command line is not \
+            supported right now.")
 
     arguments = parse(sys.argv[1:])
     run_args(arguments)
