@@ -6,7 +6,7 @@
 
 from ..topology import Address, Node, Router, Interface
 from ..topology_map import TopologyMap
-from . import run_tests
+from . import run_exp
 from .. import error_handling
 
 class Flow():
@@ -296,4 +296,4 @@ class Experiment():
 
         # TopologyMap.dump()
         print('Running experiment ' + self.name)
-        run_tests.parse_config(self) 
+        run_exp.parse_config(self) 

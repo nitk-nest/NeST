@@ -13,7 +13,6 @@ from .tc_parse import parse_qdisc
 from .netperf import run_netperf, run_netserver
 from ..topology_map import TopologyMap
 from .results import SsResults, NetperfResults
-from .test import Experiment
 from .. import engine
 from .plot import plot_ss
 
