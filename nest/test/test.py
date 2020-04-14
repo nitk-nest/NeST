@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
-# User API to setup and run tests
+# User API to setup and run experiments
 # on a given topology
 
 from ..topology import Address, Node, Router, Interface
@@ -180,7 +180,7 @@ class Flow():
                 self.destination_address.get_addr(with_subnet=False), 
                 self.start_time, self.stop_time, self.number_of_flows, self.cong_alg]
 
-class Test():
+class Experiment():
 
     # List of node and qdisc stats
     # the API supports
@@ -189,9 +189,9 @@ class Test():
 
     def __init__(self, name):
         """
-        Create test
+        Create experiment
 
-        :param name: name of test
+        :param name: name of experiment
         :type name: string
         """
         
@@ -204,9 +204,9 @@ class Test():
 
     def add_flow(self, flows):
         """
-        Add flow to test
+        Add flow to experiment
 
-        :param flows: Add flow to test
+        :param flows: Add flow to experiment
         :type flows: list(Flow)
         """
 
@@ -222,7 +222,7 @@ class Test():
     def require_node_stats(self, node, stats):
         """
         Stats to be obtained from node
-        in the tests
+        in the experiment
 
         :param node: Node from which stats are to be obtained
         :type node: Node
@@ -237,7 +237,7 @@ class Test():
         error_handling.type_verify('Stats', stats, 'list', list)
 
         for stat in stats:
-            if stat not in Test.node_stats:
+            if stat not in Experiment.node_stats:
                 raise ValueError('{} is not a valid Node property.'.format(stat))
 
         self.node_stats.append({
@@ -262,7 +262,7 @@ class Test():
         error_handling.type_verify('Stats', stats, 'list', list)
 
         for stat in stats:
-            if stat not in Test.qdisc_stats:
+            if stat not in Experiment.qdisc_stats:
                 raise ValueError('{} is not a valid Queue property.'.format(stat))
 
         if interface.get_qdisc() is None:
@@ -277,23 +277,23 @@ class Test():
 
     def get_flows(self):
         """
-        Getter for flows in test
+        Getter for flows in experiment
         """
 
         return self.flows
 
     def get_name(self):
         """
-        Getter for name of test
+        Getter for name of experiment
         """
 
         return self.name
 
     def run(self):
         """
-        Run the test
+        Run the experiment
         """
 
         # TopologyMap.dump()
-        print('Running test ' + self.name)
+        print('Running experiment ' + self.name)
         run_tests.parse_config(self) 

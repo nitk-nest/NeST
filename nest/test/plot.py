@@ -59,12 +59,12 @@ def _extract_from_ss_flow(flow, node, dest_ip, dest_port):
 
     return (timestamp, flow_params)
 
-def _plot_ss_flow(test_name, flow, node, dest_ip, dest_port):
+def _plot_ss_flow(exp_name, flow, node, dest_ip, dest_port):
     """
     Plot ss stats of the flow
     
-    :param test_name: Name of test for which results were obtained
-    :type test_name: string
+    :param exp_name: Name of experiment for which results were obtained
+    :type exp_name: string
     :param flow: List with timestamps and stats
     :type flow: List
     :param node: Node from which ss results were obtained from
@@ -85,16 +85,16 @@ def _plot_ss_flow(test_name, flow, node, dest_ip, dest_port):
         ax.set_xlabel('Time(s)')
         ax.set_ylabel(param)
 
-        fig.savefig('ss_{test_name}_{node}_{param}_{dest_ip}:{dest_port}.png'.format(test_name = test_name, 
+        fig.savefig('ss_{exp_name}_{node}_{param}_{dest_ip}:{dest_port}.png'.format(exp_name = exp_name, 
             node = node, param = param, dest_ip = dest_ip, dest_port = dest_port))
         plt.close(fig)
 
-def plot_ss(test_name, parsed_data):
+def plot_ss(exp_name, parsed_data):
     """
     Plot statistics obtained from ss
 
-    :param test_name: Name of test for which results were obtained
-    :type test_name: string
+    :param exp_name: Name of experiment for which results were obtained
+    :type exp_name: string
     :param parsed_data: JSON data parsed from ss
     :type parsed_data: Dict
     """
@@ -108,5 +108,5 @@ def plot_ss(test_name, parsed_data):
                 flow_data = connection[dest_ip]
                 for dest_port in flow_data:             
                     flow = flow_data[dest_port]
-                    _plot_ss_flow(test_name, flow, node, dest_ip, dest_port)
+                    _plot_ss_flow(exp_name, flow, node, dest_ip, dest_port)
 

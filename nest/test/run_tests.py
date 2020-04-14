@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
-# Script to be run for running tests on the namespaces
+# Script to be run for running experiments on the namespaces
 # with the json file configurations as command line arguments
 
 import json
@@ -13,7 +13,7 @@ from .tc_parse import parse_qdisc
 from .netperf import run_netperf, run_netserver
 from ..topology_map import TopologyMap
 from .results import SsResults, NetperfResults
-from .test import Test
+from .test import Experiment
 from .. import engine
 from .plot import plot_ss
 
@@ -26,16 +26,16 @@ def fetch_router_stats(ns_name, config):
     pass
 
 
-def parse_config(test):
+def parse_config(exp):
     """
-    Retrieves the test object and calls the parsing function
+    Retrieves the experiment object and calls the parsing function
 
-    :param test: The test attributes
-    :type test: Test
+    :param exp: The experiment attributes
+    :type exp: Experiment
     """
 
     workers = []
-    flows = test.get_flows()
+    flows = exp.get_flows()
 
     ss_run = {}
     ss_lock = Lock()
@@ -48,7 +48,6 @@ def parse_config(test):
         # here Process is used instead of Thread to take advantage to multiple cores
         for i in range(n_flows):
             workers.append(Process(target=run_netperf, args=(src_ns, dst_addr, start_t, netperf_lock, cong_alg, stop_t-start_t)))
-        # workers.append(Process(target=parse_ss, args=(test['src_ns'], test['dst_addr'], [], test['start_t'], test['stop_t'] - test['start_t'])))
         
         # Find the start time and stop time to run ss command in `src_ns` to a `dst_addr`
         if (src_ns, dst_addr) not in ss_run:
@@ -72,13 +71,13 @@ def parse_config(test):
     NetperfResults.output_to_file()
 
     # Dump plots as images
-    plot_ss(test.get_name(), SsResults.get_results())    
+    plot_ss(exp.get_name(), SsResults.get_results())    
 
     ### Cleanup ###
     # TODO: Make cleanup more explicit rather than
     # as part of parse_config?
 
-    # Remove results of the test
+    # Remove results of the experiment
     SsResults.remove_all_results()
     NetperfResults.remove_all_results()
 

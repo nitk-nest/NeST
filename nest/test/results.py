@@ -14,7 +14,7 @@ netperf_results_q.put({})
 
 class SsResults:
     """
-    This class aggregates the ss stats from the entire test environment
+    This class aggregates the ss stats from the entire experiment environment
     """
     @staticmethod
     def add_result(ns_name, result):
@@ -37,7 +37,7 @@ class SsResults:
     @staticmethod
     def remove_all_results():
         """
-        Remove all results obtained from the test
+        Remove all results obtained from the experiment
         """
         ss_results_q.get()
         ss_results_q.put({})
@@ -45,7 +45,7 @@ class SsResults:
     @staticmethod
     def get_results():
         """
-        Get results obtained in the test so far
+        Get results obtained in the experiment so far
         """
         ss_results = ss_results_q.get()
         ss_results_q.put(ss_results)
@@ -65,7 +65,7 @@ class SsResults:
 
 class NetperfResults:
     """
-    This class aggregates the netperf stats from the entire test environment
+    This class aggregates the netperf stats from the entire experiment environment
     """
     @staticmethod
     def add_result(ns_name, result):
@@ -90,7 +90,7 @@ class NetperfResults:
     @staticmethod
     def remove_all_results():
         """
-        Remove all results obtained from the test
+        Remove all results obtained from the experiment
         """ 
         netperf_results_q.get()
         netperf_results_q.put({})
@@ -98,7 +98,7 @@ class NetperfResults:
     @staticmethod
     def get_results():
         """
-        Get results obtained in the test so far
+        Get results obtained in the experiment so far
         """
         netperf_results = netperf_results_q.get()
         netperf_results_q.put(netperf_results)
