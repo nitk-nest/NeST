@@ -8,7 +8,7 @@ import sys
 
 sys.path.append('../')
 from nest.topology import *
-from nest.test import *
+from nest.experiment import *
 
 ##############################
 # Topology
@@ -39,6 +39,6 @@ r_n1.set_attributes('100mbit', '5ms')
 r_n2.set_attributes('10mbit', '40ms', 'pie')
 n2_r.set_attributes('10mbit', '40ms')
 
-test = Test('tcp_1up')
-test.add_flow(Flow(n1, n2, n2_r.get_address(), 0, 20, 1))
-test.run()
+exp = Experiment('tcp_1up')
+exp.add_flow(Flow(n1, n2, n2_r.get_address(), 0, 20, 1))
+exp.run()

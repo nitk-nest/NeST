@@ -9,7 +9,7 @@ import sys
 sys.path.append('../')
 
 from nest.topology import *
-from nest.test import *
+from nest.experiment import *
 
 #############################################
 # This is an implementation of gfc-1 topology

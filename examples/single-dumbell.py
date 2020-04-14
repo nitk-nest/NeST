@@ -9,7 +9,7 @@ import sys
 sys.path.append('../')
 
 from nest.topology import *
-from nest.test import *
+from nest.experiment import *
 
 ################################################
 # Topology
@@ -74,41 +74,41 @@ eth_r2p2.set_attributes('100mbit', '5ms')
 eth_r1r2.set_attributes('10mbit', '40ms', 'pie')
 eth_r2r1.set_attributes('10mbit', '40ms', 'pie') 
 
-### Add test to run ###
+### Add experiment to run ###
 
-# 'Flow objects' to be added to relevant tests
+# 'Flow objects' to be added to relevant experiments
 flow1 = Flow(peer1, peer2, eth_p2r2.get_address(), 0, 10, 4)
 flow2 = Flow(peer2, peer1, eth_p1r1.get_address(), 0, 10, 4)
 
-# First test
-test1 = Test('tcp_4up')
-test1.add_flow(flow1)
-test1.require_node_stats(peer1, ['cwnd'])
-test1.require_qdisc_stats(eth_r1r2, ['qlen'])
+# First experiment
+exp1 = Experiment('tcp_4up')
+exp1.add_flow(flow1)
+exp1.require_node_stats(peer1, ['cwnd'])
+exp1.require_qdisc_stats(eth_r1r2, ['qlen'])
 
-# Second test
-test2 = Test('tcp_4down')
-test2.add_flow(flow2)
-test2.require_node_stats(peer2, ['rtt'])
-test2.require_qdisc_stats(eth_r2r1, ['latency'])
+# Second experiment
+exp2 = Experiment('tcp_4down')
+exp2.add_flow(flow2)
+exp2.require_node_stats(peer2, ['rtt'])
+exp2.require_qdisc_stats(eth_r2r1, ['latency'])
 
-# Third test
-test3 = Test('tcp_4up&down')
-test3.add_flow(flow1)
-test3.add_flow(flow2)
-test3.require_node_stats(peer1, ['cwnd', 'rtt'])
-test3.require_node_stats(peer2, ['cwnd', 'rtt'])
+# Third experiment
+exp3 = Experiment('tcp_4up&down')
+exp3.add_flow(flow1)
+exp3.add_flow(flow2)
+exp3.require_node_stats(peer1, ['cwnd', 'rtt'])
+exp3.require_node_stats(peer2, ['cwnd', 'rtt'])
 
-### Run the test! ###
+### Run the experiment! ###
 
-# Run these tests sequentially; seperately
-test1.run()
+# Run these experiments sequentially; seperately
+exp1.run()
 
-# TODO: Running multiple tests haven't been
+# TODO: Running multiple experiments haven't been
 # tested properly yet
-# TODO: Running to multiple flows in a test 
+# TODO: Running to multiple flows in a experiment 
 # is leading to unexpected behaviour. These needs
 # to be looked at closely
 
-# test2.run()
-# test3.run()
+# exp2.run()
+# exp3.run()
