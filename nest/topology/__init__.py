@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
-from .topology import Node, Router, Interface, Veth, connect
+from .node import Node, Router
+from .interface import Interface, Veth, connect
 from .address import Address, Subnet
 from . import logging
 
