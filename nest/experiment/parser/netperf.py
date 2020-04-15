@@ -9,8 +9,7 @@ import re
 import time
 import json
 
-import nest.topology.id_generator as id_generator
-from .results import NetperfResults
+from ..results import NetperfResults
 
 RUNTIME = 10
 INTERVAL = 0.2

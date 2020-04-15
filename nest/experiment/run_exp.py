@@ -8,21 +8,12 @@ import json
 from multiprocessing import Process, Lock
 import time
 
-from .ss_parse import parse_ss
-from .netperf import run_netperf, run_netserver
+from .parser.ss import parse_ss
+from .parser.netperf import run_netperf, run_netserver
 from ..topology_map import TopologyMap
 from .results import SsResults, NetperfResults
 from .. import engine
-from .plot import plot_ss
-
-def fetch_host_stats(ns_name, config):
-    parse_ss(ns_name, config['destination'], config['stats_to_plot'] , 2)
-
-
-def fetch_router_stats(ns_name, config):
-    parse_qdisc(ns_name, config['stats_to_plot'], 2)
-    pass
-
+from .plotter.ss import plot_ss
 
 def parse_config(exp):
     """

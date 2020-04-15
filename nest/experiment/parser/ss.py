@@ -7,8 +7,7 @@ import json
 import time
 import numpy as np
 
-import nest.topology.id_generator as id_generator
-from .results import SsResults
+from ..results import SsResults
 
 INTERVAL = 0.2
 RUN_TIME = 60
