@@ -7,7 +7,6 @@ import json
 import time
 import numpy as np
 
-from . import utils
 import nest.topology.id_generator as id_generator
 from .results import SsResults
 
@@ -99,48 +98,7 @@ def parse(ns_name, param_list, destination_ip, lock):
     SsResults.add_result(ns_name, {destination_ip: stats_dict_list})
     lock.release()
 
-def parse_and_plot(filename, parameters):
-    """
-
-    parses the json from a file and plots time vs `parameter`
-
-    :param filename: path of the json file
-    :type filename: string
-    :param paramter: parameters to be plotted (eg. cwnd, rtt)
-    :type parameter: list of strings
-    """
-    f = open(filename, 'r')
-
-    # stats stores the json object as list of dicts with timestamp as keys
-    stats = json.load(f)
-
-    x = list()
-    y = np.empty((len(parameters), int(RUN_TIME/INTERVAL)+1))
-
-    param_map = {}
-
-    for i in range(len(parameters)):
-        param_map[parameters[i]] = i
-
-    # Loops through the list of dicts and stores the values of timestamps
-    # in x and value of the required `paramter` in y for plotting
-    index = 0
-    for stat in stats:
-        for key, val in stat.items():
-            x.append(float(key))
-            for param, value in val.items():
-                if param in parameters:
-                    try:
-                        y[param_map[param], index] = float(value)
-                    except:
-                        y[param_map[param], index] = 0.0
-            index = index + 1
-    # utils.plot(x, y, xlabel='time', ylabel=parameter)
-    utils.sub_plots(x, y, xlabel='time', ylabel=parameters)
-    f.close()
-
 # TODO: Integrate with nest
-
 
 def parse_ss(ns_name, destination_ip, stats_to_plot, start_time, run_time, lock):
     param_list = ['cwnd', 'rwnd', 'rtt', 'ssthresh', 'rto', 'delivery_rate']

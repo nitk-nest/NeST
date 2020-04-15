@@ -9,7 +9,6 @@ from multiprocessing import Process, Lock
 import time
 
 from .ss_parse import parse_ss
-from .tc_parse import parse_qdisc
 from .netperf import run_netperf, run_netserver
 from ..topology_map import TopologyMap
 from .results import SsResults, NetperfResults
