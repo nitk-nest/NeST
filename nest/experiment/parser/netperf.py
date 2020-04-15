@@ -8,6 +8,7 @@ import subprocess
 import re
 import time
 import json
+import copy
 
 from ..results import NetperfResults
 
@@ -15,34 +16,43 @@ RUNTIME = 10
 INTERVAL = 0.2
 
 # NOTE: LOCAL_INTERFACE_* deprecated in netperf 2.7.0
-NETPERF_TCP_OPTIONS = [
-    "THROUGHPUT", "LOCAL_CONG_CONTROL", "REMOTE_CONG_CONTROL", "TRANSPORT_MSS", "LOCAL_TRANSPORT_RETRANS",
-    "REMOTE_TRANSPORT_RETRANS", "LOCAL_SOCKET_TOS", "REMOTE_SOCKET_TOS", "DIRECTION", "ELAPSED_TIME",
-    "PROTOCOL", "LOCAL_SEND_SIZE", "LOCAL_RECV_SIZE", "REMOTE_SEND_SIZE", "REMOTE_RECV_SIZE", "LOCAL_BYTES_SENT",
-    "LOCAL_BYTES_RECVD", "REMOTE_BYTES_SENT", "REMOTE_BYTES_RECVD"
+TCP_OUTPUT_OPTIONS = [
+    'THROUGHPUT', 'LOCAL_CONG_CONTROL', 'REMOTE_CONG_CONTROL', 'TRANSPORT_MSS', 'LOCAL_TRANSPORT_RETRANS',
+    'REMOTE_TRANSPORT_RETRANS', 'LOCAL_SOCKET_TOS', 'REMOTE_SOCKET_TOS', 'DIRECTION', 'ELAPSED_TIME',
+    'PROTOCOL', 'LOCAL_SEND_SIZE', 'LOCAL_RECV_SIZE', 'REMOTE_SEND_SIZE', 'REMOTE_RECV_SIZE', 'LOCAL_BYTES_SENT',
+    'LOCAL_BYTES_RECVD', 'REMOTE_BYTES_SENT', 'REMOTE_BYTES_RECVD'
 ]
 
-DEFAULT_NETPERF_OPTIONS = [
-    "-P 0",                     # disable test banner
-    "-4",                       # IPv4 Addresses
-    "-t TCP_STREAM",            # Test type (NOTE: TCP_STREAM only for now)
-    "-F /dev/urandom",          # file to transmit (NOTE: Inspired from flent)
-    "-l 10",                    # Length of test (NOTE: Default 10s)
-    "-D -{}".format(INTERVAL),  # generated interim results every INTERVAL secs
-]
+DEFAULT_NETPERF_OPTIONS = {
+    'banner'    : '-P 0',                       # Disable test banner
+    'ipv4'      : '-4',                         # IPv4 Addresses
+    'testname'  : '-t TCP_STREAM',              # Test type (NOTE: TCP_STREAM only for now)
+    'fill_file' : '-F /dev/urandom',            # File to transmit (NOTE: Inspired from flent)
+    'testlen'   : '-l {}'.format(RUNTIME),      # Length of test (NOTE: Default 10s)
+    'intervel'  : '-D -{}'.format(INTERVAL),    # Generated interim results every INTERVAL secs
+}
 
+NETPERF_TCP_OPTIONS = {
+    'cong_algo' : '-K cubic',                   # Congestion algorithm
+    'stats'     : '-k THROUGHPUT'               # Stats required
+}
+
+NETPERF_UDP_OPTIONS = {
+    'routing'   : '-R 1',                       # Enable routing
+    'stats'     : '-k THROUGHPUT'               # Stats required 
+}
 
 def run_test_commands(cmd, block=False):
     """
-	runs the netperf or netserver command
+    runs the netperf or netserver command
 
-	:param cmd: complete command to be run
-	:type cmd: string
+    :param cmd: complete command to be run
+    :type cmd: string
     :param block: flag to indicate whether to wait for the `cmd` output
     :type block: boolean
 
-	:return output of the command
-	"""
+    :return output of the command
+    """
     proc = subprocess.Popen(
         cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
@@ -112,21 +122,44 @@ def parse_stats(raw_stats, ns_name, lock):
     lock.release()
 
 
-def run_netperf(ns_name, destination_ip, start_time, lock, cong_alg, run_time=10):
+def run_netperf(ns_name, destination_ip, start_time, lock, run_time, **kwargs):
     """
-        Run netperf in `ns_name`
+    Run netperf in `ns_name`
 
-        :param namespace: namespace to run netperf on
-        :type namespace: Namespace
-        """
+    :param namespace: namespace to run netperf on
+    :type namespace: Namespace
+    :param destination_ip: IP with netserver running
+    :type destination_ip: string
+    :param start_time: Time to start running netperf
+    :type start_time: int
+    :param lock: netperf Process lock
+    :type lock: Lock
+    :param run_time: netperf runtime
+    :type run_time: int
+    :param **kwargs: netperf specific options
+    :type **kwargs: dict
+    """
 
-    global DEFAULT_NETPERF_OPTIONS
+    options = copy.copy(DEFAULT_NETPERF_OPTIONS)
+    test_options = None
 
-    DEFAULT_NETPERF_OPTIONS[4] = '-l {}'.format(run_time)  # change the default runtime
+    options['testlen'] = '-l {}'.format(run_time)       # Change the default runtime
+    options['testname'] = '-t {}'.format(kwargs['testname'])    # Set test
 
-    cmd = 'ip netns exec {ns_name} netperf {options} -H {destination}' \
-        ' -- -K {cong_alg} -k {test_options}'.format(ns_name=ns_name, options = " ".join(DEFAULT_NETPERF_OPTIONS),
-                                       destination= destination_ip, cong_alg=cong_alg, test_options=",".join(NETPERF_TCP_OPTIONS))
+    if options['testname'] == '-t TCP_STREAM':
+        test_options = copy.copy(NETPERF_TCP_OPTIONS)
+        test_options['cong_alg'] = '-K {}'.format(kwargs['cong_algo'])
+    elif options['testname'] == '-t UDP_STREAM':
+        test_options = copy.copy(NETPERF_UDP_OPTIONS)
+
+    options_list = list(options.values())
+    options_string = ' '.join(options_list)
+    test_options_list = list(test_options.values())
+    test_options_string = ' '.join(test_options_list)
+
+    cmd = 'ip netns exec {ns_name} netperf {options} -H {destination} -- {test_options}'.format(
+            ns_name = ns_name, options = options_string, destination = destination_ip, 
+            test_options = test_options_string)
 
     if(start_time != 0):
         time.sleep(start_time)

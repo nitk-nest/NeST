@@ -4,9 +4,10 @@
 # User API to setup and run experiments
 # on a given topology
 
+import copy
 from ..topology import Address, Node, Router, Interface
 from ..topology_map import TopologyMap
-from . import run_exp
+from .run_exp import run_experiment
 from .. import error_handling
 
 class Flow():
@@ -15,7 +16,7 @@ class Flow():
     """
 
     def __init__(self, source_node, destination_node, destination_address, start_time, stop_time, 
-            number_of_flows, cong_alg='cubic'):
+            number_of_flows):
         """
         'Flow' object in the topology
 
@@ -31,8 +32,6 @@ class Flow():
         :type stop_time: int
         :param number_of_flows: Number of flows
         :type number_of_flows: int
-        :param cong_alg: congestion algorithm to be used during the flow. Defaults to cubic
-        :type cong_alg: string
         """
 
         self.set_source_node(source_node)
@@ -41,7 +40,7 @@ class Flow():
         self.set_start_time(start_time)
         self.set_stop_time(stop_time)
         self.set_number_of_flows(number_of_flows)
-        self.set_cong_alg(cong_alg)
+        self.options = None
 
     def set_source_node(self, source_node):
         """
@@ -110,17 +109,17 @@ class Flow():
         error_handling.type_verify('number_of_flows', number_of_flows, 'int', int)
         self.number_of_flows = number_of_flows
 
-    def set_cong_alg(self, cong_alg):
+    def _set_options(self, options):
         """
-        Setter for congestion algorithm to be used in flow
+        Setter for flow options
 
-        :param cong_alg: congestion algorithm to be used during the flow. Defaults to cubic
-        :type cong_alg: string
+        :param options: Flow options
+        :type options: dict
         """
         
-        # TODO: Verify if cong_algo is of right type
-        self.cong_alg = cong_alg
-     
+        self.options = options
+
+
     def get_source_node(self):
         """
         Getter for source node of flow
@@ -163,13 +162,6 @@ class Flow():
 
         return self.number_of_flows
 
-    def get_cong_alg(self):
-        """
-        Getter for congestion control algorithm used in flow
-        """
-
-        return self.cong_alg
-
     def _get_props(self):
         """
         Get flow properties.
@@ -178,7 +170,7 @@ class Flow():
 
         return [self.source_node.get_id(), self.destination_node.get_id(),
                 self.destination_address.get_addr(with_subnet=False), 
-                self.start_time, self.stop_time, self.number_of_flows, self.cong_alg]
+                self.start_time, self.stop_time, self.number_of_flows, self.options]
 
 class Experiment():
 
@@ -202,22 +194,53 @@ class Experiment():
         self.node_stats = []
         self.qdisc_stats = []
 
-    def add_flow(self, flows):
+    def add_flow(self, flow):
         """
         Add flow to experiment
+        By default, the flow is assumed to be
+        TCP with cubic congestion algorithm
 
-        :param flows: Add flow to experiment
-        :type flows: list(Flow)
+        :param flow: Add flow to experiment
+        :type flow: flow
         """
 
-        if type(flows) is list:
-            for flow in flows:
-                error_handling.type_verify('Flow', flow, 'Flow', Flow)
-                self.flows.append(flow)
-        else:
-            flow = flows
-            error_handling.type_verify('Flow', flow, 'Flow', Flow)
-            self.flows.append(flow)
+        error_handling.type_verify('Flow', flow, 'Flow', Flow)
+        self.flows.append(copy.deepcopy(flow))
+
+    def add_tcp_flow(self, flow, congestion_algorithm='cubic'):
+        """
+        Add TCP flow to experiment
+
+        :param flow: Flow to be added to experiment
+        :type flow: Flow
+        :param congestion_algorithm: TCP congestion algorithm
+        :type congestion_algorithm: string
+        """
+
+        # TODO: Verify congestion algorithm
+        
+        options = {
+            'protocol' : 'TCP',
+            'cong_algo': congestion_algorithm 
+        }
+
+        flow._set_options(options)
+        self.add_flow(flow)
+
+    def add_udp_flow(self, flow):
+        """
+        Add UDP flow to experiment
+
+        :param flow: Flow to be added to experiment
+        :type flow: Flow
+        """
+        
+        options = {
+            'protocol' : 'UDP',
+        }
+
+        flow._set_options(options)
+        self.add_flow(flow)
 
     def require_node_stats(self, node, stats=''):
         """
@@ -296,4 +319,4 @@ class Experiment():
 
         # TopologyMap.dump()
         print('Running experiment ' + self.name)
-        run_exp.parse_config(self) 
+        run_experiment(self) 
