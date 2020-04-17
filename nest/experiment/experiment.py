@@ -219,7 +219,7 @@ class Experiment():
             error_handling.type_verify('Flow', flow, 'Flow', Flow)
             self.flows.append(flow)
 
-    def require_node_stats(self, node, stats):
+    def require_node_stats(self, node, stats=''):
         """
         Stats to be obtained from node
         in the experiment
@@ -233,19 +233,19 @@ class Experiment():
         # TODO: Leads to rewrite if the function is called
         # twice with same 'node'
 
-        error_handling.type_verify('Node', node, 'Node', Node)
-        error_handling.type_verify('Stats', stats, 'list', list)
+        # error_handling.type_verify('Node', node, 'Node', Node)
+        # error_handling.type_verify('Stats', stats, 'list', list)
 
-        for stat in stats:
-            if stat not in Experiment.node_stats:
-                raise ValueError('{} is not a valid Node property.'.format(stat))
+        # for stat in stats:
+        #     if stat not in Experiment.node_stats:
+        #         raise ValueError('{} is not a valid Node property.'.format(stat))
 
         self.node_stats.append({
             'id': node.get_id(),
             'stats': stats
         })
 
-    def require_qdisc_stats(self, interface, stats):
+    def require_qdisc_stats(self, interface, stats=''):
         """
         Stats to be obtained from qdisc in interface
 
@@ -258,19 +258,19 @@ class Experiment():
         # TODO: Leads to rewrite if the function is called
         # twice with same 'interface'
 
-        error_handling.type_verify('Interface', interface, 'Interface', Interface)
-        error_handling.type_verify('Stats', stats, 'list', list)
+        # error_handling.type_verify('Interface', interface, 'Interface', Interface)
+        # error_handling.type_verify('Stats', stats, 'list', list)
 
-        for stat in stats:
-            if stat not in Experiment.qdisc_stats:
-                raise ValueError('{} is not a valid Queue property.'.format(stat))
+        # for stat in stats:
+        #     if stat not in Experiment.qdisc_stats:
+        #         raise ValueError('{} is not a valid Queue property.'.format(stat))
 
         if interface.get_qdisc() is None:
             raise ValueError('Given interface hasn\'t been assigned any qdisc.')
 
         self.qdisc_stats.append({
             'ns_id': interface.get_namespace(),
-            'int_id': interface.get_id(),
+            'int_id': interface.ifb.get_id(),
             'qdisc_handle': interface.get_qdisc().handle,
             'stats': stats
         })

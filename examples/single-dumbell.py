@@ -71,7 +71,7 @@ eth_p2r2.set_attributes('100mbit', '5ms')
 eth_r2p2.set_attributes('100mbit', '5ms')
 
 # Bottleneck link
-eth_r1r2.set_attributes('10mbit', '40ms', 'pie')
+eth_r1r2.set_attributes('10mbit', '40ms', 'codel')
 eth_r2r1.set_attributes('10mbit', '40ms', 'pie') 
 
 ### Add experiment to run ###
@@ -83,21 +83,22 @@ flow2 = Flow(peer2, peer1, eth_p1r1.get_address(), 0, 10, 4)
 # First experiment
 exp1 = Experiment('tcp_4up')
 exp1.add_flow(flow1)
-exp1.require_node_stats(peer1, ['cwnd'])
-exp1.require_qdisc_stats(eth_r1r2, ['qlen'])
+exp1.require_node_stats(peer1)
+exp1.require_qdisc_stats(eth_r1r2)
+exp1.require_qdisc_stats(eth_r2r1)
 
 # Second experiment
 exp2 = Experiment('tcp_4down')
 exp2.add_flow(flow2)
-exp2.require_node_stats(peer2, ['rtt'])
-exp2.require_qdisc_stats(eth_r2r1, ['latency'])
+exp2.require_node_stats(peer2)
+exp2.require_qdisc_stats(eth_r2r1)
 
 # Third experiment
 exp3 = Experiment('tcp_4up&down')
 exp3.add_flow(flow1)
 exp3.add_flow(flow2)
-exp3.require_node_stats(peer1, ['cwnd', 'rtt'])
-exp3.require_node_stats(peer2, ['cwnd', 'rtt'])
+exp3.require_node_stats(peer1)
+exp3.require_node_stats(peer2)
 
 ### Run the experiment! ###
 

@@ -10,8 +10,9 @@ import time
 
 from .parser.ss import parse_ss
 from .parser.netperf import run_netperf, run_netserver
+from .parser.tc import parse_qdisc
 from ..topology_map import TopologyMap
-from .results import SsResults, NetperfResults
+from .results import SsResults, NetperfResults, TcResults
 from .. import engine
 from .plotter.ss import plot_ss
 
@@ -29,9 +30,14 @@ def parse_config(exp):
     ss_run = {}
     ss_lock = Lock()
     netperf_lock = Lock()
+
+    exp_start = float('inf')
+    exp_end = float('-inf')
     
     for flow in flows:
         [src_ns, dst_ns, dst_addr, start_t, stop_t, n_flows, cong_alg] = flow._get_props()
+        exp_start = min(exp_start, start_t)
+        exp_end = max(exp_end, stop_t)
         run_netserver(dst_ns)
         # create new processes to be run simultaneously
         # here Process is used instead of Thread to take advantage to multiple cores
@@ -48,6 +54,9 @@ def parse_config(exp):
     for key, value in ss_run.items():
         workers.append(Process(target=parse_ss, args=(key[0], key[1], [], value[0], value[1] - value[0], ss_lock)))
 
+    for qdisc_stat in exp.qdisc_stats:
+        workers.append(Process(target=parse_qdisc, args=(qdisc_stat['ns_id'].get_id(), qdisc_stat['int_id'], [], exp_end)))
+
     # start all the processes
     for worker in workers:
         worker.start()
@@ -58,6 +67,8 @@ def parse_config(exp):
     
     SsResults.output_to_file()
     NetperfResults.output_to_file()
+    TcResults.output_to_file()
+
 
     # Dump plots as images
     plot_ss(exp.get_name(), SsResults.get_results())    
@@ -69,6 +80,7 @@ def parse_config(exp):
     # Remove results of the experiment
     SsResults.remove_all_results()
     NetperfResults.remove_all_results()
+    TcResults.remove_all_results()
 
     # Kill any running processes in namespaces
     for namespace in TopologyMap.get_namespaces():

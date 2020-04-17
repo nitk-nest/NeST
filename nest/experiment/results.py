@@ -13,6 +13,9 @@ ss_results_q.put({})
 netperf_results_q = Manager().Queue()
 netperf_results_q.put({})
 
+tc_results_q = Manager().Queue()
+tc_results_q.put({})
+
 class SsResults:
     """
     This class aggregates the ss stats from the entire experiment environment
@@ -128,5 +131,66 @@ class NetperfResults:
         json_stats = json.dumps(netperf_results, indent=4)
         timestamp = time.strftime("%d-%m-%Y-%H:%M:%S")
         filename = str(timestamp) + ' netperf-parse-results.json'
+        with open(filename, 'w') as f:
+            f.write(json_stats)
+
+
+class TcResults:
+    """
+    This class aggregates the tc stats from the entire experiment environment
+    """
+    @staticmethod
+    def add_result(ns_id, result):
+        """
+        Adds the tc `result` to the shared `tc_results`
+
+        :param ns_id: namespace id of the flow (Nest's internal name)
+        :type ns_id: string
+        :param result: parsed tc stats
+        :type result: dict
+        """
+
+        # Convert nest's internal name to user given name
+        ns_name = TopologyMap.get_namespace(ns_id)['name']
+
+        item = tc_results_q.get()
+        if ns_name not in item:
+            item[ns_name] = [result]
+        else:
+            temp = item[ns_name]
+            temp.append(result)
+            item[ns_name] = temp
+
+        tc_results_q.put(item)
+
+    @staticmethod
+    def remove_all_results():
+        """
+        Remove all results obtained from the experiment
+        """ 
+
+        tc_results_q.get()
+        tc_results_q.put({})
+
+    @staticmethod
+    def get_results():
+        """
+        Get results obtained in the experiment so far
+        """
+
+        tc_results = tc_results_q.get()
+        tc_results_q.put(tc_results)
+        return tc_results
+
+    @staticmethod
+    def output_to_file():
+        """
+        Outputs the aggregated tc stats to file
+        """
+
+        tc_results = TcResults.get_results()
+        json_stats = json.dumps(tc_results, indent=4)
+        timestamp = time.strftime("%d-%m-%Y-%H:%M:%S")
+        filename = str(timestamp) + ' tc-parse-results.json'
         with open(filename, 'w') as f:
             f.write(json_stats)
