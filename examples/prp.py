@@ -39,6 +39,10 @@ r_n1.set_attributes('100mbit', '5ms')
 r_n2.set_attributes('10mbit', '40ms', 'pie')
 n2_r.set_attributes('10mbit', '40ms')
 
-exp = Experiment('tcp_1up')
-exp.add_flow(Flow(n1, n2, n2_r.get_address(), 0, 20, 1))
+flow = Flow(n1, n2, n2_r.get_address(), 0, 20, 2)
+flow_udp = Flow(n1, n2, n2_r.get_address(), 0, 20, 1)
+
+exp = Experiment('tcp+udp')
+exp.add_udp_flow(flow_udp)
+exp.add_tcp_flow(flow)
 exp.run()
