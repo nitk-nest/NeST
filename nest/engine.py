@@ -37,10 +37,11 @@ def exec_subprocess(cmd, block = True, shell = False, verbose = False, output = 
     if verbose:
         print('[INFO] ' + cmd)
 
+    temp_cmd = cmd
     if shell is False:
-        cmd = cmd.split()
+        temp_cmd = cmd.split()
 
-    proc = subprocess.Popen(cmd, stdout = subprocess.PIPE, stderr = subprocess.PIPE, shell = shell)
+    proc = subprocess.Popen(temp_cmd, stdout = subprocess.PIPE, stderr = subprocess.PIPE, shell = shell)
     # proc = subprocess.Popen(cmd.split())
     if block:
         (stdout, stderr) = proc.communicate()
@@ -230,7 +231,7 @@ def kill_all_processes(ns_name):
     :type ns_name: string
     """
 
-    exec_subprocess('ip netns pids {ns_name} | xargs kill'.format(ns_name = ns_name), shell = True)
+    exec_subprocess('kill $(ip netns pids {ns_name})'.format(ns_name = ns_name), shell = True)
 
 # Only bandwith and latency is considered
 # Assuming tc on egress 
