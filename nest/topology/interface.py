@@ -126,6 +126,13 @@ class Interface:
             # Create our own error class
             raise NotImplementedError('You should assign the interface to node or router before assigning address to it.')
 
+    def get_subnet(self):
+        """
+        Getter for the subnet to which the address belongs to
+        """
+        return self.address.get_subnet()
+
+
     def set_mode(self, mode):
         """
         Changes the mode of the interface

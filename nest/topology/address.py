@@ -43,6 +43,13 @@ class Address:
         else:
             return self.ip_addr.split('/')[0]
 
+    def get_subnet(self):
+        """
+        Get the subnet of the given address
+        """
+        interface = ipaddress.ip_interface(self.ip_addr)
+        return interface.network.compressed
+
 class Subnet:
     """
     For generating sequential addresses in a subnet
