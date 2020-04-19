@@ -6,9 +6,12 @@ import json
 import subprocess
 import time
 import numpy as np
+from packaging import version
 from ..results import TcResults
+from nest import engine
+from nest.topology_map import TopologyMap
 
-INTERVAL = 1.0
+INTERVAL = 0.2
 RUN_TIME = 10
 STATS_TO_PLOT = list()
 
@@ -91,6 +94,63 @@ def clean_json(stats):
     stats = re.sub(value_pattern, repl, stats)
     return stats
 
+def old_kernel_version_parse_helper(command, start_time, qdisc_param, qdisc_re, aggregate_stats):
+    """
+    Parsing tc command on linux kernel versions
+    4.15.0 to 5.4
+    """
+    
+    # This loop runs the tc command every `INTERVAL`s for `RUN_TIME`s
+    while time.time() <= (start_time+RUN_TIME):
+        stats = run_tc(command)
+        stats = json.loads(clean_json(stats))
+        stats_dict = {}
+        cur_timestamp = time.time()
+        for qdisc_stat in stats:
+            qdisc = qdisc_stat['kind']
+            if(qdisc in ['codel', 'fq_codel', 'pie']):
+                handle = qdisc_stat['handle']
+                if handle not in aggregate_stats:
+                    aggregate_stats[handle] = []
+                qdisc_stat = qdisc_stat['qlen']
+                search_obj = qdisc_re[qdisc].search(qdisc_stat)
+                stats_dict['timestamp'] = str(cur_timestamp)
+                stats_dict['kind'] = qdisc
+                for param in qdisc_param[qdisc]:
+                    stats_dict[param] = search_obj.group(param)
+                aggregate_stats[handle].append(stats_dict)
+
+        time.sleep(INTERVAL)
+
+def new_kernel_version_parse_helper(command, start_time, qdisc_param, qdisc_re, aggregate_stats):
+    """
+    Parsing tc command on linux kernel version
+    5.5 and above
+    """
+    
+    # This loop runs the tc command every `INTERVAL`s for `RUN_TIME`s
+    while time.time() <= (start_time+RUN_TIME):
+        stats = run_tc(command)
+        stats = json.loads(clean_json(stats))
+        # print(json.dumps(stats, indent=4))
+        stats_dict = {}
+        cur_timestamp = time.time()
+        for qdisc_stat in stats:
+            qdisc = qdisc_stat['kind']
+            if qdisc in ['codel', 'fq_codel', 'pie']:
+                handle = qdisc_stat['handle']
+                if handle not in aggregate_stats:
+                    aggregate_stats[handle] = []
+
+                stats_dict['timestamp'] = str(cur_timestamp)
+                stats_dict.update(qdisc_stat)
+                stats_dict.pop('handle', None)
+                stats_dict.pop('options', None)
+                stats_dict.pop('parent', None)
+
+                aggregate_stats[handle].append(stats_dict)
+
+        time.sleep(INTERVAL)
 
 def parse(ns_name, dev, stats_to_plot):
     """
@@ -104,44 +164,26 @@ def parse(ns_name, dev, stats_to_plot):
     """
 
     command = 'ip netns exec {} tc -s -j qdisc show dev {}'.format(ns_name, dev)
-    json_stats = {}
-    cur_time = 0.0
-
-
-    # list to store the stats obtained at every interval
-    stats_list = list()
     start_time = time.time()
     qdisc_param = get_qdisc_specific_params()
     qdisc_re = get_qdisc_re()
     aggregate_stats = {}
 
-    # This loop runs the ss command every `INTERVAL`s for `RUN_TIME`s
-    while time.time() <= (start_time+RUN_TIME):
-        stats = run_tc(command)
-        stats = json.loads(clean_json(stats))
-        print(stats)
-        stats_dict = {}
-        cur_timestamp = time.time()
-        for qdisc_stat in stats:
-            qdisc = qdisc_stat['kind']
-            if(qdisc in ['codel', 'fq_codel', 'pie']):
-                print(qdisc)
-                handle = qdisc_stat['handle']
-                if handle not in aggregate_stats:
-                    aggregate_stats[handle] = []
-                qdisc_stat = qdisc_stat['qlen']
-                search_obj = qdisc_re[qdisc].search(qdisc_stat)
-                stats_dict['timestamp'] = cur_timestamp
-                stats_dict['aqm'] = qdisc
-                for param in qdisc_param[qdisc]:
-                    stats_dict[param] = search_obj.group(param)
-                aggregate_stats[handle].append(stats_dict)
+    # tc produces different JSON ouput format
+    # based on the kernel version
+    kernel_version = engine.get_kernel_version()
+    if version.parse(kernel_version) >= version.parse('5.5'):
+        new_kernel_version_parse_helper(command, start_time, qdisc_param, qdisc_re, aggregate_stats)
+    elif version.parse(kernel_version) >= version.parse('4.15.0'):
+        old_kernel_version_parse_helper(command, start_time, qdisc_param, qdisc_re, aggregate_stats)
+    else:
+        # TODO: Not sure if it's the right exception to raise
+        raise SystemError('NeST does not support tc parsing for kernel version below 4.15.0')
 
-        time.sleep(INTERVAL)
-
-    TcResults.add_result(ns_name, {dev : aggregate_stats})
+    # Store parsed results
+    dev_name = TopologyMap.get_interface(ns_name, dev)['name']
+    TcResults.add_result(ns_name, {dev_name : aggregate_stats})
     
-
 def parse_qdisc(ns_name, dev, stats_to_plot, run_time):
     """
     runs the tc parser

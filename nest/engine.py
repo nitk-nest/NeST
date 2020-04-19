@@ -548,9 +548,14 @@ def read_kernel_param(ns_name, prefix, param):
     """
     return exec_subprocess('ip netns exec {} sysctl -n {}{}'.format(ns_name, prefix, param), output=True)
 
+def get_kernel_version():
+    """
+    Get linux kernel version of the system
+    """
+    version = exec_subprocess('uname -r', output=True)
+    return version.split('-')[0]
 
-
-
+    
 # def del_filter(ns_name, dev_name, protocol, priority, filtertype, flowid, parent = '', handle = ''):
 #     """
 #     Add a filter to a class

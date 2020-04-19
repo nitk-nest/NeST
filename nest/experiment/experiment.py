@@ -40,7 +40,10 @@ class Flow():
         self.set_start_time(start_time)
         self.set_stop_time(stop_time)
         self.set_number_of_flows(number_of_flows)
-        self.options = None
+        self.options = {
+            'protocol' : 'TCP',
+            'cong_algo': 'cubic'
+        }
 
     def set_source_node(self, source_node):
         """
