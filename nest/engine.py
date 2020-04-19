@@ -42,10 +42,8 @@ def exec_subprocess(cmd, block = True, shell = False, verbose = False, output = 
         temp_cmd = cmd.split()
 
     proc = subprocess.Popen(temp_cmd, stdout = subprocess.PIPE, stderr = subprocess.PIPE, shell = shell)
-    # proc = subprocess.Popen(cmd.split())
     if block:
         (stdout, stderr) = proc.communicate()
-        # proc.communicate()
 
         if log_level > 0:
             LOGS.append({
@@ -58,6 +56,8 @@ def exec_subprocess(cmd, block = True, shell = False, verbose = False, output = 
 
     else:
         pass
+
+    return proc.returncode
 
 ############################################
 # CONVENTION: 
@@ -93,9 +93,27 @@ def en_ip_forwarding(ns_name):
     Enables ip forwarding in a namespace. Used for routers
 
     :param ns_name: namespace name
-    :type ns_name: String
+    :type ns_name: string
     """
     exec_subprocess('ip netns exec ' + ns_name + ' sysctl -w net.ipv4.ip_forward=1')
+
+def ping(ns_name, dest_addr):
+    """
+    Send a ping packet from ns_name to dest_addr
+    if possible
+
+    :param ns_name: namespace name
+    :type ns_name: string
+    :param dest_addr: address to ping to
+    :type desr_addr: string
+    :return: success of ping 
+    :r_type: boolean
+    """
+    status = exec_subprocess('ip netns exec {} ping -c1 -q {}'.format(ns_name, dest_addr))
+    if status == 0:
+        return True
+    else:
+        return False
 
 #TODO: delete a veth
 def create_veth(dev_name1, dev_name2):

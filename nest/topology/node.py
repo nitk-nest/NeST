@@ -82,7 +82,7 @@ class Namespace:
         if next_hop_addr != '':
             if type(next_hop_addr) == str:
                 next_hop_addr = Address(next_hop_addr)
-        else :
+        else:
             next_hop_addr = via_interface.get_pair().get_address()  
         
         engine.add_route(self.id, dest_addr.get_addr(with_subnet=False), next_hop_addr.get_addr(with_subnet=False), 
@@ -153,6 +153,32 @@ class Namespace:
 
         return engine.read_kernel_param(self.get_id(), 'net.ipv4.udp_', param)
 
+    def ping(self, destination_address, verbose = True):
+        """
+        Ping from current namespace to destination address
+        if there is a route.
+        To check if the topology is correctly implemented.
+
+        :param destination_address: Address to ping to
+        :type destination_address: string/Address
+        :param verbose: If should print ping success/failure details
+        :type verbose: boolean
+        :return: Success of ping
+        :r_type: boolean
+        """
+
+        if type(destination_address) == str:
+            destination_address = Address(dest_addr)
+
+        status = engine.ping(self.id, destination_address.get_addr(with_subnet=False))
+        if verbose:
+            if status:
+                print('SUCCESS: ', end='')
+            else:
+                print('FAILURE: ', end='')
+            print('ping from {} to {} '.format(self.name, 
+                destination_address.get_addr(with_subnet=False)))
+        return status
 
 class Node(Namespace):
     """
