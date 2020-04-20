@@ -13,11 +13,12 @@ def setup():
     # Imported within setup so that client
     # doesn't 'see' these packages
     import os, sys
-    from .topology_map import User
 
     if os.geteuid() != 0:
         print('nest: python package requires root access', file=sys.stderr)
         sys.exit(1)
+    
+    from .user import User
 
     # Update user information in Configuration
     if all(key in os.environ for key in ('SUDO_UID', 'SUDO_GID')):

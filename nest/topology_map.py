@@ -1,34 +1,10 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
-# Keep track of all information required to provide 
-# services by module. It's essentially a fancy global
-# variable :P
-
-# Information kept track are of
-# 1. User
-# 2. Topology
-
-class User():
-    """
-    User info like user_id and group_id stored here.
-    """
-
-    user_id = ''
-    group_id = ''
-
-    def __init__(self, user_id, group_id):
-        """
-        Initialize user info
-
-        :param user_id: User ID
-        :type user_id: int
-        :param group_id: User Group ID
-        :type group_id: int
-        """
-        
-        User.user_id = user_id
-        User.group_id = group_id
+# nest internally uses auto-generated unique id's to name
+# topologies.
+# This module holds the mapping between user given names and
+# nest's names.
 
 class TopologyMap():
 
