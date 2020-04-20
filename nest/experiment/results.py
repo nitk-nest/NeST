@@ -6,15 +6,79 @@ import time
 from multiprocessing import Manager, Lock, Queue
 from ..topology_map import TopologyMap
 
+class Results:
+    """
+    This class aggregates the stats from the entire experiment environment
+    """
+    @staticmethod
+    def add_result(results_q, ns_id, result):
+        """
+        Adds the stats parse from a process to the shared `results_q`
+        
+        :param results_q: Shared stats
+        :type results_q: multiprocessing.Manager.Queue
+        :param ns_id: namespace id (internal name)
+        :type ns_id: string
+        :param result: parsed stats
+        :type result: dict
+        """
+
+        # Convert nest's internal name to user given name
+        ns_name = TopologyMap.get_namespace(ns_id)['name']
+
+        item = results_q.get()
+        if ns_name not in item:
+            item[ns_name] = [result]
+        else:
+            temp = item[ns_name]
+            temp.append(result)
+            item[ns_name] = temp
+        results_q.put(item)
+
+    @staticmethod
+    def remove_all_results(results_q):
+        """
+        Remove all results obtained from the experiment
+
+        :param results_q: Shared stats
+        :type results_q: multiprocessing.Manager.Queue
+        """
+
+        results_q.get()
+        results_q.put({})
+    
+    @staticmethod
+    def get_results(results_q):
+        """
+        Get results obtained in the experiment so far
+
+        :param results_q: Shared stats
+        :type results_q: multiprocessing.Manager.Queue
+        """
+
+        results = results_q.get()
+        results_q.put(results)
+        return results
+
+    @staticmethod
+    def output_to_file(results_q, toolname):
+        """
+        Outputs the aggregated ss stats to file
+
+        :param results_q: Shared stats
+        :type results_q: multiprocessing.Manager.Queue
+        """
+
+        results = Results.get_results(results_q)
+        json_stats = json.dumps(results, indent=4)
+        timestamp = time.strftime("%d-%m-%Y-%H:%M:%S")
+        filename = str(timestamp) + ' {}-parse-results.json'.format(toolname)
+        with open(filename, 'w') as f:
+            f.write(json_stats)
+
 # Shared variables to aggregate results
 ss_results_q = Manager().Queue()
 ss_results_q.put({})
-
-netperf_results_q = Manager().Queue()
-netperf_results_q.put({})
-
-tc_results_q = Manager().Queue()
-tc_results_q.put({})
 
 class SsResults:
     """
@@ -24,23 +88,14 @@ class SsResults:
     def add_result(ns_id, result):
         """
         Adds the ss stats parse from a process to the shared `ss_results`
+
         :param ns_id: namespace id (internal name)
         :type ns_id: string
         :param result: parsed ss stats
         :type result: dict
         """
 
-        # Convert nest's internal name to user given name
-        ns_name = TopologyMap.get_namespace(ns_id)['name']
-
-        item = ss_results_q.get()
-        if ns_name not in item:
-            item[ns_name] = [result]
-        else:
-            temp = item[ns_name]
-            temp.append(result)
-            item[ns_name] = temp
-        ss_results_q.put(item)
+        Results.add_result(ss_results_q, ns_id, result)
 
     @staticmethod
     def remove_all_results():
@@ -48,18 +103,15 @@ class SsResults:
         Remove all results obtained from the experiment
         """
 
-        ss_results_q.get()
-        ss_results_q.put({})
-    
+        Results.remove_all_results(ss_results_q)
+
     @staticmethod
     def get_results():
         """
         Get results obtained in the experiment so far
         """
 
-        ss_results = ss_results_q.get()
-        ss_results_q.put(ss_results)
-        return ss_results
+        return Results.get_results(ss_results_q)
 
     @staticmethod
     def output_to_file():
@@ -67,12 +119,12 @@ class SsResults:
         Outputs the aggregated ss stats to file
         """
 
-        ss_results = SsResults.get_results()
-        json_stats = json.dumps(ss_results, indent=4)
-        timestamp = time.strftime("%d-%m-%Y-%H:%M:%S")
-        filename = str(timestamp) + ' ss-parse-results.json'
-        with open(filename, 'w') as f:
-            f.write(json_stats)
+        Results.output_to_file(ss_results_q, 'ss')
+
+
+# Shared variables to aggregate results
+netperf_results_q = Manager().Queue()
+netperf_results_q.put({})
 
 class NetperfResults:
     """
@@ -81,35 +133,23 @@ class NetperfResults:
     @staticmethod
     def add_result(ns_id, result):
         """
-        Adds the netperf `result` to the shared `netperf_results`
+        Adds the netperf stats parse from a process to the shared `netperf_results`
 
-        :param ns_id: namespace id of the flow (Nest's internal name)
+        :param ns_id: namespace id (internal name)
         :type ns_id: string
         :param result: parsed netperf stats
         :type result: dict
         """
 
-        # Convert nest's internal name to user given name
-        ns_name = TopologyMap.get_namespace(ns_id)['name']
-
-        item = netperf_results_q.get()
-        if ns_name not in item:
-            item[ns_name] = [result]
-        else:
-            temp = item[ns_name]
-            temp.append(result)
-            item[ns_name] = temp
-
-        netperf_results_q.put(item)
+        Results.add_result(netperf_results_q, ns_id, result)
 
     @staticmethod
     def remove_all_results():
         """
         Remove all results obtained from the experiment
-        """ 
+        """
 
-        netperf_results_q.get()
-        netperf_results_q.put({})
+        Results.remove_all_results(netperf_results_q)
 
     @staticmethod
     def get_results():
@@ -117,9 +157,7 @@ class NetperfResults:
         Get results obtained in the experiment so far
         """
 
-        netperf_results = netperf_results_q.get()
-        netperf_results_q.put(netperf_results)
-        return netperf_results
+        return Results.get_results(netperf_results_q)
 
     @staticmethod
     def output_to_file():
@@ -127,13 +165,12 @@ class NetperfResults:
         Outputs the aggregated netperf stats to file
         """
 
-        netperf_results = NetperfResults.get_results()
-        json_stats = json.dumps(netperf_results, indent=4)
-        timestamp = time.strftime("%d-%m-%Y-%H:%M:%S")
-        filename = str(timestamp) + ' netperf-parse-results.json'
-        with open(filename, 'w') as f:
-            f.write(json_stats)
+        Results.output_to_file(netperf_results_q, 'netperf')
 
+
+# Shared variables to aggregate results
+tc_results_q = Manager().Queue()
+tc_results_q.put({})
 
 class TcResults:
     """
@@ -142,35 +179,23 @@ class TcResults:
     @staticmethod
     def add_result(ns_id, result):
         """
-        Adds the tc `result` to the shared `tc_results`
+        Adds the tc stats parse from a process to the shared `tc_results`
 
-        :param ns_id: namespace id of the flow (Nest's internal name)
+        :param ns_id: namespace id (internal name)
         :type ns_id: string
         :param result: parsed tc stats
         :type result: dict
         """
 
-        # Convert nest's internal name to user given name
-        ns_name = TopologyMap.get_namespace(ns_id)['name']
-
-        item = tc_results_q.get()
-        if ns_name not in item:
-            item[ns_name] = [result]
-        else:
-            temp = item[ns_name]
-            temp.append(result)
-            item[ns_name] = temp
-
-        tc_results_q.put(item)
+        Results.add_result(tc_results_q, ns_id, result)
 
     @staticmethod
     def remove_all_results():
         """
         Remove all results obtained from the experiment
-        """ 
+        """
 
-        tc_results_q.get()
-        tc_results_q.put({})
+        Results.remove_all_results(tc_results_q)
 
     @staticmethod
     def get_results():
@@ -178,9 +203,7 @@ class TcResults:
         Get results obtained in the experiment so far
         """
 
-        tc_results = tc_results_q.get()
-        tc_results_q.put(tc_results)
-        return tc_results
+        return Results.get_results(tc_results_q)
 
     @staticmethod
     def output_to_file():
@@ -188,9 +211,4 @@ class TcResults:
         Outputs the aggregated tc stats to file
         """
 
-        tc_results = TcResults.get_results()
-        json_stats = json.dumps(tc_results, indent=4)
-        timestamp = time.strftime("%d-%m-%Y-%H:%M:%S")
-        filename = str(timestamp) + ' tc-parse-results.json'
-        with open(filename, 'w') as f:
-            f.write(json_stats)
+        Results.output_to_file(tc_results_q, 'tc')
