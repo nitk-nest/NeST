@@ -75,9 +75,9 @@ def _plot_ss_flow(exp_name, flow, node, dest_ip, dest_port):
         # Plot the values
         title = 'ss: {dest_ip}:{dest_port}'.format(dest_ip = dest_ip, dest_port = dest_port)
         fig = simple_plot(title, timestamp, flow_params[param], 'Time(s)', param)
-        filename = 'ss_{node}_{param}_{dest_ip}:{dest_port}.png'.format(node = node,
+        filename = '{node}_{param}_{dest_ip}:{dest_port}.png'.format(node = node,
                 param = param, dest_ip = dest_ip, dest_port = dest_port)
-        Pack.dump_plot(filename, fig)
+        Pack.dump_plot('ss', filename, fig)
         plt.close(fig)
 
 def plot_ss(exp_name, parsed_data):

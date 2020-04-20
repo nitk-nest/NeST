@@ -59,9 +59,9 @@ def _plot_tc_stats(exp_name, stats, node, interface):
     for param in stats_params:
         title = 'tc: {node}:{qdisc}'.format(node = node, qdisc = qdisc)
         fig = simple_plot(title, timestamp, stats_params[param], 'Time(s)', param)
-        filename = 'tc_{node}_{interface}_{qdisc}_{param}.png'.format(node = node,
+        filename = '{node}_{interface}_{qdisc}_{param}.png'.format(node = node,
             interface = interface, qdisc = qdisc, param = param)
-        Pack.dump_plot(filename, fig)
+        Pack.dump_plot('tc', filename, fig)
         plt.close(fig)
 
 def plot_tc(exp_name, parsed_data):

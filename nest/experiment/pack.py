@@ -42,20 +42,37 @@ class Pack():
         Pack.set_owner(path)
 
     @staticmethod
-    def dump_plot(filename, fig):
+    def dump_plot(subfolder, filename, fig):
         """
         Dump a plot into Pack.FOLDER
 
+        :param subfolder: Subfolder to which plot belongs to
+        :type subfolder: string
         :param filename: Name of plot
         :type filename: string
         :param fig: Plot figure to be stored in file
         :type fig: matplotlib.pyplot.fig
         """
 
-        path = os.path.join(Pack.FOLDER, filename)
+        Pack.create_subfolder(subfolder)
+        path = os.path.join(Pack.FOLDER, subfolder, filename)
         fig.savefig(path)
         Pack.set_owner(path)
             
+    @staticmethod
+    def create_subfolder(subfolder):
+        """
+        Create subfolder if it already doesn't exist
+
+        :param subfolder: Subfolder name
+        :type subfolder: string
+        """
+
+        path = os.path.join(Pack.FOLDER, subfolder)
+        if not os.path.isdir(path):
+            os.mkdir(path)
+            Pack.set_owner(path)
+
     @staticmethod
     def set_owner(path):
         """
