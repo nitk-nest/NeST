@@ -9,6 +9,7 @@ from ..topology import Address, Node, Router, Interface
 from ..topology_map import TopologyMap
 from .run_exp import run_experiment
 from .. import error_handling
+from .pack import Pack
 
 class Flow():
     """
@@ -322,4 +323,5 @@ class Experiment():
 
         # TopologyMap.dump()
         print('Running experiment ' + self.name)
+        Pack.init(self.get_name())
         run_experiment(self) 

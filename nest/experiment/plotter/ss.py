@@ -4,6 +4,8 @@
 import matplotlib.pyplot as plt
 import matplotlib.style as style
 
+from ..pack import Pack
+
 def _set_plot_theme():
     """
     The matplotlib plot theme
@@ -85,8 +87,9 @@ def _plot_ss_flow(exp_name, flow, node, dest_ip, dest_port):
         ax.set_xlabel('Time(s)')
         ax.set_ylabel(param)
 
-        fig.savefig('ss_{exp_name}_{node}_{param}_{dest_ip}:{dest_port}.png'.format(exp_name = exp_name, 
-            node = node, param = param, dest_ip = dest_ip, dest_port = dest_port))
+        filename = 'ss_{node}_{param}_{dest_ip}:{dest_port}.png'.format(node = node,
+                param = param, dest_ip = dest_ip, dest_port = dest_port)
+        Pack.dump_plot(filename, fig)
         plt.close(fig)
 
 def plot_ss(exp_name, parsed_data):

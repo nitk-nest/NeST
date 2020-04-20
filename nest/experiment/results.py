@@ -5,6 +5,7 @@ import json
 import time
 from multiprocessing import Manager, Lock, Queue
 from ..topology_map import TopologyMap
+from .pack import Pack
 
 class Results:
     """
@@ -71,10 +72,8 @@ class Results:
 
         results = Results.get_results(results_q)
         json_stats = json.dumps(results, indent=4)
-        timestamp = time.strftime("%d-%m-%Y-%H:%M:%S")
-        filename = str(timestamp) + ' {}-parse-results.json'.format(toolname)
-        with open(filename, 'w') as f:
-            f.write(json_stats)
+        Pack.dump_file('{}.json'.format(toolname), json_stats)
+
 
 # Shared variables to aggregate results
 ss_results_q = Manager().Queue()
