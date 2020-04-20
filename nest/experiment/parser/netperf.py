@@ -30,6 +30,7 @@ DEFAULT_NETPERF_OPTIONS = {
     'fill_file' : '-F /dev/urandom',            # File to transmit (NOTE: Inspired from flent)
     'testlen'   : '-l {}'.format(RUNTIME),      # Length of test (NOTE: Default 10s)
     'intervel'  : '-D -{}'.format(INTERVAL),    # Generated interim results every INTERVAL secs
+    'debug'     : '-d',                         # Enable debug mode
 }
 
 NETPERF_TCP_OPTIONS = {
@@ -72,7 +73,7 @@ def run_netserver(ns_name):
     run_test_commands(cmd)
 
 
-def parse_stats(raw_stats, ns_name, lock):
+def parse_stats(raw_stats, ns_name, destination_ip, lock):
     """
     parse netperf output
 
@@ -87,8 +88,7 @@ def parse_stats(raw_stats, ns_name, lock):
     throughput_stats = re.findall(throughput_pattern, raw_stats)
     # pattern to extract throughput value from the string
     extract_throughput_pattern = r'NETPERF_INTERIM_RESULT\[\d+]='
-    # convert the values to float
-    throughputs = [float(re.sub(extract_throughput_pattern, '', stat))
+    throughputs = [re.sub(extract_throughput_pattern, '', stat)
                    for stat in throughput_stats]
 
     # pattern that matches the netperf output corresponding to interval
@@ -96,9 +96,15 @@ def parse_stats(raw_stats, ns_name, lock):
     timestamp_stats = re.findall(timestamp_pattern, raw_stats)
     # pattern to extract interval value from the string
     extract_interval_pattern = r'NETPERF_ENDING\[\d+]='
-    # convert the values to float
-    timestamps = [float(re.sub(extract_interval_pattern, '', stat))
+    timestamps = [re.sub(extract_interval_pattern, '', stat)
                  for stat in timestamp_stats]
+
+    # pattern that gives the remote port
+    remote_port_pattern = r'remote port is \d+'
+    remote_port_raw = re.findall(remote_port_pattern, raw_stats)[0]
+    # pattern to extract remote part number
+    extract_remote_port = r'remote port is '
+    remote_port = re.sub(extract_remote_port, '', remote_port_raw)
 
     # # convert intervals to timestamps by adding previous values in the list
     # timestamps = list(timestamps)
@@ -106,10 +112,15 @@ def parse_stats(raw_stats, ns_name, lock):
     #     timestamps[i] = timestamps[i] + timestamps[i-1]
 
     # a dict of the form { interval: throughput }
-    stats_dict = {}
+    stats_list = []
 
     for i in range(len(throughputs)):
-        stats_dict[timestamps[i]] = throughputs[i]
+        stats_list.append({
+            'timestamp' : timestamps[i],
+            'throughput': throughputs[i]
+        })
+
+        stats_dict = {'{}:{}'.format(destination_ip, remote_port): stats_list}
 
     # pattern to match the interface name
     # interface_pattern = r'LOCAL_INTERFACE_NAME=.+'
@@ -164,4 +175,4 @@ def run_netperf(ns_name, destination_ip, start_time, lock, run_time, **kwargs):
     if(start_time != 0):
         time.sleep(start_time)
     raw_stats = run_test_commands(cmd, block=True)
-    parse_stats(raw_stats, ns_name, lock)
+    parse_stats(raw_stats, ns_name, destination_ip, lock)
