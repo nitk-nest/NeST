@@ -17,6 +17,7 @@ from .parser.netperf import run_netperf, run_netserver
 from .parser.tc import parse_qdisc
 # Import plotters
 from .plotter.ss import plot_ss
+from .plotter.netperf import plot_netperf
 
 def run_experiment(exp):
     """
@@ -91,6 +92,7 @@ def run_experiment(exp):
 
     # Dump plots as images
     plot_ss(exp.get_name(), SsResults.get_results())    
+    plot_netperf(exp.get_name(), NetperfResults.get_results())
 
     ### Cleanup ###
 

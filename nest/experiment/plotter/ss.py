@@ -2,17 +2,9 @@
 # Copyright (c) 2019-2020 NITK Surathkal
 
 import matplotlib.pyplot as plt
-import matplotlib.style as style
 
 from ..pack import Pack
-
-def _set_plot_theme():
-    """
-    The matplotlib plot theme
-    """
-
-    style.use('seaborn-paper')
-    style.use('ggplot')
+from .common import simple_plot
 
 def _get_list_of_ss_params():
     """
@@ -39,8 +31,9 @@ def _extract_from_ss_flow(flow, node, dest_ip, dest_port):
     """
 
     if len(flow) == 0:
-        raise ValueError('Flow from {} to destination {}:{} \
-                doesn\'t have any parsed ss result.')
+        raise ValueError('Flow from {} to destination {}:{}' \
+                'doesn\'t have any parsed ss result.'.format(node,
+                dest_ip, dest_port))
 
     start_time = float(flow[0]['timestamp'])
     
@@ -80,13 +73,8 @@ def _plot_ss_flow(exp_name, flow, node, dest_ip, dest_port):
     (timestamp, flow_params) = _extract_from_ss_flow(flow, node, dest_ip, dest_port)
     for param in flow_params:
         # Plot the values
-        fig = plt.figure()
-        fig.suptitle('ss: {dest_ip}:{dest_port}'.format(dest_ip = dest_ip, dest_port = dest_port))
-        ax = fig.add_subplot(1, 1, 1)
-        ax.plot(timestamp, flow_params[param],)
-        ax.set_xlabel('Time(s)')
-        ax.set_ylabel(param)
-
+        title = 'ss: {dest_ip}:{dest_port}'.format(dest_ip = dest_ip, dest_port = dest_port)
+        fig = simple_plot(title, timestamp, flow_params[param], 'Time(s)', param)
         filename = 'ss_{node}_{param}_{dest_ip}:{dest_port}.png'.format(node = node,
                 param = param, dest_ip = dest_ip, dest_port = dest_port)
         Pack.dump_plot(filename, fig)
@@ -101,8 +89,6 @@ def plot_ss(exp_name, parsed_data):
     :param parsed_data: JSON data parsed from ss
     :type parsed_data: Dict
     """
-
-    _set_plot_theme()
 
     for node in parsed_data:
         node_data = parsed_data[node]
