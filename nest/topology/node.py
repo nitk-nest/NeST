@@ -84,8 +84,14 @@ class Namespace:
                 next_hop_addr = Address(next_hop_addr)
         else:
             next_hop_addr = via_interface.get_pair().get_address()  
-        
-        engine.add_route(self.id, dest_addr.get_addr(with_subnet=False), next_hop_addr.get_addr(with_subnet=False), 
+       
+        dest_addr_str = ''
+        if dest_addr.is_subnet():
+            dest_addr_str = dest_addr.get_addr()
+        else:
+            dest_addr_str = dest_addr.get_addr(with_subnet=False)
+
+        engine.add_route(self.id, dest_addr_str, next_hop_addr.get_addr(with_subnet=False), 
             via_interface.get_id())
         
     def _add_interface(self, interface):
@@ -168,7 +174,7 @@ class Namespace:
         """
 
         if type(destination_address) == str:
-            destination_address = Address(dest_addr)
+            destination_address = Address(destination_address)
 
         status = engine.ping(self.id, destination_address.get_addr(with_subnet=False))
         if verbose:

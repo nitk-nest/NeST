@@ -47,8 +47,20 @@ class Address:
         """
         Get the subnet of the given address
         """
+        
         interface = ipaddress.ip_interface(self.ip_addr)
         return interface.network.compressed
+
+    def is_subnet(self):
+        """
+        Check if the address is a subnet or not
+        """
+        
+        try:
+            ipaddress.ip_network(self.ip_addr)
+        except ValueError:
+            return False
+        return True
 
 class Subnet:
     """
