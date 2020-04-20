@@ -9,11 +9,27 @@ def simple_plot(title, x_list, y_list, x_label, y_label):
     """
 
     fig = plt.figure()
-    fig.suptitle(title)
     ax = fig.add_subplot(1, 1, 1)
     ax.plot(x_list, y_list)
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
+    ax.set_title(title)
 
     return fig
 
+def mix_plot(title, data, x_label, y_label):
+    """
+
+    """
+
+    fig, ax = plt.subplots()
+    for val in data:
+        (x_list, y_list) = val['data']
+        label = val['label']
+        ax.plot(x_list, y_list, label = label)
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    ax.set_title(title)
+    ax.legend()
+
+    return fig

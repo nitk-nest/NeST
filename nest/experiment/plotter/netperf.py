@@ -4,7 +4,7 @@
 import matplotlib.pyplot as plt
 
 from ..pack import Pack
-from .common import simple_plot
+from .common import simple_plot, mix_plot
 
 def _plot_netperf_flow(exp_name, flow, node, dest):
     """
@@ -42,6 +42,8 @@ def _plot_netperf_flow(exp_name, flow, node, dest):
     Pack.dump_plot('netperf', filename, fig)
     plt.close(fig)
 
+    return (timestamp, throughput)
+
 def plot_netperf(exp_name, parsed_data):
     """
     Plot statistics obtained from netperf
@@ -54,7 +56,15 @@ def plot_netperf(exp_name, parsed_data):
 
     for node in parsed_data:
         node_data = parsed_data[node]
+
+        all_flow_data = []
         for connection in node_data:
             for dest in connection:
                 flow = connection[dest]
-                _plot_netperf_flow(exp_name, flow, node, dest)
+                data = _plot_netperf_flow(exp_name, flow, node, dest)
+                all_flow_data.append({'label': dest, 'data': data})
+
+        fig = mix_plot('netperf', all_flow_data, 'Time(s)', 'throughput')
+        filename = 'mix_{node}_throughput.png'.format(node = node, dest = dest)
+        Pack.dump_plot('netperf', filename, fig)
+        plt.close(fig)
