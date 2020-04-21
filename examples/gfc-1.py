@@ -25,17 +25,26 @@ from nest.experiment import *
 #              n3      n1    n5      n2      n4
 #############################################
 
-r0_r1_bandwidth = '50mbps' #input('Enter the bandwidth between r0 and r1\n')
-r1_r2_bandwidth = '50mbps' #input('Enter the bandwidth between r1 and r2\n')
-r2_r3_bandwidth = '50mbps' #input('Enter the bandwidth between r2 and r3\n')
-r3_r4_bandwidth = '50mbps' #input('Enter the bandwidth between r3 and r4\n')
-link_bandwidth = '250mbps' #input('Enter the bandwidth between the routers and the nodes\n')
-r0_r1_latency = '50ms' #input('Enter the latency between r0 and r1\n')
-r1_r2_latency = '50ms' #input('Enter the latency between r1 and r2\n')
-r2_r3_latency = '50ms' #input('Enter the latency between r2 and r3\n')
-r3_r4_latency = '50ms' #input('Enter the latency between r3 and r4\n')
-link_latency = '250ms' #input('Enter the latency between the routers and the nodes\n')
-qdisc = 'gred' #input('Enter the Queueing algorithm to be installed on the routers\n')
+r0_r1_bandwidth = '50mbit' 
+r1_r2_bandwidth = '150mbit' 
+r2_r3_bandwidth = '150mbit' 
+r3_r4_bandwidth = '100mbit'
+
+link_bandwidth = '150mbit'
+
+r0_r1_latency = '0.25ms'
+r1_r2_latency = '0.25ms'
+r2_r3_latency = '0.25ms'
+r3_r4_latency = '0.25ms'
+
+link_latency = '0.001ms'
+
+qdisc = 'codel'
+
+r0_r1_qdisc_parameters = {'ce_threshold': '4.8ms', 'limit': '1000', 'target': '100ms', 'ecn': ''}
+r1_r2_qdisc_parameters = {'ce_threshold': '1.6ms', 'limit': '1000', 'target': '100ms', 'ecn': ''}
+r2_r3_qdisc_parameters = {'ce_threshold': '1.6ms', 'limit': '1000', 'target': '100ms', 'ecn': ''}
+r3_r4_qdisc_parameters = {'ce_threshold': '2.4ms', 'limit': '1000', 'target': '100ms', 'ecn': ''}
 
 # Creating all the nodes
 node = []
@@ -106,8 +115,8 @@ r3_n8.set_address('10.0.15.5/24')
 
 n7_r4.set_address('10.0.18.5/24')
 r4_n7.set_address('10.0.18.6/24')
-r4_n10.set_address('10.0.17.6/24')
 n10_r4.set_address('10.0.17.5/24')
+r4_n10.set_address('10.0.17.6/24')
 
 # Adding default routes and subnet specific routes to route the network
 node[0].add_route('DEFAULT', n0_r0)
@@ -130,36 +139,32 @@ node[10].add_route('DEFAULT', n10_r4)
 router[0].add_route(n0_r0.get_subnet(), r0_n0)
 router[0].add_route(n3_r0.get_subnet(), r0_n3)
 router[0].add_route('DEFAULT', r0_r1)
-# router[0].add_route(r1_n9.get_subnet(), r0_r1)
 
+router[1].add_route(n0_r0.get_subnet(), r1_r0)
+router[1].add_route(n3_r0.get_subnet(), r1_r0)
 router[1].add_route(r0_r1.get_subnet(), r1_r0)
 router[1].add_route(n1_r1.get_subnet(), r1_n1)
 router[1].add_route(n5_r1.get_subnet(), r1_n5)
 router[1].add_route(n9_r1.get_subnet(), r1_n9)
 router[1].add_route(r2_r1.get_subnet(), r1_r2)
-router[1].add_route(n0_r0.get_subnet(), r1_r0)
-router[1].add_route(n3_r0.get_subnet(), r1_r0)
 router[1].add_route('DEFAULT', r1_r2)
-# router[1].add_route(r2_n11.get_subnet(), r1_r2)
-# router[1].add_route(r3_n6.get_subnet(), r1_r2)
-# router[1].add_route(r0_r1.get_subnet(), r2_r1)
 
+router[2].add_route(n0_r0.get_subnet(), r2_r1)
+router[2].add_route(n3_r0.get_subnet(), r2_r1)
+router[2].add_route(r0_r1.get_subnet(), r2_r1)
+router[2].add_route(n1_r1.get_subnet(), r2_r1)
+router[2].add_route(n5_r1.get_subnet(), r2_r1)
+router[2].add_route(n9_r1.get_subnet(), r2_r1)
 router[2].add_route(r1_r2.get_subnet(), r2_r1)
 router[2].add_route(n2_r2.get_subnet(), r2_n2)
 router[2].add_route(n11_r2.get_subnet(), r2_n11)
 router[2].add_route(r3_r2.get_subnet(), r2_r3)
-router[2].add_route(n0_r0.get_subnet(), r2_r1)
-router[2].add_route(n3_r0.get_subnet(), r2_r1)
-router[2].add_route(n1_r1.get_subnet(), r2_r1)
-router[2].add_route(n5_r1.get_subnet(), r2_r1)
-router[2].add_route(n9_r1.get_subnet(), r2_r1)
-router[2].add_route(r4_r3.get_subnet(), r2_r3)
+router[2].add_route(n4_r3.get_subnet(), r2_r3)
 router[2].add_route(n6_r3.get_subnet(), r2_r3)
 router[2].add_route(n8_r3.get_subnet(), r2_r3)
+router[2].add_route(r4_r3.get_subnet(), r2_r3)
 router[2].add_route(n7_r4.get_subnet(), r2_r3)
 router[2].add_route(n10_r4.get_subnet(), r2_r3)
-router[2].add_route(r0_r1.get_subnet(), r2_r1)
-router[2].add_route(r4_r3.get_subnet(), r2_r3)
 
 router[3].add_route(n4_r3.get_subnet(), r3_n4)
 router[3].add_route(n6_r3.get_subnet(), r3_n6)
@@ -168,15 +173,11 @@ router[3].add_route(r4_r3.get_subnet(), r3_r4)
 router[3].add_route(n7_r4.get_subnet(), r3_r4)
 router[3].add_route(n10_r4.get_subnet(), r3_r4)
 router[3].add_route('DEFAULT', r3_r2)
-# router[3].add_route(r1_n1.get_subnet(), r3_r2)
-# router[3].add_route(r2_n2.get_subnet(), r3_r2)
-# router[3].add_route(r0_n0.get_subnet(), r3_r2)
 
 router[4].add_route(n7_r4.get_subnet(), r4_n7)
 router[4].add_route(n10_r4.get_subnet(), r4_n10)
 router[4].add_route(r3_r4.get_subnet(), r4_r3)
 router[4].add_route('DEFAULT', r4_r3)
-# router[4].add_route(r3_n4.get_subnet(), r4_r3)
 
 # Setting attributes to the interfaces on the nodes and the opposite end
 for n in node:
@@ -185,27 +186,14 @@ for n in node:
         i.get_pair().set_attributes(link_bandwidth, link_latency)
 
 # Setting attributes for the interfaces between routers
-r0_r1.set_attributes(r0_r1_bandwidth, r0_r1_latency, qdisc)
-r1_r0.set_attributes(r0_r1_bandwidth, r0_r1_latency, qdisc)
+r0_r1.set_attributes(r0_r1_bandwidth, r0_r1_latency, qdisc, **r0_r1_qdisc_parameters)
+r1_r0.set_attributes(r0_r1_bandwidth, r0_r1_latency)
 
-r1_r2.set_attributes(r1_r2_bandwidth, r1_r2_latency, qdisc)
-r2_r1.set_attributes(r1_r2_bandwidth, r1_r2_latency, qdisc)
+r1_r2.set_attributes(r1_r2_bandwidth, r1_r2_latency, qdisc, **r1_r2_qdisc_parameters)
+r2_r1.set_attributes(r1_r2_bandwidth, r1_r2_latency)
 
-r2_r3.set_attributes(r2_r3_bandwidth, r2_r3_latency, qdisc)
-r3_r2.set_attributes(r2_r3_bandwidth, r2_r3_latency, qdisc)
+r2_r3.set_attributes(r2_r3_bandwidth, r2_r3_latency, qdisc, **r2_r3_qdisc_parameters)
+r3_r2.set_attributes(r2_r3_bandwidth, r2_r3_latency)
 
-r3_r4.set_attributes(r3_r4_bandwidth, r3_r4_latency, qdisc)
-r4_r3.set_attributes(r3_r4_bandwidth, r3_r4_latency, qdisc)
-
-# print(n0_r0.get_address().get_addr(), n0_r0.get_subnet())
-# print(n1_r1.get_address().get_addr(), n1_r1.get_subnet())
-# print(n2_r2.get_address().get_addr(), n2_r2.get_subnet())
-# print(n3_r0.get_address().get_addr(), n3_r0.get_subnet())
-# print(n4_r3.get_address().get_addr(), n4_r3.get_subnet())
-# print(n5_r1.get_address().get_addr(), n5_r1.get_subnet())
-# print(n6_r3.get_address().get_addr(), n6_r3.get_subnet())
-# print(n7_r4.get_address().get_addr(), n7_r4.get_subnet())
-# print(n8_r3.get_address().get_addr(), n8_r3.get_subnet())
-# print(n9_r1.get_address().get_addr(), n9_r1.get_subnet())
-# print(n10_r4.get_address().get_addr(), n10_r4.get_subnet())
-# print(n11_r2.get_address().get_addr(), n11_r2.get_subnet())
+r3_r4.set_attributes(r3_r4_bandwidth, r3_r4_latency, qdisc, **r3_r4_qdisc_parameters)
+r4_r3.set_attributes(r3_r4_bandwidth, r3_r4_latency)
