@@ -55,6 +55,10 @@ def run_experiment(exp):
         elif options['protocol'] == 'UDP':
             netperf_options['testname'] = 'UDP_STREAM'
 
+        
+        src_name = TopologyMap.get_namespace(src_ns)['name']
+        print('Running {} netperf flows from {} to {}...'.format(n_flows, src_name, dst_addr)) 
+        
         # Create new processes to be run simultaneously
         # Here Process is used instead of Thread to take advantage to multiple cores
         for i in range(n_flows):
@@ -68,6 +72,9 @@ def run_experiment(exp):
             (min_start, max_stop) = ss_run[(src_ns, dst_addr)]
             ss_run[(src_ns, dst_addr)] = (min(min_start, start_t), max(max_stop, stop_t))
 
+    print('Running ss and tc on requested nodes and interfaces...')
+    print()
+
     # Setup ss parsing
     for key, value in ss_run.items():
         workers.append(Process(target=parse_ss, args=(key[0], key[1], [], value[0], 
@@ -75,7 +82,7 @@ def run_experiment(exp):
 
     # Setup tc parsing
     for qdisc_stat in exp.qdisc_stats:
-        workers.append(Process(target=parse_qdisc, args=(qdisc_stat['ns_id'].get_id(), 
+        workers.append(Process(target=parse_qdisc, args=(qdisc_stat['ns_id'], 
             qdisc_stat['int_id'], [], exp_end)))
 
     # Start parsing (start all processes)
@@ -85,16 +92,33 @@ def run_experiment(exp):
     # wait for all the processes to finish
     for worker in workers:
         worker.join()
-   
+
+    print('Experiment complete!')
+    print('Output results as JSON dump')
+
     # Output results as JSON dumps
     SsResults.output_to_file()
     NetperfResults.output_to_file()
     TcResults.output_to_file()
 
-    # Dump plots as images
-    plot_ss(exp.get_name(), SsResults.get_results())    
-    plot_netperf(exp.get_name(), NetperfResults.get_results())
-    plot_tc(exp.get_name(), TcResults.get_results())
+    print('Plotting results...')
+
+    # Plot results and dump them as images
+    workers = []
+  
+    workers.append(Process(target=plot_ss, args=(exp.get_name(), SsResults.get_results())))
+    workers.append(Process(target=plot_netperf, args=(exp.get_name(), NetperfResults.get_results())))
+    workers.append(Process(target=plot_tc, args=(exp.get_name(), TcResults.get_results())))
+    
+    # Start plotting
+    for worker in workers:
+        worker.start()
+
+    # Wait for all processes to finish
+    for worker in workers:
+        worker.join()
+
+    print('Plotting complete!')
 
     ### Cleanup ###
 
@@ -107,6 +131,7 @@ def run_experiment(exp):
     for namespace in TopologyMap.get_namespaces():
         engine.kill_all_processes(namespace['id'])
 
+    print('Cleaned up experiment')
 
 # NOTE: The below function is no longer supported
 # It's a headache to get this and 'test' parsing option

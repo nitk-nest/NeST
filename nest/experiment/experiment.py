@@ -296,7 +296,7 @@ class Experiment():
             raise ValueError('Given interface hasn\'t been assigned any qdisc.')
 
         self.qdisc_stats.append({
-            'ns_id': interface.get_namespace(),
+            'ns_id': interface.get_namespace().get_id(),
             'int_id': interface.ifb.get_id(),
             'qdisc_handle': interface.get_qdisc().handle,
             'stats': stats
@@ -323,5 +323,6 @@ class Experiment():
 
         # TopologyMap.dump()
         print('Running experiment ' + self.name)
+        print()
         Pack.init(self.get_name())
         run_experiment(self) 
