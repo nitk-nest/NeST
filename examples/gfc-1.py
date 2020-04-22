@@ -50,7 +50,7 @@ r3_r4_qdisc_parameters = {'ce_threshold': '2.4ms', 'limit': '1000', 'target': '1
 node = []
 for i in range (12):
     node.append(Node('node' + str(i)))
-    node[0].configure_tcp_param('ecn', '1')
+    node[i].configure_tcp_param('ecn', '1')
 
 # Creating all the routers
 router = []
@@ -199,17 +199,23 @@ r3_r2.set_attributes(r2_r3_bandwidth, r2_r3_latency)
 r3_r4.set_attributes(r3_r4_bandwidth, r3_r4_latency, qdisc, **r3_r4_qdisc_parameters)
 r4_r3.set_attributes(r3_r4_bandwidth, r3_r4_latency)
 
+time = 120
 flows = []
-flows.append(Flow(node[0], node[6], n6_r3.get_address(), 0, 120, 3))
-flows.append(Flow(node[1], node[7], n7_r4.get_address(), 0, 120, 3))
-flows.append(Flow(node[2], node[8], n8_r3.get_address(), 0, 120, 3))
-flows.append(Flow(node[3], node[9], n9_r1.get_address(), 0, 120, 6))
-flows.append(Flow(node[4], node[10], n10_r4.get_address(), 0, 120, 6))
-flows.append(Flow(node[5], node[11], n11_r2.get_address(), 0, 120, 2))
+flows.append(Flow(node[0], node[6], n6_r3.get_address(), 0, time, 3))
+flows.append(Flow(node[1], node[7], n7_r4.get_address(), 0, time, 3))
+flows.append(Flow(node[2], node[8], n8_r3.get_address(), 0, time, 3))
+flows.append(Flow(node[3], node[9], n9_r1.get_address(), 0, time, 6))
+flows.append(Flow(node[4], node[10], n10_r4.get_address(), 0, time, 6))
+flows.append(Flow(node[5], node[11], n11_r2.get_address(), 0, time, 2))
 
 gfc_exp = Experiment('gfc')
 for flow in flows:
     gfc_exp.add_tcp_flow(flow)
+
+gfc_exp.require_qdisc_stats(r0_r1)
+gfc_exp.require_qdisc_stats(r1_r2)
+gfc_exp.require_qdisc_stats(r2_r3)
+gfc_exp.require_qdisc_stats(r3_r4)
 
 for i in range(6):
     gfc_exp.require_node_stats(node[i])
