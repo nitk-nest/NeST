@@ -37,7 +37,7 @@ def _plot_netperf_flow(exp_name, flow, node, dest):
     
     title = 'netperf: {dest}'.format(dest = dest)
     fig = simple_plot(title, timestamp, throughput, 'Time(s)', 'throughput')
-    filename = '{node}_throughput_{dest}.png'.format(node = node,
+    filename = '{node}_{dest}_throughput.png'.format(node = node,
         dest = dest)
     Pack.dump_plot('netperf', filename, fig)
     plt.close(fig)
@@ -61,10 +61,10 @@ def plot_netperf(exp_name, parsed_data):
         for connection in node_data:
             for dest in connection:
                 flow = connection[dest]
-                data = _plot_netperf_flow(exp_name, flow, node, dest)
-                all_flow_data.append({'label': dest, 'data': data})
+                values = _plot_netperf_flow(exp_name, flow, node, dest)
+                all_flow_data.append({'label': dest, 'values': values})
 
-        fig = mix_plot('netperf', all_flow_data, 'Time(s)', 'throughput')
+        fig = mix_plot('netperf', all_flow_data, 'Time(s)', 'throughput', with_sum = True)
         filename = 'mix_{node}_throughput.png'.format(node = node, dest = dest)
         Pack.dump_plot('netperf', filename, fig)
         plt.close(fig)

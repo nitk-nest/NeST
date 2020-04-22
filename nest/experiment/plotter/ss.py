@@ -4,7 +4,7 @@
 import matplotlib.pyplot as plt
 
 from ..pack import Pack
-from .common import simple_plot
+from .common import simple_plot, mix_plot
 
 def _get_list_of_ss_params():
     """
@@ -75,10 +75,12 @@ def _plot_ss_flow(exp_name, flow, node, dest_ip, dest_port):
         # Plot the values
         title = 'ss: {dest_ip}:{dest_port}'.format(dest_ip = dest_ip, dest_port = dest_port)
         fig = simple_plot(title, timestamp, flow_params[param], 'Time(s)', param)
-        filename = '{node}_{param}_{dest_ip}:{dest_port}.png'.format(node = node,
+        filename = '{node}_{dest_ip}:{dest_port}_{param}.png'.format(node = node,
                 param = param, dest_ip = dest_ip, dest_port = dest_port)
         Pack.dump_plot('ss', filename, fig)
         plt.close(fig)
+
+    return (timestamp, flow_params)
 
 def plot_ss(exp_name, parsed_data):
     """
@@ -94,8 +96,36 @@ def plot_ss(exp_name, parsed_data):
         node_data = parsed_data[node]
         for connection in node_data:
             for dest_ip in connection:
+
+                all_flow_data = []
+
                 flow_data = connection[dest_ip]
                 for dest_port in flow_data:             
                     flow = flow_data[dest_port]
-                    _plot_ss_flow(exp_name, flow, node, dest_ip, dest_port)
+                    values = _plot_ss_flow(exp_name, flow, node, dest_ip, dest_port)
+                    all_flow_data.append({'values': values, 'label': '{}:{}'.format(dest_ip, dest_port)})
 
+                if len(all_flow_data) > 0:
+                    
+                    x_vals = []
+                    labels = []
+
+                    for flow_data in all_flow_data:
+                        x_vals.append(flow_data['values'][0])
+                        labels.append(flow_data['label'])
+
+                    for param in all_flow_data[0]['values'][1]:
+                        y_vals = []
+                        for flow_data in all_flow_data:
+                            y_vals.append(flow_data['values'][1][param])
+                        
+                        data = []
+
+                        for i in range(len(labels)):
+                            data.append({'values': (x_vals[i], y_vals[i]), 'label': labels[i]})
+
+                        fig = mix_plot('ss: ' + param, data, 'Time(s)', param)
+                        filename = 'mix_{node}_{dest_ip}_{param}.png'.format(node = node, 
+                                    param = param, dest_ip = dest_ip)
+                        Pack.dump_plot('ss', filename, fig)
+                        plt.close(fig)
