@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
+import numpy as np
 import matplotlib.pyplot as plt
-from itertools import zip_longest
 
 def simple_plot(title, x_list, y_list, x_label, y_label):
     """
@@ -57,19 +57,23 @@ def mix_plot(title, data, x_label, y_label, with_sum = False):
         ax.plot(x_list, y_list, label = label)
 
     if with_sum:
-        sum = []
-        ox_list = []
+
+        x = []
+        for chunk in data:
+            (x_list, _) = chunk['values']
+            x.append(x_list)
+
+        # Get sorted list of all x values
+        x = np.unique(np.concatenate(x))
+
+        sum = np.array([0.0]*len(x))
         for chunk in data:
             (x_list, y_list) = chunk['values']
-            if sum == []:
-                sum = y_list
-                ox_list = x_list
-            else:
-                sum = [x+y for x,y in zip_longest(sum, y_list, fillvalue=0)]
-                if len(x_list) > len(ox_list):
-                    ox_list = x_list
+            # Interpolate y values on the combined x values
+            y = np.interp(x, x_list, y_list, left=0, right=0)
+            sum += y
 
-        ax.plot(ox_list, sum, label = 'sum')
+        ax.plot(x, sum, label = 'sum')
             
 
     ax.set_xlabel(x_label)
