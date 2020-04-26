@@ -55,10 +55,9 @@ def parse(ns_name, param_list, destination_ip, lock):
     # This loop runs the ss command every `INTERVAL`s for `RUN_TIME`s
     while time.time() <= (start_time+RUN_TIME):
         stats = run_ss(command)
-        port_pattern = re.escape(destination_ip) + r':\d+'
-        port_list = re.findall(port_pattern, stats)
-        extract_port_pattern = re.escape(destination_ip) + r':'
-        port_list = [re.sub(extract_port_pattern, '', port) for port in port_list]
+        # Pattern to capture port numbers of flows to `destination ip`
+        port_pattern = re.escape(destination_ip) + r':(?P<port>\d+)'
+        port_list = [port.group('port') for port in re.finditer(port_pattern, stats)]
         cur_timestamp = time.time()
         
         for port in port_list:
@@ -68,27 +67,23 @@ def parse(ns_name, param_list, destination_ip, lock):
                 stats_dict_list[port].append({"timestamp": str(cur_timestamp)})
 
         for param in param_list:
-            pattern = r'\s' + re.escape(param) + r'[\s:]\w+\.?\w*(?:[\/\,]\w+\.?\w*)*\s'
+            pattern = r'\s' + re.escape(param) + r'[\s:](?P<value>\w+\.?\w*(?:[\/\,]\w+\.?\w*)*)\s'
             # result list stores all the string that is matched by the `pattern`
-            result_list = re.findall(pattern, stats)
-            # pattern to match the required param in result_list
-            pattern = r'^' + re.escape(param) + r'[:\s]'
-
-            val = ''
-            for i in range(len(result_list)):
-                result = result_list[i].strip()
-                val = re.sub(pattern, '', result)
+            param_value_list = [value.group('value') for value in re.finditer(pattern, stats)]
+            param_value = ''
+            for i in range(len(param_value_list)):
+                param_value = param_value_list[i].strip()
                 # remove the units at the end
-                val = re.sub(r'[A-Za-z]', '', val)
+                param_value = re.sub(r'[A-Za-z]', '', param_value)
                 try:
                     # rtt has both avg and dev rtt separated by a /
                     if param == 'rtt':
-                        avg_rtt = val.split('/')[0]
-                        dev_rtt = val.split('/')[1]
+                        avg_rtt = param_value.split('/')[0]
+                        dev_rtt = param_value.split('/')[1]
                         stats_dict_list[port_list[i]][-1]['rtt'] = avg_rtt
                         stats_dict_list[port_list[i]][-1]['dev_rtt'] = dev_rtt
                     else:
-                        stats_dict_list[port_list[i]][-1][param] = val
+                        stats_dict_list[port_list[i]][-1][param] = param_value
                 except:
                     pass
         time.sleep(INTERVAL)

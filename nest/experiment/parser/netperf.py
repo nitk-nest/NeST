@@ -17,10 +17,7 @@ INTERVAL = 0.2
 
 # NOTE: LOCAL_INTERFACE_* deprecated in netperf 2.7.0
 TCP_OUTPUT_OPTIONS = [
-    'THROUGHPUT', 'LOCAL_CONG_CONTROL', 'REMOTE_CONG_CONTROL', 'TRANSPORT_MSS', 'LOCAL_TRANSPORT_RETRANS',
-    'REMOTE_TRANSPORT_RETRANS', 'LOCAL_SOCKET_TOS', 'REMOTE_SOCKET_TOS', 'DIRECTION', 'ELAPSED_TIME',
-    'PROTOCOL', 'LOCAL_SEND_SIZE', 'LOCAL_RECV_SIZE', 'REMOTE_SEND_SIZE', 'REMOTE_RECV_SIZE', 'LOCAL_BYTES_SENT',
-    'LOCAL_BYTES_RECVD', 'REMOTE_BYTES_SENT', 'REMOTE_BYTES_RECVD'
+    'THROUGHPUT', 'LOCAL_CONG_CONTROL', 'REMOTE_CONG_CONTROL', 'TRANSPORT_MSS','LOCAL_SOCKET_TOS', 'REMOTE_SOCKET_TOS'
 ]
 
 DEFAULT_NETPERF_OPTIONS = {
@@ -84,27 +81,16 @@ def parse_stats(raw_stats, ns_name, destination_ip, lock):
     """
 
     # pattern that matches the netperf output corresponding to throughput
-    throughput_pattern = r'NETPERF_INTERIM_RESULT\[\d+]=\d+\.\d+'
-    throughput_stats = re.findall(throughput_pattern, raw_stats)
-    # pattern to extract throughput value from the string
-    extract_throughput_pattern = r'NETPERF_INTERIM_RESULT\[\d+]='
-    throughputs = [re.sub(extract_throughput_pattern, '', stat)
-                   for stat in throughput_stats]
+    throughput_pattern = r'NETPERF_INTERIM_RESULT\[\d+]=(?P<throughput>\d+\.\d+)'
+    throughputs = [throughput.group('throughput') for throughput in re.finditer(throughput_pattern, raw_stats)]
 
     # pattern that matches the netperf output corresponding to interval
-    timestamp_pattern = r'NETPERF_ENDING\[\d+]=\d+\.\d+'
-    timestamp_stats = re.findall(timestamp_pattern, raw_stats)
-    # pattern to extract interval value from the string
-    extract_interval_pattern = r'NETPERF_ENDING\[\d+]='
-    timestamps = [re.sub(extract_interval_pattern, '', stat)
-                 for stat in timestamp_stats]
+    timestamp_pattern = r'NETPERF_ENDING\[\d+]=(?P<timestamp>\d+\.\d+)'
+    timestamps = [timestamp.group('timestamp') for timestamp in re.finditer(timestamp_pattern, raw_stats)]
 
     # pattern that gives the remote port
-    remote_port_pattern = r'remote port is \d+'
-    remote_port_raw = re.findall(remote_port_pattern, raw_stats)[0]
-    # pattern to extract remote part number
-    extract_remote_port = r'remote port is '
-    remote_port = re.sub(extract_remote_port, '', remote_port_raw)
+    remote_port_pattern = r'remote port is (?P<remote>\d+)'
+    remote_port = re.search(remote_port_pattern, raw_stats).group('remote')
 
     # # convert intervals to timestamps by adding previous values in the list
     # timestamps = list(timestamps)
