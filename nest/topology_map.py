@@ -18,7 +18,6 @@ class TopologyMap():
     # For eg, to get the contents of qdisc parameter,
     # checkout add_qdisc function
 
-
     # Pointer to topology_map['namespaces']
     # Used for efficiency
     namespaces_pointer = {}
@@ -49,7 +48,7 @@ class TopologyMap():
             'pos': len(namespaces)-1,
             'interfaces_pointer': {}
         }
-    
+
     @staticmethod
     def add_interface(ns_id, id, int_name):
         """
@@ -70,14 +69,14 @@ class TopologyMap():
             'id': id,
             'name': int_name,
             'qdiscs': []
-        }) 
+        })
 
         TopologyMap.namespaces_pointer[ns_id]['interfaces_pointer'][id] = {
             'pos': len(interfaces)-1
         }
 
     @staticmethod
-    def add_qdisc(ns_id, int_id, kind, handle, parent = ''):
+    def add_qdisc(ns_id, int_id, kind, handle, parent=''):
         """
         Add qdisc to topology_map
 
@@ -130,7 +129,7 @@ class TopologyMap():
         return TopologyMap.topology_map['namespaces']
 
     @staticmethod
-    def get_namespace(ns_id, with_interfaces_pointer = False):
+    def get_namespace(ns_id, with_interfaces_pointer=False):
         """
         Get namespace given it's id
 
@@ -160,7 +159,7 @@ class TopologyMap():
 
         namespace = TopologyMap.get_namespace(ns_id)
         interfaces = namespace['interfaces']
-        
+
         return interfaces
 
     @staticmethod
@@ -175,7 +174,8 @@ class TopologyMap():
         :type int_id: string
         """
 
-        (interfaces_pointer, namespace) = TopologyMap.get_namespace(ns_id, with_interfaces_pointer=True)
+        (interfaces_pointer, namespace) = TopologyMap.get_namespace(
+            ns_id, with_interfaces_pointer=True)
         interfaces = TopologyMap.get_interfaces(ns_id)
         interface_pointer = interfaces_pointer[int_id]
         interface = interfaces[interface_pointer['pos']]
@@ -208,7 +208,7 @@ class TopologyMap():
 
         print('Config')
         print('------')
-        print(json.dumps(TopologyMap.topology_map, indent = 4))
+        print(json.dumps(TopologyMap.topology_map, indent=4))
 
         # print()
         # print('Pointers')

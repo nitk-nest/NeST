@@ -4,6 +4,7 @@
 # Handles addresses of interfaces
 import ipaddress
 
+
 class Address:
     """
     Validate address.
@@ -18,21 +19,24 @@ class Address:
                          address.
         :type add_str: String
         """
-       
+
         # NOTE: This should also handle ipv6. Requires testing to confirm.
 
         if addr_str.isupper():      # A special string in place of address
             if addr_str == 'DEFAULT':
                 self.ip_addr = addr_str.lower()
             else:
-                raise ValueError(addr_str+' is not a special IP string. Perhaps you meant DEFAULT?')
+                raise ValueError(
+                    addr_str+' is not a special IP string. Perhaps you meant DEFAULT?')
         elif '/' in addr_str:       # An interface address
-            ipaddress.ip_interface(addr_str)    # raises exception in invalid case
+            # raises exception in invalid case
+            ipaddress.ip_interface(addr_str)
             self.ip_addr = addr_str
-        else:                       # An IP address  
-            ipaddress.ip_address(addr_str)      # raises exception in invalid case
+        else:                       # An IP address
+            # raises exception in invalid case
+            ipaddress.ip_address(addr_str)
             self.ip_addr = addr_str+'/32'
-    
+
     def get_addr(self, with_subnet=True):
         """
         Getter for ip_addr
@@ -47,7 +51,7 @@ class Address:
         """
         Get the subnet of the given address
         """
-        
+
         interface = ipaddress.ip_interface(self.ip_addr)
         return interface.network.compressed
 
@@ -55,12 +59,13 @@ class Address:
         """
         Check if the address is a subnet or not
         """
-        
+
         try:
             ipaddress.ip_network(self.ip_addr)
         except ValueError:
             return False
         return True
+
 
 class Subnet:
     """

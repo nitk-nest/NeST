@@ -8,12 +8,13 @@ from .. import error_handling
 from .id_generator import ID_GEN
 from ..topology_map import TopologyMap
 
+
 class Namespace:
     """
     Base namespace class which is inherited by `Node` and `Router` classes
     """
 
-    def __init__(self, ns_name = ''):
+    def __init__(self, ns_name=''):
         """
         Constructor to initialize an unique id, name and a empty
         list of interfaces for the namespace
@@ -21,7 +22,6 @@ class Namespace:
         :param ns_name: The name of the namespace to be created
         :type ns_name: string
         """
-
 
         if(ns_name != ''):
             self.name = ns_name
@@ -63,7 +63,7 @@ class Namespace:
 
         return self.name
 
-    def add_route(self, dest_addr, via_interface , next_hop_addr = ''):
+    def add_route(self, dest_addr, via_interface, next_hop_addr=''):
         """
         Adds a route to the routing table of the namespace with
         the given parameters
@@ -83,17 +83,17 @@ class Namespace:
             if type(next_hop_addr) == str:
                 next_hop_addr = Address(next_hop_addr)
         else:
-            next_hop_addr = via_interface.get_pair().get_address()  
-       
+            next_hop_addr = via_interface.get_pair().get_address()
+
         dest_addr_str = ''
         if dest_addr.is_subnet():
             dest_addr_str = dest_addr.get_addr()
         else:
             dest_addr_str = dest_addr.get_addr(with_subnet=False)
 
-        engine.add_route(self.id, dest_addr_str, next_hop_addr.get_addr(with_subnet=False), 
-            via_interface.get_id())
-        
+        engine.add_route(self.id, dest_addr_str, next_hop_addr.get_addr(with_subnet=False),
+                         via_interface.get_id())
+
     def _add_interface(self, interface):
         """
         Adds an interface to the namespace
@@ -107,7 +107,8 @@ class Namespace:
         engine.add_int_to_ns(self.get_id(), interface.get_id())
 
         # Add interface to TopologyMap
-        TopologyMap.add_interface(self.get_id(), interface.get_id(), interface.get_name())
+        TopologyMap.add_interface(
+            self.get_id(), interface.get_id(), interface.get_name())
 
     def configure_tcp_param(self, param, value):
         """
@@ -120,7 +121,8 @@ class Namespace:
         :type param: string
         """
 
-        engine.configure_kernel_param(self.get_id(), 'net.ipv4.tcp_', param, value)
+        engine.configure_kernel_param(
+            self.get_id(), 'net.ipv4.tcp_', param, value)
 
     def configure_udp_param(self, param, value):
         """
@@ -133,7 +135,8 @@ class Namespace:
         :type param: string
         """
 
-        engine.configure_kernel_param(self.get_id(), 'net.ipv4.udp_', param, value)
+        engine.configure_kernel_param(
+            self.get_id(), 'net.ipv4.udp_', param, value)
 
     def read_tcp_param(self, param):
         """
@@ -159,7 +162,7 @@ class Namespace:
 
         return engine.read_kernel_param(self.get_id(), 'net.ipv4.udp_', param)
 
-    def ping(self, destination_address, verbose = True):
+    def ping(self, destination_address, verbose=True):
         """
         Ping from current namespace to destination address
         if there is a route.
@@ -176,15 +179,17 @@ class Namespace:
         if type(destination_address) == str:
             destination_address = Address(destination_address)
 
-        status = engine.ping(self.id, destination_address.get_addr(with_subnet=False))
+        status = engine.ping(
+            self.id, destination_address.get_addr(with_subnet=False))
         if verbose:
             if status:
                 print('SUCCESS: ', end='')
             else:
                 print('FAILURE: ', end='')
-            print('ping from {} to {} '.format(self.name, 
-                destination_address.get_addr(with_subnet=False)))
+            print('ping from {} to {} '.format(self.name,
+                                               destination_address.get_addr(with_subnet=False)))
         return status
+
 
 class Node(Namespace):
     """
@@ -197,7 +202,7 @@ class Node(Namespace):
         error_handling.type_verify('node_name', node_name, 'string', str)
 
         Namespace.__init__(self, node_name)
-    
+
     def enable_ip_forwarding(self):
         """
         Enable IP forwarding in Node.
@@ -206,6 +211,7 @@ class Node(Namespace):
         """
 
         engine.en_ip_forwarding(self.id)
+
 
 class Router(Namespace):
     """

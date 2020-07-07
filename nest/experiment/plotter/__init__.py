@@ -6,5 +6,3 @@ import matplotlib.style as style
 # Set plot style
 style.use('seaborn-paper')
 style.use('ggplot')
-
-

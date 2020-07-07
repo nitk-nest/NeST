@@ -17,28 +17,33 @@ INTERVAL = 0.2
 
 # NOTE: LOCAL_INTERFACE_* deprecated in netperf 2.7.0
 TCP_OUTPUT_OPTIONS = [
-    'THROUGHPUT', 'LOCAL_CONG_CONTROL', 'REMOTE_CONG_CONTROL', 'TRANSPORT_MSS','LOCAL_SOCKET_TOS', 'REMOTE_SOCKET_TOS'
+    'THROUGHPUT', 'LOCAL_CONG_CONTROL', 'REMOTE_CONG_CONTROL', 'TRANSPORT_MSS', 'LOCAL_SOCKET_TOS', 'REMOTE_SOCKET_TOS'
 ]
 
 DEFAULT_NETPERF_OPTIONS = {
-    'banner'    : '-P 0',                       # Disable test banner
-    'ipv4'      : '-4',                         # IPv4 Addresses
-    'testname'  : '-t TCP_STREAM',              # Test type (NOTE: TCP_STREAM only for now)
-    'fill_file' : '-F /dev/urandom',            # File to transmit (NOTE: Inspired from flent)
-    'testlen'   : '-l {}'.format(RUNTIME),      # Length of test (NOTE: Default 10s)
-    'intervel'  : '-D -{}'.format(INTERVAL),    # Generated interim results every INTERVAL secs
-    'debug'     : '-d',                         # Enable debug mode
+    'banner': '-P 0',                       # Disable test banner
+    'ipv4': '-4',                         # IPv4 Addresses
+    # Test type (NOTE: TCP_STREAM only for now)
+    'testname': '-t TCP_STREAM',
+    # File to transmit (NOTE: Inspired from flent)
+    'fill_file': '-F /dev/urandom',
+    # Length of test (NOTE: Default 10s)
+    'testlen': '-l {}'.format(RUNTIME),
+    # Generated interim results every INTERVAL secs
+    'intervel': '-D -{}'.format(INTERVAL),
+    'debug': '-d',                         # Enable debug mode
 }
 
 NETPERF_TCP_OPTIONS = {
-    'cong_algo' : '-K cubic',                   # Congestion algorithm
-    'stats'     : '-k THROUGHPUT'               # Stats required
+    'cong_algo': '-K cubic',                   # Congestion algorithm
+    'stats': '-k THROUGHPUT'               # Stats required
 }
 
 NETPERF_UDP_OPTIONS = {
-    'routing'   : '-R 1',                       # Enable routing
-    'stats'     : '-k THROUGHPUT'               # Stats required 
+    'routing': '-R 1',                       # Enable routing
+    'stats': '-k THROUGHPUT'               # Stats required
 }
+
 
 def run_test_commands(cmd, block=False):
     """
@@ -82,11 +87,13 @@ def parse_stats(raw_stats, ns_name, destination_ip, lock):
 
     # pattern that matches the netperf output corresponding to throughput
     throughput_pattern = r'NETPERF_INTERIM_RESULT\[\d+]=(?P<throughput>\d+\.\d+)'
-    throughputs = [throughput.group('throughput') for throughput in re.finditer(throughput_pattern, raw_stats)]
+    throughputs = [throughput.group('throughput') for throughput in re.finditer(
+        throughput_pattern, raw_stats)]
 
     # pattern that matches the netperf output corresponding to interval
     timestamp_pattern = r'NETPERF_ENDING\[\d+]=(?P<timestamp>\d+\.\d+)'
-    timestamps = [timestamp.group('timestamp') for timestamp in re.finditer(timestamp_pattern, raw_stats)]
+    timestamps = [timestamp.group('timestamp') for timestamp in re.finditer(
+        timestamp_pattern, raw_stats)]
 
     # pattern that gives the remote port
     remote_port_pattern = r'remote port is (?P<remote>\d+)'
@@ -102,7 +109,7 @@ def parse_stats(raw_stats, ns_name, destination_ip, lock):
 
     for i in range(len(throughputs)):
         stats_list.append({
-            'timestamp' : timestamps[i],
+            'timestamp': timestamps[i],
             'throughput': throughputs[i]
         })
 
@@ -140,7 +147,8 @@ def run_netperf(ns_name, destination_ip, start_time, lock, run_time, **kwargs):
     options = copy.copy(DEFAULT_NETPERF_OPTIONS)
     test_options = None
 
-    options['testlen'] = '-l {}'.format(run_time)       # Change the default runtime
+    # Change the default runtime
+    options['testlen'] = '-l {}'.format(run_time)
     options['testname'] = '-t {}'.format(kwargs['testname'])    # Set test
 
     if options['testname'] == '-t TCP_STREAM':
@@ -155,8 +163,8 @@ def run_netperf(ns_name, destination_ip, start_time, lock, run_time, **kwargs):
     test_options_string = ' '.join(test_options_list)
 
     cmd = 'ip netns exec {ns_name} netperf {options} -H {destination} -- {test_options}'.format(
-            ns_name = ns_name, options = options_string, destination = destination_ip, 
-            test_options = test_options_string)
+        ns_name=ns_name, options=options_string, destination=destination_ip,
+        test_options=test_options_string)
 
     if(start_time != 0):
         time.sleep(start_time)

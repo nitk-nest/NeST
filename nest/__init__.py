@@ -12,12 +12,13 @@ def setup():
 
     # Imported within setup so that client
     # doesn't 'see' these packages
-    import os, sys
+    import os
+    import sys
 
     if os.geteuid() != 0:
         print('nest: python package requires root access', file=sys.stderr)
         sys.exit(1)
-    
+
     from .user import User
 
     # Update user information in Configuration

@@ -15,6 +15,7 @@ INTERVAL = 0.2
 RUN_TIME = 10
 STATS_TO_PLOT = list()
 
+
 def get_qdisc_specific_params():
     """
     parameters to be obtained for a specific qdisc
@@ -26,6 +27,7 @@ def get_qdisc_specific_params():
     qdisc_param['pie'] = ['prob', 'delay', 'avg_dq_rate']
     return qdisc_param
 
+
 def get_qdisc_re():
     """
     Compile regular expression for parsing qdisc specific paramters
@@ -33,16 +35,16 @@ def get_qdisc_re():
     """
     qdisc_re = {}
     qdisc_re['codel'] = re.compile(r'count (?P<count>\d+) '
-                   r'lastcount (?P<lastcount>\d+) '
-                   r'ldelay (?P<ldelay>[0-9\.]+[mu]?s) '
-                   r"(?P<dropping>dropping)? ?"
-                   r'drop_next (?P<drop_next>-?[0-9\.]+[mu]?s)')
+                                   r'lastcount (?P<lastcount>\d+) '
+                                   r'ldelay (?P<ldelay>[0-9\.]+[mu]?s) '
+                                   r"(?P<dropping>dropping)? ?"
+                                   r'drop_next (?P<drop_next>-?[0-9\.]+[mu]?s)')
     qdisc_re['fq_codel'] = re.compile(r'maxpacket (?P<maxpacket>\d+) '
-                   r'drop_overlimit (?P<drop_overlimit>\d+) '
-                   r'new_flow_count (?P<new_flow_count>\d+) ')
+                                      r'drop_overlimit (?P<drop_overlimit>\d+) '
+                                      r'new_flow_count (?P<new_flow_count>\d+) ')
     qdisc_re['pie'] = re.compile(r'prob (?P<prob>[0-9\.]+) '
-                   r'delay (?P<delay>[0-9\.]+[mu]?s) '
-                   r'avg_dq_rate (?P<avg_dq_rate>\d+)')
+                                 r'delay (?P<delay>[0-9\.]+[mu]?s) '
+                                 r'avg_dq_rate (?P<avg_dq_rate>\d+)')
     return qdisc_re
 
 
@@ -65,6 +67,7 @@ def run_tc(cmd):
 
     return stdout.decode()  # stdout is a bytes-like object. Hence the usage of decode()
 
+
 def repl(match):
     """
     called be re.sub() for every match
@@ -77,6 +80,7 @@ def repl(match):
         else:
             s = repr(match.group(1))
             return ':"{}"'.format(s)
+
 
 def clean_json(stats):
     """
@@ -94,12 +98,13 @@ def clean_json(stats):
     stats = re.sub(value_pattern, repl, stats)
     return stats
 
+
 def old_kernel_version_parse_helper(command, start_time, qdisc_param, qdisc_re, aggregate_stats):
     """
     Parsing tc command on linux kernel versions
     4.15.0 to 5.4
     """
-    
+
     # This loop runs the tc command every `INTERVAL`s for `RUN_TIME`s
     while time.time() <= (start_time+RUN_TIME):
         stats = run_tc(command)
@@ -122,12 +127,13 @@ def old_kernel_version_parse_helper(command, start_time, qdisc_param, qdisc_re, 
 
         time.sleep(INTERVAL)
 
+
 def new_kernel_version_parse_helper(command, start_time, qdisc_param, qdisc_re, aggregate_stats):
     """
     Parsing tc command on linux kernel version
     5.5 and above
     """
-    
+
     # This loop runs the tc command every `INTERVAL`s for `RUN_TIME`s
     while time.time() <= (start_time+RUN_TIME):
         stats = run_tc(command)
@@ -152,6 +158,7 @@ def new_kernel_version_parse_helper(command, start_time, qdisc_param, qdisc_re, 
 
         time.sleep(INTERVAL)
 
+
 def parse(ns_name, dev, stats_to_plot):
     """
 
@@ -163,7 +170,8 @@ def parse(ns_name, dev, stats_to_plot):
     :type dev: string
     """
 
-    command = 'ip netns exec {} tc -s -j qdisc show dev {}'.format(ns_name, dev)
+    command = 'ip netns exec {} tc -s -j qdisc show dev {}'.format(
+        ns_name, dev)
     start_time = time.time()
     qdisc_param = get_qdisc_specific_params()
     qdisc_re = get_qdisc_re()
@@ -173,17 +181,21 @@ def parse(ns_name, dev, stats_to_plot):
     # based on the kernel version
     kernel_version = engine.get_kernel_version()
     if version.parse(kernel_version) >= version.parse('5.5'):
-        new_kernel_version_parse_helper(command, start_time, qdisc_param, qdisc_re, aggregate_stats)
+        new_kernel_version_parse_helper(
+            command, start_time, qdisc_param, qdisc_re, aggregate_stats)
     elif version.parse(kernel_version) >= version.parse('4.15.0'):
-        old_kernel_version_parse_helper(command, start_time, qdisc_param, qdisc_re, aggregate_stats)
+        old_kernel_version_parse_helper(
+            command, start_time, qdisc_param, qdisc_re, aggregate_stats)
     else:
         # TODO: Not sure if it's the right exception to raise
-        raise SystemError('NeST does not support tc parsing for kernel version below 4.15.0')
+        raise SystemError(
+            'NeST does not support tc parsing for kernel version below 4.15.0')
 
     # Store parsed results
     dev_name = TopologyMap.get_interface(ns_name, dev)['name']
-    TcResults.add_result(ns_name, {dev_name : aggregate_stats})
-    
+    TcResults.add_result(ns_name, {dev_name: aggregate_stats})
+
+
 def parse_qdisc(ns_name, dev, stats_to_plot, run_time):
     """
     runs the tc parser

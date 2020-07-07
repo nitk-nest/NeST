@@ -14,10 +14,11 @@ def _pretty_print_list_of_dict(list_of_dict, key):
 
     counter = 0
     for d in list_of_dict:
-            if d[key]:
-                print('[{counter:{width}d}] {key}'.format(counter = counter, 
-                        width = width, key = d[key]))
-            counter += 1
+           if d[key]:
+                print('[{counter:{width}d}] {key}'.format(counter=counter,
+                                                          width=width, key=d[key]))
+                counter += 1
+
 
 def _print_logs():
     """
@@ -29,14 +30,13 @@ def _print_logs():
         print('iproute2 commands run:\n')
         _pretty_print_list_of_dict(engine.LOGS, 'cmd')
         print()
-    
+
         print('stdout:\n')
         _pretty_print_list_of_dict(engine.LOGS, 'stdout')
         print()
 
         print('stderr:\n')
         _pretty_print_list_of_dict(engine.LOGS, 'stderr')
-        
 
 
 def set_log_level(log_level):
@@ -51,7 +51,7 @@ def set_log_level(log_level):
     """
 
     error_handling.type_verify('log level', log_level, 'int', int)
-    
+
     if 0 > log_level > 2:
         raise ValueError('Invalid value error')
     elif 1 <= log_level <= 2:

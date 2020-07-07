@@ -7,9 +7,9 @@
 import sys
 
 sys.path.append('../')
-
-from nest.topology import *
 from nest.experiment import *
+from nest.topology import *
+
 
 ##############################
 # Topology

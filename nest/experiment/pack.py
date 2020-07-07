@@ -7,6 +7,7 @@ import time
 
 from ..user import User
 
+
 class Pack():
 
     FOLDER = ''
@@ -21,10 +22,11 @@ class Pack():
         """
 
         timestamp = time.strftime('%d-%m-%Y-%H:%M:%S')
-        Pack.FOLDER = '{exp_name}({timestamp})_dump'.format(exp_name = exp_name, timestamp = timestamp)  
+        Pack.FOLDER = '{exp_name}({timestamp})_dump'.format(
+            exp_name=exp_name, timestamp=timestamp)
         os.mkdir(Pack.FOLDER)
         Pack.set_owner(Pack.FOLDER)
-    
+
     @staticmethod
     def dump_file(filename, content):
         """
@@ -58,7 +60,7 @@ class Pack():
         path = os.path.join(Pack.FOLDER, subfolder, filename)
         fig.savefig(path)
         Pack.set_owner(path)
-            
+
     @staticmethod
     def create_subfolder(subfolder):
         """

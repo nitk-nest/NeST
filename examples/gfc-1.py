@@ -7,9 +7,9 @@
 import sys
 
 sys.path.append('../')
-
-from nest.topology import *
 from nest.experiment import *
+from nest.topology import *
+
 
 #############################################
 # This is an implementation of gfc-1 topology
@@ -25,9 +25,9 @@ from nest.experiment import *
 #              n3      n1    n5      n2      n4
 #############################################
 
-r0_r1_bandwidth = '50mbit' 
-r1_r2_bandwidth = '150mbit' 
-r2_r3_bandwidth = '150mbit' 
+r0_r1_bandwidth = '50mbit'
+r1_r2_bandwidth = '150mbit'
+r2_r3_bandwidth = '150mbit'
 r3_r4_bandwidth = '100mbit'
 
 link_bandwidth = '150mbit'
@@ -41,20 +41,24 @@ link_latency = '0.001ms'
 
 qdisc = 'codel'
 
-r0_r1_qdisc_parameters = {'ce_threshold': '4.8ms', 'limit': '1000', 'target': '100ms', 'ecn': ''}
-r1_r2_qdisc_parameters = {'ce_threshold': '1.6ms', 'limit': '1000', 'target': '100ms', 'ecn': ''}
-r2_r3_qdisc_parameters = {'ce_threshold': '1.6ms', 'limit': '1000', 'target': '100ms', 'ecn': ''}
-r3_r4_qdisc_parameters = {'ce_threshold': '2.4ms', 'limit': '1000', 'target': '100ms', 'ecn': ''}
+r0_r1_qdisc_parameters = {'ce_threshold': '4.8ms',
+                          'limit': '1000', 'target': '100ms', 'ecn': ''}
+r1_r2_qdisc_parameters = {'ce_threshold': '1.6ms',
+                          'limit': '1000', 'target': '100ms', 'ecn': ''}
+r2_r3_qdisc_parameters = {'ce_threshold': '1.6ms',
+                          'limit': '1000', 'target': '100ms', 'ecn': ''}
+r3_r4_qdisc_parameters = {'ce_threshold': '2.4ms',
+                          'limit': '1000', 'target': '100ms', 'ecn': ''}
 
 # Creating all the nodes
 node = []
-for i in range (12):
+for i in range(12):
     node.append(Node('node' + str(i)))
     node[i].configure_tcp_param('ecn', '1')
 
 # Creating all the routers
 router = []
-for i in range (5):
+for i in range(5):
     router.append(Router('router' + str(i)))
 
 # Making the necessary connections
@@ -187,16 +191,20 @@ for n in node:
         i.get_pair().set_attributes(link_bandwidth, link_latency)
 
 # Setting attributes for the interfaces between routers
-r0_r1.set_attributes(r0_r1_bandwidth, r0_r1_latency, qdisc, **r0_r1_qdisc_parameters)
+r0_r1.set_attributes(r0_r1_bandwidth, r0_r1_latency,
+                     qdisc, **r0_r1_qdisc_parameters)
 r1_r0.set_attributes(r0_r1_bandwidth, r0_r1_latency)
 
-r1_r2.set_attributes(r1_r2_bandwidth, r1_r2_latency, qdisc, **r1_r2_qdisc_parameters)
+r1_r2.set_attributes(r1_r2_bandwidth, r1_r2_latency,
+                     qdisc, **r1_r2_qdisc_parameters)
 r2_r1.set_attributes(r1_r2_bandwidth, r1_r2_latency)
 
-r2_r3.set_attributes(r2_r3_bandwidth, r2_r3_latency, qdisc, **r2_r3_qdisc_parameters)
+r2_r3.set_attributes(r2_r3_bandwidth, r2_r3_latency,
+                     qdisc, **r2_r3_qdisc_parameters)
 r3_r2.set_attributes(r2_r3_bandwidth, r2_r3_latency)
 
-r3_r4.set_attributes(r3_r4_bandwidth, r3_r4_latency, qdisc, **r3_r4_qdisc_parameters)
+r3_r4.set_attributes(r3_r4_bandwidth, r3_r4_latency,
+                     qdisc, **r3_r4_qdisc_parameters)
 r4_r3.set_attributes(r3_r4_bandwidth, r3_r4_latency)
 
 time = 120

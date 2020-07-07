@@ -7,13 +7,13 @@
 import sys
 
 sys.path.append('../')
-from nest.topology import *
 from nest.experiment import *
+from nest.topology import *
 
 ##############################
 # Topology
 #
-# n1 -->-- r1 -->-- n2 
+# n1 -->-- r1 -->-- n2
 ##############################
 
 n2 = Node('n2')

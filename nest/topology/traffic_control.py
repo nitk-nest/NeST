@@ -13,9 +13,11 @@ _support = {
 # NOTE: Call to error_handling not necessary since
 # it is being called in topology.py (as soon as the
 # the user calls the API)
+
+
 class Qdisc:
 
-    def __init__(self, namespace_id , dev_id, qdisc, parent = 'root', handle = '', **kwargs):
+    def __init__(self, namespace_id, dev_id, qdisc, parent='root', handle='', **kwargs):
         """
         Constructor to add a qdisc (Queueing Discipline) to an interface (device)
 
@@ -48,7 +50,8 @@ class Qdisc:
         error_handling.type_verify('namespace_id', namespace_id, 'string', str)
         error_handling.type_verify('dev_id', dev_id, 'string', str)
         error_handling.type_verify('qdisc', qdisc, 'string', str)
-        error_handling.type_verify('namespace_id', namespace_id, 'Interface class', str)
+        error_handling.type_verify(
+            'namespace_id', namespace_id, 'Interface class', str)
         error_handling.type_verify('parent', parent, 'string', str)
         error_handling.type_verify('handle', handle, 'string', str)
 
@@ -61,7 +64,7 @@ class Qdisc:
 
 class Class:
 
-    def __init__(self, namespace_id , dev_id, qdisc, parent = 'root', classid = '', **kwargs):
+    def __init__(self, namespace_id, dev_id, qdisc, parent='root', classid='', **kwargs):
         """
         Constructor to create an object that represents a class
 
@@ -92,16 +95,18 @@ class Class:
         error_handling.type_verify('namespace_id', namespace_id, 'string', str)
         error_handling.type_verify('dev_id', dev_id, 'string', str)
         error_handling.type_verify('qdisc', qdisc, 'string', str)
-        error_handling.type_verify('namespace_id', namespace_id, 'Interface class', str)
+        error_handling.type_verify(
+            'namespace_id', namespace_id, 'Interface class', str)
         error_handling.type_verify('parent', parent, 'string', str)
         error_handling.type_verify('classid', classid, 'string', str)
 
-        engine.add_class(namespace_id, dev_id, parent, qdisc, classid, **kwargs)
+        engine.add_class(namespace_id, dev_id, parent,
+                         qdisc, classid, **kwargs)
 
 
 class Filter:
 
-    def __init__(self, namespace_id , dev_id, protocol, priority, filtertype, flowid, parent='root', handle = '',  **kwargs):
+    def __init__(self, namespace_id, dev_id, protocol, priority, filtertype, flowid, parent='root', handle='',  **kwargs):
         """
         Constructor to design a Filter to assign to a Class
         or Qdisc
@@ -142,11 +147,14 @@ class Filter:
 
         error_handling.type_verify('namespace_id', namespace_id, 'string', str)
         error_handling.type_verify('dev_id', dev_id, 'string', str)
-        error_handling.type_verify('protocol', protocol, 'string', str, supported_parameters=['protocol'])
+        error_handling.type_verify(
+            'protocol', protocol, 'string', str, supported_parameters=['protocol'])
         error_handling.type_verify('priority', priority, 'int', int)
-        error_handling.type_verify('filtertype', filtertype, 'string', str, supported_parameters=['filtertype'])
+        error_handling.type_verify(
+            'filtertype', filtertype, 'string', str, supported_parameters=['filtertype'])
         error_handling.type_verify('flowid', flowid, 'Class', Class)
         error_handling.type_verify('parent', parent, 'string', str)
         error_handling.type_verify('handle', handle, 'string', str)
 
-        engine.add_filter(namespace_id, dev_id, protocol, priority, filtertype, flowid, parent, handle, **kwargs)
+        engine.add_filter(namespace_id, dev_id, protocol, priority,
+                          filtertype, parent, handle, **kwargs)

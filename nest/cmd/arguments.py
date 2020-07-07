@@ -1,12 +1,15 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
-import argparse, sys
+import argparse
+import sys
 from .. import test
 from .. import engine
 
+
 class Argument(argparse.Namespace):
     VERSION = '1.0.0'
+
 
 def parse(arg):
     """
@@ -17,14 +20,18 @@ def parse(arg):
     :return: parsed arguements
     :r_type: Argument
     """
-    
+
     parser = argparse.ArgumentParser('nest')
-    parser.add_argument('--version', action='version', version=Argument.VERSION)
-    parser.add_argument('-f', type=str, nargs='+', help='config file names', dest='config_files', action='store')
-    parser.add_argument('-t', type=str, help='topology creation script', dest='topology_file', action='store')
+    parser.add_argument('--version', action='version',
+                        version=Argument.VERSION)
+    parser.add_argument('-f', type=str, nargs='+',
+                        help='config file names', dest='config_files', action='store')
+    parser.add_argument('-t', type=str, help='topology creation script',
+                        dest='topology_file', action='store')
     arguments = parser.parse_args(arg, namespace=Argument)
 
     return arguments
+
 
 def run_args(arguments):
     """
@@ -63,6 +70,7 @@ def create_topology(topology_file):
     stderr = engine.LOGS[0]['stderr']
     if stderr:
         print(stderr)
+
 
 def run_tests(config_files):
     """

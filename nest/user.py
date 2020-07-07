@@ -20,7 +20,7 @@ class User():
         :param group_id: User Group ID
         :type group_id: int
         """
-        
+
         User.user_id = user_id
         User.group_id = group_id
 

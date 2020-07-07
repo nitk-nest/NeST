@@ -7,6 +7,7 @@ from multiprocessing import Manager, Lock, Queue
 from ..topology_map import TopologyMap
 from .pack import Pack
 
+
 class Results:
     """
     This class aggregates the stats from the entire experiment environment
@@ -47,7 +48,7 @@ class Results:
 
         results_q.get()
         results_q.put({})
-    
+
     @staticmethod
     def get_results(results_q):
         """
@@ -78,6 +79,7 @@ class Results:
 # Shared variables to aggregate results
 ss_results_q = Manager().Queue()
 ss_results_q.put({})
+
 
 class SsResults:
     """
@@ -125,6 +127,7 @@ class SsResults:
 netperf_results_q = Manager().Queue()
 netperf_results_q.put({})
 
+
 class NetperfResults:
     """
     This class aggregates the netperf stats from the entire experiment environment
@@ -170,6 +173,7 @@ class NetperfResults:
 # Shared variables to aggregate results
 tc_results_q = Manager().Queue()
 tc_results_q.put({})
+
 
 class TcResults:
     """

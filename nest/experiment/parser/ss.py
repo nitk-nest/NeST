@@ -31,7 +31,7 @@ def run_ss(cmd):
     if stderr:
         return None
 
-    return stdout.decode();  # stdout is a bytes-like object. Hence the usage of decode()
+    return stdout.decode()  # stdout is a bytes-like object. Hence the usage of decode()
 
 
 def parse(ns_name, param_list, destination_ip, lock):
@@ -45,21 +45,23 @@ def parse(ns_name, param_list, destination_ip, lock):
 
     return
     """
-    command = 'ip netns exec {} ss -i {} -n dst {}'.format(ns_name, 'dport != 12865 and sport != 12865' , destination_ip) #NOTE: Assumed that netserver runs on default port
+    command = 'ip netns exec {} ss -i {} -n dst {}'.format(
+        ns_name, 'dport != 12865 and sport != 12865', destination_ip)  # NOTE: Assumed that netserver runs on default port
     json_stats = {}
     cur_time = 0.0
 
     stats_dict_list = {}
     start_time = time.time()
-    
+
     # This loop runs the ss command every `INTERVAL`s for `RUN_TIME`s
     while time.time() <= (start_time+RUN_TIME):
         stats = run_ss(command)
         # Pattern to capture port numbers of flows to `destination ip`
         port_pattern = re.escape(destination_ip) + r':(?P<port>\d+)'
-        port_list = [port.group('port') for port in re.finditer(port_pattern, stats)]
+        port_list = [port.group('port')
+                     for port in re.finditer(port_pattern, stats)]
         cur_timestamp = time.time()
-        
+
         for port in port_list:
             if port not in stats_dict_list:
                 stats_dict_list[port] = [{"timestamp": str(cur_timestamp)}]
@@ -67,9 +69,12 @@ def parse(ns_name, param_list, destination_ip, lock):
                 stats_dict_list[port].append({"timestamp": str(cur_timestamp)})
 
         for param in param_list:
-            pattern = r'\s' + re.escape(param) + r'[\s:](?P<value>\w+\.?\w*(?:[\/\,]\w+\.?\w*)*)\s'
+            pattern = r'\s' + \
+                re.escape(param) + \
+                r'[\s:](?P<value>\w+\.?\w*(?:[\/\,]\w+\.?\w*)*)\s'
             # result list stores all the string that is matched by the `pattern`
-            param_value_list = [value.group('value') for value in re.finditer(pattern, stats)]
+            param_value_list = [value.group('value')
+                                for value in re.finditer(pattern, stats)]
             param_value = ''
             for i in range(len(param_value_list)):
                 param_value = param_value_list[i].strip()
@@ -94,17 +99,15 @@ def parse(ns_name, param_list, destination_ip, lock):
 
 # TODO: Integrate with nest
 
+
 def parse_ss(ns_name, destination_ip, stats_to_plot, start_time, run_time, lock):
     param_list = ['cwnd', 'rwnd', 'rtt', 'ssthresh', 'rto', 'delivery_rate']
     global RUN_TIME
     RUN_TIME = run_time
-    global STATS_TO_PLOT 
+    global STATS_TO_PLOT
     STATS_TO_PLOT = stats_to_plot
-    
+
     if(start_time != 0):
         time.sleep(start_time)
 
     parse(ns_name, param_list, destination_ip, lock)
-
-
-

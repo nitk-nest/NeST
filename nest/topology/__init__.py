@@ -6,6 +6,7 @@ from .interface import Interface, Veth, connect
 from .address import Address, Subnet
 from . import logging
 
+
 def setup():
     """
     Setup done when nest.topology is imported
@@ -21,7 +22,8 @@ def setup():
     from .. import engine
 
     # Generate unique topology id
-    topology_id = uuid.uuid4().hex[:10] # TODO: First 10 seems hacky
+    topology_id = uuid.uuid4().hex[:10]  # TODO: First 10 seems hacky
     id_generator.ID_GEN(topology_id)
+
 
 setup()

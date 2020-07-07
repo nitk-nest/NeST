@@ -7,12 +7,12 @@
 import sys
 
 sys.path.append('../')
-
 from nest.topology import *
+
 
 ##############################
 # Topology: Dumbell
-# 
+#
 #   ln0----------------                      ---------------rn0
 #                      \                    /
 #   ln1---------------  \                  /  ---------------rn1
@@ -23,8 +23,8 @@ from nest.topology import *
 #   .                /                        \              .
 #   .               /                          \             .
 #   lnk------------                              ------------rnk
-# 
-# 
+#
+#
 ##############################
 
 # Checking if the right arguements are input
@@ -70,7 +70,8 @@ for i in range(num_of_right_nodes):
     right_node_connections.append(connect(right_nodes[i], right_router))
 
 # Connecting the two routers
-(left_router_connection, right_router_connection) = connect(left_router, right_router)
+(left_router_connection, right_router_connection) = connect(
+    left_router, right_router)
 
 print('Connections made')
 
@@ -114,39 +115,30 @@ print('Addresses are assigned')
 
 # If any packet needs to be sent from any left nodes, send it to left router
 for i in range(num_of_left_nodes):
-    left_nodes[i].add_route('DEFAULT', left_node_connections[i][1].get_address(), 
-                                left_node_connections[i][0])
+    left_nodes[i].add_route('DEFAULT', left_node_connections[i][0])
 
 # If the destination address for any packet in left router is
 # one of the left nodes, forward the packet to that node
 for i in range(num_of_left_nodes):
-    left_router.add_route(left_node_connections[i][0].get_address(), left_node_connections[i][0].get_address(), 
-                                left_node_connections[i][1])
+    left_router.add_route(left_node_connections[i][0].get_address(), left_node_connections[i][1])
 
 # If the destination address doesn't match any of the entries
 # in the left router's iptables forward the packet to right router
-left_router.add_route('DEFAULT', right_router_connection.get_address(), 
-                        left_router_connection)
+left_router.add_route('DEFAULT', left_router_connection)
 
 # If any packet needs to be sent from any right nodes, send it to right router
 for i in range(num_of_right_nodes):
-    right_nodes[i].add_route('DEFAULT', right_node_connections[i][1].get_address(), 
-                                right_node_connections[i][0])
+    right_nodes[i].add_route('DEFAULT', right_node_connections[i][0])
 
 # If the destination address for any packet in left router is
 # one of the left nodes, forward the packet to that node
 for i in range(num_of_right_nodes):
-    right_router.add_route(right_node_connections[i][0].get_address(), right_node_connections[i][0].get_address(), 
-                                right_node_connections[i][1])
+    right_router.add_route(right_node_connections[i][0].get_address(), right_node_connections[i][1])
 
 # If the destination address doesn't match any of the entries
 # in the right router's iptables forward the packet to left router
-right_router.add_route('DEFAULT', left_router_connection.get_address(), 
-                        right_router_connection)
+right_router.add_route('DEFAULT', right_router_connection)
 
-
-# Generate config file at the end of topology
-Configuration.generate_config_file()
 
 ######  RUN TESTS ######
 

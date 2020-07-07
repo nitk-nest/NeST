@@ -7,9 +7,9 @@
 import sys
 
 sys.path.append('../')
-
-from nest.topology import *
 from nest.experiment import *
+from nest.topology import *
+
 
 ################################################
 # Topology
@@ -72,7 +72,7 @@ eth_r2p2.set_attributes('100mbit', '5ms')
 
 # Bottleneck link
 eth_r1r2.set_attributes('10mbit', '40ms', 'codel')
-eth_r2r1.set_attributes('10mbit', '40ms', 'pie') 
+eth_r2r1.set_attributes('10mbit', '40ms', 'pie')
 
 ### Add experiment to run ###
 
@@ -107,7 +107,7 @@ exp1.run()
 
 # TODO: Running multiple experiments haven't been
 # tested properly yet
-# TODO: Running to multiple flows in a experiment 
+# TODO: Running to multiple flows in a experiment
 # is leading to unexpected behaviour. These needs
 # to be looked at closely
 

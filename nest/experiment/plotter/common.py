@@ -4,6 +4,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def simple_plot(title, x_list, y_list, x_label, y_label):
     """
     Plot values
@@ -31,7 +32,8 @@ def simple_plot(title, x_list, y_list, x_label, y_label):
 
     return fig
 
-def mix_plot(title, data, x_label, y_label, with_sum = False):
+
+def mix_plot(title, data, x_label, y_label, with_sum=False):
     """
     Plot multiple sets of values and their total sum
 
@@ -54,7 +56,7 @@ def mix_plot(title, data, x_label, y_label, with_sum = False):
     for chunk in data:
         (x_list, y_list) = chunk['values']
         label = chunk['label']
-        ax.plot(x_list, y_list, label = label)
+        ax.plot(x_list, y_list, label=label)
 
     if with_sum:
 
@@ -73,8 +75,7 @@ def mix_plot(title, data, x_label, y_label, with_sum = False):
             y = np.interp(x, x_list, y_list, left=0, right=0)
             sum += y
 
-        ax.plot(x, sum, label = 'sum')
-            
+        ax.plot(x, sum, label='sum')
 
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)

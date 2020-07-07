@@ -11,13 +11,14 @@ from .run_exp import run_experiment
 from .. import error_handling
 from .pack import Pack
 
+
 class Flow():
     """
     Defines a flow in the topology
     """
 
-    def __init__(self, source_node, destination_node, destination_address, start_time, stop_time, 
-            number_of_flows):
+    def __init__(self, source_node, destination_node, destination_address, start_time, stop_time,
+                 number_of_flows):
         """
         'Flow' object in the topology
 
@@ -42,7 +43,7 @@ class Flow():
         self.set_stop_time(stop_time)
         self.set_number_of_flows(number_of_flows)
         self.options = {
-            'protocol' : 'TCP',
+            'protocol': 'TCP',
             'cong_algo': 'cubic'
         }
 
@@ -53,8 +54,9 @@ class Flow():
         :param source_node: Source node of flow
         :type source_node: Node
         """
-         
-        error_handling.type_verify('source_node', source_node, 'Namespace', [Node, Router])
+
+        error_handling.type_verify(
+            'source_node', source_node, 'Namespace', [Node, Router])
         self.source_node = source_node
 
     def set_destination_node(self, destination_node):
@@ -65,9 +67,10 @@ class Flow():
         :type destination_node: Node
         """
 
-        error_handling.type_verify('destination_node', destination_node, 'Namespace', [Node, Router]) 
+        error_handling.type_verify(
+            'destination_node', destination_node, 'Namespace', [Node, Router])
         self.destination_node = destination_node
-    
+
     def set_destination_address(self, destination_address):
         """
         Setter for destination address of flow
@@ -110,7 +113,8 @@ class Flow():
         :type number_of_flows: int
         """
 
-        error_handling.type_verify('number_of_flows', number_of_flows, 'int', int)
+        error_handling.type_verify(
+            'number_of_flows', number_of_flows, 'int', int)
         self.number_of_flows = number_of_flows
 
     def _set_options(self, options):
@@ -120,9 +124,8 @@ class Flow():
         :param options: Flow options
         :type options: dict
         """
-        
-        self.options = options
 
+        self.options = options
 
     def get_source_node(self):
         """
@@ -173,8 +176,9 @@ class Flow():
         """
 
         return [self.source_node.get_id(), self.destination_node.get_id(),
-                self.destination_address.get_addr(with_subnet=False), 
+                self.destination_address.get_addr(with_subnet=False),
                 self.start_time, self.stop_time, self.number_of_flows, self.options]
+
 
 class Experiment():
 
@@ -190,7 +194,7 @@ class Experiment():
         :param name: name of experiment
         :type name: string
         """
-        
+
         error_handling.type_verify('Name', name, 'string', str)
 
         self.name = name
@@ -222,10 +226,10 @@ class Experiment():
         """
 
         # TODO: Verify congestion algorithm
-        
+
         options = {
-            'protocol' : 'TCP',
-            'cong_algo': congestion_algorithm 
+            'protocol': 'TCP',
+            'cong_algo': congestion_algorithm
         }
 
         flow._set_options(options)
@@ -238,9 +242,9 @@ class Experiment():
         :param flow: Flow to be added to experiment
         :type flow: Flow
         """
-        
+
         options = {
-            'protocol' : 'UDP',
+            'protocol': 'UDP',
         }
 
         flow._set_options(options)
@@ -293,7 +297,8 @@ class Experiment():
         #         raise ValueError('{} is not a valid Queue property.'.format(stat))
 
         if interface.get_qdisc() is None:
-            raise ValueError('Given interface hasn\'t been assigned any qdisc.')
+            raise ValueError(
+                'Given interface hasn\'t been assigned any qdisc.')
 
         self.qdisc_stats.append({
             'ns_id': interface.get_namespace().get_id(),
@@ -325,4 +330,4 @@ class Experiment():
         print('Running experiment ' + self.name)
         print()
         Pack.init(self.get_name())
-        run_experiment(self) 
+        run_experiment(self)
