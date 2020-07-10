@@ -4,9 +4,6 @@
 ########################
 # SHOULD BE RUN AS ROOT#
 ########################
-import sys
-
-sys.path.append('../')
 from nest.experiment import *
 from nest.topology import *
 

@@ -4,11 +4,7 @@
 ########################
 # SHOULD BE RUN AS ROOT
 ########################
-import sys
-
-sys.path.append('../')
 from nest.topology import *
-
 
 ##############################
 # Topology: Dumbell
