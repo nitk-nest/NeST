@@ -30,9 +30,9 @@ n1_n0.set_address('10.0.0.2/24')
 
 n0_n1.set_attributes('5mbit', '5ms', 'pfifo')
 
-flow = Flow(n0, n1, n1_n0.get_address(), 0, 10, 2, 'reno')
+flow = Flow(n0, n1, n1_n0.get_address(), 0, 10, 2)
 
 exp = Experiment('tcp_1up')
-exp.add_flow(flow)
+exp.add_tcp_flow(flow, 'reno')
 
 exp.run()
