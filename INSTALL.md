@@ -2,7 +2,7 @@
 
 **NOTE**: `NeST` is supported for Linux systems only.
 
-The following instrcutions are to install `NeST` from source.
+The following instructions are to install `NeST` from source.
 
 #### 1. Ensure that netperf is installed in your system.
 
