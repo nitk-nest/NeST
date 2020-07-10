@@ -1,15 +1,18 @@
-#python cache files
+# Python virtual environment files
+venv/
+
+# Python cache files
 __pycache__
 *.pyc
 
-#python virtual environment files
-venv/
-
-#vscode settings
+# vscode settings
 .vscode/
 
-#configuration files
+# Output result dumps
 *.json
 
-#png images
+# png images
 *.png
+
+# File output on install
+nest.egg-info

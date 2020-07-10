@@ -1,5 +1,8 @@
-# Network Stack Tester (NeST)
+# NeST: Network Stack Tester
 
-## Dependencies
-- Netperf
-- Python packages in `requirements.txt`
+`NeST` is a python package that handles testbed setup, testbed configuration,
+collecting and visualizing data by providing a user friendly API, addressing
+common issues involved in conducting networking experiments.
+
+Instructions to install `NeST` from source can be found in
+[INSTALL.md](INSTALL.md).
