@@ -5,7 +5,7 @@
 # on a given topology
 
 import copy
-from ..topology import Address, Node, Router, Interface
+from ..topology import Address, Node, Interface
 from ..topology_map import TopologyMap
 from .run_exp import run_experiment
 from .. import error_handling
@@ -56,7 +56,7 @@ class Flow():
         """
 
         error_handling.type_verify(
-            'source_node', source_node, 'Namespace', [Node, Router])
+            'source_node', source_node, 'Namespace', Node)
         self.source_node = source_node
 
     def set_destination_node(self, destination_node):
@@ -68,7 +68,7 @@ class Flow():
         """
 
         error_handling.type_verify(
-            'destination_node', destination_node, 'Namespace', [Node, Router])
+            'destination_node', destination_node, 'Namespace', Node)
         self.destination_node = destination_node
 
     def set_destination_address(self, destination_address):
@@ -301,7 +301,7 @@ class Experiment():
                 'Given interface hasn\'t been assigned any qdisc.')
 
         self.qdisc_stats.append({
-            'ns_id': interface.get_namespace().get_id(),
+            'ns_id': interface.get_node().get_id(),
             'int_id': interface.ifb.get_id(),
             'qdisc_handle': interface.get_qdisc().handle,
             'stats': stats

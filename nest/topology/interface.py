@@ -1,17 +1,33 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
-# API related to interfaces in topology
+""" API related to interfaces in topology"""
+
 from .address import Address
 from .. import engine
 from .. import error_handling
 from .id_generator import ID_GEN
 from ..topology_map import TopologyMap
 from . import traffic_control
-from .node import Node, Router
+from .node import Node
 
 
 class Interface:
+    """
+    Abstraction for an network interface.
+
+    Attributes
+    ----------
+    name: str
+        User given name for the interface
+    id: str
+        This value is used by `engine` to create emulated interface 
+        entity
+    node: Node
+        `Node` which contains this `Interface`
+    address: str/Address
+        IP address assigned to this interface 
+    """
 
     def __init__(self, interface_name, pair=''):
         """
@@ -32,9 +48,10 @@ class Interface:
             'interface_name', interface_name, 'string', str)
         error_handling.type_verify('pair', pair, 'string', str)
 
+        # TODO: name and address should be the only public members
         self.name = interface_name
         self.id = ID_GEN.get_id(interface_name)
-        self.namespace = None
+        self.node = None
         self.pair = None
         self.address = None
 
@@ -82,7 +99,7 @@ class Interface:
 
         return self.name
 
-    def _set_namespace(self, namespace):
+    def _set_node(self, namespace):
         """
         Setter for the namespace associated 
         with the interface
@@ -91,15 +108,15 @@ class Interface:
         :type namespace: Namespace
         """
 
-        self.namespace = namespace
+        self.node = namespace
 
-    def get_namespace(self):
+    def get_node(self):
         """
         Getter for the namespace associated 
         with the interface
         """
 
-        return self.namespace
+        return self.node
 
     def get_address(self):
         """
@@ -120,8 +137,8 @@ class Interface:
         if type(address) == str:
             address = Address(address)
 
-        if self.namespace.is_default() is False:
-            engine.assign_ip(self.get_namespace().get_id(),
+        if self.node is not None:
+            engine.assign_ip(self.get_node().get_id(),
                              self.get_id(), address.get_addr())
             self.address = address
         else:
@@ -146,9 +163,9 @@ class Interface:
         error_handling.type_verify('mode', mode, 'string', str)
 
         if mode == 'UP' or mode == 'DOWN':
-            if self.namespace.is_default() is False:
+            if self.node is not None:
                 engine.set_interface_mode(
-                    self.get_namespace().get_id(), self.get_id(), mode.lower())
+                    self.get_node().get_id(), self.get_id(), mode.lower())
             else:
                 # Create our own error class
                 raise NotImplementedError(
@@ -195,10 +212,10 @@ class Interface:
         error_handling.type_verify('handle', handle, 'string', str)
 
         self.qdisc_list.append(traffic_control.Qdisc(
-            self.namespace.get_id(), self.get_id(), qdisc, parent, handle, **kwargs))
+            self.node.get_id(), self.get_id(), qdisc, parent, handle, **kwargs))
 
         # Add qdisc to TopologyMap
-        TopologyMap.add_qdisc(self.namespace.get_id(),
+        TopologyMap.add_qdisc(self.node.get_id(),
                               self.get_id(), qdisc, handle, parent=parent)
 
         return self.qdisc_list[-1]
@@ -218,7 +235,7 @@ class Interface:
                 engine.delete_qdisc(qdisc.namespace_id,
                                     qdisc.dev_id, qdisc.parent, qdisc.handle)
                 TopologyMap.delete_qdisc(
-                    self.namespace.get_id(), self.get_id(), handle)
+                    self.node.get_id(), self.get_id(), handle)
                 self.qdisc_list.pop(counter)
                 break
             counter += 1
@@ -244,7 +261,7 @@ class Interface:
         error_handling.type_verify('classid', classid, 'string', str)
 
         self.class_list.append(traffic_control.Class(
-            self.namespace.get_id(), self.get_id(), qdisc, parent, classid, **kwargs))
+            self.node.get_id(), self.get_id(), qdisc, parent, classid, **kwargs))
 
         return self.class_list[-1]
 
@@ -274,7 +291,7 @@ class Interface:
         # TODO: Verify type of parameters
         # TODO: Reduce arguements to the engine functions by finding parent and handle automatically
 
-        self.filter_list.append(traffic_control.Filter(self.namespace.get_id(), self.get_id(), protocol,
+        self.filter_list.append(traffic_control.Filter(self.node.get_id(), self.get_id(), protocol,
                                                        priority, filtertype, flowid, parent, handle, **kwargs))
 
         return self.filter_list[-1]
@@ -293,7 +310,7 @@ class Interface:
         engine.create_ifb(self.ifb.get_id())
 
         # Add ifb to namespace
-        self.namespace._add_interface(self.ifb)
+        self.node._add_interface(self.ifb)
 
         # Set interface up
         self.ifb.set_mode('UP')
@@ -321,7 +338,7 @@ class Interface:
         }
 
         # NOTE: Use Filter API
-        engine.add_filter(self.namespace.get_id(), self.get_id(
+        engine.add_filter(self.node.get_id(), self.get_id(
         ), 'ip', '1', 'u32', parent='1:', **action_redirect)
 
     def _set_structure(self):
@@ -373,7 +390,7 @@ class Interface:
 
         # TODO: Check the created API
         # TODO: This should be handled by self.change_class
-        engine.change_class(self.namespace.get_id(), self.get_id(
+        engine.change_class(self.node.get_id(), self.get_id(
         ), '1:', 'htb', '1:1', **min_bandwidth_parameter)
 
     def set_delay(self, delay):
@@ -401,7 +418,7 @@ class Interface:
 
         # TODO: This should be handled by self.change_qdisc
         # It could lead to a potential bug!
-        engine.change_qdisc(self.namespace.get_id(), self.get_id(
+        engine.change_qdisc(self.node.get_id(), self.get_id(
         ), 'netem', '1:1', '11:', **delay_parameter)
 
     def set_qdisc(self, qdisc, min_rate, **kwargs):
@@ -431,7 +448,7 @@ class Interface:
             'rate': min_rate
         }
 
-        engine.change_class(self.namespace.get_id(), self.ifb.get_id(
+        engine.change_class(self.node.get_id(), self.ifb.get_id(
         ), '1:', 'htb', '1:1', **min_bandwidth_parameter)
 
         self.ifb.delete_qdisc('11:')
@@ -503,8 +520,8 @@ def connect(ns1, ns2, interface1_name='', interface2_name=''):
     :r_type: (Interface, Interface)
     """
 
-    error_handling.type_verify('ns1', ns1, 'Namespace', [Node, Router])
-    error_handling.type_verify('ns2', ns2, 'Namespace', [Node, Router])
+    error_handling.type_verify('ns1', ns1, 'Namespace', Node)
+    error_handling.type_verify('ns2', ns2, 'Namespace', Node)
     error_handling.type_verify(
         'interface1_name', interface1_name, 'string', str)
     error_handling.type_verify(

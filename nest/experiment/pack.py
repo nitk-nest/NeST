@@ -5,7 +5,7 @@
 import os
 import time
 
-from ..user import User
+from nest._user import User
 
 
 class Pack():
@@ -86,8 +86,8 @@ class Pack():
         :type path: string
         """
 
-        user_id = User.get_user_id()
-        group_id = User.get_group_id()
+        user_id = User.user_id
+        group_id = User.group_id
         os.chown(path, user_id, group_id)
 
     @staticmethod
