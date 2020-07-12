@@ -16,13 +16,18 @@ urna finibus blandit ac a magna. Interdum et malesuada fames ac ante ipsum
 primis in faucibus. Phasellus ut lectus lacinia, euismod mauris sit amet, cursus
 lorem. Vestibulum hendrerit augue at lorem dignissim, at viverra ante bibendum.
 Phasellus eget congue enim. Donec finibus pellentesque libero, et accumsan augue
-tempor in. 
-
-Contents
---------
+tempor in.
 
 .. toctree::
+   :caption: Contents
    :maxdepth: 2
 
-   tutorial.rst
-   api.rst
+   tutorial
+   modules
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
