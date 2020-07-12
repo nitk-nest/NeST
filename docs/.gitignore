@@ -1,5 +1,2 @@
-# Ignore docs virtual env
-doc-venv/
-
-#Ignore build folder
+# build folder
 _build/
