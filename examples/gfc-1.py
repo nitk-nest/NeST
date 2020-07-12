@@ -55,7 +55,8 @@ for i in range(12):
 # Creating all the routers
 router = []
 for i in range(5):
-    router.append(Router('router' + str(i)))
+    router.append(Node('router' + str(i)))
+    router[-1].enable_ip_forwarding()
 
 # Making the necessary connections
 (r1_r0, r0_r1) = connect(router[1], router[0])

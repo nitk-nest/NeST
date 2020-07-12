@@ -14,8 +14,9 @@ from nest.topology import *
 ##############################
 
 n2 = Node('n2')
-r = Router('r')
+r = Node('r')
 n1 = Node('n1')
+r.enable_ip_forwarding()
 
 (n1_r, r_n1) = connect(n1, r)
 (r_n2, n2_r) = connect(r, n2)
