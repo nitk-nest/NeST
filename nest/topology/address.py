@@ -37,7 +37,7 @@ class Address:
             ipaddress.ip_address(addr_str)
             self.ip_addr = addr_str+'/32'
 
-    def get_addr(self, with_subnet=False):
+    def get_addr(self, with_subnet=True):
         """
         Getter for ip_addr
         """

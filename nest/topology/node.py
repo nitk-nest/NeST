@@ -84,12 +84,12 @@ class Node:
 
         dest_addr_str = ''
         if dest_addr.is_subnet():
-            dest_addr_str = dest_addr.get_addr(with_subnet=True)
-        else:
             dest_addr_str = dest_addr.get_addr()
+        else:
+            dest_addr_str = dest_addr.get_addr(with_subnet=False)
 
         engine.add_route(
-            self.id, dest_addr_str, next_hop_addr.get_addr(), 
+            self.id, dest_addr_str, next_hop_addr.get_addr(with_subnet=False),
             via_interface.get_id())
 
     def _add_interface(self, interface):
@@ -103,7 +103,7 @@ class Node:
 
         """
         self.interface_list.append(interface)
-        interface._set_namespace(self)
+        interface._set_node(self)
         engine.add_int_to_ns(self.id, interface.get_id())
         TopologyMap.add_interface(
             self.id, interface.get_id(), interface.get_name())
@@ -221,13 +221,16 @@ class Node:
         if type(destination_address) == str:
             destination_address = Address(destination_address)
 
-        status = engine.ping(self.id, destination_address.get_addr())
+        status = engine.ping(
+            self.id, destination_address.get_addr(with_subnet=False))
         if verbose:
             if status:
                 print('SUCCESS: ', end='')
             else:
                 print('FAILURE: ', end='')
-        print(f'ping from {self.name} to {destination_address.get_addr()}')
+            print(f'ping from {self.name} to' 
+                ' {destination_address.get_addr(with_subnet=False)}')
+
         return status
 
     def enable_ip_forwarding(self):
