@@ -3,18 +3,16 @@
 
 # Script to be run for running experiments on the namespaces
 
-import json
-from multiprocessing import Process, Lock
-import time
+from multiprocessing import Process
 
 from ..topology_map import TopologyMap
 from .. import engine
 # Import results
 from .results import SsResults, NetperfResults, TcResults
 # Import parsers
-from .parser.ss import parse_ss
-from .parser.netperf import run_netperf, run_netserver
-from .parser.tc import parse_qdisc
+from .parser.ss import SsRunner
+from .parser.netperf import NetperfRunner
+from .parser.tc import TcRunner
 # Import plotters
 from .plotter.ss import plot_ss
 from .plotter.netperf import plot_netperf
@@ -30,12 +28,13 @@ def run_experiment(exp):
     """
 
     workers = []
+    tc_runners = []
+    ss_runners = []
+    netperf_runners = []
     flows = exp.get_flows()
 
     ss_run = {}
-    ss_lock = Lock()
-    netperf_lock = Lock()
-
+    
     exp_start = float('inf')
     exp_end = float('-inf')
 
@@ -48,7 +47,7 @@ def run_experiment(exp):
         exp_start = min(exp_start, start_t)
         exp_end = max(exp_end, stop_t)
 
-        run_netserver(dst_ns)
+        NetperfRunner.run_netserver(dst_ns)
 
         netperf_options = {}
         if options['protocol'] == 'TCP':
@@ -62,10 +61,10 @@ def run_experiment(exp):
             n_flows, src_name, dst_addr))
 
         # Create new processes to be run simultaneously
-        # Here Process is used instead of Thread to take advantage to multiple cores
         for i in range(n_flows):
-            workers.append(Process(target=run_netperf, args=(src_ns, dst_addr, start_t,
-                                                             netperf_lock, stop_t-start_t), kwargs=(netperf_options)))
+            netperf_runners.append(NetperfRunner(
+                src_ns, dst_addr, start_t, stop_t-start_t, **netperf_options))
+            workers.append(Process(target=netperf_runners[-1].run))
 
         # Find the start time and stop time to run ss command in `src_ns` to a `dst_addr`
         if (src_ns, dst_addr) not in ss_run:
@@ -80,13 +79,15 @@ def run_experiment(exp):
 
     # Setup ss parsing
     for key, value in ss_run.items():
-        workers.append(Process(target=parse_ss, args=(key[0], key[1], [], value[0],
-                                                      value[1] - value[0], ss_lock)))
+        ss_runners.append(SsRunner(key[0], key[1], value[0],
+                                   value[1] - value[0]))
+        workers.append(Process(target=ss_runners[-1].run))
 
     # Setup tc parsing
     for qdisc_stat in exp.qdisc_stats:
-        workers.append(Process(target=parse_qdisc, args=(qdisc_stat['ns_id'],
-                                                         qdisc_stat['int_id'], [], exp_end)))
+        tc_runners.append(
+            TcRunner(qdisc_stat['ns_id'], qdisc_stat['int_id'], exp_end))
+        workers.append(Process(target=tc_runners[-1].run))
 
     # Start parsing (start all processes)
     for worker in workers:
@@ -97,6 +98,26 @@ def run_experiment(exp):
         worker.join()
 
     print('Experiment complete!')
+    print("Parsing statistics...")
+
+    runners = []
+    for ss_runner in ss_runners:
+        runners.append(Process(target=ss_runner.parse))
+
+    for netperf_runner in netperf_runners:
+        runners.append(Process(target=netperf_runner.parse))
+
+    for tc_runner in tc_runners:
+        runners.append(Process(target=tc_runner.parse))
+
+    # iterate thourough the runners and parse the stored statistics
+    for runner in runners:
+        runner.start()
+
+    # wait for the runners to finish
+    for runner in runners:
+        runner.join()
+
     print('Output results as JSON dump')
 
     # Output results as JSON dumps
@@ -148,7 +169,7 @@ def run_experiment(exp):
 
 def _parse_config_files(config_files):
     """
-    Parses the config files to run tests accordingly 
+    Parses the config files to run tests accordingly
     """
 
     raise NotImplementedError('Parsing config file is currently \

@@ -2,8 +2,7 @@
 # Copyright (c) 2019-2020 NITK Surathkal
 
 import json
-import time
-from multiprocessing import Manager, Lock, Queue
+from multiprocessing import Manager
 from ..topology_map import TopologyMap
 from .pack import Pack
 
@@ -16,7 +15,7 @@ class Results:
     def add_result(results_q, ns_id, result):
         """
         Adds the stats parse from a process to the shared `results_q`
-        
+
         :param results_q: Shared stats
         :type results_q: multiprocessing.Manager.Queue
         :param ns_id: namespace id (internal name)
