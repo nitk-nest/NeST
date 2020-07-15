@@ -3,6 +3,8 @@
 
 """API related to node creation in topology"""
 
+from typing import Union
+
 from .address import Address
 from .. import engine
 from .id_generator import ID_GEN
@@ -17,10 +19,6 @@ class Node:
     ----------
     name: str
         User given name for the node.
-    id: str
-        This value is used by `engine` to create emulated node entity
-    interface_list: list
-        List of interfaces in this node
     """
 
     def __init__(self, name):
@@ -40,10 +38,9 @@ class Node:
         if name == '':
             raise ValueError('Node name can\'t be an empty string')
 
-        # TODO: id and interface_list should be private
         self.name = name
-        self.id = ID_GEN.get_id(name)
-        self.interface_list = []
+        self._id = ID_GEN.get_id(name)
+        self._interfaces = []
 
         engine.create_ns(self.id)
         TopologyMap.add_namespace(self.id, self.name)
@@ -91,7 +88,7 @@ class Node:
         interface: Interface
             `Interface` to be added to `Node`
         """
-        self.interface_list.append(interface)
+        self._interfaces.append(interface)
         interface._set_node(self)
         engine.add_int_to_ns(self.id, interface.get_id())
         TopologyMap.add_interface(
@@ -224,3 +221,19 @@ class Node:
         After this method runs, the `Node` can be used as a router.
         """
         engine.en_ip_forwarding(self.id)
+
+    @property
+    def id(self):
+        """
+        str: Value used by `engine` to create the emulated `Node` entity
+        """
+        return self._id
+
+    @property
+    def interfaces(self):
+        """list(Interface): List of interfaces in this node"""
+        return self._interfaces
+
+    def __repr__(self):
+        classname = self.__class__.__name__
+        return f'{classname}({self.name!r})'

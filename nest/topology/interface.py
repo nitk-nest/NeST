@@ -564,10 +564,10 @@ def _number_of_connections(ns1, ns2):
 
     connections = 0
 
-    if len(ns1.interface_list) > len(ns2.interface_list):
+    if len(ns1.interfaces) > len(ns2.interfaces):
         ns1, ns2 = ns2, ns1
 
-    for interface in ns1.interface_list:
+    for interface in ns1.interfaces:
         if interface.get_pair().get_namespace() == ns2:
             connections = connections + 1
 

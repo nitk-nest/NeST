@@ -9,7 +9,7 @@ class TestTopology(unittest.TestCase):
     def setUp(self):
         self.n0 = Node('n0')
         self.n1 = Node('n1')
-    
+
     def tearDown(self):
         pass
 
@@ -22,7 +22,7 @@ class TestTopology(unittest.TestCase):
         status = self.n0.ping('10.0.0.2', verbose=False)
 
         self.assertTrue(status)
-    
+
     def test_prp(self):
         r = Node('r')
         r.enable_ip_forwarding()

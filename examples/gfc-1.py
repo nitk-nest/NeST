@@ -183,7 +183,7 @@ router[4].add_route('DEFAULT', r4_r3)
 
 # Setting attributes to the interfaces on the nodes and the opposite end
 for n in node:
-    for i in n.interface_list:
+    for i in n.interfaces:
         i.set_attributes(link_bandwidth, link_latency)
         i.get_pair().set_attributes(link_bandwidth, link_latency)
 
