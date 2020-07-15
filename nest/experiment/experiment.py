@@ -175,7 +175,7 @@ class Flow():
         NOTE: To be used internally
         """
 
-        return [self.source_node.get_id(), self.destination_node.get_id(),
+        return [self.source_node.id, self.destination_node.id,
                 self.destination_address.get_addr(with_subnet=False),
                 self.start_time, self.stop_time, self.number_of_flows, self.options]
 
@@ -272,7 +272,7 @@ class Experiment():
         #         raise ValueError('{} is not a valid Node property.'.format(stat))
 
         self.node_stats.append({
-            'id': node.get_id(),
+            'id': node.id,
             'stats': stats
         })
 
@@ -301,7 +301,7 @@ class Experiment():
                 'Given interface hasn\'t been assigned any qdisc.')
 
         self.qdisc_stats.append({
-            'ns_id': interface.get_node().get_id(),
+            'ns_id': interface.get_node().id,
             'int_id': interface.ifb.get_id(),
             'qdisc_handle': interface.get_qdisc().handle,
             'stats': stats

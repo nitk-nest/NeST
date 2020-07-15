@@ -593,7 +593,9 @@ def read_kernel_param(ns_name, prefix, param):
     :type param: string
     :returns string -- value of the `param`
     """
-    return exec_subprocess('ip netns exec {} sysctl -n {}{}'.format(ns_name, prefix, param), output=True)
+    value = exec_subprocess(
+        f'ip netns exec {ns_name} sysctl -n {prefix}{param}', output=True)
+    return value.rstrip('\n')
 
 
 def get_kernel_version():

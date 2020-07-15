@@ -21,12 +21,12 @@ class Interface:
     name: str
         User given name for the interface
     id: str
-        This value is used by `engine` to create emulated interface 
+        This value is used by `engine` to create emulated interface
         entity
     node: Node
         `Node` which contains this `Interface`
     address: str/Address
-        IP address assigned to this interface 
+        IP address assigned to this interface
     """
 
     def __init__(self, interface_name, pair=''):
@@ -78,9 +78,9 @@ class Interface:
     def get_pair(self):
         """
         Getter for the interface to which this interface is connected to
-        
+
         :return: Interface to which this interface is connected to
-        :r_type: Interface            
+        :r_type: Interface
         """
 
         return self.pair
@@ -101,7 +101,7 @@ class Interface:
 
     def _set_node(self, namespace):
         """
-        Setter for the namespace associated 
+        Setter for the namespace associated
         with the interface
 
         :param namespace: The namespace where the interface is installed
@@ -112,7 +112,7 @@ class Interface:
 
     def get_node(self):
         """
-        Getter for the namespace associated 
+        Getter for the namespace associated
         with the interface
         """
 
@@ -138,7 +138,7 @@ class Interface:
             address = Address(address)
 
         if self.node is not None:
-            engine.assign_ip(self.get_node().get_id(),
+            engine.assign_ip(self.get_node().id,
                              self.get_id(), address.get_addr())
             self.address = address
         else:
@@ -165,7 +165,7 @@ class Interface:
         if mode == 'UP' or mode == 'DOWN':
             if self.node is not None:
                 engine.set_interface_mode(
-                    self.get_node().get_id(), self.get_id(), mode.lower())
+                    self.get_node().id, self.get_id(), mode.lower())
             else:
                 # Create our own error class
                 raise NotImplementedError(
@@ -200,7 +200,7 @@ class Interface:
         :type parent: string
         :param handle: id of the filter
         :type handle: string
-        :param **kwargs: qdisc specific paramters 
+        :param **kwargs: qdisc specific paramters
         :type **kwargs: dictionary
         """
 
@@ -212,10 +212,10 @@ class Interface:
         error_handling.type_verify('handle', handle, 'string', str)
 
         self.qdisc_list.append(traffic_control.Qdisc(
-            self.node.get_id(), self.get_id(), qdisc, parent, handle, **kwargs))
+            self.node.id, self.get_id(), qdisc, parent, handle, **kwargs))
 
         # Add qdisc to TopologyMap
-        TopologyMap.add_qdisc(self.node.get_id(),
+        TopologyMap.add_qdisc(self.node.id,
                               self.get_id(), qdisc, handle, parent=parent)
 
         return self.qdisc_list[-1]
@@ -235,7 +235,7 @@ class Interface:
                 engine.delete_qdisc(qdisc.namespace_id,
                                     qdisc.dev_id, qdisc.parent, qdisc.handle)
                 TopologyMap.delete_qdisc(
-                    self.node.get_id(), self.get_id(), handle)
+                    self.node.id, self.get_id(), handle)
                 self.qdisc_list.pop(counter)
                 break
             counter += 1
@@ -250,7 +250,7 @@ class Interface:
         :type parent: string
         :param classid: id of the class
         :type classid: string
-        :param **kwargs: class specific paramters 
+        :param **kwargs: class specific paramters
         :type **kwargs: dictionary
         """
 
@@ -261,7 +261,7 @@ class Interface:
         error_handling.type_verify('classid', classid, 'string', str)
 
         self.class_list.append(traffic_control.Class(
-            self.node.get_id(), self.get_id(), qdisc, parent, classid, **kwargs))
+            self.node.id, self.get_id(), qdisc, parent, classid, **kwargs))
 
         return self.class_list[-1]
 
@@ -275,7 +275,7 @@ class Interface:
         :type priority: int
         :param filtertype: one of the available filters
         :type filtertype: string
-        :param flowid: classid of the class where the traffic is enqueued 
+        :param flowid: classid of the class where the traffic is enqueued
                        if the traffic passes the filter
         :type flowid: Class
         :param parent: id of the parent class in major:minor form(optional)
@@ -284,15 +284,17 @@ class Interface:
         :type handle: string
         :param filter: filter parameters
         :type filter: dictionary
-        :param **kwargs: filter specific paramters 
+        :param **kwargs: filter specific paramters
         :type **kwargs: dictionary
         """
 
         # TODO: Verify type of parameters
         # TODO: Reduce arguements to the engine functions by finding parent and handle automatically
 
-        self.filter_list.append(traffic_control.Filter(self.node.get_id(), self.get_id(), protocol,
-                                                       priority, filtertype, flowid, parent, handle, **kwargs))
+        self.filter_list.append(
+            traffic_control.Filter(
+                self.node.id, self.get_id(), protocol, priority, filtertype,
+                flowid, parent, handle, **kwargs))
 
         return self.filter_list[-1]
 
@@ -338,14 +340,14 @@ class Interface:
         }
 
         # NOTE: Use Filter API
-        engine.add_filter(self.node.get_id(), self.get_id(
+        engine.add_filter(self.node.id, self.get_id(
         ), 'ip', '1', 'u32', parent='1:', **action_redirect)
 
     def _set_structure(self):
         """
         Sets a proper sturcture to the interface by creating htb class with default bandwidth and
         a netem qdisc as a child.
-        (default bandwidth = 1024mbit) 
+        (default bandwidth = 1024mbit)
 
         """
 
@@ -390,7 +392,7 @@ class Interface:
 
         # TODO: Check the created API
         # TODO: This should be handled by self.change_class
-        engine.change_class(self.node.get_id(), self.get_id(
+        engine.change_class(self.node.id, self.get_id(
         ), '1:', 'htb', '1:1', **min_bandwidth_parameter)
 
     def set_delay(self, delay):
@@ -418,7 +420,7 @@ class Interface:
 
         # TODO: This should be handled by self.change_qdisc
         # It could lead to a potential bug!
-        engine.change_qdisc(self.node.get_id(), self.get_id(
+        engine.change_qdisc(self.node.id, self.get_id(
         ), 'netem', '1:1', '11:', **delay_parameter)
 
     def set_qdisc(self, qdisc, min_rate, **kwargs):
@@ -426,7 +428,7 @@ class Interface:
         Adds the Queueing algorithm to the interface
         :param qdisc: The Queueing algorithm to be added
         :type qdisc: string
-        
+
         TODO: Add doc for min_rate
         """
 
@@ -448,7 +450,7 @@ class Interface:
             'rate': min_rate
         }
 
-        engine.change_class(self.node.get_id(), self.ifb.get_id(
+        engine.change_class(self.node.id, self.ifb.get_id(
         ), '1:', 'htb', '1:1', **min_bandwidth_parameter)
 
         self.ifb.delete_qdisc('11:')
@@ -515,7 +517,7 @@ def connect(ns1, ns2, interface1_name='', interface2_name=''):
     Connects two namespaces
 
     :param ns1, ns2: namespaces part of a connection
-    :type ns1, ns2: Namespace 
+    :type ns1, ns2: Namespace
     :return: A tuple containing two interfaces
     :r_type: (Interface, Interface)
     """
@@ -531,8 +533,8 @@ def connect(ns1, ns2, interface1_name='', interface2_name=''):
 
     if interface1_name == '' and interface2_name == '':
         connections = _number_of_connections(ns1, ns2)
-        interface1_name = ns1.get_name() + '-' + ns2.get_name() + '-' + str(connections)
-        interface2_name = ns2.get_name() + '-' + ns1.get_name() + '-' + str(connections)
+        interface1_name = ns1.name + '-' + ns2.name + '-' + str(connections)
+        interface2_name = ns2.name + '-' + ns1.name + '-' + str(connections)
 
     veth = Veth(ns1, ns2, interface1_name, interface2_name)
     (int1, int2) = veth._get_interfaces()

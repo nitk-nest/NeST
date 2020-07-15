@@ -12,7 +12,7 @@ from ..topology_map import TopologyMap
 class Node:
     """
     Abstraction for a network namespace.
-    
+
     Attributes
     ----------
     name: str
@@ -36,11 +36,10 @@ class Node:
         ----------
         name: str
             The name of the node to be created
-        
         """
         if name == '':
             raise ValueError('Node name can\'t be an empty string')
-        
+
         # TODO: id and interface_list should be private
         self.name = name
         self.id = ID_GEN.get_id(name)
@@ -48,14 +47,6 @@ class Node:
 
         engine.create_ns(self.id)
         TopologyMap.add_namespace(self.id, self.name)
-
-    def get_name(self):
-        # TODO: Remove this function
-        return self.name
-
-    def get_id(self):
-        # TODO: Remove this function
-        return self.id
 
     def add_route(self, dest_addr, via_interface, next_hop_addr=''):
         """
@@ -65,18 +56,17 @@ class Node:
         ----------
         dest_addr: Address/str
             Destination ip address of node to route to. 'DEFAULT' is
-            for all addresses 
+            for all addresses
         via_interface: Interface
             `Interface` in `Node` to route via
         next_hop_addr: Address/str, optional
             IP address of next hop Node (or router), by default ''
-        
         """
-        if type(dest_addr) == str:
+        if isinstance(dest_addr, str):
             dest_addr = Address(dest_addr)
 
         if next_hop_addr != '':
-            if type(next_hop_addr) == str:
+            if isinstance(next_hop_addr, str):
                 next_hop_addr = Address(next_hop_addr)
         else:
             # Assuming veth pair
@@ -100,7 +90,6 @@ class Node:
         ----------
         interface: Interface
             `Interface` to be added to `Node`
-
         """
         self.interface_list.append(interface)
         interface._set_node(self)
@@ -110,9 +99,9 @@ class Node:
 
     def configure_tcp_param(self, param, value):
         """
-        Configure TCP parameters of `Node` available at 
+        Configure TCP parameters of `Node` available at
         /proc/sys/net/ipv4/tcp_*.
-        
+
         Eg. 'window_scaling', 'wmem', 'ecn', etc.
 
         Parameters
@@ -127,15 +116,14 @@ class Node:
         str
             If TCP Parameter `param` is valid, then new `value` is set
             for this `param`.
-        
         """
         engine.configure_kernel_param(self.id, 'net.ipv4.tcp_', param, value)
 
     def configure_udp_param(self, param, value):
         """
-        Configure UDP parameters of `Node` available at 
+        Configure UDP parameters of `Node` available at
         /proc/sys/net/ipv4/udp_*.
-        
+
         Eg. 'early_demux', 'l3mdev_accept', 'rmem_min', 'wmem_min'
 
         Parameters
@@ -150,15 +138,14 @@ class Node:
         str
             If TCP Parameter `param` is valid, then new `value` is set
             for this `param`.
-        
         """
         engine.configure_kernel_param(self.id, 'net.ipv4.udp_', param, value)
 
     def read_tcp_param(self, param):
         """
-        Read TCP parameters of `Node` available at 
+        Read TCP parameters of `Node` available at
         `/proc/sys/net/ipv4/tcp_*`.
-        
+
         Eg. 'window_scaling', 'wmem', 'ecn', etc.
 
         Parameters
@@ -174,7 +161,6 @@ class Node:
 
         read tcp_parameters available at /proc/sys/net/ipv4/tcp_*
         Eg. window_scaling, wmem, ecn, etc.
-        
         """
         return engine.read_kernel_param(self.id, 'net.ipv4.tcp_', param)
 
@@ -195,7 +181,6 @@ class Node:
         str
             If UDP Parameter `param` is valid, then corresponding value
             is returned.
-        
         """
         return engine.read_kernel_param(self.id, 'net.ipv4.udp_', param)
 
@@ -210,15 +195,14 @@ class Node:
             IP address to ping to
         verbose: bool
             If `True`, print extensive ping success/failure details
-        
+
         Returns
         -------
         bool
             `True` if `Node` can succesfully ping `destination_address`.
             Else `False`.
-
         """
-        if type(destination_address) == str:
+        if isinstance(destination_address, str):
             destination_address = Address(destination_address)
 
         status = engine.ping(
@@ -228,16 +212,15 @@ class Node:
                 print('SUCCESS: ', end='')
             else:
                 print('FAILURE: ', end='')
-            print(f'ping from {self.name} to' 
-                ' {destination_address.get_addr(with_subnet=False)}')
+            print(f'ping from {self.name} to'
+                  ' {destination_address.get_addr(with_subnet=False)}')
 
         return status
 
     def enable_ip_forwarding(self):
         """
         Enable IP forwarding in `Node`.
-        
-        After this method runs, the `Node` can be used as a router.
 
+        After this method runs, the `Node` can be used as a router.
         """
         engine.en_ip_forwarding(self.id)
