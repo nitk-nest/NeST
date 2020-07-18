@@ -6,6 +6,9 @@
 # This module holds the mapping between user given names and
 # nest's names.
 
+import atexit
+from . import engine
+
 class TopologyMap():
 
     # topology_map contains the info about topology created
@@ -214,3 +217,16 @@ class TopologyMap():
         # print('Pointers')
         # print('--------')
         # print(json.dumps(TopologyMap.namespaces_pointer, indent = 4))
+
+    @atexit.register
+    def delete_namespaces():
+        """
+        Delete all the newly generated namespaces
+        """
+        
+        namespaces = TopologyMap.get_namespaces()
+        
+        for namepspace in namespaces:
+            engine.delete_ns(namepspace['id'])
+
+        print('Cleaned up environment')

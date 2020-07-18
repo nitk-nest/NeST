@@ -158,7 +158,6 @@ def run_experiment(exp):
     for namespace in TopologyMap.get_namespaces():
         engine.kill_all_processes(namespace['id'])
 
-    print('Cleaned up experiment')
 
 # NOTE: The below function is no longer supported
 # It's a headache to get this and 'test' parsing option
