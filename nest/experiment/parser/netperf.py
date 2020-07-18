@@ -2,13 +2,12 @@
 # Copyright (c) 2019-2020 NITK Surathkal
 
 import re
-import subprocess
 import time
 import copy
-import shlex
 import tempfile
 from ..results import NetperfResults
 from ...engine import exec_exp_commands
+
 
 class NetperfRunner:
     """Runs netperf command and parses statistics from it's output
@@ -79,6 +78,7 @@ class NetperfRunner:
             netperf options to override
         """
         self.out = tempfile.TemporaryFile()
+        self.err = tempfile.TemporaryFile()
         self.ns_name = ns_name
         self.destination_ip = destination_ip
         self.start_time = start_time
@@ -96,7 +96,11 @@ class NetperfRunner:
             namespace to run netserver on
         """
         command = 'ip netns exec {} netserver'.format(ns_name)
-        exec_exp_commands(command)
+        return_code = exec_exp_commands(command)
+
+        if return_code != 0:
+            print("Error running netperf at {}. Are you sure you have netperf installed?".format(
+                ns_name))
 
     def run(self):
         """ Runs netperf at t=`self.start_time`
@@ -128,7 +132,12 @@ class NetperfRunner:
         if self.start_time != 0:
             time.sleep(self.start_time)
 
-        exec_exp_commands(command, stdout=self.out)
+        return_code = exec_exp_commands(
+            command, stdout=self.out, stderr=self.err, timeout=self.run_time*2)
+        if return_code != 0:
+            self.err.seek(0)    # rewind to start of temp file
+            error = self.err.read().decode()
+            print("Error running netperf at {}. {}".format(self.ns_name, error))
 
     def parse(self):
         """Parse netperf output from `self.out`

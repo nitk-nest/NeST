@@ -63,7 +63,7 @@ def exec_subprocess(cmd, block=True, shell=False, verbose=False, output=False):
 
     return proc.returncode
 
-def exec_exp_commands(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
+def exec_exp_commands(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=None):
     """
     executes experiment related commands like ss, tc and netperf
 
@@ -73,7 +73,7 @@ def exec_exp_commands(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
         command to be executed
     stdout : File
         temp file(usually) to store the output
-    stderr : FIle
+    stderr : File
         temp file(usually) to store errors, if any
 
     Returns
@@ -82,7 +82,11 @@ def exec_exp_commands(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
         return code
     """
     proc = subprocess.Popen(shlex.split(cmd), stdout=stdout, stderr=stderr)
-    proc.communicate()
+    try:
+        proc.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        stderr.write(b'Connection timeout')
     return proc.returncode
 
 ############################################

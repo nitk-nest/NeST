@@ -50,6 +50,7 @@ class TcRunner:
             total time to run tc for
         """
         self.out = tempfile.TemporaryFile()
+        self.err = tempfile.TemporaryFile()
         self.ns_name = ns_name
         self.dev = dev
         self.run_time = run_time
@@ -60,7 +61,13 @@ class TcRunner:
         command = "ip netns exec {ns_name} /bin/bash {iterator} {dev} {duration}".format(
             ns_name=self.ns_name, iterator=TcRunner.iterator, dev=self.dev, duration=self.run_time)
 
-        exec_exp_commands(command, stdout=self.out)
+        return_code = exec_exp_commands(command, stdout=self.out)
+
+        if return_code != 0:
+            self.err.seek(0)
+            error = self.err.read().decode()
+            print('Error collecting qdisc stats at {}. {}'.format(
+                self.ns_name, error))
 
     def get_qdisc_specific_params(self):
         """parameters to be obtained for a specific qdisc

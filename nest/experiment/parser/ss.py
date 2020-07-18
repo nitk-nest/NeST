@@ -49,6 +49,7 @@ class SsRunner:
             total time to run ss for
         """
         self.out = tempfile.TemporaryFile()
+        self.err = tempfile.TemporaryFile()
         self.ns_name = ns_name
         self.destination_ip = destination_ip
         self.start_time = start_time
@@ -64,7 +65,11 @@ class SsRunner:
             ns_name=self.ns_name, iterator=SsRunner.iterator, destination=self.destination_ip,
             duration=self.run_time, filter="\"dport != 12865 and sport != 12865\"")
 
-        exec_exp_commands(command, stdout=self.out)
+        return_code = exec_exp_commands(command, stdout=self.out, stderr=self.err)
+        if return_code != 0:
+            self.err.seek(0)
+            error = self.err.read().decode()
+            print('Error collecting socket stats at {}. {}'.format(self.ns_name, error))
 
     def parse(self):
         """parses the required data from `self.out`
