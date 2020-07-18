@@ -3,8 +3,6 @@
 
 """API related to node creation in topology"""
 
-from typing import Union
-
 from .address import Address
 from .. import engine
 from .id_generator import ID_GEN
@@ -210,7 +208,7 @@ class Node:
             else:
                 print('FAILURE: ', end='')
             print(f'ping from {self.name} to'
-                  ' {destination_address.get_addr(with_subnet=False)}')
+                  f' {destination_address.get_addr(with_subnet=False)}')
 
         return status
 

@@ -1,9 +1,23 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
+"""
+Engine sub-package provides low-level APIs to other sub-packages
+
+All the calls to linux kernel happens in this module.
+"""
+
 import os
 import subprocess
 import shlex
+
+### LEGACY SUPPORT ###
+# Engine previously was a single file.
+# Now we are making it into a module. Since this
+# shift can take some time, we will maintain the
+# old version below, until the module is fully
+# implemented.
+
 
 # Contain the entire log of commands run with stdout
 # and stderr
@@ -17,19 +31,25 @@ log_level = 0
 
 def exec_subprocess(cmd, block=True, shell=False, verbose=False, output=False):
     """
-    executes a command
+    Executes a command
 
-    :param cmd: command to be executed
-    :type cmd: string
-    :param block: A flag to indicate whether the command 
-                    should be executed asynchronously
-    :type block: boolean
-    :param shell: Spawns a shell and executes the command if true
-    :type shell: boolean
-    :param verbose: if commands run should be printed
-    :type verbose: boolean
-    :param output: True if the output of the `cmd` is to be returned
-    :type output: boolean
+    Parameters
+    ----------
+    cmd : str
+        command to be executed
+    block : boolean
+        A flag to indicate whether the command
+        should be executed asynchronously (Default value = True)
+    shell : boolean
+        Spawns a shell and executes the command if true (Default value = False)
+    verbose : boolean
+        if commands run should be printed (Default value = False)
+    output : boolean
+        True if the output of the `cmd` is to be returned (Default value = False)
+
+    Returns
+    -------
+
     """
 
     # TODO: Commands with pipes are easily executed when
@@ -72,14 +92,16 @@ def exec_exp_commands(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeo
     cmd : str
         command to be executed
     stdout : File
-        temp file(usually) to store the output
+        temp file(usually) to store the output (Default value = subprocess.PIPE)
     stderr : File
-        temp file(usually) to store errors, if any
+        temp file(usually) to store errors, if any (Default value = subprocess.PIPE)
+    timeout :
+         (Default value = None)
 
     Returns
     -------
-    int
-        return code
+
+
     """
     proc = subprocess.Popen(shlex.split(cmd), stdout=stdout, stderr=stderr)
     try:
@@ -104,9 +126,11 @@ def exec_exp_commands(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeo
 def create_ns(ns_name):
     """
     Create namespace if it doesn't already exist
-    
-    :param ns_name: namespace name
-    :type ns_name: string
+
+    Parameters
+    ----------
+    ns_name : str
+        namespace name
     """
     exec_subprocess('ip netns add ' + ns_name)
 
@@ -115,8 +139,10 @@ def delete_ns(ns_name):
     """
     Drops the namespace if it already exists.
 
-    :param ns_name: namespace name
-    :type ns_name: string
+    Parameters
+    ----------
+    ns_name : str
+        namespace name
     """
     exec_subprocess('ip netns del ' + ns_name)
 
@@ -125,8 +151,10 @@ def en_ip_forwarding(ns_name):
     """
     Enables ip forwarding in a namespace. Used for routers
 
-    :param ns_name: namespace name
-    :type ns_name: string
+    Parameters
+    ----------
+    ns_name : str
+        namespace name
     """
     exec_subprocess('ip netns exec ' + ns_name +
                     ' sysctl -w net.ipv4.ip_forward=1')
@@ -137,29 +165,34 @@ def ping(ns_name, dest_addr):
     Send a ping packet from ns_name to dest_addr
     if possible
 
-    :param ns_name: namespace name
-    :type ns_name: string
-    :param dest_addr: address to ping to
-    :type desr_addr: string
-    :return: success of ping 
-    :r_type: boolean
+    Parameters
+    ----------
+    ns_name : str
+        namespace name
+    dest_addr : str
+        address to ping to
+
+    Returns
+    -------
+    bool
+        success of ping
     """
     status = exec_subprocess(
         'ip netns exec {} ping -c1 -q {}'.format(ns_name, dest_addr))
-    if status == 0:
-        return True
-    else:
-        return False
+    return status == 0
 
 #TODO: delete a veth
 
 
 def create_veth(dev_name1, dev_name2):
     """
-    Create a veth pair
+    Create a veth pair with endpoint interfaces `dev_name1`
+    and `dev_name2`
 
-    :param dev_name1, dev_name2: interface names
-    :type dev_name1, dev_name2: string 
+    Parameters
+    ----------
+    dev_name1 : str
+    dev_name2 : str
     """
     exec_subprocess('ip link add ' + dev_name1 +
                     ' type veth peer name ' + dev_name2)
@@ -169,8 +202,10 @@ def create_ifb(dev_name):
     """
     Create a IFB
 
-    :param dev_name: interface names
-    :type dev_name: string
+    Parameters
+    ----------
+    dev_name : str
+        interface names
     """
 
     exec_subprocess('ip link add {} type ifb'.format(dev_name))
@@ -180,10 +215,12 @@ def add_int_to_ns(ns_name, dev_name):
     """
     Add interface to a namespace
 
-    :param ns_name: namespace name
-    :type ns_name: string
-    :param dev_name: interface name
-    :type dev_name: string 
+    Parameters
+    ----------
+    ns_name : str
+        namespace name
+    dev_name : str
+        interface name
     """
     exec_subprocess('ip link set ' + dev_name + ' netns ' + ns_name)
 
@@ -192,27 +229,31 @@ def set_int_up(ns_name, dev_name):
     """
     Set interface mode to up
 
-    :param ns_name: namespace name
-    :type ns_name: string
-    :param dev_name: interface name
-    :type dev_name: string 
+    Parameters
+    ----------
+    ns_name : str
+        namespace name
+    dev_name : str
+        interface name
     """
     exec_subprocess('ip netns exec ' + ns_name +
                     ' ip link set dev ' + dev_name + ' up')
 
-# Use this function for `high level convinience`
-
 
 def setup_veth(ns_name1, ns_name2, dev_name1, dev_name2):
     """
-    Sets up veth connection between interafaces. The interfaces are set up as well.
-    
-    :param ns_name1, ns_name2: namespace names
-    :type ns_name1, ns_name2: string
-    :param dev_name1: interface name associated with ns_name1
-    :type dev_name1: string
-    :param dev_name2: interface name associated with ns_name2
-    :type dev_name2: string
+    Sets up veth connection between interafaces. The interfaces are
+    set up as well.
+
+    The connections are made between `dev_name1` in `ns_name1` and
+    `dev_name2` in `ns_name2`
+
+    Parameters
+    ----------
+    ns_name1 : str
+    dev_name1 : str
+    dev_name2 : str
+    ns_name2 : str
     """
     create_veth(dev_name1, dev_name2)
     add_int_to_ns(ns_name1, dev_name1)
@@ -224,11 +265,13 @@ def setup_veth(ns_name1, ns_name2, dev_name1, dev_name2):
 def setup_ifb(ns_name, dev_name):
     """
     Sets up an IFB device. The device is setup as well.
-    
-    :param ns_name: namespace name
-    :type ns_name: string
-    :param dev_name: name of IFB
-    :type dev_name: string
+
+    Parameters
+    ----------
+    ns_name : str
+        namespace name
+    dev_name : str
+        name of IFB
     """
 
     create_ifb(dev_name)
@@ -240,19 +283,23 @@ def create_peer(peer_name):
     """
     Creates a peer and adds it to the existing topology.
 
-    :param peer_name: name of the peer namespace
-    :type peer_name: string
+    Parameters
+    ----------
+    peer_name : str
+        name of the peer namespace
     """
     create_ns(peer_name)
 
 
 def create_router(router_name):
     """
-    Creates a router and adds it to 
+    Creates a router and adds it to
     the existing topology.
 
-    :param router_name: name of the router namespace
-    :type router_name: string
+    Parameters
+    ----------
+    router_name : str
+        name of the router namespace
     """
     create_ns(router_name)
     en_ip_forwarding(router_name)
@@ -262,12 +309,14 @@ def assign_ip(host_name, dev_name, ip_address):
     """
     Assigns ip address to interface
 
-    :param host_name: name of the host namespace
-    :type host_name: string
-    :param dev_name: name of the interface
-    :type dev_name: string
-    :param ip_address: ip address to be assigned to the interface
-    :type ip_address: string
+    Parameters
+    ----------
+    host_name : str
+        name of the host namespace
+    dev_name : str
+        name of the interface
+    ip_address : str
+        ip address to be assigned to the interface
     """
     #TODO: Support for ipv6
     exec_subprocess('ip netns exec ' + host_name +
@@ -278,20 +327,30 @@ def add_route(host_name, dest_ip, next_hop_ip, via_int):
     """
     Adds a route in routing table of host.
 
-    :param host_name: name of the host namespace
-    :type host_name: string
-    :param dest_ip: the destination ip for the route
-    :type dest_ip: string
-    :param next_hop_ip: IP of the very next interface
-    :type next_hop_ip: string
-    :param via_int: the corresponding interface in the host
-    :type via_int: string
+    Parameters
+    ----------
+    host_name : str
+        name of the host namespace
+    dest_ip : str
+        the destination ip for the route
+    next_hop_ip : str
+        IP of the very next interface
+    via_int : str
+        the corresponding interface in the host
     """
     exec_subprocess('ip netns exec {} ip route add {} via {} dev {}'.format(
         host_name, dest_ip, next_hop_ip, via_int))
 
 
 def set_interface_mode(ns_name, dev_name, mode):
+    """
+
+    Parameters
+    ----------
+    ns_name : str
+    dev_name : str
+    mode : str
+    """
     exec_subprocess('ip netns exec ' + ns_name +
                     ' ip link set dev ' + dev_name + ' ' + mode)
 
@@ -300,8 +359,10 @@ def kill_all_processes(ns_name):
     """
     Kill all processes in a namespace
 
-    :param ns_name: Namespace name
-    :type ns_name: string
+    Parameters
+    ----------
+    ns_name : str
+        Namespace name
     """
 
     exec_subprocess('kill $(ip netns pids {ns_name})'.format(
@@ -316,12 +377,15 @@ def add_traffic_control(host_name, dev_name, rate, latency):
     """
     Add traffic control to host
 
-    :param host_name: name of the host namespace
-    :type host_name: string
-    :param rate: rate of the bandwidth
-    :type rate: string
-    :param latency: latency of the link
-    :type latency: string
+    Parameters
+    ----------
+    host_name : str
+        name of the host namespace
+    rate : str
+        rate of the bandwidth
+    latency : str
+        latency of the link
+    dev_name : str
     """
     exec_subprocess('ip netns exec {} tc qdisc add dev {} root netem rate {} latency {}'.format(
         host_name, dev_name, rate, latency))
@@ -330,8 +394,11 @@ def add_traffic_control(host_name, dev_name, rate, latency):
 def run_iperf_server(ns_name):
     """
     Run Iperf Server on a namesapce
-    :param ns_name: name of the server namespace
-    :type ns_name: string
+
+    Parameters
+    ----------
+    ns_name : str
+        name of the server namespace
     """
     #TODO: iperf3?
     exec_subprocess('ip netns {} iperf -s'.format(ns_name))
@@ -341,10 +408,12 @@ def run_iperf_client(ns_name, server_ip):
     """
     Run Iperf Client
 
-    :param ns_name: name of the client namespace
-    :type ns_name: string
-    :param server_ip: the ip of server to which it has to connect
-    :type server_ip: string
+    Parameters
+    ----------
+    ns_name : str
+        name of the client namespace
+    server_ip : str
+        the ip of server to which it has to connect
     """
     exec_subprocess('ip netns {} iperf -c {}'.format(ns_name, server_ip))
 
@@ -353,20 +422,19 @@ def add_qdisc(ns_name, dev_name, qdisc, parent='', handle='', **kwargs):
     """
     Add a qdisc on an interface
 
-    :param ns_name: name of the namespace
-    :type ns_name: string
-    :dev_name: name of the interface
-    :type dev_name: string
-    :param qdisc: qdisc used on the interface
-    :type qdisc: string
-    :param parent: id of the parent class in major:minor form(optional)
-    :type parent: string
-    :param handle: id of the qdisc in major:0 form
-    :type handle: string
-    :param **kwargs: qdisc specific paramters 
-    :type **kwargs: dictionary
+    Parameters
+    ----------
+    ns_name : str
+        name of the namespace
+    qdisc : str
+        qdisc used on the interface
+    parent : str
+        id of the parent class in major:minor form(optional) (Default value = '')
+    handle : str
+        id of the qdisc in major:0 form (Default value = '')
+    dev_name : str
+        name of the interface
     """
-
     if parent and parent != 'root':
         parent = 'parent ' + parent
 
@@ -385,20 +453,19 @@ def change_qdisc(ns_name, dev_name, qdisc, parent='', handle='', **kwargs):
     """
     Change a qdisc that is already present on an interface
 
-    :param ns_name: name of the namespace
-    :type ns_name: string
-    :dev_name: name of the interface
-    :type dev_name: string
-    :param qdisc: qdisc used on the interface
-    :type qdisc: string
-    :param parent: id of the parent class in major:minor form(optional)
-    :type parent: string
-    :param handle: id of the qdisc in major:0 form
-    :type handle: string
-    :param **kwargs: qdisc specific paramters 
-    :type **kwargs: dictionary
+    Parameters
+    ----------
+    ns_name : str
+        name of the namespace
+    qdisc : str
+        qdisc used on the interface
+    parent : str
+        id of the parent class in major:minor form(optional) (Default value = '')
+    handle : str
+        id of the qdisc in major:0 form (Default value = '')
+    dev_name : str
+        name of the interface
     """
-
     if parent and parent != 'root':
         parent = 'parent ' + parent
 
@@ -417,20 +484,19 @@ def replace_qdisc(ns_name, dev_name, qdisc, parent='', handle='', **kwargs):
     """
     Replace a qdisc that is already present on an interface
 
-    :param ns_name: name of the namespace
-    :type ns_name: string
-    :dev_name: name of the interface
-    :type dev_name: string
-    :param qdisc: qdisc used on the interface
-    :type qdisc: string
-    :param parent: id of the parent class in major:minor form(optional)
-    :type parent: string
-    :param handle: id of the qdisc in major:0 form
-    :type handle: string
-    :param **kwargs: qdisc specific paramters 
-    :type **kwargs: dictionary
+    Parameters
+    ----------
+    ns_name : str
+        name of the namespace
+    qdisc : str
+        qdisc used on the interface
+    parent : str
+        id of the parent class in major:minor form(optional) (Default value = '')
+    handle : str
+        id of the qdisc in major:0 form (Default value = '')
+    dev_name : str
+        name of the interface
     """
-
     if parent and parent != 'root':
         parent = 'parent ' + parent
 
@@ -449,18 +515,19 @@ def delete_qdisc(ns_name, dev_name, parent='', handle=''):
     """
     Add a qdisc on an interface
 
-    :param ns_name: name of the namespace
-    :type ns_name: string
-    :dev_name: name of the interface
-    :type dev_name: string
-    :param qdisc: qdisc used on the interface
-    :type qdisc: string
-    :param parent: id of the parent class in major:minor form(optional)
-    :type parent: string
-    :param handle: id of the qdisc in major:0 form
-    :type handle: string
+    Parameters
+    ----------
+    ns_name : str
+        name of the namespace
+    qdisc : str
+        qdisc used on the interface
+    parent : str
+        id of the parent class in major:minor form(optional) (Default value = '')
+    handle : str
+        id of the qdisc in major:0 form (Default value = '')
+    dev_name : str
+        name of the interface
     """
-
     if parent and parent != 'root':
         parent = 'parent ' + parent
 
@@ -475,20 +542,19 @@ def add_class(ns_name, dev_name, parent, qdisc, classid='', **kwargs):
     """
     Add a class to a qdisc
 
-    :param ns_name: name of the namespace
-    :type ns_name: string
-    :dev_name: name of the interface
-    :type dev_name: string
-    :param parent: id of the parent class in major:minor form(optional)
-    :type parent: string
-    :param qdisc: qdisc used on the interface
-    :type qdisc: string
-    :param classid: id of the class in major:minor form
-    :type classid: string
-    :param **kwargs: qdisc specific paramters 
-    :type **kwargs: dictionary
+    Parameters
+    ----------
+    ns_name : str
+        name of the namespace
+    parent : str
+        id of the parent class in major:minor form(optional)
+    qdisc : str
+        qdisc used on the interface
+    classid : str
+        id of the class in major:minor form (Default value = '')
+    dev_name : str
+        name of the interface
     """
-
     if classid:
         classid = 'classid ' + classid
 
@@ -504,18 +570,18 @@ def change_class(ns_name, dev_name, parent, qdisc, classid='', **kwargs):
     """
     Change a class that is already present on an interface
 
-    :param ns_name: name of the namespace
-    :type ns_name: string
-    :dev_name: name of the interface
-    :type dev_name: string
-    :param parent: id of the parent class in major:minor form(optional)
-    :type parent: string
-    :param qdisc: qdisc used on the interface
-    :type qdisc: string
-    :param classid: id of the class in major:minor form
-    :type classid: string
-    :param **kwargs: qdisc specific paramters 
-    :type **kwargs: dictionary
+    Parameters
+    ----------
+    ns_name : str
+        name of the namespace
+    parent : str
+        id of the parent class in major:minor form(optional)
+    qdisc : str
+        qdisc used on the interface
+    classid : str
+        id of the class in major:minor form (Default value = '')
+    dev_name : str
+        name of the interface
     """
 
     if classid:
@@ -528,50 +594,28 @@ def change_class(ns_name, dev_name, parent, qdisc, classid='', **kwargs):
     exec_subprocess('ip netns exec {} tc class change dev {} parent {} {} {} {}'.format(
         ns_name, dev_name, parent, classid, qdisc, qdisc_params))
 
-
-# def del_class(ns_name, dev_name, parent, qdisc, classid = ''):
-#     """
-#     Add a class to a qdisc
-
-#     :param ns_name: name of the namespace
-#     :type ns_name: string
-#     :dev_name: name of the interface
-#     :type dev_name: string
-#     :param parent: id of the parent class in major:minor form(optional)
-#     :type parent: string
-#     :param qdisc: qdisc used on the interface
-#     :type qdisc: string
-#     :param classid: id of the class in major:minor form
-#     :type classid: string
-#     """
-
-#     if classid:
-#         classid = 'classid ' + classid
-
-#     exec_subprocess('ip netns exec {} tc class add dev {} parent {} {} {}'.format(ns_name, dev_name, parent, classid, qdisc))
-
 def add_filter(ns_name, dev_name, protocol, priority, filtertype, parent='', handle='', **kwargs):
     """
     Add a filter to a class
 
-    :param ns_name: name of the namespace
-    :type ns_name: string
-    :dev_name: name of the interface
-    :type dev_name: string
-    :param protocol: protocol used
-    :type protocol: string
-    :param priority: priority
-    :type priority: string
-    :param filtertype: one of the available filters
-    :type filtertype: string
-    :param parent: id of the parent class in major:minor form(optional)
-    :type parent: string
-    :param handle: id of the filter
-    :type handle: string
-    :param qdisc: qdisc used on the interface
-    :type qdisc: string
-    :param **kwargs: qdisc specific paramters 
-    :type **kwargs: dictionary
+    Parameters
+    ----------
+    ns_name : str
+        name of the namespace
+    protocol : str
+        protocol used
+    priority : str
+        priority
+    filtertype : str
+        one of the available filters
+    parent : str
+        id of the parent class in major:minor form(optional) (Default value = '')
+    handle : str
+        id of the filter (Default value = '')
+    qdisc : str
+        qdisc used on the interface
+    dev_name : str
+        name of the interface
     """
 
     # TODO: Check if protocol can be removed from the arguments since it's always ip
@@ -588,21 +632,24 @@ def add_filter(ns_name, dev_name, protocol, priority, filtertype, parent='', han
         filter_params += param + ' ' + value + ' '
 
     exec_subprocess('ip netns exec {} tc filter add dev {} {} {} protocol {} prio {} {} {}'
-                    .format(ns_name, dev_name, parent, handle, protocol, priority, filtertype, filter_params))
+                    .format(ns_name, dev_name, parent, handle, protocol, priority, filtertype,
+                            filter_params))
 
 
 def configure_kernel_param(ns_name, prefix, param, value):
     """
     Configure kernel parameters using sysctl
 
-    :param ns_name: name of the namespace
-    :type ns_name: string
-    :param prefix: path for the sysctl command
-    :type prefix: string
-    :param param: kernel parameter to be configured
-    :type param: string
-    :param value: value of the parameter
-    :type param: string
+    Parameters
+    ----------
+    ns_name : str
+        name of the namespace
+    prefix : str
+        path for the sysctl command
+    param : str
+        kernel parameter to be configured
+    value : str
+        value of the parameter
     """
     exec_subprocess(
         'ip netns exec {} sysctl -q -w {}{}={}'.format(ns_name, prefix, param, value))
@@ -612,13 +659,19 @@ def read_kernel_param(ns_name, prefix, param):
     """
     Read kernel parameters using sysctl
 
-    :param ns_name: name of the namespace
-    :type ns_name: string
-    :param prefix: path for the sysctl command
-    :type prefix: string
-    :param param: kernel parameter to be read
-    :type param: string
-    :returns string -- value of the `param`
+    Parameters
+    ----------
+    ns_name : str
+        name of the namespace
+    prefix : str
+        path for the sysctl command
+    param : str
+        kernel parameter to be read
+
+    Returns
+    -------
+    str
+        value of the `param`
     """
     value = exec_subprocess(
         f'ip netns exec {ns_name} sysctl -n {prefix}{param}', output=True)
@@ -626,35 +679,57 @@ def read_kernel_param(ns_name, prefix, param):
 
 
 def get_kernel_version():
-    """
-    Get linux kernel version of the system
-    """
+    """Get linux kernel version of the system"""
     version = exec_subprocess('uname -r', output=True)
     return version.split('-')[0]
 
 
-# def del_filter(ns_name, dev_name, protocol, priority, filtertype, flowid, parent = '', handle = ''):
+# def del_class(ns_name, dev_name, parent, qdisc, classid = ''):
+#     """
+#     Add a class to a qdisc
+
+#     :param ns_name: name of the namespace
+#     :type ns_name: str
+#     :dev_name: name of the interface
+#     :type dev_name: str
+#     :param parent: id of the parent class in major:minor form(optional)
+#     :type parent: str
+#     :param qdisc: qdisc used on the interface
+#     :type qdisc: str
+#     :param classid: id of the class in major:minor form
+#     :type classid: str
+#     """
+
+#     if classid:
+#         classid = 'classid ' + classid
+
+#     exec_subprocess('ip netns exec {} tc class add dev {} parent {} {} {}'.format(
+#           ns_name, dev_name, parent, classid, qdisc))
+
+# def del_filter(ns_name, dev_name, protocol, priority, filtertype, flowid, parent = '',
+# handle = ''):
 #     """
 #     Add a filter to a class
 
 #     :param ns_name: name of the namespace
-#     :type ns_name: string
+#     :type ns_name: str
 #     :dev_name: name of the interface
-#     :type dev_name: string
+#     :type dev_name: str
 #     :param protocol: protocol used
-#     :type protocol: string
+#     :type protocol: str
 #     :param priority: priority
-#     :type priority: string
+#     :type priority: str
 #     :param filtertype: one of the available filters
-#     :type filtertype: string
-#     :param flowid: classid of the class where the traffic is enqueued if the traffic passes the filter
-#     :type flowid: string
+#     :type filtertype: str
+#     :param flowid: classid of the class where the traffic is enqueued
+#       if the traffic passes the filter
+#     :type flowid: str
 #     :param parent: id of the parent class in major:minor form(optional)
-#     :type parent: string
+#     :type parent: str
 #     :param handle: id of the filter
-#     :type handle: string
+#     :type handle: str
 #     :param qdisc: qdisc used on the interface
-#     :type qdisc: string
+#     :type qdisc: str
 #     """
 
 #     if parent and parent != 'root':
@@ -668,5 +743,7 @@ def get_kernel_version():
 #     for param, value in kwargs.items():
 #         filter_params = param +' ' + value +' '
 
-#     exec_subprocess('ip netns exec {} tc filter add dev {} {} {} protocol {} priority {} {} {} flowid {}'
-#                     .format(ns_name, dev_name, parent, handle, protocol, priority, filtertype, filter_params, flowid))
+#     exec_subprocess(
+#           'ip netns exec {} tc filter add dev {} {} {} protocol {} priority {} {} {} flowid {}'
+#           .format(ns_name, dev_name, parent, handle, protocol, priority, filtertype,
+#           filter_params, flowid))
