@@ -8,7 +8,7 @@ import copy
 import shlex
 import tempfile
 from ..results import NetperfResults
-
+from ...engine import exec_exp_commands
 
 class NetperfRunner:
     """Runs netperf command and parses statistics from it's output
@@ -96,7 +96,7 @@ class NetperfRunner:
             namespace to run netserver on
         """
         command = 'ip netns exec {} netserver'.format(ns_name)
-        subprocess.Popen(shlex.split(command))
+        exec_exp_commands(command)
 
     def run(self):
         """ Runs netperf at t=`self.start_time`
@@ -128,10 +128,7 @@ class NetperfRunner:
         if self.start_time != 0:
             time.sleep(self.start_time)
 
-        proc = subprocess.Popen(command.split(),
-                                stdout=self.out, stderr=subprocess.PIPE)
-
-        proc.communicate()
+        exec_exp_commands(command, stdout=self.out)
 
     def parse(self):
         """Parse netperf output from `self.out`

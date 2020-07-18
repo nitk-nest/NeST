@@ -3,14 +3,13 @@
 
 import re
 import json
-import subprocess
-import shlex
 import tempfile
 import os
 from packaging import version
 from nest import engine
 from ..results import TcResults
 from ...topology_map import TopologyMap
+from ...engine import exec_exp_commands
 
 
 class TcRunner:
@@ -61,10 +60,7 @@ class TcRunner:
         command = "ip netns exec {ns_name} /bin/bash {iterator} {dev} {duration}".format(
             ns_name=self.ns_name, iterator=TcRunner.iterator, dev=self.dev, duration=self.run_time)
 
-        proc = subprocess.Popen(shlex.split(command),
-                                stdout=self.out, stderr=subprocess.PIPE)
-
-        proc.communicate()
+        exec_exp_commands(command, stdout=self.out)
 
     def get_qdisc_specific_params(self):
         """parameters to be obtained for a specific qdisc
@@ -121,9 +117,9 @@ class TcRunner:
             if match.group(1).endswith(','):
                 s = repr(match.group(1))
                 return ':"{}",'.format(s)
-            else:
-                s = repr(match.group(1))
-                return ':"{}"'.format(s)
+
+            s = repr(match.group(1))
+            return ':"{}"'.format(s)
 
     def clean_json(self, stats):
         """json formatted tc stats with invalid json keys

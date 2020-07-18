@@ -4,10 +4,9 @@
 import os
 import tempfile
 import time
-import subprocess
-import shlex
 import re
-from nest.experiment.results import SsResults
+from ..results import SsResults
+from ...engine import exec_exp_commands
 
 
 class SsRunner:
@@ -65,10 +64,7 @@ class SsRunner:
             ns_name=self.ns_name, iterator=SsRunner.iterator, destination=self.destination_ip,
             duration=self.run_time, filter="\"dport != 12865 and sport != 12865\"")
 
-        proc = subprocess.Popen(shlex.split(command),
-                                stdout=self.out, stderr=subprocess.PIPE)
-
-        proc.communicate()
+        exec_exp_commands(command, stdout=self.out)
 
     def parse(self):
         """parses the required data from `self.out`

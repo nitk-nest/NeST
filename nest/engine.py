@@ -3,6 +3,7 @@
 
 import os
 import subprocess
+import shlex
 
 # Contain the entire log of commands run with stdout
 # and stderr
@@ -60,6 +61,28 @@ def exec_subprocess(cmd, block=True, shell=False, verbose=False, output=False):
     else:
         pass
 
+    return proc.returncode
+
+def exec_exp_commands(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
+    """
+    executes experiment related commands like ss, tc and netperf
+
+    Parameters
+    ----------
+    cmd : str
+        command to be executed
+    stdout : File
+        temp file(usually) to store the output
+    stderr : FIle
+        temp file(usually) to store errors, if any
+
+    Returns
+    -------
+    int
+        return code
+    """
+    proc = subprocess.Popen(shlex.split(cmd), stdout=stdout, stderr=stderr)
+    proc.communicate()
     return proc.returncode
 
 ############################################
