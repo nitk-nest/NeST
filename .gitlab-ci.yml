@@ -1,0 +1,34 @@
+image: python:latest
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+    - venv/
+
+before_script:
+  - python -V  # Print out python version for debugging
+  - pip install virtualenv
+  - virtualenv venv
+  - source venv/bin/activate
+
+test:
+  script:
+    # - python setup.py test
+    - pip install tox pylint  # you can also use tox
+    - pylint --version
+    - set +e
+    - pylint *
+    - set -e
+
+# run:
+#   script:
+    # - python setup.py bdist_wheel
+    # an alternative approach is to install and run:
+    # - pip install dist/*
+    # run the command here
+#   artifacts:
+    # paths:
+    #   - dist/*.whl
