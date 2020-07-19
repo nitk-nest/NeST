@@ -1,15 +1,20 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
-# nest internally uses auto-generated unique id's to name
-# topologies.
-# This module holds the mapping between user given names and
-# nest's names.
+"""
+NeST internally uses auto-generated unique id's to name topologies.
+This module holds the mapping between user given names and
+nest's names.
+"""
 
 import atexit
+import json
 from . import engine
 
 class TopologyMap():
+    """
+    Store mapping between user given names and NeST's ids
+    """
 
     # topology_map contains the info about topology created
     topology_map = {
@@ -25,20 +30,18 @@ class TopologyMap():
     # Used for efficiency
     namespaces_pointer = {}
 
-    def __init__():
-        pass
-
     @staticmethod
     def add_namespace(id, ns_name):
         """
         Add namespace to topology_map
 
-        :param id: namepspace id
-        :type id: string
-        :param ns_name: namespace name
-        :type ns_name: string
+        Parameters
+        ----------
+        id : str
+            namepspace id
+        ns_name : str
+            namespace name
         """
-
         namespaces = TopologyMap.get_namespaces()
 
         namespaces.append({
@@ -57,14 +60,15 @@ class TopologyMap():
         """
         Add interface to topology_map
 
-        :param ns_id: namepspace id
-        :type ns_id: string
-        :param id: interface id
-        :type id: string
-        :param int_name: interface name
-        :type id: string
+        Parameters
+        ----------
+        ns_id : str
+            namepspace id
+        id : str
+            interface id
+        int_name :
+            interface name
         """
-
         # TODO: classes not added yet to list
         interfaces = TopologyMap.get_interfaces(ns_id)
 
@@ -83,18 +87,19 @@ class TopologyMap():
         """
         Add qdisc to topology_map
 
-        :param ns_id: namepspace id
-        :type ns_id: string
-        :param int_id: interface id
-        :type int_id: string
-        :param kind: qdisc kind
-        :type kind: string
-        :param handle: qdisc handle
-        :type handle: string
-        :param parent: qdisc parent
-        :type parent: string
+        Parameters
+        ----------
+        ns_id : str
+            namepspace id
+        int_id : str
+            interface id
+        kind : str
+            qdisc kind
+        handle : str
+            qdisc handle
+        parent : str
+            qdisc parent (Default value = '')
         """
-
         qdiscs = TopologyMap.get_qdiscs(ns_id, int_id)
         qdiscs.append({
             'kind': kind,
@@ -107,14 +112,15 @@ class TopologyMap():
         """
         Delete qdisc from topology_map
 
-        :param ns_id: namepspace id
-        :type ns_id: string
-        :param int_id: interface id
-        :type int_id: string
-        :param handle: qdisc handle
-        :type handle: string
+        Parameters
+        ----------
+        ns_id : str
+            namepspace id
+        int_id : str
+            interface id
+        handle : str
+            qdisc handle
         """
-
         qdiscs = TopologyMap.get_qdiscs(ns_id, int_id)
         counter = 0
         for qdisc in qdiscs:
@@ -125,10 +131,18 @@ class TopologyMap():
 
     @staticmethod
     def get_topology_map():
+        """Get the entire topology map"""
         return TopologyMap.topology_map
 
     @staticmethod
     def get_namespaces():
+        """
+        Get all namespaces added
+
+        Returns
+        -------
+        List[Dict]
+        """
         return TopologyMap.topology_map['namespaces']
 
     @staticmethod
@@ -136,30 +150,41 @@ class TopologyMap():
         """
         Get namespace given it's id
 
-        :param ns_id: namespace id
-        :type ns_id: string
-        :param with_interfaces_pointer: If should return interfaces_pointer for the namespace
-        :type with_interfaces_pointer: bool
-        """
+        Parameters
+        ----------
+        ns_id : str
+            namespace id
+        with_interfaces_pointer : bool
+            If should return interfaces_pointer for the namespace (Default value = False)
 
+        Returns
+        -------
+        Dict
+            Required namespace with id, name and interfaces in it
+        """
         namespaces = TopologyMap.get_namespaces()
         namespace_pointer = TopologyMap.namespaces_pointer[ns_id]
         namespace = namespaces[namespace_pointer['pos']]
 
         if with_interfaces_pointer:
             return (namespace_pointer['interfaces_pointer'], namespace)
-        else:
-            return namespace
+
+        return namespace
 
     @staticmethod
     def get_interfaces(ns_id):
         """
         Get all interfaces in the namespace
 
-        :param ns_id: namespace id
-        :type ns_id: string
-        """
+        Parameters
+        ----------
+        ns_id : str
+            namespace id
 
+        Returns
+        -------
+            List[Dict]
+        """
         namespace = TopologyMap.get_namespace(ns_id)
         interfaces = namespace['interfaces']
 
@@ -171,14 +196,19 @@ class TopologyMap():
         Get interface in namespace `ns_id` with interface
         `int_id`
 
-        :param ns_id: namespace id
-        :type ns_id: string
-        :param int_id: interface id
-        :type int_id: string
-        """
+        Parameters
+        ----------
+        ns_id : str
+            namespace id
+        int_id : str
+            interface id
 
-        (interfaces_pointer, namespace) = TopologyMap.get_namespace(
-            ns_id, with_interfaces_pointer=True)
+        Returns
+        -------
+        Dict
+            Interface details
+        """
+        (interfaces_pointer, _) = TopologyMap.get_namespace(ns_id, with_interfaces_pointer=True)
         interfaces = TopologyMap.get_interfaces(ns_id)
         interface_pointer = interfaces_pointer[int_id]
         interface = interfaces[interface_pointer['pos']]
@@ -191,24 +221,27 @@ class TopologyMap():
         Get qdiscs in namespace `ns_id` with interface
         `int_id`
 
-        :param ns_id: namespace id
-        :type ns_id: string
-        :param int_id: interface id
-        :type int_id: string
-        """
+        Parameters
+        ----------
+        ns_id : str
+            namespace id
+        int_id : str
+            interface id
 
+        Returns
+        -------
+            List[Dict]
+        """
         interface = TopologyMap.get_interface(ns_id, int_id)
         qdiscs = interface['qdiscs']
 
         return qdiscs
 
+    @staticmethod
     def dump():
         """
         Dump generated topology_map. (for debugging purposes)
         """
-
-        import json
-
         print('Config')
         print('------')
         print(json.dumps(TopologyMap.topology_map, indent=4))
@@ -218,14 +251,14 @@ class TopologyMap():
         # print('--------')
         # print(json.dumps(TopologyMap.namespaces_pointer, indent = 4))
 
+    @staticmethod
     @atexit.register
     def delete_namespaces():
         """
         Delete all the newly generated namespaces
         """
-        
         namespaces = TopologyMap.get_namespaces()
-        
+
         for namepspace in namespaces:
             engine.delete_ns(namepspace['id'])
 
