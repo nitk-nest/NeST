@@ -31,32 +31,35 @@ class TopologyMap():
     namespaces_pointer = {}
 
     @staticmethod
-    def add_namespace(id, ns_name):
+    def add_namespace(ns_id, ns_name):
         """
         Add namespace to topology_map
 
         Parameters
         ----------
-        id : str
+        ns_id : str
             namepspace id
         ns_name : str
             namespace name
         """
+        if ns_id in TopologyMap.namespaces_pointer:
+            raise ValueError(f'Namespace with id {ns_id} already exists in TopologyMap')
+
         namespaces = TopologyMap.get_namespaces()
 
         namespaces.append({
-            'id': id,
+            'id': ns_id,
             'name': ns_name,
             'interfaces': []
         })
 
-        TopologyMap.namespaces_pointer[id] = {
+        TopologyMap.namespaces_pointer[ns_id] = {
             'pos': len(namespaces)-1,
             'interfaces_pointer': {}
         }
 
     @staticmethod
-    def add_interface(ns_id, id, int_name):
+    def add_interface(ns_id, int_id, int_name):
         """
         Add interface to topology_map
 
@@ -64,21 +67,27 @@ class TopologyMap():
         ----------
         ns_id : str
             namepspace id
-        id : str
+        int_id : str
             interface id
         int_name :
             interface name
         """
+        if ns_id not in TopologyMap.namespaces_pointer:
+            raise ValueError(f'Namespace with id {ns_id} doesn\'t exist in TopologyMap')
+
+        if int_id in TopologyMap.namespaces_pointer[ns_id]['interfaces_pointer']:
+            raise ValueError(f'Interface with id {int_id} already present in namespace {ns_id}')
+
         # TODO: classes not added yet to list
         interfaces = TopologyMap.get_interfaces(ns_id)
 
         interfaces.append({
-            'id': id,
+            'id': int_id,
             'name': int_name,
             'qdiscs': []
         })
 
-        TopologyMap.namespaces_pointer[ns_id]['interfaces_pointer'][id] = {
+        TopologyMap.namespaces_pointer[ns_id]['interfaces_pointer'][int_id] = {
             'pos': len(interfaces)-1
         }
 
@@ -100,6 +109,14 @@ class TopologyMap():
         parent : str
             qdisc parent (Default value = '')
         """
+        if ns_id not in TopologyMap.namespaces_pointer:
+            raise ValueError(f'Namespace with id {ns_id} doesn\'t exist in TopologyMap')
+
+        if int_id not in TopologyMap.namespaces_pointer[ns_id]['interfaces_pointer']:
+            raise ValueError(f'Interface with id {int_id} doesn\'t exist in namespace {ns_id}')
+
+        # TODO: Check if qdisc is already present?
+
         qdiscs = TopologyMap.get_qdiscs(ns_id, int_id)
         qdiscs.append({
             'kind': kind,
@@ -236,6 +253,16 @@ class TopologyMap():
         qdiscs = interface['qdiscs']
 
         return qdiscs
+
+    @staticmethod
+    def delete_all_mapping():
+        """
+        Delete all mappings stored in `TopologyMap`.
+        """
+        TopologyMap.topology_map = {
+            'namespaces': [],
+        }
+        TopologyMap.namespaces_pointer = {}
 
     @staticmethod
     def dump():

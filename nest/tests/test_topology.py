@@ -48,3 +48,6 @@ class TestTopology(unittest.TestCase):
         self.n0.configure_tcp_param('ecn', '1')
         ecn = self.n0.read_tcp_param('ecn')
         self.assertEqual(ecn, '1')
+
+if __name__ == '__main__':
+    unittest.main()

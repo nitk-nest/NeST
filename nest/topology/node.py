@@ -36,7 +36,7 @@ class Node:
         if name == '':
             raise ValueError('Node name can\'t be an empty string')
 
-        self.name = name
+        self._name = name
         self._id = ID_GEN.get_id(name)
         self._interfaces = []
 
@@ -231,6 +231,11 @@ class Node:
     def interfaces(self):
         """list(Interface): List of interfaces in this node"""
         return self._interfaces
+
+    @property
+    def name(self):
+        """str: User given name for `Node`"""
+        return self._name
 
     def __repr__(self):
         classname = self.__class__.__name__
