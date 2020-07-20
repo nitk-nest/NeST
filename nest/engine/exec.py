@@ -3,15 +3,13 @@
 
 """Execute linux commands"""
 
-import subprocess
+import logging
 import shlex
+import subprocess
 
-# Contain the entire log of commands run with stdout
-# and stderr
-LOGS = []
-LOG_LEVEL = 0
+logger = logging.getLogger(__name__)
 
-def exec_subprocess(cmd, block=True, shell=False, verbose=False, output=False):
+def exec_subprocess(cmd, shell=False, output=False):
     """
     Executes a command
 
@@ -19,50 +17,33 @@ def exec_subprocess(cmd, block=True, shell=False, verbose=False, output=False):
     ----------
     cmd : str
         command to be executed
-    block : boolean
-        A flag to indicate whether the command
-        should be executed asynchronously (Default value = True)
     shell : boolean
-        Spawns a shell and executes the command if true (Default value = False)
-    verbose : boolean
-        if commands run should be printed (Default value = False)
+        Spawns a shell and executes the command if true
+        (Default value = False)
     output : boolean
-        True if the output of the `cmd` is to be returned (Default value = False)
+        True if the output of the `cmd` is to be returned
+        (Default value = False)
 
     Returns
     -------
-
+    int
+        Return code recieved after executing the command
     """
 
     # TODO: Commands with pipes are easily executed when
     # they are run within a shell.
     # But it may not be the most efficient way.
 
-    # Logging
-    if verbose:
-        print('[INFO] ' + cmd)
-
     temp_cmd = cmd
     if shell is False:
         temp_cmd = cmd.split()
+    proc = subprocess.Popen(temp_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell)
 
-    proc = subprocess.Popen(temp_cmd, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE, shell=shell)
-    if block:
-        (stdout, stderr) = proc.communicate()
+    (stdout, _) = proc.communicate()
+    logger.info('command run: %s', cmd)
 
-        if LOG_LEVEL > 0:
-            LOGS.append({
-                'cmd': cmd,
-                'stdout': stdout.decode(),
-                'stderr': stderr.decode()
-            })
-        if output:
-            return stdout.decode()
-
-    else:
-        pass
-
+    if output:
+        return stdout.decode()
     return proc.returncode
 
 def exec_exp_commands(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=None):

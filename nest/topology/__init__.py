@@ -17,22 +17,11 @@ In topology creation,
 import uuid
 
 from . import id_generator
-from nest import engine
 from .node import Node
 from .interface import Interface, Veth, connect
 from .address import Address, Subnet
-from . import logging
 
 
-def setup():
-    """
-    Setup done when nest.topology is imported
-
-    Generate unique topology id for the *to be created* topology
-
-    """
-    topology_id = uuid.uuid4().hex[:10]  # TODO: First 10 seems hacky
-    id_generator.ID_GEN(topology_id)
-
-
-setup()
+# Generate unique topology id for the *to be created* topology
+TOPOLOGY_ID = uuid.uuid4().hex[:10]  # TODO: First 10 seems hacky
+id_generator.ID_GEN(TOPOLOGY_ID)

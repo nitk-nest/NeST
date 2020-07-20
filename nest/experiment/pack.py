@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
-# Package all results into a folder
+"""Package all results into a folder"""
+
 import os
 import time
 
-from nest._user import User
+from nest.user import User
 
 
 class Pack():

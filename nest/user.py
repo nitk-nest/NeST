@@ -6,7 +6,7 @@
 class User():
     """
     User info (user id and group id) stored here.
-    
+
     Attributes
     ----------
     user_id : int
@@ -26,7 +26,7 @@ class User():
         ----------
         user_id : int
         group_id : int
-        
+
         """
         User.user_id = user_id
         User.group_id = group_id
