@@ -32,6 +32,7 @@ if all(key in os.environ for key in ('SUDO_UID', 'SUDO_GID')):
 # Logger output will be output to stderr
 logger = logging.getLogger(__name__)
 ch = logging.StreamHandler()
+ch.setLevel(logging.WARNING)
 logger.addHandler(ch)
 formatter = logging.Formatter('[%(levelname)s] %(name)s: %(message)s')
 ch.setFormatter(formatter)

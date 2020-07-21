@@ -7,7 +7,15 @@ import logging
 import shlex
 import subprocess
 
+LOG_COMMANDS = False # TODO: Should be config parameter
+
 logger = logging.getLogger(__name__)
+if LOG_COMMANDS:
+    logger.setLevel(logging.INFO)
+    fh = logging.FileHandler('commands.sh', 'w')
+    logger.addHandler(fh)
+    formatter = logging.Formatter('%(message)s')
+    fh.setFormatter(formatter)
 
 def exec_subprocess(cmd, shell=False, output=False):
     """
@@ -40,7 +48,7 @@ def exec_subprocess(cmd, shell=False, output=False):
     proc = subprocess.Popen(temp_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell)
 
     (stdout, _) = proc.communicate()
-    logger.info('command run: %s', cmd)
+    logger.info(cmd)
 
     if output:
         return stdout.decode()
