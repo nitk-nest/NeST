@@ -3,17 +3,17 @@
 
 import re
 import json
-import tempfile
 import os
 from packaging import version
 from nest import engine
+from .runnerbase import Runner
 from ..results import TcResults
 from ...topology_map import TopologyMap
-from ...engine import exec_exp_commands
 
 
-class TcRunner:
-    """Runs tc command and stores and parses the output
+class TcRunner(Runner):
+    """
+    Runs tc command and stores and parses the output
 
     Attributes
     ----------
@@ -23,9 +23,7 @@ class TcRunner:
         minimum kernel version required
     new_kernel_version : str
         kernel version from which tc has concrete json support
-    out : File
-        temporary file to hold the stats
-    ns_name : str
+    ns_id : str
         network namespace to run tc from
     dev : str
         dev id to collect tc stats from
@@ -37,40 +35,45 @@ class TcRunner:
     old_kernel_version = '4.15.0'
     new_kernel_version = '5.5'
 
-    def __init__(self, ns_name, dev, run_time):
-        """Constructor to initialize tc runner
+    def __init__(self, ns_id, dev, run_time):
+        """
+        Constructor to initialize tc runner
 
         Parameters
         ----------
-        ns_name : str
+        ns_id : str
             network namespace to run tc from
         dev : str
             dev id to collect tc stats from
         run_time : num
             total time to run tc for
         """
-        self.out = tempfile.TemporaryFile()
-        self.err = tempfile.TemporaryFile()
-        self.ns_name = ns_name
+        self.ns_id = ns_id
         self.dev = dev
         self.run_time = run_time
+        super().__init__()
 
     def run(self):
-        """runs the tc iterator
         """
-        command = "ip netns exec {ns_name} /bin/bash {iterator} {dev} {duration}".format(
-            ns_name=self.ns_name, iterator=TcRunner.iterator, dev=self.dev, duration=self.run_time)
+        Runs the tc iterator
+        """
+        command = "ip netns exec {ns_id} /bin/bash {iterator} {dev} {duration}".format(
+            ns_id=self.ns_id, iterator=TcRunner.iterator, dev=self.dev, duration=self.run_time)
 
-        return_code = exec_exp_commands(command, stdout=self.out)
+        super().run(command)
 
-        if return_code != 0:
-            self.err.seek(0)
-            error = self.err.read().decode()
-            print('Error collecting qdisc stats at {}. {}'.format(
-                self.ns_name, error))
+    def print_error(self):
+        """
+        Method to print error from `self.err`
+        """
+        self.err.seek(0)    #rewind to start of file
+        error = self.err.read().decode()
+        ns_name = TopologyMap.get_namespace(self.ns_id)['name']
+        print('Error collecting qdisc stats at {}. {}'.format(ns_name, error))
 
     def get_qdisc_specific_params(self):
-        """parameters to be obtained for a specific qdisc
+        """
+        Parameters to be obtained for a specific qdisc
 
         Returns
         -------
@@ -86,7 +89,8 @@ class TcRunner:
         return qdisc_param
 
     def get_qdisc_re(self):
-        """Compile regular expression for parsing qdisc specific paramters
+        """
+        Compile regular expression for parsing qdisc specific paramters
 
         Returns
         -------
@@ -108,7 +112,8 @@ class TcRunner:
         return qdisc_re
 
     def repl(self, match):
-        """Called by re.sub() for every match
+        """
+        Called by re.sub() for every match
 
         Parameters
         ----------
@@ -129,7 +134,8 @@ class TcRunner:
             return ':"{}"'.format(s)
 
     def clean_json(self, stats):
-        """json formatted tc stats with invalid json keys
+        """
+        Json formatted tc stats with invalid json keys
         and values are removed or fixed
 
         Parameters
@@ -152,7 +158,8 @@ class TcRunner:
         return stats
 
     def old_kernel_version_parse_helper(self, raw_stats, qdisc_param, qdisc_re):
-        """Parsing tc command on linux kernel versions
+        """
+        Parsing tc command on linux kernel versions
         4.15.0 to 5.4
 
         Parameters
@@ -233,7 +240,8 @@ class TcRunner:
         return aggregate_stats
 
     def parse(self):
-        """parses the required data from tc-qdisc output
+        """
+        Parses the required data from tc-qdisc output
         """
 
         self.out.seek(0)    # rewind to start of the temp file
@@ -259,5 +267,12 @@ class TcRunner:
                 'NeST does not support tc parsing for kernel version below {}'.format(TcRunner.old_kernel_version))
 
         # Store parsed results
-        dev_name = TopologyMap.get_interface(self.ns_name, self.dev)['name']
-        TcResults.add_result(self.ns_name, {dev_name: aggregate_stats})
+        dev_name = TopologyMap.get_interface(self.ns_id, self.dev)['name']
+        TcResults.add_result(self.ns_id, {dev_name: aggregate_stats})
+        self.clean_up()
+
+    def clean_up(self):
+        """
+        Closes the temp files created
+        """
+        return super().clean_up()

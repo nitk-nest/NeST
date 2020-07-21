@@ -2,15 +2,17 @@
 # Copyright (c) 2019-2020 NITK Surathkal
 
 import os
-import tempfile
 import time
 import re
 from ..results import SsResults
 from ...engine import exec_exp_commands
+from .runnerbase import Runner
+from ...topology_map import TopologyMap
 
 
-class SsRunner:
-    """Runs ss command and stores and parses the output
+class SsRunner(Runner):
+    """
+    Runs ss command and stores and parses the output
 
     Attributes
     ----------
@@ -18,10 +20,8 @@ class SsRunner:
         absolute path of the ss iterator script
     param_list: list(str)
         list of parameters to be parsed
-    out : File
-        temporary file to hold the stats
-    ns_name : str
-            network namespace to run ss from
+    ns_id : str
+        network namespace to run ss from
     destination_ip : str
         ip address of the destination namespace
     start_time : num
@@ -34,12 +34,13 @@ class SsRunner:
     param_list = ['cwnd', 'rwnd', 'rtt', 'ssthresh',
                   'rto', 'delivery_rate', 'pacing_rate']
 
-    def __init__(self, ns_name, destination_ip, start_time, run_time,):
-        """Constructor to initialize ss runner
+    def __init__(self, ns_id, destination_ip, start_time, run_time,):
+        """
+        Constructor to initialize ss runner
 
         Parameters
         ----------
-        ns_name : str
+        ns_id : str
             network namespace to run ss from
         destination_ip : str
             ip address of the destination namespace
@@ -48,31 +49,37 @@ class SsRunner:
         run_time : num
             total time to run ss for
         """
-        self.out = tempfile.TemporaryFile()
-        self.err = tempfile.TemporaryFile()
-        self.ns_name = ns_name
+        self.ns_id = ns_id
         self.destination_ip = destination_ip
         self.start_time = start_time
         self.run_time = run_time
+        super().__init__()
 
     def run(self):
-        """runs the ss iterator
+        """
+        Runs the ss iterator
         """
         if self.start_time != 0:
             time.sleep(self.start_time)
 
-        command = "ip netns exec {ns_name} /bin/bash {iterator} {destination} {duration} {filter}".format(
-            ns_name=self.ns_name, iterator=SsRunner.iterator, destination=self.destination_ip,
+        command = "ip netns exec {ns_id} /bin/bash {iterator} {destination} {duration} {filter}".format(
+            ns_id=self.ns_id, iterator=SsRunner.iterator, destination=self.destination_ip,
             duration=self.run_time, filter="\"dport != 12865 and sport != 12865\"")
 
-        return_code = exec_exp_commands(command, stdout=self.out, stderr=self.err)
-        if return_code != 0:
-            self.err.seek(0)
-            error = self.err.read().decode()
-            print('Error collecting socket stats at {}. {}'.format(self.ns_name, error))
+        super().run(command)
+
+    def print_error(self):
+        """
+        Method to print error from `self.err`
+        """
+        self.err.seek(0)    #rewind to start of file
+        error = self.err.read().decode()
+        ns_name = TopologyMap.get_namespace(self.ns_id)['name']
+        print('Error collecting socket stats at {}. {}'.format(ns_name, error))
 
     def parse(self):
-        """parses the required data from `self.out`
+        """
+        parses the required data from `self.out`
         """
         stats_dict_list = {}
 
@@ -123,4 +130,11 @@ class SsRunner:
                         pass
 
         SsResults.add_result(
-            self.ns_name, {self.destination_ip: stats_dict_list})
+            self.ns_id, {self.destination_ip: stats_dict_list})
+        self.clean_up()
+
+    def clean_up(self):
+        """
+        Closes the temp files created
+        """
+        return super().clean_up()

@@ -4,13 +4,14 @@
 import re
 import time
 import copy
-import tempfile
 from ..results import NetperfResults
 from ...engine import exec_exp_commands
+from .runnerbase import Runner
+from ...topology_map import TopologyMap
 
-
-class NetperfRunner:
-    """Runs netperf command and parses statistics from it's output
+class NetperfRunner(Runner):
+    """
+    Runs netperf command and parses statistics from it's output
 
     Attributes
     ----------
@@ -20,9 +21,7 @@ class NetperfRunner:
         tcp related netperf options
     netperf_udp_options : dict
         udp related netperf options
-    out : File
-        temporary file to hold the stats
-    ns_name : str
+    ns_id : str
         network namespace to run netperf from
     destination_ip : str
         ip address of the destination namespace
@@ -61,12 +60,13 @@ class NetperfRunner:
         'stats': '-k THROUGHPUT'                    # Stats required
     }
 
-    def __init__(self, ns_name, destination_ip, start_time, run_time, **kwargs):
-        """Constructor to initialize netperf runner
+    def __init__(self, ns_id, destination_ip, start_time, run_time, **kwargs):
+        """
+        Constructor to initialize netperf runner
 
         Parameters
         ----------
-        ns_name : str
+        ns_id : str
             network namespace to run netperf from
         destination_ip : str
             ip address of the destination namespace
@@ -77,33 +77,34 @@ class NetperfRunner:
         **kwargs
             netperf options to override
         """
-        self.out = tempfile.TemporaryFile()
-        self.err = tempfile.TemporaryFile()
-        self.ns_name = ns_name
+        self.ns_id = ns_id
         self.destination_ip = destination_ip
         self.start_time = start_time
         self.run_time = run_time
         self.options = copy.deepcopy(kwargs)
+        super().__init__()
 
     # Should this be placed somewhere else?
     @staticmethod
-    def run_netserver(ns_name):
-        """Run netserver in `ns_name`
+    def run_netserver(ns_id):
+        """
+        Run netserver in `ns_id`
 
         Parameters
         ----------
-        ns_name : str
+        ns_id : str
             namespace to run netserver on
         """
-        command = 'ip netns exec {} netserver'.format(ns_name)
+        command = 'ip netns exec {} netserver'.format(ns_id)
         return_code = exec_exp_commands(command)
-
+        ns_name = TopologyMap.get_namespace(ns_id)['name']
         if return_code != 0:
-            print("Error running netperf at {}. Are you sure you have netperf installed?".format(
+            print("Error running netserver at {}.".format(
                 ns_name))
 
     def run(self):
-        """ Runs netperf at t=`self.start_time`
+        """
+        Runs netperf at t=`self.start_time`
         """
         netperf_options = copy.copy(NetperfRunner.default_netperf_options)
         test_options = None
@@ -125,22 +126,27 @@ class NetperfRunner:
         test_options_list = list(test_options.values())
         test_options_string = ' '.join(test_options_list)
 
-        command = 'ip netns exec {ns_name} netperf {options} -H {destination} -- {test_options}'.format(
-            ns_name=self.ns_name, options=netperf_options_string, destination=self.destination_ip,
+        command = 'ip netns exec {ns_id} netperf {options} -H {destination} -- {test_options}'.format(
+            ns_id=self.ns_id, options=netperf_options_string, destination=self.destination_ip,
             test_options=test_options_string)
 
         if self.start_time != 0:
             time.sleep(self.start_time)
 
-        return_code = exec_exp_commands(
-            command, stdout=self.out, stderr=self.err, timeout=self.run_time*2)
-        if return_code != 0:
-            self.err.seek(0)    # rewind to start of temp file
-            error = self.err.read().decode()
-            print("Error running netperf at {}. {}".format(self.ns_name, error))
+        super().run(command)
+
+    def print_error(self):
+        """
+        Method to print error from `self.err`
+        """
+        self.err.seek(0)    #rewind to start of file
+        error = self.err.read().decode()
+        ns_name = TopologyMap.get_namespace(self.ns_id)['name']
+        print('Error running netperf at {}. {}'.format(ns_name, error))
 
     def parse(self):
-        """Parse netperf output from `self.out`
+        """
+        Parse netperf output from `self.out`
         """
         self.out.seek(0)    # rewind to start of the temp file
         raw_stats = self.out.read().decode()
@@ -170,4 +176,11 @@ class NetperfRunner:
             stats_dict = {'{}:{}'.format(
                 self.destination_ip, remote_port): stats_list}
 
-        NetperfResults.add_result(self.ns_name, stats_dict)
+        NetperfResults.add_result(self.ns_id, stats_dict)
+        self.clean_up()
+
+    def clean_up(self):
+        """
+        Closes the temp files created
+        """
+        return super().clean_up()
