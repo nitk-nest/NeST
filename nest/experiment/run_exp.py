@@ -17,6 +17,7 @@ from .parser.tc import TcRunner
 from .plotter.ss import plot_ss
 from .plotter.netperf import plot_netperf
 from .plotter.tc import plot_tc
+from ..experiment.parser.iperf import IperfRunner
 
 
 def run_experiment(exp):
@@ -31,10 +32,11 @@ def run_experiment(exp):
     tc_runners = []
     ss_runners = []
     netperf_runners = []
+    iperf_runners = []
     flows = exp.get_flows()
 
     ss_run = {}
-    
+
     exp_start = float('inf')
     exp_end = float('-inf')
 
@@ -46,33 +48,36 @@ def run_experiment(exp):
 
         exp_start = min(exp_start, start_t)
         exp_end = max(exp_end, stop_t)
+        src_name = TopologyMap.get_namespace(src_ns)['name']
 
-        NetperfRunner.run_netserver(dst_ns)
-
-        netperf_options = {}
         if options['protocol'] == 'TCP':
+            netperf_options = {}
+            NetperfRunner.run_netserver(dst_ns)
             netperf_options['testname'] = 'TCP_STREAM'
             netperf_options['cong_algo'] = options['cong_algo']
+            print('Running {} netperf flows from {} to {}...'.format(
+                n_flows, src_name, dst_addr))
+
+            # Create new processes to be run simultaneously
+            for i in range(n_flows):
+                netperf_runners.append(NetperfRunner(
+                    src_ns, dst_addr, start_t, stop_t-start_t, **netperf_options))
+                workers.append(Process(target=netperf_runners[-1].run))
+
+            # Find the start time and stop time to run ss command in `src_ns` to a `dst_addr`
+            if (src_ns, dst_addr) not in ss_run:
+                ss_run[(src_ns, dst_addr)] = (start_t, stop_t)
+            else:
+                (min_start, max_stop) = ss_run[(src_ns, dst_addr)]
+                ss_run[(src_ns, dst_addr)] = (
+                    min(min_start, start_t), max(max_stop, stop_t))
         elif options['protocol'] == 'UDP':
-            netperf_options['testname'] = 'UDP_STREAM'
-
-        src_name = TopologyMap.get_namespace(src_ns)['name']
-        print('Running {} netperf flows from {} to {}...'.format(
-            n_flows, src_name, dst_addr))
-
-        # Create new processes to be run simultaneously
-        for i in range(n_flows):
-            netperf_runners.append(NetperfRunner(
-                src_ns, dst_addr, start_t, stop_t-start_t, **netperf_options))
-            workers.append(Process(target=netperf_runners[-1].run))
-
-        # Find the start time and stop time to run ss command in `src_ns` to a `dst_addr`
-        if (src_ns, dst_addr) not in ss_run:
-            ss_run[(src_ns, dst_addr)] = (start_t, stop_t)
-        else:
-            (min_start, max_stop) = ss_run[(src_ns, dst_addr)]
-            ss_run[(src_ns, dst_addr)] = (
-                min(min_start, start_t), max(max_stop, stop_t))
+            IperfRunner(dst_ns).run_server()
+            print('Running {} udp flows from {} to {}...'.format(
+                n_flows, src_name, dst_addr))
+            iperf_runners.append(IperfRunner(src_ns))
+            workers.append(Process(target=iperf_runners[-1].run_client, args=[
+                           dst_addr, start_t, stop_t-start_t, n_flows, options['target_bw']]))
 
     print('Running ss and tc on requested nodes and interfaces...')
     print()

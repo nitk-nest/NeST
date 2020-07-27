@@ -97,8 +97,8 @@ class NetperfRunner(Runner):
         """
         command = 'ip netns exec {} netserver'.format(ns_id)
         return_code = exec_exp_commands(command)
-        ns_name = TopologyMap.get_namespace(ns_id)['name']
         if return_code != 0:
+            ns_name = TopologyMap.get_namespace(ns_id)['name']
             print("Error running netserver at {}.".format(
                 ns_name))
 

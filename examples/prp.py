@@ -41,6 +41,7 @@ flow = Flow(n1, n2, n2_r.get_address(), 0, 20, 2)
 flow_udp = Flow(n1, n2, n2_r.get_address(), 0, 20, 1)
 
 exp = Experiment('tcp+udp')
-exp.add_udp_flow(flow_udp)
+exp.add_udp_flow(flow_udp, target_bw=100)
 exp.add_tcp_flow(flow)
+exp.require_qdisc_stats(r_n2)
 exp.run()

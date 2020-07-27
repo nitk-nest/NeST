@@ -5,6 +5,7 @@
 
 from .exec import exec_subprocess
 
+
 def run_iperf_server(ns_name):
     """
     Run Iperf Server on a namesapce
@@ -14,11 +15,11 @@ def run_iperf_server(ns_name):
     ns_name : str
         name of the server namespace
     """
-    #TODO: iperf3?
-    exec_subprocess(f'ip netns {ns_name} iperf -s')
+    exec_subprocess(
+        f'ip netns exec {ns_name}  iperf3 -s -D')   # runs server as a daemon
 
 
-def run_iperf_client(ns_name, server_ip):
+def run_iperf_client(ns_name, server_ip, run_time, flows, bw):
     """
     Run Iperf Client
 
@@ -28,5 +29,13 @@ def run_iperf_client(ns_name, server_ip):
         name of the client namespace
     server_ip : str
         the ip of server to which it has to connect
+    run_time : num
+        test duration
+    flows : int
+        number of parallel flows
+    bw : int
+        target bandwidth of the udp flow in mbits
     """
-    exec_subprocess(f'ip netns {ns_name} iperf -c {server_ip}')
+
+    exec_subprocess(
+        f'ip netns exec {ns_name} iperf3 -u -c {server_ip} -P {flows} -t {run_time} -b {bw}m -i 0')

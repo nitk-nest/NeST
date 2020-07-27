@@ -235,7 +235,7 @@ class Experiment():
         flow._set_options(options)
         self.add_flow(flow)
 
-    def add_udp_flow(self, flow):
+    def add_udp_flow(self, flow, target_bw=1):
         """
         Add UDP flow to experiment
 
@@ -245,6 +245,7 @@ class Experiment():
 
         options = {
             'protocol': 'UDP',
+            'target_bw': target_bw
         }
 
         flow._set_options(options)
