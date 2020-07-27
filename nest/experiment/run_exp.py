@@ -18,6 +18,7 @@ from .plotter.ss import plot_ss
 from .plotter.netperf import plot_netperf
 from .plotter.tc import plot_tc
 from ..experiment.parser.iperf import IperfRunner
+from ..engine.util import is_dependency_installed
 
 
 def run_experiment(exp):
@@ -40,6 +41,14 @@ def run_experiment(exp):
     exp_start = float('inf')
     exp_end = float('-inf')
 
+    dependencies = {}
+    for dependency in ['netperf', 'ss', 'tc', 'iperf3', 'ping']:
+        dependencies[dependency] = is_dependency_installed(dependency)
+
+    for (tool, is_installed) in dependencies.items():
+        if not is_installed:
+            print(f'{tool} not found')
+
     # Setup netperf flows and parsing
     for flow in flows:
         # Get flow attributes
@@ -50,7 +59,7 @@ def run_experiment(exp):
         exp_end = max(exp_end, stop_t)
         src_name = TopologyMap.get_namespace(src_ns)['name']
 
-        if options['protocol'] == 'TCP':
+        if options['protocol'] == 'TCP' and dependencies['netperf']:
             netperf_options = {}
             NetperfRunner.run_netserver(dst_ns)
             netperf_options['testname'] = 'TCP_STREAM'
@@ -71,7 +80,7 @@ def run_experiment(exp):
                 (min_start, max_stop) = ss_run[(src_ns, dst_addr)]
                 ss_run[(src_ns, dst_addr)] = (
                     min(min_start, start_t), max(max_stop, stop_t))
-        elif options['protocol'] == 'UDP':
+        elif options['protocol'] == 'UDP' and dependencies['iperf3']:
             IperfRunner(dst_ns).run_server()
             print('Running {} udp flows from {} to {}...'.format(
                 n_flows, src_name, dst_addr))
@@ -83,16 +92,18 @@ def run_experiment(exp):
     print()
 
     # Setup ss parsing
-    for key, value in ss_run.items():
-        ss_runners.append(SsRunner(key[0], key[1], value[0],
-                                   value[1] - value[0]))
-        workers.append(Process(target=ss_runners[-1].run))
+    if dependencies['ss']:
+        for key, value in ss_run.items():
+            ss_runners.append(SsRunner(key[0], key[1], value[0],
+                                       value[1] - value[0]))
+            workers.append(Process(target=ss_runners[-1].run))
 
     # Setup tc parsing
-    for qdisc_stat in exp.qdisc_stats:
-        tc_runners.append(
-            TcRunner(qdisc_stat['ns_id'], qdisc_stat['int_id'], exp_end))
-        workers.append(Process(target=tc_runners[-1].run))
+    if dependencies['tc']:
+        for qdisc_stat in exp.qdisc_stats:
+            tc_runners.append(
+                TcRunner(qdisc_stat['ns_id'], qdisc_stat['int_id'], exp_end))
+            workers.append(Process(target=tc_runners[-1].run))
 
     # Start parsing (start all processes)
     for worker in workers:
