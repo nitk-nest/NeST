@@ -1,172 +1,82 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
-# User API to setup and run experiments
-# on a given topology
+"""User API to setup and run experiments on a given topology"""
 
 import copy
-from ..topology import Address, Node, Interface
-from ..topology_map import TopologyMap
+from ..topology import Address
 from .run_exp import run_experiment
 from .pack import Pack
 
-
+#pylint: disable=too-many-instance-attributes
+#pylint: disable=too-few-public-methods
 class Flow():
-    """
-    Defines a flow in the topology
-    """
+    """Defines a flow in the topology"""
 
+    #pylint: disable=too-many-arguments
     def __init__(self, source_node, destination_node, destination_address, start_time, stop_time,
                  number_of_flows):
         """
         'Flow' object in the topology
 
-        :param source_node: Source node of flow
-        :type source_node: Node
-        :param destination_node: Destination node of flow
-        :type destination_node: Node
-        :param destination_address: Destination address of flow
-        :type destination_address: Address/string
-        :param start_time: Time to start flow
-        :type start_time: int
-        :param stop_time: Time to stop flow
-        :type stop_time: int
-        :param number_of_flows: Number of flows
-        :type number_of_flows: int
+        Parameters
+        ----------
+        source_node : Node
+            Source node of flow
+        destination_node : Node
+            Destination node of flow
+        destination_address : Address/str
+            Destination address of flow
+        start_time : int
+            Time to start flow (in seconds)
+        stop_time : int
+            Time to stop flow (in seconds)
+        number_of_flows : int
+            Number of flows
         """
+        self.source_node = source_node
+        self.destination_node = destination_node
+        self.destination_address = destination_address
+        self.start_time = start_time
+        self.stop_time = stop_time
+        self.number_of_flows = number_of_flows
 
-        self.set_source_node(source_node)
-        self.set_destination_node(destination_node)
-        self.set_destination_address(destination_address)
-        self.set_start_time(start_time)
-        self.set_stop_time(stop_time)
-        self.set_number_of_flows(number_of_flows)
-        self.options = {
+        self._options = {
             'protocol': 'TCP',
             'cong_algo': 'cubic'
         }
 
-    def set_source_node(self, source_node):
-        """
-        Setter for source node
+    @property
+    def destination_address(self):
+        """Getter for destination address"""
+        return self._destination_address
 
-        :param source_node: Source node of flow
-        :type source_node: Node
-        """
-        self.source_node = source_node
-
-    def set_destination_node(self, destination_node):
-        """
-        Setter for destination node of flow
-
-        :param destination_node: Destination node of flow
-        :type destination_node: Node
-        """
-        self.destination_node = destination_node
-
-    def set_destination_address(self, destination_address):
-        """
-        Setter for destination address of flow
-
-        :param destination_address: Destination address of flow
-        :type destination_address: Address/string
-        """
-
-        if type(destination_address) is str:
+    @destination_address.setter
+    def destination_address(self, destination_address):
+        """Setter for destination address"""
+        if isinstance(destination_address, str):
             destination_address = Address(destination_address)
-        self.destination_address = destination_address
-
-    def set_start_time(self, start_time):
-        """
-        Setter for start time of flow
-
-        :param start_time: Time to start flow
-        :type start_time: int
-        """
-        self.start_time = start_time
-
-    def set_stop_time(self, stop_time):
-        """
-        Setter for stop time of flow
-
-        :param stop_time: Time to stop flow
-        :type stop_time: int
-        """
-        self.stop_time = stop_time
-
-    def set_number_of_flows(self, number_of_flows):
-        """
-        Setter for number of flows
-
-        :param number_of_flows: Number of flows
-        :type number_of_flows: int
-        """
-        self.number_of_flows = number_of_flows
-
-    def _set_options(self, options):
-        """
-        Setter for flow options
-
-        :param options: Flow options
-        :type options: dict
-        """
-
-        self.options = options
-
-    def get_source_node(self):
-        """
-        Getter for source node of flow
-        """
-
-        return self.source_node
-
-    def get_destination_node(self):
-        """
-        Getter for destination node of flow
-        """
-
-        return self.destination_node
-
-    def get_destination_address(self):
-        """
-        Getter for destination address of flow
-        """
-
-        return self.destination_address
-
-    def get_start_time(self):
-        """
-        Getter for start time of flow
-        """
-
-        return self.start_time
-
-    def get_stop_time(self):
-        """
-        Getter for stop time of flow
-        """
-
-        return self.stop_time
-
-    def get_number_of_flows(self):
-        """
-        Getter for number of flows
-        """
-
-        return self.number_of_flows
+        self._destination_address = destination_address
 
     def _get_props(self):
         """
         Get flow properties.
+
         NOTE: To be used internally
         """
 
         return [self.source_node.id, self.destination_node.id,
                 self.destination_address.get_addr(with_subnet=False),
-                self.start_time, self.stop_time, self.number_of_flows, self.options]
+                self.start_time, self.stop_time, self.number_of_flows, self._options]
 
+    def __repr__(self):
+        classname = self.__class__.__name__
+        return (f'{classname}({self.source_node!r}, {self.destination_node!r},'
+                f' {self.destination_address!r}), {self.start_time!r}, {self.stop_time!r}'
+                f' {self.number_of_flows!r})')
 
 class Experiment():
+    """Handles experiment to be run on topology"""
 
     # List of node and qdisc stats
     # the API supports
@@ -178,7 +88,7 @@ class Experiment():
         Create experiment
 
         :param name: name of experiment
-        :type name: string
+        :type name: str
         """
         self.name = name
         self.flows = []
@@ -191,8 +101,10 @@ class Experiment():
         By default, the flow is assumed to be
         TCP with cubic congestion algorithm
 
-        :param flow: Add flow to experiment
-        :type flow: flow
+        Parameters
+        ----------
+        flow : Flow
+            Add flow to experiment
         """
         self.flows.append(copy.deepcopy(flow))
 
@@ -200,10 +112,12 @@ class Experiment():
         """
         Add TCP flow to experiment
 
-        :param flow: Flow to be added to experiment
-        :type flow: Flow
-        :param congestion_algorithm: TCP congestion algorithm
-        :type congestion_algorithm: string
+        Parameters
+        ----------
+        flow : Flow
+            Flow to be added to experiment
+        congestion_algorithm : str
+            TCP congestion algorithm (Default value = 'cubic')
         """
 
         # TODO: Verify congestion algorithm
@@ -213,15 +127,23 @@ class Experiment():
             'cong_algo': congestion_algorithm
         }
 
-        flow._set_options(options)
+        flow._options = options #pylint: disable=protected-access
         self.add_flow(flow)
 
     def add_udp_flow(self, flow, target_bw=1):
         """
         Add UDP flow to experiment
 
-        :param flow: Flow to be added to experiment
-        :type flow: Flow
+        Parameters
+        ----------
+        flow : Flow
+            Flow to be added to experiment
+        target_bw :
+             (Default value = 1)
+
+        Returns
+        -------
+
         """
 
         options = {
@@ -229,20 +151,20 @@ class Experiment():
             'target_bw': target_bw
         }
 
-        flow._set_options(options)
+        flow._options = options #pylint: disable=protected-access
         self.add_flow(flow)
 
     def require_node_stats(self, node, stats=''):
         """
-        Stats to be obtained from node
-        in the experiment
+        Stats to be obtained from node in the experiment
 
-        :param node: Node from which stats are to be obtained
-        :type node: Node
-        :param stats: Stats required
-        :type stats: list(string)
+        Parameters
+        ----------
+        node : Node
+            Node from which stats are to be obtained
+        stats : list(str)
+            Stats required (Default value = '')
         """
-
         # TODO: Leads to rewrite if the function is called
         # twice with same 'node'
 
@@ -259,10 +181,12 @@ class Experiment():
         """
         Stats to be obtained from qdisc in interface
 
-        :param interface: Interface containing the qdisc
-        :type interface: Interface
-        :param stats: Stats required
-        :type stats: list(string)
+        Parameters
+        ----------
+        interface : Interface
+            Interface containing the qdisc
+        stats : list(str)
+            Stats required (Default value = '')
         """
         # TODO: Leads to rewrite if the function is called
         # twice with same 'interface'
@@ -282,27 +206,13 @@ class Experiment():
             'stats': stats
         })
 
-    def get_flows(self):
-        """
-        Getter for flows in experiment
-        """
-
-        return self.flows
-
-    def get_name(self):
-        """
-        Getter for name of experiment
-        """
-
-        return self.name
-
     def run(self):
-        """
-        Run the experiment
-        """
-
-        # TopologyMap.dump()
+        """Run the experiment"""
         print('Running experiment ' + self.name)
         print()
-        Pack.init(self.get_name())
+        Pack.init(self.name)
         run_experiment(self)
+
+    def __repr__(self):
+        classname = self.__class__.__name__
+        return f'{classname}({self.name!r})'

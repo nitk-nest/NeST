@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
-# Script to be run for running experiments on the namespaces
+"""Script to be run for running experiments on topology"""
 
 from multiprocessing import Process
 
@@ -21,12 +21,17 @@ from ..experiment.parser.iperf import IperfRunner
 from ..engine.util import is_dependency_installed
 
 
+#pylint: disable=too-many-locals
+#pylint: disable=too-many-branches
+#pylint: disable=too-many-statements
 def run_experiment(exp):
     """
     Run experiment
 
-    :param exp: The experiment attributes
-    :type exp: Experiment
+    Parameters
+    -----------
+    exp : Experiment
+        The experiment attributes
     """
 
     workers = []
@@ -34,7 +39,7 @@ def run_experiment(exp):
     ss_runners = []
     netperf_runners = []
     iperf_runners = []
-    flows = exp.get_flows()
+    flows = exp.flows
 
     ss_run = {}
 
@@ -53,7 +58,7 @@ def run_experiment(exp):
     for flow in flows:
         # Get flow attributes
         [src_ns, dst_ns, dst_addr, start_t, stop_t,
-            n_flows, options] = flow._get_props()
+         n_flows, options] = flow._get_props() #pylint: disable=protected-access
 
         exp_start = min(exp_start, start_t)
         exp_end = max(exp_end, stop_t)
@@ -68,7 +73,7 @@ def run_experiment(exp):
                 n_flows, src_name, dst_addr))
 
             # Create new processes to be run simultaneously
-            for i in range(n_flows):
+            for _ in range(n_flows):
                 netperf_runners.append(NetperfRunner(
                     src_ns, dst_addr, start_t, stop_t-start_t, **netperf_options))
                 workers.append(Process(target=netperf_runners[-1].run))
@@ -85,8 +90,10 @@ def run_experiment(exp):
             print('Running {} udp flows from {} to {}...'.format(
                 n_flows, src_name, dst_addr))
             iperf_runners.append(IperfRunner(src_ns))
-            workers.append(Process(target=iperf_runners[-1].run_client, args=[
-                           dst_addr, start_t, stop_t-start_t, n_flows, options['target_bw']]))
+            workers.append(
+                Process(target=iperf_runners[-1].run_client,
+                        args=[dst_addr, start_t, stop_t-start_t, n_flows, options['target_bw']])
+            )
 
     print('Running ss and tc on requested nodes and interfaces...')
     print()
@@ -147,11 +154,11 @@ def run_experiment(exp):
     workers = []
 
     workers.append(Process(target=plot_ss, args=(
-        exp.get_name(), SsResults.get_results())))
+        exp.name, SsResults.get_results())))
     workers.append(Process(target=plot_netperf, args=(
-        exp.get_name(), NetperfResults.get_results())))
+        exp.name, NetperfResults.get_results())))
     workers.append(Process(target=plot_tc, args=(
-        exp.get_name(), TcResults.get_results())))
+        exp.name, TcResults.get_results())))
 
     # Start plotting
     for worker in workers:
@@ -173,28 +180,3 @@ def run_experiment(exp):
     # Kill any running processes in namespaces
     for namespace in TopologyMap.get_namespaces():
         engine.kill_all_processes(namespace['id'])
-
-
-# NOTE: The below function is no longer supported
-# It's a headache to get this and 'test' parsing option
-# working.
-# Later on if there is a need, this function will be
-# implemented.
-
-
-def _parse_config_files(config_files):
-    """
-    Parses the config files to run tests accordingly
-    """
-
-    raise NotImplementedError('Parsing config file is currently \
-            unsupported.')
-
-    # Loop through all the config files, convert each config file to
-    # a dict and run netserver or/and netperf depending on the type of
-    # host.
-    # TODO: parallelize this so that all the config files can be run simultaneously
-    # for config_file in config_files:
-    # with open(config_file, 'r') as f:
-    # config = json.load(f)
-    # _parse_config_from_dict(config)

@@ -10,6 +10,7 @@ from nest.user import User
 
 
 class Pack():
+    """Handles packaging results"""
 
     FOLDER = ''
 
@@ -18,10 +19,11 @@ class Pack():
         """
         Create a folder with format 'testname(time)_dump'
 
-        :param exp_name: Name of experiment
-        :type exp_name: string
+        Parameters
+        ----------
+        exp_name : str
+            Name of experiment
         """
-
         timestamp = time.strftime('%d-%m-%Y-%H:%M:%S')
         Pack.FOLDER = '{exp_name}({timestamp})_dump'.format(
             exp_name=exp_name, timestamp=timestamp)
@@ -33,15 +35,16 @@ class Pack():
         """
         Dump a file into Pack.FOLDER
 
-        :param filename: Name of file
-        :type filename: string
-        :param content: Content to be stored in file
-        :type content: string
+        Parameters
+        ----------
+        filename : str
+            Name of file
+        content : str
+            Content to be stored in file
         """
-
         path = os.path.join(Pack.FOLDER, filename)
-        with open(path, 'w') as f:
-            f.write(content)
+        with open(path, 'w') as file:
+            file.write(content)
         Pack.set_owner(path)
 
     @staticmethod
@@ -49,14 +52,15 @@ class Pack():
         """
         Dump a plot into Pack.FOLDER
 
-        :param subfolder: Subfolder to which plot belongs to
-        :type subfolder: string
-        :param filename: Name of plot
-        :type filename: string
-        :param fig: Plot figure to be stored in file
-        :type fig: matplotlib.pyplot.fig
+        Parameters
+        ----------
+        subfolder : str
+            Subfolder to which plot belongs to
+        filename : str
+            Name of plot
+        fig : matplotlib.pyplot.fig
+            Plot figure to be stored in file
         """
-
         Pack.create_subfolder(subfolder)
         path = os.path.join(Pack.FOLDER, subfolder, filename)
         fig.savefig(path)
@@ -67,10 +71,11 @@ class Pack():
         """
         Create subfolder if it already doesn't exist
 
-        :param subfolder: Subfolder name
-        :type subfolder: string
+        Parameters
+        ----------
+        subfolder : str
+            Subfolder name
         """
-
         path = os.path.join(Pack.FOLDER, subfolder)
         if not os.path.isdir(path):
             os.mkdir(path)
@@ -83,8 +88,10 @@ class Pack():
         actual user running (For eg. user running
         sudo)
 
-        :param path: Path of file
-        :type path: string
+        Parameters
+        ----------
+        path : str
+            Path of file
         """
 
         user_id = User.user_id
@@ -93,8 +100,5 @@ class Pack():
 
     @staticmethod
     def compress():
-        """
-        Compress Pack.FOLDER into a tar archive
-        """
-
-        pass
+        """Compress Pack.FOLDER into a tar archive"""
+        # TODO
