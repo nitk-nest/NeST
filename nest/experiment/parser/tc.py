@@ -161,7 +161,7 @@ class TcRunner(Runner):
         stats = re.sub(value_pattern, self.repl, stats)
         return stats
 
-    def old_kernel_version_parse_helper(self, raw_stats, qdisc_param, qdisc_re):
+    def old_tc_version_parse_helper(self, raw_stats, qdisc_param, qdisc_re):
         """
         Parsing tc command on linux kernel versions
         4.15.0 to 5.4
@@ -205,7 +205,7 @@ class TcRunner(Runner):
                     aggregate_stats[handle].append(stats_dict)
         return aggregate_stats
 
-    def new_kernel_version_parse_helper(self, raw_stats):
+    def new_tc_version_parse_helper(self, raw_stats):
         """
         Parsing tc command on linux kernel version
         5.5 and above
@@ -221,12 +221,13 @@ class TcRunner(Runner):
             handle keyed dict with list of stats
         """
         aggregate_stats = {}
-        for raw_stat in raw_stats[-1]:
-            raw_stat = json.loads(self.clean_json(raw_stat))
-            stats_dict = {}
+        for raw_stat in raw_stats[:-1]:
             timestamp_pattern = r'timestamp:(?P<timestamp>\d+\.\d+)'
             timestamp = re.search(
-                timestamp_pattern, raw_stat).group("timestamp")
+                timestamp_pattern, raw_stat).group('timestamp')
+            raw_stat = re.sub(timestamp_pattern, '', raw_stat)
+            raw_stat = json.loads(raw_stat)
+            stats_dict = {}
             for qdisc_stat in raw_stat:
                 qdisc = qdisc_stat['kind']
                 if qdisc in ['codel', 'fq_codel', 'pie']:
@@ -275,9 +276,9 @@ class TcRunner(Runner):
         # tc produces different JSON ouput format
         # based on the version
         if cur_tc_version >= TcRunner.new_tc_version:
-            aggregate_stats = self.new_kernel_version_parse_helper(raw_stats)
+            aggregate_stats = self.new_tc_version_parse_helper(raw_stats)
         elif cur_tc_version >= TcRunner.old_tc_version:
-            aggregate_stats = self.old_kernel_version_parse_helper(raw_stats,
+            aggregate_stats = self.old_tc_version_parse_helper(raw_stats,
                                                                    qdisc_param, qdisc_re)
         else:
             # TODO: Not sure if it's the right exception to raise
