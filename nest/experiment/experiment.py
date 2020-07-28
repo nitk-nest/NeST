@@ -8,7 +8,6 @@ import copy
 from ..topology import Address, Node, Interface
 from ..topology_map import TopologyMap
 from .run_exp import run_experiment
-from .. import error_handling
 from .pack import Pack
 
 
@@ -54,9 +53,6 @@ class Flow():
         :param source_node: Source node of flow
         :type source_node: Node
         """
-
-        error_handling.type_verify(
-            'source_node', source_node, 'Namespace', Node)
         self.source_node = source_node
 
     def set_destination_node(self, destination_node):
@@ -66,9 +62,6 @@ class Flow():
         :param destination_node: Destination node of flow
         :type destination_node: Node
         """
-
-        error_handling.type_verify(
-            'destination_node', destination_node, 'Namespace', Node)
         self.destination_node = destination_node
 
     def set_destination_address(self, destination_address):
@@ -90,8 +83,6 @@ class Flow():
         :param start_time: Time to start flow
         :type start_time: int
         """
-
-        error_handling.type_verify('start_time', start_time, 'int', int)
         self.start_time = start_time
 
     def set_stop_time(self, stop_time):
@@ -101,8 +92,6 @@ class Flow():
         :param stop_time: Time to stop flow
         :type stop_time: int
         """
-
-        error_handling.type_verify('stop_time', stop_time, 'int', int)
         self.stop_time = stop_time
 
     def set_number_of_flows(self, number_of_flows):
@@ -112,9 +101,6 @@ class Flow():
         :param number_of_flows: Number of flows
         :type number_of_flows: int
         """
-
-        error_handling.type_verify(
-            'number_of_flows', number_of_flows, 'int', int)
         self.number_of_flows = number_of_flows
 
     def _set_options(self, options):
@@ -194,9 +180,6 @@ class Experiment():
         :param name: name of experiment
         :type name: string
         """
-
-        error_handling.type_verify('Name', name, 'string', str)
-
         self.name = name
         self.flows = []
         self.node_stats = []
@@ -211,8 +194,6 @@ class Experiment():
         :param flow: Add flow to experiment
         :type flow: flow
         """
-
-        error_handling.type_verify('Flow', flow, 'Flow', Flow)
         self.flows.append(copy.deepcopy(flow))
 
     def add_tcp_flow(self, flow, congestion_algorithm='cubic'):
@@ -265,9 +246,6 @@ class Experiment():
         # TODO: Leads to rewrite if the function is called
         # twice with same 'node'
 
-        # error_handling.type_verify('Node', node, 'Node', Node)
-        # error_handling.type_verify('Stats', stats, 'list', list)
-
         # for stat in stats:
         #     if stat not in Experiment.node_stats:
         #         raise ValueError('{} is not a valid Node property.'.format(stat))
@@ -286,12 +264,8 @@ class Experiment():
         :param stats: Stats required
         :type stats: list(string)
         """
-
         # TODO: Leads to rewrite if the function is called
         # twice with same 'interface'
-
-        # error_handling.type_verify('Interface', interface, 'Interface', Interface)
-        # error_handling.type_verify('Stats', stats, 'list', list)
 
         # for stat in stats:
         #     if stat not in Experiment.qdisc_stats:
