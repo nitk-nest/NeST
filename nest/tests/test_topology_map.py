@@ -6,6 +6,9 @@
 import unittest
 from nest.topology_map import TopologyMap
 
+#pylint: disable=missing-docstring
+#pylint: disable=too-many-instance-attributes
+
 class TestTopologyMap(unittest.TestCase):
 
     def setUp(self):

@@ -5,7 +5,7 @@
 
 from .address import Address
 from .. import engine
-from .id_generator import ID_GEN
+from .id_generator import IdGen
 from ..topology_map import TopologyMap
 
 
@@ -37,7 +37,7 @@ class Node:
             raise ValueError('Node name can\'t be an empty string')
 
         self._name = name
-        self._id = ID_GEN.get_id(name)
+        self._id = IdGen.get_id(name)
         self._interfaces = []
 
         engine.create_ns(self.id)

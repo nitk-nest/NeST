@@ -6,7 +6,7 @@
 from .address import Address
 from .. import engine
 from .. import error_handling
-from .id_generator import ID_GEN
+from .id_generator import IdGen
 from ..topology_map import TopologyMap
 from . import traffic_control
 from .node import Node
@@ -50,7 +50,7 @@ class Interface:
 
         # TODO: name and address should be the only public members
         self.name = interface_name
-        self.id = ID_GEN.get_id(interface_name)
+        self.id = IdGen.get_id(interface_name)
         self.node = None
         self.pair = None
         self.address = None

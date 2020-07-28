@@ -24,4 +24,4 @@ from .address import Address, Subnet
 
 # Generate unique topology id for the *to be created* topology
 TOPOLOGY_ID = uuid.uuid4().hex[:10]  # TODO: First 10 seems hacky
-id_generator.ID_GEN(TOPOLOGY_ID)
+id_generator.IdGen(TOPOLOGY_ID)

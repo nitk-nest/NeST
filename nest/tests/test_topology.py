@@ -6,6 +6,8 @@
 import unittest
 from nest.topology import Node, connect
 
+#pylint: disable=missing-docstring
+
 class TestTopology(unittest.TestCase):
 
     def setUp(self):

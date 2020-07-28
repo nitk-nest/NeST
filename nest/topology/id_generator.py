@@ -3,9 +3,9 @@
 
 """Generate unique id for topology entity"""
 
-class ID_GEN:
+class IdGen:
     """Generate unique id for Topology entites
-    
+
     Attributes
     ----------
     topology_id: str
@@ -29,7 +29,7 @@ class ID_GEN:
         topology_id: str
 
         """
-        ID_GEN.topology_id = topology_id
+        IdGen.topology_id = topology_id
 
     @staticmethod
     def get_id(name):
@@ -39,7 +39,7 @@ class ID_GEN:
         ----------
         name: str
             Name of the entity as shown to the user
-        
+
         Returns
         -------
         str
@@ -47,24 +47,24 @@ class ID_GEN:
             Else, `name` is returned back
 
         """
-        if ID_GEN.is_unique_id:
-            ID_GEN.counter += 1
-            return ID_GEN.topology_id+"-"+str(ID_GEN.counter)
-        else:
-            return name
+        if IdGen.is_unique_id:
+            IdGen.counter += 1
+            return IdGen.topology_id+"-"+str(IdGen.counter)
+
+        return name
 
     @staticmethod
     def enable_unique_id():
         """
         If disabled, enable generation of unique id
-        
+
         """
-        ID_GEN.is_unique_id = True
+        IdGen.is_unique_id = True
 
     @staticmethod
     def disable_unique_id():
         """
         If enabled, disable generation of unique id
-        
+
         """
-        ID_GEN.is_unique_id = False
+        IdGen.is_unique_id = False
