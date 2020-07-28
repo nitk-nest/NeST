@@ -34,7 +34,10 @@ setup(
         'Programming Language :: Python :: 3.8',
     ],
     keywords='network, namespace, linux',
-    packages=['nest'],
+    packages=find_packages(),
+    package_data={
+        "nest.experiment.parser": ["iterators/*.sh"],
+    },
     python_requires='>=3.6, <4',
     install_requires=[
         'matplotlib',
