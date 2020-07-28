@@ -4,11 +4,13 @@
 import re
 import json
 import os
+from time import strptime
 from packaging import version
 from nest import engine
 from .runnerbase import Runner
 from ..results import TcResults
 from ...topology_map import TopologyMap
+from ...engine.tc import get_tc_version
 
 
 class TcRunner(Runner):
@@ -32,8 +34,10 @@ class TcRunner(Runner):
     """
 
     iterator = os.path.realpath(os.path.dirname(__file__)) + "/iterators/tc.sh"
-    old_kernel_version = '4.15.0'
-    new_kernel_version = '5.5'
+    # tc versions are in date formatted
+    # TODO: move these to a config file
+    old_tc_version = strptime("20180129", "%Y%m%d")
+    new_tc_version = strptime("20190319", "%Y%m%d")
 
     def __init__(self, ns_id, dev, run_time):
         """
@@ -66,7 +70,7 @@ class TcRunner(Runner):
         """
         Method to print error from `self.err`
         """
-        self.err.seek(0)    #rewind to start of file
+        self.err.seek(0)  # rewind to start of file
         error = self.err.read().decode()
         ns_name = TopologyMap.get_namespace(self.ns_id)['name']
         print('Error collecting qdisc stats at {}. {}'.format(ns_name, error))
@@ -239,6 +243,19 @@ class TcRunner(Runner):
                     aggregate_stats[handle].append(stats_dict)
         return aggregate_stats
 
+    def parsed_tc_version(self):
+        """
+        parses the current tc version
+
+        Returns
+        -------
+        struct_time
+            current tc version as date
+        """
+        cur_tc_version = get_tc_version()
+        cur_tc_version = "20" + cur_tc_version.split(" ")[-1][-7:].strip()
+        return strptime(cur_tc_version, "%Y%m%d")
+
     def parse(self):
         """
         Parses the required data from tc-qdisc output
@@ -253,18 +270,19 @@ class TcRunner(Runner):
         qdisc_re = self.get_qdisc_re()
         aggregate_stats = {}
 
+        cur_tc_version = self.parsed_tc_version()
+
         # tc produces different JSON ouput format
-        # based on the kernel version
-        kernel_version = engine.get_kernel_version()
-        if version.parse(kernel_version) >= version.parse(TcRunner.new_kernel_version):
+        # based on the version
+        if cur_tc_version >= TcRunner.new_tc_version:
             aggregate_stats = self.new_kernel_version_parse_helper(raw_stats)
-        elif version.parse(kernel_version) >= version.parse(TcRunner.old_kernel_version):
+        elif cur_tc_version >= TcRunner.old_tc_version:
             aggregate_stats = self.old_kernel_version_parse_helper(raw_stats,
                                                                    qdisc_param, qdisc_re)
         else:
             # TODO: Not sure if it's the right exception to raise
             raise SystemError(
-                'NeST does not support tc parsing for kernel version below {}'.format(TcRunner.old_kernel_version))
+                'NeST does not support qdisc parsing for tc version below {}'.format(TcRunner.old_tc_version))
 
         # Store parsed results
         dev_name = TopologyMap.get_interface(self.ns_id, self.dev)['name']

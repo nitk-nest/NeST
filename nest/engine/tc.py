@@ -242,3 +242,14 @@ def add_filter(ns_name, dev_name, protocol, priority, filtertype, parent='', han
 
     exec_subprocess(f'tc -n {ns_name} filter add dev {dev_name} {parent} {handle}'
                     f' protocol {protocol} prio {priority} {filtertype} {filter_params}')
+
+def get_tc_version():
+    """
+    check for current tc version
+
+    Returns
+    -------
+    str
+        string containing current tc version
+    """
+    return exec_subprocess('tc -V', output=True)
