@@ -10,12 +10,10 @@ from nest.topology import Node, connect
 
 class TestTopology(unittest.TestCase):
 
-    def setUp(self):
-        self.n0 = Node('n0')
-        self.n1 = Node('n1')
-
-    def tearDown(self):
-        pass
+    @classmethod
+    def setUpClass(cls):
+        cls.n0 = Node('n0')
+        cls.n1 = Node('n1')
 
     def test_p2p(self):
         (n0_n1, n1_n0) = connect(self.n0, self.n1)

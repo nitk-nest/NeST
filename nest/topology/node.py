@@ -65,7 +65,7 @@ class Node:
                 next_hop_addr = Address(next_hop_addr)
         else:
             # Assuming veth pair
-            next_hop_addr = via_interface.get_pair().get_address()
+            next_hop_addr = via_interface.pair.address
 
         dest_addr_str = ''
         if dest_addr.is_subnet():
@@ -75,7 +75,7 @@ class Node:
 
         engine.add_route(
             self.id, dest_addr_str, next_hop_addr.get_addr(with_subnet=False),
-            via_interface.get_id())
+            via_interface.id)
 
     def _add_interface(self, interface):
         """
@@ -87,10 +87,10 @@ class Node:
             `Interface` to be added to `Node`
         """
         self._interfaces.append(interface)
-        interface._set_node(self)
-        engine.add_int_to_ns(self.id, interface.get_id())
+        interface.node = self
+        engine.add_int_to_ns(self.id, interface.id)
         TopologyMap.add_interface(
-            self.id, interface.get_id(), interface.get_name())
+            self.id, interface.id, interface.name)
 
     def configure_tcp_param(self, param, value):
         """

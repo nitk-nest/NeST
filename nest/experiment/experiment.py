@@ -302,8 +302,8 @@ class Experiment():
                 'Given interface hasn\'t been assigned any qdisc.')
 
         self.qdisc_stats.append({
-            'ns_id': interface.get_node().id,
-            'int_id': interface.ifb.get_id(),
+            'ns_id': interface.node.id,
+            'int_id': interface.ifb.id,
             'qdisc_handle': interface.get_qdisc().handle,
             'stats': stats
         })

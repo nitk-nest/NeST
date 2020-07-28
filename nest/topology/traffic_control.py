@@ -1,139 +1,112 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
+"""Handle traffic control entities"""
+
 from .. import engine
-from .. import error_handling
 
-# Filter supported types
-_support = {
-    'protocol': ['ip'],
-    'filtertype': ['u32'],
-}
+# TODO: Improve this module such that the below pylint disables are no
+# longer required
 
-# NOTE: Call to error_handling not necessary since
-# it is being called in topology.py (as soon as the
-# the user calls the API)
-
+#pylint: disable=too-few-public-methods
+#pylint: disable=too-many-arguments
+#pylint: disable=too-many-instance-attributes
 
 class Qdisc:
+    """Handle Queueing Discipline"""
 
     def __init__(self, namespace_id, dev_id, qdisc, parent='root', handle='', **kwargs):
         """
         Constructor to add a qdisc (Queueing Discipline) to an interface (device)
 
-        :param namespace_id: The id of the namespace to which the interface belongs to
-        :type namespace_id: String
-        :param dev_id: The id of the interface to which the qdisc is to be added
-        :type dev_id: String
-        :param qdisc: The qdisc which needs to be added to the interface
-        :type qdisc: string
-        :param dev_id: The id of the interface to which the qdisc is to be added
-        :type dev_id: String
-        :param namespace_id: The id of the namespace that the device belongs to
-        :type namespace_id: String
-        :param parent: id of the parent class in major:minor form(optional)
-        :type parent: string
-        :param handle: id of the filter
-        :type handle: string
-        :param **kwargs: qdisc specific paramters 
-        :type **kwargs: dictionary
+        Parameters
+        ----------
+        namespace_id : str
+            The id of the namespace to which the interface belongs to
+        dev_id : str
+            The id of the interface to which the qdisc is to be added
+        qdisc : str
+            The qdisc which needs to be added to the interface
+        dev_id : str
+            The id of the interface to which the qdisc is to be added
+        namespace_id : str
+            The id of the namespace that the device belongs to
+        parent : str
+            id of the parent class in major:minor form(optional)
+        handle : str
+            id of the filter
         """
-
         self.namespace_id = namespace_id
         self.dev_id = dev_id
         self.qdisc = qdisc
         self.parent = parent
         self.handle = handle
 
-        # Verify all the paramaters
-
-        error_handling.type_verify('namespace_id', namespace_id, 'string', str)
-        error_handling.type_verify('dev_id', dev_id, 'string', str)
-        error_handling.type_verify('qdisc', qdisc, 'string', str)
-        error_handling.type_verify(
-            'namespace_id', namespace_id, 'Interface class', str)
-        error_handling.type_verify('parent', parent, 'string', str)
-        error_handling.type_verify('handle', handle, 'string', str)
-
         engine.add_qdisc(namespace_id, dev_id, qdisc, parent, handle, **kwargs)
-
-    # NOTE: This function doesn't work. Figure out why.
-    # def __del__(self):
-    #     engine.delete_qdisc(self.namespace_id, self.dev_id, self.parent, self.handle)
 
 
 class Class:
+    """Handle classes associated to qdisc"""
 
     def __init__(self, namespace_id, dev_id, qdisc, parent='root', classid='', **kwargs):
         """
         Constructor to create an object that represents a class
 
-        :param namespace_id: The id of the namespace to which the interface belongs to
-        :type namespace_id: String
-        :param dev_id: The id of the interface to which the qdisc is to be added
-        :type dev_id: String
-        :param namespace_id: The id of the namespace that the device belongs to
-        :type namespace_id: String
-        :param qdisc: The qdisc which needs to be added to the interface
-        :type qdisc: string
-        :param parent: id of the parent class in major:minor form(optional)
-        :type parent: string
-        :param classid: id of the class
-        :type classid: string
-        :param **kwargs: class specific paramters 
-        :type **kwargs: dictionary
+        Parameters
+        ----------
+        namespace_id : str
+            The id of the namespace to which the interface belongs to
+        dev_id : str
+            The id of the interface to which the qdisc is to be added
+        namespace_id : str
+            The id of the namespace that the device belongs to
+        qdisc : str
+            The qdisc which needs to be added to the interface
+        parent : str
+            id of the parent class in major:minor form(optional)
+        classid : str
+            id of the class
         """
-
         self.namespace_id = namespace_id
         self.dev_id = dev_id
         self.qdisc = qdisc          # NOTE: should be renamed to knid
         self.parent = parent
         self.classid = classid
 
-        # Verify all the parameters
-
-        error_handling.type_verify('namespace_id', namespace_id, 'string', str)
-        error_handling.type_verify('dev_id', dev_id, 'string', str)
-        error_handling.type_verify('qdisc', qdisc, 'string', str)
-        error_handling.type_verify(
-            'namespace_id', namespace_id, 'Interface class', str)
-        error_handling.type_verify('parent', parent, 'string', str)
-        error_handling.type_verify('classid', classid, 'string', str)
-
         engine.add_class(namespace_id, dev_id, parent,
                          qdisc, classid, **kwargs)
 
 
 class Filter:
+    """Handle filters to assign to class/qdisc"""
 
-    def __init__(self, namespace_id, dev_id, protocol, priority, filtertype, flowid, parent='root', handle='',  **kwargs):
+    def __init__(self, namespace_id, dev_id, protocol, priority, filtertype, flowid,
+                 parent='root', handle='', **kwargs):
         """
-        Constructor to design a Filter to assign to a Class
-        or Qdisc
+        Constructor to design a Filter to assign to a Class or Qdisc
 
-        :param namespace_id: The id of the namespace to which the interface belongs to
-        :type namespace_id: String
-        :param dev_id: The id of the interface to which the qdisc is to be added
-        :type dev_id: String
-        :param protocol: protocol used
-        :type protocol: string
-        :param priority: priority of the filter
-        :type priority: int
-        :param filtertype: one of the available filters
-        :type filtertype: string
-        :param flowid: classid of the class where the traffic is enqueued 
-                       if the traffic passes the filter
-        :type flowid: Class
-        :param parent: id of the parent class in major:minor form(optional)
-        :type parent: string
-        :param handle: id of the filter
-        :type handle: string
-        :param filter: filter parameters
-        :type filter: dictionary
-        :param **kwargs: filter specific paramters 
-        :type **kwargs: dictionary
+        Parameters
+        ----------
+        namespace_id : str
+            The id of the namespace to which the interface belongs to
+        dev_id : str
+            The id of the interface to which the qdisc is to be added
+        protocol : str
+            protocol used
+        priority : int
+            priority of the filter
+        filtertype : str
+            one of the available filters
+        flowid : Class
+            classid of the class where the traffic is enqueued
+            if the traffic passes the filter
+        parent : str
+            id of the parent class in major:minor form(optional)
+        handle : str
+            id of the filter
+        filter : dictionary
+            filter parameters
         """
-
         self.namespace_id = namespace_id
         self.dev_id = dev_id
         self.protocol = protocol
@@ -142,19 +115,6 @@ class Filter:
         self.flowid = flowid
         self.parent = parent
         self.handle = handle
-
-        # Verify all parameters
-
-        error_handling.type_verify('namespace_id', namespace_id, 'string', str)
-        error_handling.type_verify('dev_id', dev_id, 'string', str)
-        error_handling.type_verify(
-            'protocol', protocol, 'string', str, supported_parameters=['protocol'])
-        error_handling.type_verify('priority', priority, 'int', int)
-        error_handling.type_verify(
-            'filtertype', filtertype, 'string', str, supported_parameters=['filtertype'])
-        error_handling.type_verify('flowid', flowid, 'Class', Class)
-        error_handling.type_verify('parent', parent, 'string', str)
-        error_handling.type_verify('handle', handle, 'string', str)
 
         engine.add_filter(namespace_id, dev_id, protocol, priority,
                           filtertype, parent, handle, **kwargs)
