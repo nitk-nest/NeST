@@ -8,11 +8,12 @@ from multiprocessing import Process
 from ..topology_map import TopologyMap
 from .. import engine
 # Import results
-from .results import SsResults, NetperfResults, TcResults
+from .results import SsResults, NetperfResults, TcResults, PingResults
 # Import parsers
 from .parser.ss import SsRunner
 from .parser.netperf import NetperfRunner
 from .parser.tc import TcRunner
+from .parser.ping import PingRunner
 # Import plotters
 from .plotter.ss import plot_ss
 from .plotter.netperf import plot_netperf
@@ -39,9 +40,11 @@ def run_experiment(exp):
     ss_runners = []
     netperf_runners = []
     iperf_runners = []
+    ping_runners = []
     flows = exp.flows
 
     ss_run = {}
+    ping_run = {}
 
     exp_start = float('inf')
     exp_end = float('-inf')
@@ -58,11 +61,18 @@ def run_experiment(exp):
     for flow in flows:
         # Get flow attributes
         [src_ns, dst_ns, dst_addr, start_t, stop_t,
-         n_flows, options] = flow._get_props() #pylint: disable=protected-access
+         n_flows, options] = flow._get_props()  # pylint: disable=protected-access
 
         exp_start = min(exp_start, start_t)
         exp_end = max(exp_end, stop_t)
         src_name = TopologyMap.get_namespace(src_ns)['name']
+
+        if (src_ns, dst_addr) not in ping_run:
+            ping_run[(src_ns, dst_addr)] = (start_t, stop_t)
+        else:
+            (min_start, max_stop) = ping_run[(src_ns, dst_addr)]
+            ping_run[(src_ns, dst_addr)] = (
+                min(min_start, start_t), max(max_stop, stop_t))
 
         if options['protocol'] == 'TCP' and dependencies['netperf']:
             netperf_options = {}
@@ -100,9 +110,9 @@ def run_experiment(exp):
 
     # Setup ss parsing
     if dependencies['ss']:
-        for key, value in ss_run.items():
-            ss_runners.append(SsRunner(key[0], key[1], value[0],
-                                       value[1] - value[0]))
+        for ns_id, timings in ss_run.items():
+            ss_runners.append(SsRunner(ns_id[0], ns_id[1], timings[0],
+                                       timings[1] - timings[0]))
             workers.append(Process(target=ss_runners[-1].run))
 
     # Setup tc parsing
@@ -111,6 +121,13 @@ def run_experiment(exp):
             tc_runners.append(
                 TcRunner(qdisc_stat['ns_id'], qdisc_stat['int_id'], exp_end))
             workers.append(Process(target=tc_runners[-1].run))
+
+    # Setup ping parsing
+    if dependencies['ping']:
+        for ns_id, timings in ping_run.items():
+            ping_runners.append(PingRunner(
+                ns_id[0], ns_id[1], timings[0], timings[1]-timings[0]))
+            workers.append(Process(target=ping_runners[-1].run))
 
     # Start parsing (start all processes)
     for worker in workers:
@@ -133,6 +150,9 @@ def run_experiment(exp):
     for tc_runner in tc_runners:
         runners.append(Process(target=tc_runner.parse))
 
+    for ping_runner in ping_runners:
+        runners.append(Process(target=ping_runner.parse))
+
     # iterate thourough the runners and parse the stored statistics
     for runner in runners:
         runner.start()
@@ -147,6 +167,7 @@ def run_experiment(exp):
     SsResults.output_to_file()
     NetperfResults.output_to_file()
     TcResults.output_to_file()
+    PingResults.output_to_file()
 
     print('Plotting results...')
 
@@ -154,7 +175,8 @@ def run_experiment(exp):
     workers = []
 
     workers.append(Process(target=plot_ss, args=(SsResults.get_results(),)))
-    workers.append(Process(target=plot_netperf, args=(NetperfResults.get_results(),)))
+    workers.append(Process(target=plot_netperf,
+                           args=(NetperfResults.get_results(),)))
     workers.append(Process(target=plot_tc, args=(TcResults.get_results(),)))
 
     # Start plotting
@@ -173,6 +195,7 @@ def run_experiment(exp):
     SsResults.remove_all_results()
     NetperfResults.remove_all_results()
     TcResults.remove_all_results()
+    PingResults.remove_all_results()
 
     # Kill any running processes in namespaces
     for namespace in TopologyMap.get_namespaces():

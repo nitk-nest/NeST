@@ -191,3 +191,39 @@ class TcResults:
     def output_to_file():
         """Outputs the aggregated tc stats to file"""
         Results.output_to_file(tc_results_q, 'tc')
+
+
+ping_results_q = Manager().Queue()
+ping_results_q.put({})
+
+
+class PingResults:
+    """This class aggregates the ping stats from the entire experiment environment"""
+
+    @staticmethod
+    def add_result(ns_id, result):
+        """Adds the ping stats parse from a process to the shared `ping_results`
+
+        Parameters
+        ----------
+        ns_id : string
+            namespace id (internal name)
+        result : dict
+            parsed ping stats
+        """
+        Results.add_result(ping_results_q, ns_id, result)
+
+    @staticmethod
+    def remove_all_results():
+        """Remove all results obtained from the experiment"""
+        Results.remove_all_results(ping_results_q)
+
+    @staticmethod
+    def get_results():
+        """Get results obtained in the experiment so far"""
+        return Results.get_results(ping_results_q)
+
+    @staticmethod
+    def output_to_file():
+        """Outputs the aggregated ping stats to file"""
+        Results.output_to_file(ping_results_q, 'ping')
