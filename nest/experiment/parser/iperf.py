@@ -1,9 +1,11 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
+""" Runs iperf command to setup udp flows """
+
+from time import sleep
 from .runnerbase import Runner
 from ...engine.iperf import run_iperf_server, run_iperf_client
-from time import sleep
 
 
 class IperfRunner(Runner):
@@ -35,6 +37,8 @@ class IperfRunner(Runner):
         """
         run_iperf_server(self.ns_id)
 
+    # pylint: disable=invalid-name
+    # pylint: disable=too-many-arguments
     def run_client(self, destination, start_time, run_time, flows, bw):
         """
         calls engine method to run iperf client

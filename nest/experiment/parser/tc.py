@@ -1,12 +1,15 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
+"""
+Runs tc command and parses qdisc stats
+from it's output
+"""
+
 import re
 import json
 import os
 from time import strptime
-from packaging import version
-from nest import engine
 from .runnerbase import Runner
 from ..results import TcResults
 from ...topology_map import TopologyMap
@@ -136,6 +139,7 @@ class TcRunner(Runner):
 
             s = repr(match.group(1))
             return ':"{}"'.format(s)
+        return ""
 
     def clean_json(self, stats):
         """
@@ -279,11 +283,12 @@ class TcRunner(Runner):
             aggregate_stats = self.new_tc_version_parse_helper(raw_stats)
         elif cur_tc_version >= TcRunner.old_tc_version:
             aggregate_stats = self.old_tc_version_parse_helper(raw_stats,
-                                                                   qdisc_param, qdisc_re)
+                                                               qdisc_param, qdisc_re)
         else:
             # TODO: Not sure if it's the right exception to raise
             raise SystemError(
-                'NeST does not support qdisc parsing for tc version below {}'.format(TcRunner.old_tc_version))
+                f'NeST does not support qdisc parsing for tc version below \
+                    {TcRunner.old_tc_version}')
 
         # Store parsed results
         dev_name = TopologyMap.get_interface(self.ns_id, self.dev)['name']

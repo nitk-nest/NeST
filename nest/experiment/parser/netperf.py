@@ -1,6 +1,11 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
+"""
+Runs netperf commands to setup tcp flow
+and collect throughput data
+"""
+
 import re
 import time
 import copy
@@ -8,6 +13,7 @@ from ..results import NetperfResults
 from ...engine import exec_exp_commands
 from .runnerbase import Runner
 from ...topology_map import TopologyMap
+
 
 class NetperfRunner(Runner):
     """
@@ -126,9 +132,8 @@ class NetperfRunner(Runner):
         test_options_list = list(test_options.values())
         test_options_string = ' '.join(test_options_list)
 
-        command = 'ip netns exec {ns_id} netperf {options} -H {destination} -- {test_options}'.format(
-            ns_id=self.ns_id, options=netperf_options_string, destination=self.destination_ip,
-            test_options=test_options_string)
+        command = f'ip netns exec {self.ns_id} netperf {netperf_options_string} -H \
+            {self.destination_ip} -- {test_options_string}'
 
         if self.start_time != 0:
             time.sleep(self.start_time)
@@ -139,7 +144,7 @@ class NetperfRunner(Runner):
         """
         Method to print error from `self.err`
         """
-        self.err.seek(0)    #rewind to start of file
+        self.err.seek(0)  # rewind to start of file
         error = self.err.read().decode()
         ns_name = TopologyMap.get_namespace(self.ns_id)['name']
         print('Error running netperf at {}. {}'.format(ns_name, error))

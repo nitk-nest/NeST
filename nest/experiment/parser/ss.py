@@ -1,11 +1,15 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
+"""
+Runs ss command and parses socket stats from
+its output
+"""
+
 import os
 import time
 import re
 from ..results import SsResults
-from ...engine import exec_exp_commands
 from .runnerbase import Runner
 from ...topology_map import TopologyMap
 
@@ -77,6 +81,7 @@ class SsRunner(Runner):
         ns_name = TopologyMap.get_namespace(self.ns_id)['name']
         print('Error collecting socket stats at {}. {}'.format(ns_name, error))
 
+    # pylint: disable=too-many-locals
     def parse(self):
         """
         parses the required data from `self.out`
