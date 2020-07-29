@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
+"""Plot ss results"""
+
 import matplotlib.pyplot as plt
 
 from ..pack import Pack
@@ -57,10 +59,10 @@ def _extract_from_ss_flow(flow, node, dest_ip, dest_port):
     return (timestamp, flow_params)
 
 
-def _plot_ss_flow(exp_name, flow, node, dest_ip, dest_port):
+def _plot_ss_flow(flow, node, dest_ip, dest_port):
     """
     Plot ss stats of the flow
-    
+
     :param exp_name: Name of experiment for which results were obtained
     :type exp_name: string
     :param flow: List with timestamps and stats
@@ -81,15 +83,14 @@ def _plot_ss_flow(exp_name, flow, node, dest_ip, dest_port):
             dest_ip=dest_ip, dest_port=dest_port)
         fig = simple_plot(title, timestamp,
                           flow_params[param], 'Time(s)', param)
-        filename = '{node}_{dest_ip}:{dest_port}_{param}.png'.format(node=node,
-                                                                     param=param, dest_ip=dest_ip, dest_port=dest_port)
+        filename = f'{node}_{dest_ip}:{dest_port}_{param}.png'
         Pack.dump_plot('ss', filename, fig)
         plt.close(fig)
 
     return (timestamp, flow_params)
 
 
-def plot_ss(exp_name, parsed_data):
+def plot_ss(parsed_data):
     """
     Plot statistics obtained from ss
 
@@ -109,8 +110,7 @@ def plot_ss(exp_name, parsed_data):
                 flow_data = connection[dest_ip]
                 for dest_port in flow_data:
                     flow = flow_data[dest_port]
-                    values = _plot_ss_flow(
-                        exp_name, flow, node, dest_ip, dest_port)
+                    values = _plot_ss_flow(flow, node, dest_ip, dest_port)
                     all_flow_data.append(
                         {'values': values, 'label': '{}:{}'.format(dest_ip, dest_port)})
 
@@ -135,7 +135,6 @@ def plot_ss(exp_name, parsed_data):
                                 {'values': (x_vals[i], y_vals[i]), 'label': labels[i]})
 
                         fig = mix_plot('ss: ' + param, data, 'Time(s)', param)
-                        filename = 'mix_{node}_{dest_ip}_{param}.png'.format(node=node,
-                                                                             param=param, dest_ip=dest_ip)
+                        filename = f'mix_{node}_{dest_ip}_{param}.png'
                         Pack.dump_plot('ss', filename, fig)
                         plt.close(fig)

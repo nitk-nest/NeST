@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
+"""Plot tc results"""
+
 import matplotlib.pyplot as plt
 
 from .common import simple_plot
@@ -9,9 +11,9 @@ from ..pack import Pack
 
 def _extract_from_tc_stats(stats, node, interface):
     """
-    Extract information from tc stats and convert it to 
+    Extract information from tc stats and convert it to
     conviniently plottable data format
-    
+
     :param stats: List of timestamps and stats
     :type stats: List
     :param node: Node from which tc results were obtained from
@@ -31,7 +33,7 @@ def _extract_from_tc_stats(stats, node, interface):
     stats_params = {}
 
     for param in stats[0]:
-        if param != 'timestamp' and param != 'kind':
+        if param not in ('timestamp', 'kind'):
             stats_params[param] = []
 
     for data in stats:
@@ -43,10 +45,10 @@ def _extract_from_tc_stats(stats, node, interface):
     return (qdisc, timestamp, stats_params)
 
 
-def _plot_tc_stats(exp_name, stats, node, interface):
+def _plot_tc_stats(stats, node, interface):
     """
     Plot tc stats of the flow
-    
+
     :param exp_name: Name of experiment for which results were obtained
     :type exp_name: string
     :param stats: List with timestamps and stats
@@ -62,13 +64,12 @@ def _plot_tc_stats(exp_name, stats, node, interface):
         title = 'tc: {node}:{qdisc}'.format(node=node, qdisc=qdisc)
         fig = simple_plot(title, timestamp,
                           stats_params[param], 'Time(s)', param)
-        filename = '{node}_{interface}_{qdisc}_{param}.png'.format(node=node,
-                                                                   interface=interface, qdisc=qdisc, param=param)
+        filename = f'{node}_{interface}_{qdisc}_{param}.png'
         Pack.dump_plot('tc', filename, fig)
         plt.close(fig)
 
 
-def plot_tc(exp_name, parsed_data):
+def plot_tc(parsed_data):
     """
     Plot statistics obtained from tc
 
@@ -85,4 +86,4 @@ def plot_tc(exp_name, parsed_data):
                 qdisc = interfaces[interface]
                 for handle in qdisc:
                     stats = qdisc[handle]
-                    _plot_tc_stats(exp_name, stats, node, interface)
+                    _plot_tc_stats(stats, node, interface)

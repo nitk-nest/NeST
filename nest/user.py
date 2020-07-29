@@ -3,6 +3,7 @@
 
 """Stores user information"""
 
+#pylint: disable=too-few-public-methods
 class User():
     """
     User info (user id and group id) stored here.

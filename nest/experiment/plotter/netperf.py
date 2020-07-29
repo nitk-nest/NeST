@@ -1,16 +1,18 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
+"""Plot netperf results"""
+
 import matplotlib.pyplot as plt
 
 from ..pack import Pack
 from .common import simple_plot, mix_plot
 
 
-def _plot_netperf_flow(exp_name, flow, node, dest):
+def _plot_netperf_flow(flow, node, dest):
     """
     Plot netperf stats of the flow
-    
+
     :param exp_name: Name of experiment for which results were obtained
     :type exp_name: string
     :param flow: List with timestamps and stats
@@ -46,7 +48,7 @@ def _plot_netperf_flow(exp_name, flow, node, dest):
     return (timestamp, throughput)
 
 
-def plot_netperf(exp_name, parsed_data):
+def plot_netperf(parsed_data):
     """
     Plot statistics obtained from netperf
 
@@ -63,11 +65,11 @@ def plot_netperf(exp_name, parsed_data):
         for connection in node_data:
             for dest in connection:
                 flow = connection[dest]
-                values = _plot_netperf_flow(exp_name, flow, node, dest)
+                values = _plot_netperf_flow(flow, node, dest)
                 all_flow_data.append({'label': dest, 'values': values})
 
         fig = mix_plot('netperf', all_flow_data, 'Time(s)',
                        'throughput', with_sum=True)
-        filename = 'mix_{node}_throughput.png'.format(node=node, dest=dest)
+        filename = f'mix_{node}_throughput.png'
         Pack.dump_plot('netperf', filename, fig)
         plt.close(fig)

@@ -153,12 +153,9 @@ def run_experiment(exp):
     # Plot results and dump them as images
     workers = []
 
-    workers.append(Process(target=plot_ss, args=(
-        exp.name, SsResults.get_results())))
-    workers.append(Process(target=plot_netperf, args=(
-        exp.name, NetperfResults.get_results())))
-    workers.append(Process(target=plot_tc, args=(
-        exp.name, TcResults.get_results())))
+    workers.append(Process(target=plot_ss, args=(SsResults.get_results(),)))
+    workers.append(Process(target=plot_netperf, args=(NetperfResults.get_results(),)))
+    workers.append(Process(target=plot_tc, args=(TcResults.get_results(),)))
 
     # Start plotting
     for worker in workers:

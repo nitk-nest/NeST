@@ -1,9 +1,12 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
+"""Common plotting logic among tools"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 
+#pylint: disable=invalid-name
 
 def simple_plot(title, x_list, y_list, x_label, y_label):
     """
@@ -68,14 +71,14 @@ def mix_plot(title, data, x_label, y_label, with_sum=False):
         # Get sorted list of all x values
         x = np.unique(np.concatenate(x))
 
-        sum = np.array([0.0]*len(x))
+        total = np.array([0.0]*len(x))
         for chunk in data:
             (x_list, y_list) = chunk['values']
             # Interpolate y values on the combined x values
             y = np.interp(x, x_list, y_list, left=0, right=0)
-            sum += y
+            total += y
 
-        ax.plot(x, sum, label='sum')
+        ax.plot(x, total, label='sum')
 
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
