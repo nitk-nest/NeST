@@ -4,6 +4,7 @@
 """Handles addresses of interfaces"""
 
 import ipaddress
+from .. import config
 
 class Address:
     """Validate address.
@@ -36,7 +37,7 @@ class Address:
             ipaddress.ip_address(addr_str)
             self.ip_addr = addr_str+'/32'
 
-    def get_addr(self, with_subnet=True):
+    def get_addr(self, with_subnet=config.TOPOLOGY.get_address_with_subnet()):
         """Getter for ip_addr
 
         Parameters

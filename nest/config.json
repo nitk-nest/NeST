@@ -1,0 +1,6 @@
+{
+    "topology" : {
+        "address_with_subnet": true,
+        "assign_random_names": true
+    }
+}
