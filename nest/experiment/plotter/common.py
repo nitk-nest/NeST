@@ -12,20 +12,24 @@ def simple_plot(title, x_list, y_list, x_label, y_label):
     """
     Plot values
 
-    :param title: Title for the plot
-    :type title: string
-    :param x_list: List of x values
-    :type x_list: List
-    :param y_list: List of y values
-    :type y_list: List
-    :param x_label: Label for x values
-    :type x_label: string
-    :param y_label: Label for y values
-    :type y_label: string
-    :return: fig of plot
-    :r_type: maplotlib.plt.fig
-    """
+    Parameters
+    ----------
+    title : str
+        Title for the plot
+    x_list : List
+        List of x values
+    y_list : List
+        List of y values
+    x_label : str
+        Label for x values
+    y_label : str
+        Label for y values
 
+    Returns
+    -------
+    matplotlib.plt.fig
+        fig of plot
+    """
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
     ax.plot(x_list, y_list)
@@ -37,23 +41,26 @@ def simple_plot(title, x_list, y_list, x_label, y_label):
 
 
 def mix_plot(title, data, x_label, y_label, with_sum=False):
-    """
-    Plot multiple sets of values and their total sum
+    """Plot multiple sets of values and their total sum
 
-    :param title: Title for the plot
-    :type title: string
-    :param data: list of values
-    :type data: List
-    :param x_label: Label for x values
-    :type x_label: string
-    :param y_label: Label for y values
-    :type y_label: string
-    :param with_sum: If should plot the sum of all y values
-    :type with_sum: boolean
-    :return: fig of plot
-    :r_type: maplotlib.plt.fig
-    """
+    Parameters
+    ----------
+    title : str
+        Title for the plot
+    data : List
+        list of values
+    x_label : str
+        Label for x values
+    y_label : str
+        Label for y values
+    with_sum : boolean
+        If should plot the sum of all y values (Default value = False)
 
+    Returns
+    -------
+    maplotlib.plt.fig
+        fig of plot
+    """
     fig, ax = plt.subplots()
     # TODO: I couldn't think of better variable name :(
     for chunk in data:

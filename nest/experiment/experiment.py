@@ -87,8 +87,10 @@ class Experiment():
         """
         Create experiment
 
-        :param name: name of experiment
-        :type name: str
+        Parameters
+        ----------
+        name : str
+            Name of experiment
         """
         self.name = name
         self.flows = []

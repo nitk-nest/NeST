@@ -14,14 +14,15 @@ def _extract_from_tc_stats(stats, node, interface):
     Extract information from tc stats and convert it to
     conviniently plottable data format
 
-    :param stats: List of timestamps and stats
-    :type stats: List
-    :param node: Node from which tc results were obtained from
-    :type node: string
-    :param interface: Interface from which results were obtained from
-    :type interface: string
+    Parameters
+    ----------
+    stats : List
+        List of timestamps and stats
+    node : str
+        Node from which tc results were obtained from
+    interface : str
+        Interface from which results were obtained from
     """
-
     if len(stats) == 0:
         raise ValueError('qdisc at {} of {} doesn\'t have any'
                          'parsed tc result.'.format(interface, node))
@@ -49,16 +50,17 @@ def _plot_tc_stats(stats, node, interface):
     """
     Plot tc stats of the flow
 
-    :param exp_name: Name of experiment for which results were obtained
-    :type exp_name: string
-    :param stats: List with timestamps and stats
-    :type stats: List
-    :param node: Node from which tc results were obtained from
-    :type node: string
-    :param interface: Interface from which results were obtained from
-    :type interface: string
+    Parameters
+    ----------
+    exp_name : str
+        Name of experiment for which results were obtained
+    stats : List
+        List with timestamps and stats
+    node : str
+        Node from which tc results were obtained from
+    interface : str
+        Interface from which results were obtained from
     """
-
     (qdisc, timestamp, stats_params) = _extract_from_tc_stats(stats, node, interface)
     for param in stats_params:
         title = 'tc: {node}:{qdisc}'.format(node=node, qdisc=qdisc)
@@ -73,12 +75,13 @@ def plot_tc(parsed_data):
     """
     Plot statistics obtained from tc
 
-    :param exp_name: Name of experiment for which results were obtained
-    :type exp_name: string
-    :param parsed_data: JSON data parsed from ss
-    :type parsed_data: Dict
+    Parameters
+    ----------
+    exp_name : str
+        Name of experiment for which results were obtained
+    parsed_data : Dict
+        JSON data parsed from ss
     """
-
     for node in parsed_data:
         node_data = parsed_data[node]
         for interfaces in node_data:

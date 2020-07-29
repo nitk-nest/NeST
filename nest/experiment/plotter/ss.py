@@ -13,7 +13,6 @@ def _get_list_of_ss_params():
     """
     Return list of params parsed by ss
     """
-
     return ['cwnd', 'rtt', 'dev_rtt', 'ssthresh', 'rto', 'delivery_rate']
 
 
@@ -22,18 +21,22 @@ def _extract_from_ss_flow(flow, node, dest_ip, dest_port):
     Extract information from flow data and convert it to
     conviniently plottable data format
 
-    :param flow: List with timestamps and stats
-    :type flow: List
-    :param node: Node from which ss results were obtained from
-    :type node: string
-    :param dest_ip: Destination ip address of the flow
-    :type dest_ip: string
-    :param dest_port: Destination port of the flow
-    :type dest_port: string
-    :return: Return timestamp and flow parameters
-    :r_type: (timestamp, flow_params)
-    """
+    Parameters
+    ----------
+    flow : List
+        List with timestamps and stats
+    node : string
+        Node from which ss results were obtained from
+    dest_ip : string
+        Destination ip address of the flow
+    dest_port : string
+        Destination port of the flow
 
+    Returns
+    -------
+    (timestamp, flow_params)
+        Return timestamp and flow parameters
+    """
     if len(flow) == 0:
         raise ValueError('Flow from {} to destination {}:{}'
                          'doesn\'t have any parsed ss result.'.format(node,
@@ -63,18 +66,19 @@ def _plot_ss_flow(flow, node, dest_ip, dest_port):
     """
     Plot ss stats of the flow
 
-    :param exp_name: Name of experiment for which results were obtained
-    :type exp_name: string
-    :param flow: List with timestamps and stats
-    :type flow: List
-    :param node: Node from which ss results were obtained from
-    :type node: string
-    :param dest_ip: Destination ip address of the flow
-    :type dest_ip: string
-    :param dest_port: Destination port of the flow
-    :type dest_port: string
+    Parameters
+    ----------
+    exp_name : string
+        Name of experiment for which results were obtained
+    flow : List
+        List with timestamps and stats
+    node : string
+        Node from which ss results were obtained from
+    dest_ip : string
+        Destination ip address of the flow
+    dest_port : string
+        Destination port of the flow
     """
-
     (timestamp, flow_params) = _extract_from_ss_flow(
         flow, node, dest_ip, dest_port)
     for param in flow_params:
@@ -94,12 +98,13 @@ def plot_ss(parsed_data):
     """
     Plot statistics obtained from ss
 
-    :param exp_name: Name of experiment for which results were obtained
-    :type exp_name: string
-    :param parsed_data: JSON data parsed from ss
-    :type parsed_data: Dict
+    Parameters
+    ----------
+    exp_name : string
+        Name of experiment for which results were obtained
+    parsed_data : Dict
+        JSON data parsed from ss
     """
-
     for node in parsed_data:
         node_data = parsed_data[node]
         for connection in node_data:
