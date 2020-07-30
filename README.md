@@ -6,11 +6,11 @@ common issues involved in conducting networking experiments.
 
 ## Installation
 Instructions to install `NeST` from source can be found in
-[INSTALL.md](INSTALL.md).
+[INSTALL.md](https://gitlab.com/nitk-nest/nest/-/blob/master/INSTALL.md).
 
 ## Documentation
 Instrcutions for generating/building the API documentation can be found in
-[docs/README.md](docs/README.md) folder.
+[docs/README.md](https://gitlab.com/nitk-nest/nest/-/blob/master/docs/README.md) folder.
 
 ## Unit tests
 Tests can be found in `nest/tests` folder.\

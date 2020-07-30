@@ -51,9 +51,6 @@ setup(
         'packaging'
     ],
     project_urls={
-        # 'Bug Reports': 'https://github.com/pypa/sampleproject/issues',
-        # 'Funding': 'https://donate.pypi.org',
-        # 'Say Thanks!': 'http://saythanks.io/to/example',
-        'Source': 'https://github.com/pypa/sampleproject/',
+        'Source': 'https://gitlab.com/nitk-nest/nest',
     },
 )
