@@ -52,11 +52,7 @@ def run_experiment(exp):
 
     dependencies = {}
     for dependency in ['netperf', 'ss', 'tc', 'iperf3', 'ping']:
-        dependencies[dependency] = is_dependency_installed(dependency)
-
-    for (tool, is_installed) in dependencies.items():
-        if not is_installed:
-            print(f'{tool} not found')
+        dependencies[dependency] = int(is_dependency_installed(dependency))
 
     # Setup netperf flows and parsing
     for flow in flows:
@@ -75,60 +71,78 @@ def run_experiment(exp):
             ping_run[(src_ns, dst_addr)] = (
                 min(min_start, start_t), max(max_stop, stop_t))
 
-        if options['protocol'] == 'TCP' and dependencies['netperf']:
-            netperf_options = {}
-            NetperfRunner.run_netserver(dst_ns)
-            netperf_options['testname'] = 'TCP_STREAM'
-            netperf_options['cong_algo'] = options['cong_algo']
-            print('Running {} netperf flows from {} to {}...'.format(
-                n_flows, src_name, dst_addr))
+        if options['protocol'] == 'TCP':
+            if dependencies['netperf'] == 0:
+                print('Warning: Netperf not found. Tcp flows cannot be generated')
+                # To avoid duplicate warning messages
+                dependencies['netperf'] = 2
+            elif dependencies['netperf'] == 1:
+                netperf_options = {}
+                NetperfRunner.run_netserver(dst_ns)
+                netperf_options['testname'] = 'TCP_STREAM'
+                netperf_options['cong_algo'] = options['cong_algo']
+                print('Running {} netperf flows from {} to {}...'.format(
+                    n_flows, src_name, dst_addr))
 
-            # Create new processes to be run simultaneously
-            for _ in range(n_flows):
-                netperf_runners.append(NetperfRunner(
-                    src_ns, dst_addr, start_t, stop_t-start_t, **netperf_options))
-                workers.append(Process(target=netperf_runners[-1].run))
+                # Create new processes to be run simultaneously
+                for _ in range(n_flows):
+                    netperf_runners.append(NetperfRunner(
+                        src_ns, dst_addr, start_t, stop_t-start_t, **netperf_options))
+                    workers.append(Process(target=netperf_runners[-1].run))
 
-            # Find the start time and stop time to run ss command in `src_ns` to a `dst_addr`
-            if (src_ns, dst_addr) not in ss_run:
-                ss_run[(src_ns, dst_addr)] = (start_t, stop_t)
-            else:
-                (min_start, max_stop) = ss_run[(src_ns, dst_addr)]
-                ss_run[(src_ns, dst_addr)] = (
-                    min(min_start, start_t), max(max_stop, stop_t))
-        elif options['protocol'] == 'UDP' and dependencies['iperf3']:
-            IperfRunner(dst_ns).run_server()
-            print('Running {} udp flows from {} to {}...'.format(
-                n_flows, src_name, dst_addr))
-            iperf_runners.append(IperfRunner(src_ns))
-            workers.append(
-                Process(target=iperf_runners[-1].run_client,
-                        args=[dst_addr, start_t, stop_t-start_t, n_flows, options['target_bw']])
-            )
-
-    print('Running ss and tc on requested nodes and interfaces...')
-    print()
+                # Find the start time and stop time to run ss command in `src_ns` to a `dst_addr`
+                if (src_ns, dst_addr) not in ss_run:
+                    ss_run[(src_ns, dst_addr)] = (start_t, stop_t)
+                else:
+                    (min_start, max_stop) = ss_run[(src_ns, dst_addr)]
+                    ss_run[(src_ns, dst_addr)] = (
+                        min(min_start, start_t), max(max_stop, stop_t))
+        elif options['protocol'] == 'UDP':
+            if dependencies['iperf3'] == 0:
+                print('Warning: Iperf3 not found. Udp flows cannot be generated')
+                dependencies['iperf3'] = 2      # To avoid duplicate warning messages
+            elif dependencies['iperf3'] == 1:
+                IperfRunner(dst_ns).run_server()
+                print('Running {} udp flows from {} to {}...'.format(
+                    n_flows, src_name, dst_addr))
+                iperf_runners.append(IperfRunner(src_ns))
+                workers.append(
+                    Process(target=iperf_runners[-1].run_client,
+                            args=[dst_addr, start_t, stop_t-start_t, n_flows, options['target_bw']])
+                )
 
     # Setup ss parsing
-    if dependencies['ss']:
-        for ns_id, timings in ss_run.items():
-            ss_runners.append(SsRunner(ns_id[0], ns_id[1], timings[0],
-                                       timings[1] - timings[0]))
-            workers.append(Process(target=ss_runners[-1].run))
+    if dependencies['netperf'] == 1:
+        if dependencies['ss'] == 1:
+            print('Running ss on nodes...')
+            print()
+            for ns_id, timings in ss_run.items():
+                ss_runners.append(SsRunner(ns_id[0], ns_id[1], timings[0],
+                                           timings[1] - timings[0]))
+                workers.append(Process(target=ss_runners[-1].run))
+        else:
+            print('Warning: ss not found. Sockets stats will not be collected')
 
     # Setup tc parsing
-    if dependencies['tc']:
-        for qdisc_stat in exp.qdisc_stats:
-            tc_runners.append(
-                TcRunner(qdisc_stat['ns_id'], qdisc_stat['int_id'], exp_end))
-            workers.append(Process(target=tc_runners[-1].run))
+    if dependencies['netperf'] == 1:
+        if dependencies['tc'] == 1 and len(exp.qdisc_stats) > 0:
+            print('Running tc on requested interfaces...')
+            print()
+            for qdisc_stat in exp.qdisc_stats:
+                tc_runners.append(
+                    TcRunner(qdisc_stat['ns_id'], qdisc_stat['int_id'], exp_end))
+                workers.append(Process(target=tc_runners[-1].run))
+        elif dependencies['tc'] != 1:
+            print('Warning: tc not found. Qdisc stats will not be collected')
 
     # Setup ping parsing
-    if dependencies['ping']:
+    if dependencies['ping'] == 1:
         for ns_id, timings in ping_run.items():
             ping_runners.append(PingRunner(
                 ns_id[0], ns_id[1], timings[0], timings[1]-timings[0]))
             workers.append(Process(target=ping_runners[-1].run))
+    else:
+        print('Warning: ping not found')
 
     # Start parsing (start all processes)
     for worker in workers:
@@ -179,7 +193,8 @@ def run_experiment(exp):
     workers.append(Process(target=plot_netperf,
                            args=(NetperfResults.get_results(),)))
     workers.append(Process(target=plot_tc, args=(TcResults.get_results(),)))
-    workers.append(Process(target=plot_ping, args=(PingResults.get_results(),)))
+    workers.append(
+        Process(target=plot_ping, args=(PingResults.get_results(),)))
 
     # Start plotting
     for worker in workers:
