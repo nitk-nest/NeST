@@ -6,12 +6,17 @@ import pathlib
 
 here = pathlib.Path(__file__).parent.resolve()
 
+# Get version
+version = {}
+with open("nest/version.py") as fp:
+    exec(fp.read(), version)
+
 # Get the long description from the README file
 long_description = (here / 'README.md').read_text(encoding='utf-8')
 
 setup(
     name='nest',
-    version='0.0.1',
+    version=version['__version__'],
     description='NeST: Network Stack Tester',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -37,6 +42,7 @@ setup(
     packages=find_packages(),
     package_data={
         "nest.experiment.parser": ["iterators/*.sh"],
+        "nest": ["config.json"]
     },
     python_requires='>=3.6, <4',
     install_requires=[

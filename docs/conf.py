@@ -8,12 +8,17 @@ import sys
 sys.path.insert(0, os.path.abspath('.'))
 import sphinx_rtd_theme
 
+# Get version
+ver = {}
+with open("../nest/version.py") as fp:
+    exec(fp.read(), ver)
+
 # Project information
 
 project = 'NeST'
 copyright = '2020, NITK'
 author = 'Shanthanu S Rai, Narayan G, Dhanasekhar M, Leslie Monis, Mohit P. Tahiliani'
-release = '0.0.1'
+release = ver['__version__']
 
 # General configuration
 
