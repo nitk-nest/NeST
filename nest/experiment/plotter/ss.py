@@ -93,7 +93,7 @@ def _plot_ss_flow(flow, node, dest_ip, dest_port):
 
     return (timestamp, flow_params)
 
-
+# pylint: disable=too-many-locals
 def plot_ss(parsed_data):
     """
     Plot statistics obtained from ss
@@ -105,6 +105,8 @@ def plot_ss(parsed_data):
     parsed_data : Dict
         JSON data parsed from ss
     """
+
+    # pylint: disable=too-many-nested-blocks
     for node in parsed_data:
         node_data = parsed_data[node]
         for connection in node_data:

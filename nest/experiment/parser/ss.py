@@ -66,9 +66,10 @@ class SsRunner(Runner):
         if self.start_time != 0:
             time.sleep(self.start_time)
 
-        command = "ip netns exec {ns_id} /bin/bash {iterator} {destination} {duration} {filter}".format(
-            ns_id=self.ns_id, iterator=SsRunner.iterator, destination=self.destination_ip,
-            duration=self.run_time, filter="\"dport != 12865 and sport != 12865\"")
+        command = 'ip netns exec {ns_id} /bin/bash {iterator} {destination} {duration} \
+            {filter}'.format(
+                ns_id=self.ns_id, iterator=SsRunner.iterator, destination=self.destination_ip,
+                duration=self.run_time, filter="\"dport != 12865 and sport != 12865\"")
 
         super().run(command)
 
@@ -76,7 +77,7 @@ class SsRunner(Runner):
         """
         Method to print error from `self.err`
         """
-        self.err.seek(0)    #rewind to start of file
+        self.err.seek(0)  # rewind to start of file
         error = self.err.read().decode()
         ns_name = TopologyMap.get_namespace(self.ns_id)['name']
         print('Error collecting socket stats at {}. {}'.format(ns_name, error))
@@ -131,7 +132,7 @@ class SsRunner(Runner):
                         else:
                             stats_dict_list[port_list[i]
                                             ][-1][param] = param_value
-                    except:
+                    except TypeError:
                         pass
 
         SsResults.add_result(

@@ -203,6 +203,7 @@ def change_class(ns_name, dev_name, parent, qdisc, classid='', **kwargs):
                     f' {classid} {qdisc} {qdisc_params}')
 
 
+# pylint: disable=too-many-arguments
 def add_filter(ns_name, dev_name, protocol, priority, filtertype, parent='', handle='', **kwargs):
     """
     Add a filter to a class

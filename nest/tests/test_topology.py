@@ -26,6 +26,7 @@ class TestTopology(unittest.TestCase):
         self.assertTrue(status)
 
     def test_prp(self):
+        # pylint: disable=invalid-name
         r = Node('r')
         r.enable_ip_forwarding()
 

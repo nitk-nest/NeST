@@ -134,11 +134,11 @@ class TcRunner(Runner):
         """
         if match.group(1):
             if match.group(1).endswith(','):
-                s = repr(match.group(1))
-                return ':"{}",'.format(s)
+                value = repr(match.group(1))
+                return ':"{}",'.format(value)
 
-            s = repr(match.group(1))
-            return ':"{}"'.format(s)
+            value = repr(match.group(1))
+            return ':"{}"'.format(value)
         return ""
 
     def clean_json(self, stats):
