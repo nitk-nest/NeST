@@ -5,6 +5,10 @@ collecting and visualizing data by providing a user friendly API, addressing
 common issues involved in conducting networking experiments.
 
 ## Installation
+To install NeST from the [Python Package Index](https://pypi.org/project/nitk-nest/0.1/) run
+```
+pip install nitk-nest
+```
 Instructions to install `NeST` from source can be found in
 [INSTALL.md](https://gitlab.com/nitk-nest/nest/-/blob/master/INSTALL.md).
 
