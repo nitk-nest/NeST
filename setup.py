@@ -15,7 +15,7 @@ with open("nest/version.py") as fp:
 long_description = (here / 'README.md').read_text(encoding='utf-8')
 
 setup(
-    name='nest',
+    name='nitk-nest',
     version=version['__version__'],
     description='NeST: Network Stack Tester',
     long_description=long_description,
