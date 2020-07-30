@@ -1,5 +1,9 @@
 image: python:latest
 
+stages:
+  - build
+  - test
+
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
@@ -9,26 +13,32 @@ cache:
     - venv/
 
 before_script:
-  - python -V  # Print out python version for debugging
-  - pip install virtualenv
-  - virtualenv venv
+  - python -V
+  - python -m venv venv
   - source venv/bin/activate
 
-test:
+build nest:
+  stage: build
   script:
-    # - python setup.py test
-    - pip install tox pylint  # you can also use tox
-    - pylint --version
-    - set +e
-    - pylint *
-    - set -e
+    - pip install .
 
-# run:
-#   script:
-    # - python setup.py bdist_wheel
-    # an alternative approach is to install and run:
-    # - pip install dist/*
-    # run the command here
-#   artifacts:
-    # paths:
-    #   - dist/*.whl
+run pylint:
+  stage: test
+  script:
+    - pip install pylint
+    - pylint --version
+    - pylint nest
+
+run unit tests:
+  stage: test
+  script:
+    - python -m unittest
+
+test docs:
+  stage: test
+  script:
+    - pip install -r docs/doc_requirements.txt
+    - make -C docs html
+  rules:
+    - changes:
+        - docs/*
