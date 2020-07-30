@@ -53,7 +53,8 @@ class PingRunner(Runner):
         """
         if self.start_time > 0:
             sleep(self.start_time)
-        command = f'ip netns exec {self.ns_id} ping {self.destination_ip} -w {self.run_time} -D -A'
+        command = f'ip netns exec {self.ns_id} ping {self.destination_ip} -w {self.run_time} -D \
+            -i 0.2'
         super().run(command)
 
     def print_error(self):
@@ -72,7 +73,7 @@ class PingRunner(Runner):
         self.out.seek(0)    # rewind to start of the temp file
         raw_stats = self.out.read().decode()
 
-        pattern = r'\[(?P<timestamp>\d+\.\d+)\].*time=(?P<rtt>\d+.*)'
+        pattern = r'\[(?P<timestamp>\d+\.\d+)\].*time=(?P<rtt>\d+(\.\d+)?)'
         timestamps_and_rtts = [(match.group('timestamp'), match.group(
             'rtt')) for match in re.finditer(pattern, raw_stats)]
 
