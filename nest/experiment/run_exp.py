@@ -18,6 +18,7 @@ from .parser.ping import PingRunner
 from .plotter.ss import plot_ss
 from .plotter.netperf import plot_netperf
 from .plotter.tc import plot_tc
+from .plotter.ping import plot_ping
 from ..experiment.parser.iperf import IperfRunner
 from ..engine.util import is_dependency_installed
 
@@ -178,6 +179,7 @@ def run_experiment(exp):
     workers.append(Process(target=plot_netperf,
                            args=(NetperfResults.get_results(),)))
     workers.append(Process(target=plot_tc, args=(TcResults.get_results(),)))
+    workers.append(Process(target=plot_ping, args=(PingResults.get_results(),)))
 
     # Start plotting
     for worker in workers:
