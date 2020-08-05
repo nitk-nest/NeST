@@ -5,44 +5,67 @@
 
 import os
 import json
+import logging
 
-# Importing data from the config files
-with open(os.path.realpath(os.path.dirname(__file__)) + '/config.json', 'r') as openfile:
-    CONFIG = json.load(openfile)
+default_value = {'topology': {}, 'experiment': {}, 'engine': {}}
 
-class Topology():
+def import_default_config():
     """
-    Storing data related to Topology module
+    Reads `config.json` file from necessary specified file locations and converts it into a string
+
+    Returns
+    -------
+    dict
+        The information in the default config file as a python dictionary
     """
+    with open(os.path.realpath(os.path.dirname(__file__)) + '/config.json', 'r') as json_file:
+        data = json.load(json_file)
+        # print(data)
+        return data
 
-    def __init__(self):
-        self.address_with_subnet = CONFIG['topology']['address_with_subnet']
-        self.assign_random_names = CONFIG['topology']['assign_random_names']
+def set_value(parameter, value):
+    """
+    Changes the default values only for that program
 
-    def get_address_with_subnet(self):
-        """
-        Whether the given addresses have to include subnets or not
-        according to config
+    Attributes
+    ----------
+    parameter: str
+        The parameter's value which has to be changed
+    value: str
+        The value to which the parameter has to be changed to
+    """
+    if parameter in default_value:
+        default_value[parameter] = value
+    elif parameter in default_value['topology']:
+        default_value['topology'][parameter] = value
+    elif parameter in default_value['experiment']:
+        default_value['experiment'][parameter] = value
+    elif parameter in default_value['engine']:
+        default_value['engine'][parameter] = value
+    else:
+        logging.error('The given parameter %s does not exist', parameter)
 
-        Returns
-        -------
-        bool
-            True if subnets are to be given
-            else False
-        """
-        return self.address_with_subnet
+def get_value(parameter):
+    """
+    Returns the default value of the parameter
 
-    def get_assign_random_names(self):
-        """
-        Whether program internally assigns randomly generated names to
-        the namespaces or uses the user given names
+    Attributes
+    ----------
+    parameter: str
+        The parameter whose value is to be returned
 
-        Returns
-        -------
-        bool
-            True if subnets are to be given
-            else False
-        """
-        return self.assign_random_names
-
-TOPOLOGY = Topology()
+    Returns
+    -------
+    str
+        The value of the parameter
+    """
+    if parameter in default_value:
+        return default_value[parameter]
+    elif parameter in default_value['topology']:
+        return default_value['topology'][parameter]
+    elif parameter in default_value['experiment']:
+        return default_value['experiment'][parameter]
+    elif parameter in default_value['engine']:
+        return default_value['engine'][parameter]
+    else:
+        logging.error('The given parameter %s does not exist', parameter)

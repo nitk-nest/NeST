@@ -8,6 +8,7 @@ and delete all namespaces after the experiment is complete.
 
 import atexit
 import logging
+from . import config
 
 from . import engine
 from .topology_map import TopologyMap
@@ -31,7 +32,8 @@ def delete_namespaces():
     """
     namespaces = TopologyMap.get_namespaces()
 
-    for namepspace in namespaces:
-        engine.delete_ns(namepspace['id'])
+    if config.get_value('delete_namespaces_on_termination'):
+        for namepspace in namespaces:
+            engine.delete_ns(namepspace['id'])
 
-    logger.info('Cleaned up environment!')
+        logger.info('Cleaned up environment!')

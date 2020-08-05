@@ -1,6 +1,6 @@
 {
     "topology" : {
-        "address_with_subnet": true,
-        "assign_random_names": true
+        "assign_random_names": true,
+        "delete_namespaces_on_termination": true
     }
 }

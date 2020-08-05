@@ -4,6 +4,7 @@
 """Generate unique id for topology entity"""
 
 from .. import config
+
 class IdGen:
     """Generate unique id for Topology entites
 
@@ -20,7 +21,7 @@ class IdGen:
     """
     topology_id = ""
     counter = 0
-    is_unique_id = config.TOPOLOGY.get_assign_random_names()
+    is_unique_id = config.get_value('assign_random_names')
 
     def __init__(self, topology_id):
         """Initialize `topology_id`
