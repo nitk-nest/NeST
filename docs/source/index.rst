@@ -15,5 +15,5 @@ common issues involved in conducting networking experiments.
    :caption: Contents
    :maxdepth: 2
 
-   tutorial
+   tutorial/tutorial
    api/api

@@ -9,5 +9,5 @@ Below is a quick tutorial for using NeST.
 Peer to peer topology
 ---------------------
 
-.. literalinclude:: ../examples/p2p.py
+.. literalinclude:: ../../../examples/p2p.py
    :language: python

@@ -5,12 +5,12 @@
 
 import os
 import sys
-sys.path.insert(0, os.path.abspath('.'))
 import sphinx_rtd_theme
+sys.path.insert(0, os.path.abspath('../'))
 
 # Get version
 ver = {}
-with open("../nest/version.py") as fp:
+with open("../../nest/version.py") as fp:
     exec(fp.read(), ver)
 
 # Project information
