@@ -8,8 +8,11 @@ INTERVAL=0.2
 destination_ip="$1"
 duration="$2"
 filter="$3"
+start_time="$4"
 
 command="ss -i -t "$filter" -n dst $destination_ip"
+
+sleep $start_time
 
 # Runs the ss command for `duration`s every `INTERVAL`s
 # Output of each ss iteration is separated by `---`

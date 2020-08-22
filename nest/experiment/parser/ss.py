@@ -63,13 +63,12 @@ class SsRunner(Runner):
         """
         Runs the ss iterator
         """
-        if self.start_time != 0:
-            time.sleep(self.start_time)
 
-        command = 'ip netns exec {ns_id} /bin/bash {iterator} {destination} {duration} \
-            {filter}'.format(
+        command = 'ip netns exec {ns_id} /bin/bash {iterator} {destination} {duration}\
+            {filter}  {start_time}'.format(
                 ns_id=self.ns_id, iterator=SsRunner.iterator, destination=self.destination_ip,
-                duration=self.run_time, filter="\"dport != 12865 and sport != 12865\"")
+                duration=self.run_time, filter="\"dport != 12865 and sport != 12865\"",
+                start_time=self.start_time)
 
         super().run(command)
 

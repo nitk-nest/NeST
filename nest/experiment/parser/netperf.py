@@ -133,10 +133,7 @@ class NetperfRunner(Runner):
         test_options_string = ' '.join(test_options_list)
 
         command = f'ip netns exec {self.ns_id} netperf {netperf_options_string} -H \
-            {self.destination_ip} -- {test_options_string}'
-
-        if self.start_time != 0:
-            time.sleep(self.start_time)
+            {self.destination_ip} -s {self.start_time} -- {test_options_string}'
 
         super().run(command)
 
