@@ -7,7 +7,6 @@ its output
 """
 
 import os
-import time
 import re
 from ..results import SsResults
 from .runnerbase import Runner

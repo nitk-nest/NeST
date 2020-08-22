@@ -7,7 +7,6 @@ and collect throughput data
 """
 
 import re
-import time
 import copy
 from ..results import NetperfResults
 from ...engine import exec_exp_commands
