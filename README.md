@@ -13,8 +13,11 @@ Instructions to install `NeST` from source can be found in
 [INSTALL.md](https://gitlab.com/nitk-nest/nest/-/blob/master/INSTALL.md).
 
 ## Documentation
-Instrcutions for generating/building the API documentation can be found in
+Instructions for generating/building the API documentation can be found in
 [docs/README.md](https://gitlab.com/nitk-nest/nest/-/blob/master/docs/README.md) folder.
+
+The formatted documentation can also be read at:
+[https://nitk-nest.github.io/docs/](https://nitk-nest.github.io/docs/)
 
 ## Unit tests
 Tests can be found in `nest/tests` folder.\
@@ -30,6 +33,10 @@ sudo -E python -m unittest
 ```
 
 ## Contributing
+
+The repository is hosted on GitLab:
+[https://gitlab.com/nitk-nest/nest](https://gitlab.com/nitk-nest/nest).
+
 - Create an issue if required.
 - Create a merge request containing the necessary changes.
 - Make sure the code adheres to
