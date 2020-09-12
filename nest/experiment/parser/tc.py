@@ -248,6 +248,29 @@ class TcRunner(Runner):
                     aggregate_stats[handle].append(stats_dict)
         return aggregate_stats
 
+    def check_tc_version_format(self):
+        """
+        iproute2 changed it's versioning format after v5.8.0
+
+        For example, below are the output of `tc -V` for versions near
+        v5.8.0 (this list was compiled by checking the iproute2 git repo):
+
+        main   - tc utility, iproute2-5.8.0
+        v5.8.0 - tc utility, iproute2-v5.7.0-77-gb687d1067169
+        v5.7.0 - tc utility, iproute2-ss200602
+        v5.6.0 - tc utility, iproute2-ss200330
+
+        So the function will return 'new_version_format' for versions
+        after v5.8.0, else the function will return 'old_version_format'
+        """
+        old_version_format = "tc utility, iproute2-ss[0-9]{6}\n"
+        tc_version = get_tc_version()
+
+        if re.search(old_version_format, tc_version):
+            return 'old_version_format'
+
+        return 'new_version_format'
+
     def parsed_tc_version(self):
         """
         parses the current tc version
@@ -275,20 +298,26 @@ class TcRunner(Runner):
         qdisc_re = self.get_qdisc_re()
         aggregate_stats = {}
 
-        cur_tc_version = self.parsed_tc_version()
+        tc_version_format = self.check_tc_version_format()
 
-        # tc produces different JSON ouput format
-        # based on the version
-        if cur_tc_version >= TcRunner.new_tc_version:
+        if tc_version_format == 'new_version_format':
             aggregate_stats = self.new_tc_version_parse_helper(raw_stats)
-        elif cur_tc_version >= TcRunner.old_tc_version:
-            aggregate_stats = self.old_tc_version_parse_helper(raw_stats,
-                                                               qdisc_param, qdisc_re)
-        else:
-            # TODO: Not sure if it's the right exception to raise
-            raise SystemError(
-                f'NeST does not support qdisc parsing for tc version below \
-                    {TcRunner.old_tc_version}')
+
+        elif tc_version_format == 'old_version_format':
+            cur_tc_version = self.parsed_tc_version()
+
+            # tc produces different JSON ouput format
+            # based on the version
+            if cur_tc_version >= TcRunner.new_tc_version:
+                aggregate_stats = self.new_tc_version_parse_helper(raw_stats)
+            elif cur_tc_version >= TcRunner.old_tc_version:
+                aggregate_stats = self.old_tc_version_parse_helper(raw_stats,
+                                                                   qdisc_param, qdisc_re)
+            else:
+                # TODO: Not sure if it's the right exception to raise
+                raise SystemError(
+                    f'NeST does not support qdisc parsing for tc version below \
+                        {TcRunner.old_tc_version}')
 
         # Store parsed results
         dev_name = TopologyMap.get_interface(self.ns_id, self.dev)['name']
