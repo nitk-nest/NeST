@@ -4,9 +4,13 @@
 """User API to setup and run experiments on a given topology"""
 
 import copy
+import logging
 from ..topology import Address
 from .run_exp import run_experiment
 from .pack import Pack
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 #pylint: disable=too-many-instance-attributes
 #pylint: disable=too-few-public-methods
@@ -210,8 +214,7 @@ class Experiment():
 
     def run(self):
         """Run the experiment"""
-        print('Running experiment ' + self.name)
-        print()
+        logger.info('Running experiment %s \n', self.name)
         Pack.init(self.name)
         run_experiment(self)
 

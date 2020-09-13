@@ -6,6 +6,7 @@ Base class for other runners
 """
 
 import tempfile
+import logging
 from ...engine import exec_exp_commands
 
 
@@ -24,6 +25,8 @@ class Runner:
     def __init__(self):
         self.out = tempfile.TemporaryFile()
         self.err = tempfile.TemporaryFile()
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.INFO)
 
     def run(self, command):
         """
@@ -39,7 +42,7 @@ class Runner:
         Method to print error from `self.err`.
         Should be overriden by base class
         """
-        print('Unknown error occured')
+        self.logger.error('Unknown error occured')
 
     def clean_up(self):
         """

@@ -3,10 +3,14 @@
 
 """API related to node creation in topology"""
 
+import logging
+
 from .address import Address
 from .. import engine
 from .id_generator import IdGen
 from ..topology_map import TopologyMap
+
+logger = logging.getLogger(__name__)
 
 
 class Node:
@@ -204,12 +208,11 @@ class Node:
             self.id, destination_address.get_addr(with_subnet=False))
         if verbose:
             if status:
-                print('SUCCESS: ', end='')
+                logger.debug('SUCCESS: ping from %s to %s', self.name,
+                             destination_address.get_addr(with_subnet=False))
             else:
-                print('FAILURE: ', end='')
-            print(f'ping from {self.name} to'
-                  f' {destination_address.get_addr(with_subnet=False)}')
-
+                logger.debug('FAILURE: ping from %s to %s', self.name,
+                             destination_address.get_addr(with_subnet=False))
         return status
 
     def enable_ip_forwarding(self):

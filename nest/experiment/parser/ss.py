@@ -78,7 +78,7 @@ class SsRunner(Runner):
         self.err.seek(0)  # rewind to start of file
         error = self.err.read().decode()
         ns_name = TopologyMap.get_namespace(self.ns_id)['name']
-        print('Error collecting socket stats at {}. {}'.format(ns_name, error))
+        self.logger.error('Collecting socket stats at %s. %s', ns_name, error)
 
     # pylint: disable=too-many-locals
     def parse(self):

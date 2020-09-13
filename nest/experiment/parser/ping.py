@@ -7,6 +7,7 @@ import re
 from time import sleep
 from .runnerbase import Runner
 from ..results import PingResults
+from ...topology_map import TopologyMap
 
 
 class PingRunner(Runner):
@@ -63,8 +64,8 @@ class PingRunner(Runner):
         """
         self.err.seek(0)  # rewind to start of file
         error = self.err.read().decode()
-        # ns_name = TopologyMap.get_namespace(self.ns_id)['name']
-        print('Error collecting latency at {}. {}'.format(self.ns_id, error))
+        ns_name = TopologyMap.get_namespace(self.ns_id)['name']
+        self.logger.error('Collecting latency at %s. %s', ns_name, error)
 
     def parse(self):
         """

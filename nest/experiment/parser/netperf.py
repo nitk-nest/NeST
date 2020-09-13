@@ -143,7 +143,7 @@ class NetperfRunner(Runner):
         self.err.seek(0)  # rewind to start of file
         error = self.err.read().decode()
         ns_name = TopologyMap.get_namespace(self.ns_id)['name']
-        print('Error running netperf at {}. {}'.format(ns_name, error))
+        self.logger.error('Running netperf at %s. %s', ns_name, error)
 
     def parse(self):
         """

@@ -76,7 +76,8 @@ class TcRunner(Runner):
         self.err.seek(0)  # rewind to start of file
         error = self.err.read().decode()
         ns_name = TopologyMap.get_namespace(self.ns_id)['name']
-        print('Error collecting qdisc stats at {}. {}'.format(ns_name, error))
+        self.logger.error(
+            'Collecting qdisc stats at %s. %s', ns_name, error)
 
     def get_qdisc_specific_params(self):
         """

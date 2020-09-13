@@ -8,6 +8,10 @@ nest's names.
 """
 
 import json
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 class TopologyMap():
     """
@@ -267,12 +271,11 @@ class TopologyMap():
         """
         Dump generated topology_map. (for debugging purposes)
         """
-        print('Config')
-        print('------')
-        print(json.dumps(TopologyMap.topology_map, indent=4))
+        logger.debug('Config')
+        logger.debug('------')
+        logger.debug(json.dumps(TopologyMap.topology_map, indent=4))
 
         # print()
         # print('Pointers')
         # print('--------')
         # print(json.dumps(TopologyMap.namespaces_pointer, indent = 4))
-        

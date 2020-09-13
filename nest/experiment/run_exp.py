@@ -5,6 +5,7 @@
 
 from multiprocessing import Process
 from collections import namedtuple, defaultdict
+import logging
 
 from ..topology_map import TopologyMap
 from ..clean_up import kill_processes
@@ -23,8 +24,12 @@ from .plotter.ping import plot_ping
 from ..experiment.parser.iperf import IperfRunner
 from ..engine.util import is_dependency_installed
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 #pylint: disable=too-many-locals
+
+
 def run_experiment(exp):
     """
     Run experiment
@@ -95,23 +100,23 @@ def run_experiment(exp):
     # Start traffic generation and parsing
     run_workers(exp_workers)
 
-    print('Experiment complete!')
-    print("Parsing statistics...")
+    logger.info('Experiment complete!')
+    logger.info("Parsing statistics...")
 
     # Parse the stored statistics
     run_workers(get_parser_workers(exp_runners))
 
-    print('Output results as JSON dump')
+    logger.info('Output results as JSON dump')
 
     # Output results as JSON dumps
     dump_json_ouputs()
 
-    print('Plotting results...')
+    logger.info('Plotting results...')
 
     # Plot results and dump them as images
     run_workers(get_plotter_workers())
 
-    print('Plotting complete!')
+    logger.info('Plotting complete!')
 
     cleanup()
 
@@ -242,7 +247,7 @@ def setup_tcp_flows(dependency, flow, ss_schedules):
     netperf_runners = []
     workers = []
     if dependency == 0:
-        print('Warning: Netperf not found. Tcp flows cannot be generated')
+        logger.warning('Netperf not found. Tcp flows cannot be generated')
         # To avoid duplicate warning messages
         dependency = 2
     elif dependency == 1:
@@ -256,8 +261,8 @@ def setup_tcp_flows(dependency, flow, ss_schedules):
         netperf_options['testname'] = 'TCP_STREAM'
         netperf_options['cong_algo'] = options['cong_algo']
 
-        print('Running {} netperf flows from {} to {}...'.format(
-            n_flows, src_name, dst_addr))
+        logger.info('Running %s netperf flows from %s to %s...',
+                    n_flows, src_name, dst_addr)
 
         # Create new processes to be run simultaneously
         for _ in range(n_flows):
@@ -300,7 +305,8 @@ def setup_udp_flows(dependency, flow):
     iperf3_runners = []
     workers = []
     if dependency == 0:
-        print('Warning: Iperf3 not found. Udp flows cannot be generated')
+        logger.warning(
+            'Iperf3 not found. Udp flows cannot be generated')
         # To avoid duplicate warning messages
         dependency = 2
     elif dependency == 1:
@@ -310,8 +316,8 @@ def setup_udp_flows(dependency, flow):
         src_name = TopologyMap.get_namespace(src_ns)['name']
         IperfRunner(dst_ns).run_server()
 
-        print('Running {} udp flows from {} to {}...'.format(
-            n_flows, src_name, dst_addr))
+        logger.info('Running %s udp flows from %s to %s...',
+                    n_flows, src_name, dst_addr)
 
         runner_obj = IperfRunner(src_ns)
         iperf3_runners.append(runner_obj)
@@ -342,15 +348,15 @@ def setup_ss_runners(dependency, ss_schedules):
     runners = []
     workers = []
     if dependency == 1:
-        print('Running ss on nodes...')
-        print()
+        logger.info('Running ss on nodes...\n')
         for ns_id, timings in ss_schedules.items():
             ss_runner = SsRunner(ns_id[0], ns_id[1], timings[0],
                                  timings[1] - timings[0])
             runners.append(ss_runner)
             workers.append(Process(target=ss_runner.run))
     else:
-        print('Warning: ss not found. Sockets stats will not be collected')
+        logger.warning(
+            'ss not found. Sockets stats will not be collected')
     return workers, runners
 
 
@@ -375,8 +381,7 @@ def setup_tc_runners(dependency, qdisc_stats, exp_end):
     runners = []
     workers = []
     if dependency == 1 and len(qdisc_stats) > 0:
-        print('Running tc on requested interfaces...')
-        print()
+        logger.info('Running tc on requested interfaces...\n')
         for qdisc_stat in qdisc_stats:
             tc_runner = TcRunner(
                 qdisc_stat['ns_id'], qdisc_stat['int_id'], exp_end)
@@ -384,7 +389,7 @@ def setup_tc_runners(dependency, qdisc_stats, exp_end):
                 tc_runner)
             workers.append(Process(target=tc_runner.run))
     elif dependency != 1:
-        print('Warning: tc not found. Qdisc stats will not be collected')
+        logger.warning('tc not found. Qdisc stats will not be collected')
     return workers, runners
 
 
@@ -414,7 +419,7 @@ def setup_ping_runners(dependency, ping_schedules):
             runners.append(ping_runner)
             workers.append(Process(target=ping_runner.run))
     else:
-        print('Warning: ping not found')
+        logger.warning('ping not found')
     return workers, runners
 
 
