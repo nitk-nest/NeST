@@ -4,7 +4,6 @@
 """Handles addresses of interfaces"""
 
 import ipaddress
-from .. import config
 
 class Address:
     """Validate address.
@@ -37,7 +36,7 @@ class Address:
             ipaddress.ip_address(addr_str)
             self.ip_addr = addr_str+'/32'
 
-    def get_addr(self, with_subnet=config.TOPOLOGY.get_address_with_subnet()):
+    def get_addr(self, with_subnet=True):
         """Getter for ip_addr
 
         Parameters
@@ -57,16 +56,18 @@ class Address:
 
     def get_subnet(self):
         """Get the subnet of the given address"""
+        if self.ip_addr == 'default':
+            raise Exception("default address cannot have a subnet")
         interface = ipaddress.ip_interface(self.ip_addr)
         return interface.network.compressed
 
     def is_subnet(self):
         """Check if the address is a subnet or not"""
-        try:
-            ipaddress.ip_network(self.ip_addr)
-        except ValueError:
+        if self.ip_addr == 'default':
             return False
-        return True
+        if self.ip_addr == self.get_subnet():
+            return True
+        return False
 
     def __repr__(self):
         classname = self.__class__.__name__
@@ -92,7 +93,10 @@ class Subnet:
     def get_next_addr(self):
         """Get next address in sequence in the subnet"""
         self._counter += 1
-        address = self._net_addr[self._counter]
+        try:
+            address = self._net_addr[self._counter]
+        except IndexError as err:
+            raise ValueError('All the addresses for the network have been exhausted') from err
         return Address(address.compressed + '/' + str(self._net_addr.prefixlen))
 
     @property
