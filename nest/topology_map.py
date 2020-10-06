@@ -22,6 +22,8 @@ class TopologyMap():
     # topology_map contains the info about topology created
     topology_map = {
         'namespaces': [],
+        'hosts': [],
+        'routers': []
     }
     # NOTE:
     # To figure out the contents of each dict keyword,
@@ -61,6 +63,41 @@ class TopologyMap():
             'pos': len(namespaces)-1,
             'interfaces_pointer': {}
         }
+
+    @staticmethod
+    def add_host(host):
+        """
+        Add host to topology_map. This is required apart
+        from `add_namespaces` for routing
+
+        Parameters
+        ----------
+        ns_id : str
+            namepspace id of the host
+        ns_name : str
+            namespace name of the host
+        """
+        hosts = TopologyMap.get_hosts()
+
+        hosts.append(host)
+
+    @staticmethod
+    def add_router(router):
+        """
+        Add router to topology_map. This is required apart
+        from `add_namespaces` for routing
+
+        Parameters
+        ----------
+        ns_id : str
+            namepspace id of the router
+        ns_name : str
+            namespace name of the router
+        """
+        routers = TopologyMap.get_routers()
+
+        routers.append(router)
+        TopologyMap.get_hosts().remove(router)  # remove the router from hosts list
 
     @staticmethod
     def add_interface(ns_id, int_id, int_name):
@@ -169,6 +206,28 @@ class TopologyMap():
         List[Dict]
         """
         return TopologyMap.topology_map['namespaces']
+
+    @staticmethod
+    def get_routers():
+        """
+        Get all routers added
+
+        Returns
+        -------
+        List[Dict]
+        """
+        return TopologyMap.topology_map['routers']
+
+    @staticmethod
+    def get_hosts():
+        """
+        Get all hosts added
+
+        Returns
+        -------
+        List[Dict]
+        """
+        return TopologyMap.topology_map['hosts']
 
     @staticmethod
     def get_namespace(ns_id, with_interfaces_pointer=False):

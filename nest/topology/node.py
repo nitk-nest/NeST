@@ -46,6 +46,7 @@ class Node:
 
         engine.create_ns(self.id)
         TopologyMap.add_namespace(self.id, self.name)
+        TopologyMap.add_host(self)
 
     def add_route(self, dest_addr, via_interface, next_hop_addr=''):
         """
@@ -222,6 +223,7 @@ class Node:
         After this method runs, the `Node` can be used as a router.
         """
         engine.en_ip_forwarding(self.id)
+        TopologyMap.add_router(self)
 
     @property
     def id(self):
