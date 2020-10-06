@@ -7,7 +7,7 @@ from multiprocessing import Process
 from collections import namedtuple, defaultdict
 
 from ..topology_map import TopologyMap
-from .. import engine
+from ..clean_up import kill_processes
 # Import results
 from .results import SsResults, NetperfResults, TcResults, PingResults
 # Import parsers
@@ -428,6 +428,4 @@ def cleanup():
     TcResults.remove_all_results()
     PingResults.remove_all_results()
 
-    # Kill any running processes in namespaces
-    for namespace in TopologyMap.get_namespaces():
-        engine.kill_all_processes(namespace['id'])
+    kill_processes()
