@@ -13,7 +13,7 @@ class TestTopologyAddress(unittest.TestCase):
     def setUp(self):
         self.addr = '10.0.0.1/24'
         self.addr_without_subnet = '10.0.0.1'
-        self.default_addr='DEFAULT'
+        self.default_addr = 'DEFAULT'
         self.subnet_addr = '10.0.0.0/24'
 
     def test_get_addr(self):

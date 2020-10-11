@@ -13,6 +13,7 @@ import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+
 class TopologyMap():
     """
     Store mapping between user given names and NeST's ids
@@ -45,7 +46,8 @@ class TopologyMap():
             namespace name
         """
         if ns_id in TopologyMap.namespaces_pointer:
-            raise ValueError(f'Namespace with id {ns_id} already exists in TopologyMap')
+            raise ValueError(
+                f'Namespace with id {ns_id} already exists in TopologyMap')
 
         namespaces = TopologyMap.get_namespaces()
 
@@ -75,10 +77,12 @@ class TopologyMap():
             interface name
         """
         if ns_id not in TopologyMap.namespaces_pointer:
-            raise ValueError(f'Namespace with id {ns_id} doesn\'t exist in TopologyMap')
+            raise ValueError(
+                f'Namespace with id {ns_id} doesn\'t exist in TopologyMap')
 
         if int_id in TopologyMap.namespaces_pointer[ns_id]['interfaces_pointer']:
-            raise ValueError(f'Interface with id {int_id} already present in namespace {ns_id}')
+            raise ValueError(
+                f'Interface with id {int_id} already present in namespace {ns_id}')
 
         # TODO: classes not added yet to list
         interfaces = TopologyMap.get_interfaces(ns_id)
@@ -112,10 +116,12 @@ class TopologyMap():
             qdisc parent (Default value = '')
         """
         if ns_id not in TopologyMap.namespaces_pointer:
-            raise ValueError(f'Namespace with id {ns_id} doesn\'t exist in TopologyMap')
+            raise ValueError(
+                f'Namespace with id {ns_id} doesn\'t exist in TopologyMap')
 
         if int_id not in TopologyMap.namespaces_pointer[ns_id]['interfaces_pointer']:
-            raise ValueError(f'Interface with id {int_id} doesn\'t exist in namespace {ns_id}')
+            raise ValueError(
+                f'Interface with id {int_id} doesn\'t exist in namespace {ns_id}')
 
         # TODO: Check if qdisc is already present?
 
@@ -227,7 +233,8 @@ class TopologyMap():
         Dict
             Interface details
         """
-        (interfaces_pointer, _) = TopologyMap.get_namespace(ns_id, with_interfaces_pointer=True)
+        (interfaces_pointer, _) = TopologyMap.get_namespace(
+            ns_id, with_interfaces_pointer=True)
         interfaces = TopologyMap.get_interfaces(ns_id)
         interface_pointer = interfaces_pointer[int_id]
         interface = interfaces[interface_pointer['pos']]
