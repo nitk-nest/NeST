@@ -45,7 +45,7 @@ n1_n0.set_attributes('10mbit', '100ms', 'pfifo')
 # The API takes in the source node, destination node,
 # destination address, start time, end time of the
 # experiment to be run and the number of flows
-flow = Flow(n0, n1, n1_n0.get_address(), 0, 10, 2)
+flow = Flow(n0, n1, n1_n0.address, 0, 10, 2)
 
 # The name of the experiment of the is taken to
 # return the results according with the name

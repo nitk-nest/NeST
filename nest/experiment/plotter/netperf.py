@@ -29,17 +29,22 @@ def _plot_netperf_flow(flow, node, dest):
     tuple
         Timestamped throughput values
     """
-    if len(flow) == 0:
+    # "meta" item will always be present, hence `<= 1`
+    if len(flow) <= 1:
         raise ValueError('Flow from {} to destination {}'
                          'doesn\'t have any parsed ss result.'.format(node,
                                                                       dest))
 
-    start_time = float(flow[0]['timestamp'])
+    # First item is the "meta" item with user given information
+    user_given_start_time = float(flow[0]['start_time'])
+
+    # "Bias" actual start_time in experiment with user given start time
+    start_time = float(flow[1]['timestamp']) - user_given_start_time
 
     timestamp = []
     throughput = []
 
-    for data in flow:
+    for data in flow[1:]:
         throughput.append(float(data['throughput']))
         relative_time = float(data['timestamp']) - start_time
         timestamp.append(relative_time)

@@ -47,6 +47,10 @@ def run_experiment(exp):
     exp_runners = Runners(netperf=[], ss=[], tc=[],
                           iperf3=[], ping=[])  # Runner objects
 
+    # Keep track of all destination nodes [to ensure netperf server is
+    # run atmost once]
+    destination_nodes = set()
+
     # Contains start time and end time to run respective command
     # from a source netns to destination addr
     ss_schedules = defaultdict(lambda: (float('inf'), float('-inf')))
@@ -60,8 +64,8 @@ def run_experiment(exp):
     # Traffic generation
     for flow in exp.flows:
         # Get flow attributes
-        [src_ns, _, dst_addr, start_t, stop_t,
-         _, options] = flow._get_props()  # pylint: disable=protected-access
+        [src_ns, dst_ns, dst_addr, start_t,
+         stop_t, _, options] = flow._get_props()  # pylint: disable=protected-access
 
         # exp_start = min(exp_start, start_t)
         exp_end_t = max(exp_end_t, stop_t)
@@ -70,16 +74,22 @@ def run_experiment(exp):
         ping_schedules[(src_ns, dst_addr)] = (
             min(min_start, start_t), max(max_stop, stop_t))
 
+        # Setup TCP/UDP flows
         if options['protocol'] == 'TCP':
             dependencies['netperf'], tcp_runners, tcp_workers, ss_schedules = setup_tcp_flows(
-                dependencies['netperf'], flow, ss_schedules)
+                dependencies['netperf'], flow, ss_schedules, destination_nodes)
+
             exp_runners.netperf.extend(tcp_runners)
             exp_workers.extend(tcp_workers)
         elif options['protocol'] == 'UDP':
             dependencies['iperf3'], udp_runners, upd_workers = setup_udp_flows(
                 dependencies['iperf3'], flow)
+
             exp_runners.iperf3.extend(udp_runners)
             exp_workers.extend(upd_workers)
+
+        # Update destination nodes
+        destination_nodes.add(dst_ns)
 
     if dependencies['netperf'] == 1:
         ss_workers, ss_runners = setup_ss_runners(dependencies['ss'],
@@ -221,7 +231,7 @@ def get_dependency_status(tools):
     return dependencies
 
 
-def setup_tcp_flows(dependency, flow, ss_schedules):
+def setup_tcp_flows(dependency, flow, ss_schedules, destination_nodes):
     """
     Setup netperf to run tcp flows
     Parameters
@@ -232,6 +242,8 @@ def setup_tcp_flows(dependency, flow, ss_schedules):
         Flow parameters
     ss_schedules:
         ss_schedules so far
+    destination_nodes:
+        Destination nodes so far
 
     Returns
     -------
@@ -254,10 +266,14 @@ def setup_tcp_flows(dependency, flow, ss_schedules):
         # Get flow attributes
         [src_ns, dst_ns, dst_addr, start_t, stop_t,
          n_flows, options] = flow._get_props()  # pylint: disable=protected-access
+
+        # Run netserver if not already run before on given dst_node
+        if dst_ns not in destination_nodes:
+            NetperfRunner.run_netserver(dst_ns)
+
         src_name = TopologyMap.get_namespace(src_ns)['name']
 
         netperf_options = {}
-        NetperfRunner.run_netserver(dst_ns)
         netperf_options['testname'] = 'TCP_STREAM'
         netperf_options['cong_algo'] = options['cong_algo']
 

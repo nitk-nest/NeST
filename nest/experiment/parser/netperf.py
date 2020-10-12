@@ -100,7 +100,7 @@ class NetperfRunner(Runner):
         ns_id : str
             namespace to run netserver on
         """
-        command = 'ip netns exec {} netserver'.format(ns_id)
+        command = f'ip netns exec {ns_id} netserver'
         return_code = exec_exp_commands(command)
         if return_code != 0:
             ns_name = TopologyMap.get_namespace(ns_id)['name']
@@ -166,7 +166,13 @@ class NetperfRunner(Runner):
         remote_port_pattern = r'remote port is (?P<remote>\d+)'
         remote_port = re.search(remote_port_pattern, raw_stats).group('remote')
 
-        stats_list = []
+        # List storing collected stats
+        # First item as "meta" item with user given informataion
+        stats_list = [{
+            'meta': True,
+            'start_time': str(self.start_time),
+            'duration': str(self.run_time)
+        }]
 
         for i in range(len(throughputs)):
             stats_list.append({
@@ -174,8 +180,7 @@ class NetperfRunner(Runner):
                 'throughput': throughputs[i]
             })
 
-            stats_dict = {'{}:{}'.format(
-                self.destination_ip, remote_port): stats_list}
+        stats_dict = {f'{self.destination_ip}:{remote_port}': stats_list}
 
         NetperfResults.add_result(self.ns_id, stats_dict)
         self.clean_up()
