@@ -57,8 +57,7 @@ class TcRunner(Runner):
         """
         self.ns_id = ns_id
         self.dev = dev
-        self.run_time = run_time
-        super().__init__()
+        super().__init__(0, run_time)
 
     def run(self):
         """

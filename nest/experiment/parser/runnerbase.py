@@ -20,13 +20,21 @@ class Runner:
         temporary file to hold the stats
     err : File
         temporary file to hold any errors
+    start_time : num
+            time at which netperf is to run
+    run_time : num
+        total time to run netperf for
     """
 
-    def __init__(self):
+    def __init__(self, start_time, run_time):
         self.out = tempfile.TemporaryFile()
         self.err = tempfile.TemporaryFile()
+
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
+
+        self.start_time = start_time
+        self.run_time = run_time
 
     def run(self, command):
         """

@@ -42,27 +42,23 @@ class NetperfRunner(Runner):
     ]
 
     default_netperf_options = {
-        'banner': '-P 0',                           # Disable test banner
-        'ipv4': '-4',                               # IPv4 Addresses
-        # Test type (NOTE: TCP_STREAM only for now)
-        'testname': '-t TCP_STREAM',
-        # File to transmit (NOTE: Inspired from flent)
-        'fill_file': '-F /dev/urandom',
-        # Length of test (NOTE: Default 10s)
-        'testlen': '-l {}'.format(10),
-        # Generated interim results every INTERVAL secs
-        'intervel': '-D -{}'.format(0.2),
-        'debug': '-d',                              # Enable debug mode
+        'banner': '-P 0',                   # Disable test banner
+        'ipv4': '-4',                       # IPv4 Addresses
+        'testname': '-t TCP_STREAM',        # Test type (NOTE: TCP_STREAM only for now)
+        'fill_file': '-F /dev/urandom',     # File to transmit (NOTE: Inspired from flent)
+        'testlen': '-l 10',                 # Length of test (NOTE: Default 10s)
+        'intervel': '-D -0.2',              # Generated interim results every INTERVAL secs
+        'debug': '-d',                      # Enable debug mode
     }
 
     netperf_tcp_options = {
-        'cong_algo': '-K cubic',                    # Congestion algorithm
-        'stats': '-k THROUGHPUT'                    # Stats required
+        'cong_algo': '-K cubic',             # Congestion algorithm
+        'stats': '-k THROUGHPUT'             # Stats required
     }
 
     netperf_udp_options = {
-        'routing': '-R 1',                          # Enable routing
-        'stats': '-k THROUGHPUT'                    # Stats required
+        'routing': '-R 1',                    # Enable routing
+        'stats': '-k THROUGHPUT'              # Stats required
     }
 
     def __init__(self, ns_id, destination_ip, start_time, run_time, **kwargs):
@@ -84,10 +80,8 @@ class NetperfRunner(Runner):
         """
         self.ns_id = ns_id
         self.destination_ip = destination_ip
-        self.start_time = start_time
-        self.run_time = run_time
         self.options = copy.deepcopy(kwargs)
-        super().__init__()
+        super().__init__(start_time, run_time)
 
     # Should this be placed somewhere else?
     @staticmethod

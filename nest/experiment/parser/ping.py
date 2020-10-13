@@ -43,9 +43,7 @@ class PingRunner(Runner):
         """
         self.ns_id = ns_id
         self.destination_ip = destination_ip
-        self.start_time = start_time
-        self.run_time = run_time
-        super().__init__()
+        super().__init__(start_time, run_time)
 
     # pylint: disable=arguments-differ
     def run(self):

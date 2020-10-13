@@ -7,7 +7,7 @@ from time import sleep
 from .runnerbase import Runner
 from ...engine.iperf import run_iperf_server, run_iperf_client
 
-
+# NOTE: Uses iperf3 command
 class IperfRunner(Runner):
     """
     Runs iperf client and server. Currently being used
@@ -19,7 +19,8 @@ class IperfRunner(Runner):
         network namespace to run iperf from
     """
 
-    def __init__(self, ns_id):
+    # pylint: disable=too-many-arguments
+    def __init__(self, ns_id, destination_ip, bandwidth, n_flows, start_time, run_time):
         """
         Constructor to initalize the runner
 
@@ -27,35 +28,42 @@ class IperfRunner(Runner):
         ----------
         ns_id : str
             network namespace to run iperf from
-        """
-        self.ns_id = ns_id
-        super().__init__()
-
-    def run_server(self):
-        """
-        calls engine method to run iperf server
-        """
-        run_iperf_server(self.ns_id)
-
-    # pylint: disable=invalid-name
-    # pylint: disable=too-many-arguments
-    def run_client(self, destination, start_time, run_time, flows, bw):
-        """
-        calls engine method to run iperf client
-
-        Parameters
-        ----------
         destination : str
             the ip of server to which it has to connect
+        bandwidth : int
+            target bandwidth of the udp flow in mbits
+        n_flows : int
+            number of parallel flows
         start_time : num
             start time of the flow
         run_time : num
             test duration
-        flows : int
-            number of parallel flows
-        bw : int
-            target bandwidth of the udp flow in mbits
         """
-        if start_time != 0:
-            sleep(start_time)
-        run_iperf_client(self.ns_id, destination, run_time, flows, bw)
+        self.ns_id = ns_id
+        self.destination_ip = destination_ip
+        self.bandwidth = bandwidth
+        self.n_flows = n_flows
+        super().__init__(start_time, run_time)
+
+    # Should this be placed somewhere else?
+    @staticmethod
+    def run_server(ns_id):
+        """
+        Run iperf server in `ns_id`
+
+        Parameters
+        ----------
+        ns_id : str
+            namespace to run netserver on
+        """
+        run_iperf_server(ns_id)
+
+    # This method should call super().run
+    def run(self):
+        """
+        calls engine method to run iperf client
+        """
+        if self.start_time != 0:
+            sleep(self.start_time)
+        run_iperf_client(self.ns_id, self.destination_ip,
+                         self.run_time, self.n_flows, self.bandwidth)

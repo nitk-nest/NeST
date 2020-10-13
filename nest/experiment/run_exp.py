@@ -47,9 +47,12 @@ def run_experiment(exp):
     exp_runners = Runners(netperf=[], ss=[], tc=[],
                           iperf3=[], ping=[])  # Runner objects
 
-    # Keep track of all destination nodes [to ensure netperf server is
-    # run atmost once]
-    destination_nodes = set()
+    # Keep track of all destination nodes [to ensure netperf and iperf
+    # server is run atmost once]
+    destination_nodes = {
+        'netperf': set(),
+        'iperf3' : set()
+    }
 
     # Contains start time and end time to run respective command
     # from a source netns to destination addr
@@ -77,19 +80,23 @@ def run_experiment(exp):
         # Setup TCP/UDP flows
         if options['protocol'] == 'TCP':
             dependencies['netperf'], tcp_runners, tcp_workers, ss_schedules = setup_tcp_flows(
-                dependencies['netperf'], flow, ss_schedules, destination_nodes)
+                dependencies['netperf'], flow, ss_schedules, destination_nodes['netperf'])
 
             exp_runners.netperf.extend(tcp_runners)
             exp_workers.extend(tcp_workers)
+
+            # Update destination nodes
+            destination_nodes['netperf'].add(dst_ns)
+
         elif options['protocol'] == 'UDP':
             dependencies['iperf3'], udp_runners, upd_workers = setup_udp_flows(
-                dependencies['iperf3'], flow)
+                dependencies['iperf3'], flow, ss_schedules, destination_nodes['iperf3'])
 
             exp_runners.iperf3.extend(udp_runners)
             exp_workers.extend(upd_workers)
 
-        # Update destination nodes
-        destination_nodes.add(dst_ns)
+            # Update destination nodes
+            destination_nodes['iperf3'].add(dst_ns)
 
     if dependencies['netperf'] == 1:
         ss_workers, ss_runners = setup_ss_runners(dependencies['ss'],
@@ -243,7 +250,7 @@ def setup_tcp_flows(dependency, flow, ss_schedules, destination_nodes):
     ss_schedules:
         ss_schedules so far
     destination_nodes:
-        Destination nodes so far
+        Destination nodes so far already running netperf server
 
     Returns
     -------
@@ -288,17 +295,12 @@ def setup_tcp_flows(dependency, flow, ss_schedules, destination_nodes):
             workers.append(Process(target=runner_obj.run))
 
         # Find the start time and stop time to run ss command in `src_ns` to a `dst_addr`
-        if (src_ns, dst_addr) not in ss_schedules:
-            ss_schedules[(src_ns, dst_addr)] = (start_t, stop_t)
-        else:
-            (min_start, max_stop) = ss_schedules[(src_ns, dst_addr)]
-            ss_schedules[(src_ns, dst_addr)] = (
-                min(min_start, start_t), max(max_stop, stop_t))
+        ss_schedules = _find_start_stop_time_for_ss(src_ns, dst_addr, start_t, stop_t, ss_schedules)
 
     return dependency, netperf_runners, workers, ss_schedules
 
 
-def setup_udp_flows(dependency, flow):
+def setup_udp_flows(dependency, flow, ss_schedules, destination_nodes):
     """
     Setup iperf3 to run udp flows
 
@@ -308,6 +310,10 @@ def setup_udp_flows(dependency, flow):
         whether iperf3 is installed
     flow: Flow
         Flow parameters
+    ss_schedules:
+        ss_schedules so far
+    destination_nodes:
+        Destination nodes so far already running iperf3 server
 
     Returns
     -------
@@ -329,18 +335,24 @@ def setup_udp_flows(dependency, flow):
         # Get flow attributes
         [src_ns, dst_ns, dst_addr, start_t, stop_t,
          n_flows, options] = flow._get_props()  # pylint: disable=protected-access
+
+        # Run iperf3 server if not already run before on given dst_node
+        if dst_ns not in destination_nodes:
+            IperfRunner.run_server(dst_ns)
+
         src_name = TopologyMap.get_namespace(src_ns)['name']
-        IperfRunner(dst_ns).run_server()
 
         logger.info('Running %s udp flows from %s to %s...',
                     n_flows, src_name, dst_addr)
 
-        runner_obj = IperfRunner(src_ns)
+        runner_obj = IperfRunner(src_ns, dst_addr, options['target_bw'], n_flows,
+                                 start_t, stop_t-start_t)
         iperf3_runners.append(runner_obj)
-        workers.append(
-            Process(target=runner_obj.run_client,
-                    args=[dst_addr, start_t, stop_t-start_t, n_flows, options['target_bw']])
-        )
+        workers.append(Process(target=runner_obj.run))
+
+        # Find the start time and stop time to run ss command in `src_ns` to a `dst_addr`
+        ss_schedules = _find_start_stop_time_for_ss(src_ns, dst_addr, start_t, stop_t, ss_schedules)
+
     return dependency, iperf3_runners, workers
 
 
@@ -450,3 +462,32 @@ def cleanup():
     PingResults.remove_all_results()
 
     kill_processes()
+
+# Helper methods
+def _find_start_stop_time_for_ss(src_ns, dst_addr, start_t, stop_t, ss_schedules):
+    """
+    Find the start time and stop time to run ss command in node `src_ns`
+    to a `dst_addr`
+
+    Args:
+        src_ns: Node
+            ss run from `src_ns`
+        dst_addr: Address
+            Destination address
+        start_t: int
+            Start time of ss command
+        stop_t: int
+            Stop time of ss command
+        ss_schedules: list
+            List with ss command schedules
+
+    Returns:
+        List: Updated ss_schedules
+    """
+    if (src_ns, dst_addr) not in ss_schedules:
+        ss_schedules[(src_ns, dst_addr)] = (start_t, stop_t)
+    else:
+        (min_start, max_stop) = ss_schedules[(src_ns, dst_addr)]
+        ss_schedules[(src_ns, dst_addr)] = (min(min_start, start_t), max(max_stop, stop_t))
+
+    return ss_schedules

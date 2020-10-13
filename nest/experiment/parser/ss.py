@@ -37,7 +37,7 @@ class SsRunner(Runner):
     param_list = ['cwnd', 'rwnd', 'rtt', 'ssthresh',
                   'rto', 'delivery_rate', 'pacing_rate']
 
-    def __init__(self, ns_id, destination_ip, start_time, run_time,):
+    def __init__(self, ns_id, destination_ip, start_time, run_time):
         """
         Constructor to initialize ss runner
 
@@ -54,9 +54,7 @@ class SsRunner(Runner):
         """
         self.ns_id = ns_id
         self.destination_ip = destination_ip
-        self.start_time = start_time
-        self.run_time = run_time
-        super().__init__()
+        super().__init__(start_time, run_time)
 
     def run(self):
         """
