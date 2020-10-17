@@ -61,7 +61,6 @@ class QuaggaBase(ABC):
         """
         Creates config file on disk from `self.conf`
         """
-        print(self.conf_file)
         create_conf_file(self.conf_file)
         with open(self.conf_file, 'w') as conf:
             self.conf.seek(0)

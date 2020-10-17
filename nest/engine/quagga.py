@@ -21,7 +21,6 @@ def run_quagga(ns_id, daemon, conf_file, pid_file):
         path to pid file
     """
     cmd = f'ip netns exec {ns_id} {daemon} -f {conf_file} -i {pid_file} -d'
-    print(cmd)
     exec_subprocess(cmd)
 
 def create_quagga_directory(dir_path):
