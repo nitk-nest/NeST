@@ -52,6 +52,18 @@ class Runner:
         """
         self.logger.error('Unknown error occured')
 
+    def get_meta_item(self):
+        """
+        Return the meta item for the given flow.
+        This "meta" information is required by plotter.
+        """
+        meta_item =  {
+            'meta': True,
+            'start_time': str(self.start_time),
+            'stop_time': str(self.start_time + self.run_time)
+        }
+        return meta_item
+
     def clean_up(self):
         """
         Closes the temp files created

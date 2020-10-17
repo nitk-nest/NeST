@@ -51,8 +51,7 @@ def _plot_netperf_flow(flow, node, dest):
 
     title = 'netperf: {dest}'.format(dest=dest)
     fig = simple_plot(title, timestamp, throughput, 'Time(s)', 'throughput')
-    filename = '{node}_{dest}_throughput.png'.format(node=node,
-                                                     dest=dest)
+    filename = '{node}_{dest}_throughput.png'.format(node=node, dest=dest)
     Pack.dump_plot('netperf', filename, fig)
     plt.close(fig)
 

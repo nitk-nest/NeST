@@ -76,7 +76,9 @@ class PingRunner(Runner):
         timestamps_and_rtts = [(match.group('timestamp'), match.group(
             'rtt')) for match in re.finditer(pattern, raw_stats)]
 
-        stats_list = []
+        # List storing collected stats
+        # First item as "meta" item with user given informataion
+        stats_list = [self.get_meta_item()]
 
         for (timestamp, rtt) in timestamps_and_rtts:
             stats_list.append({

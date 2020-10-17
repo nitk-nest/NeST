@@ -27,31 +27,35 @@ def _plot_ping_flow(flow, node, dest):
     Returns
     -------
     tuple
-        Timestamped throughput values
+        Timestamped rtt values
     """
-    if len(flow) == 0:
+    # "meta" item will always be present, hence `<= 1`
+    if len(flow) <= 1:
         raise ValueError('Flow from {} to destination {}'
                          'doesn\'t have any parsed ping result.'.format(node,
                                                                         dest))
 
-    start_time = float(flow[0]['timestamp'])
+    # First item is the "meta" item with user given information
+    user_given_start_time = float(flow[0]['start_time'])
+
+    # "Bias" actual start_time in experiment with user given start time
+    start_time = float(flow[1]['timestamp']) - user_given_start_time
 
     timestamp = []
-    throughput = []
+    rtt = []
 
-    for data in flow:
-        throughput.append(float(data['rtt']))
+    for data in flow[1:]:
+        rtt.append(float(data['rtt']))
         relative_time = float(data['timestamp']) - start_time
         timestamp.append(relative_time)
 
     title = 'ping: {dest}'.format(dest=dest)
-    fig = simple_plot(title, timestamp, throughput, 'Time(s)', 'ping')
-    filename = '{node}_{dest}_ping.png'.format(node=node,
-                                               dest=dest)
+    fig = simple_plot(title, timestamp, rtt, 'Time(s)', 'ping')
+    filename = '{node}_{dest}_ping.png'.format(node=node, dest=dest)
     Pack.dump_plot('ping', filename, fig)
     plt.close(fig)
 
-    return (timestamp, throughput)
+    return (timestamp, rtt)
 
 
 def plot_ping(parsed_data):

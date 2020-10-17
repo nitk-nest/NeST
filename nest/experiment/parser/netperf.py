@@ -162,11 +162,7 @@ class NetperfRunner(Runner):
 
         # List storing collected stats
         # First item as "meta" item with user given informataion
-        stats_list = [{
-            'meta': True,
-            'start_time': str(self.start_time),
-            'duration': str(self.run_time)
-        }]
+        stats_list = [self.get_meta_item()]
 
         for i in range(len(throughputs)):
             stats_list.append({
