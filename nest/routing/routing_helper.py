@@ -38,7 +38,8 @@ class RoutingHelper:
     """
 
     module_map = {
-        'ospf': ['nest.routing.ospf', 'Ospf']
+        'ospf': ['nest.routing.ospf', 'Ospf'],
+        'rip': ['nest.routing.rip', 'Rip']
     }
 
     def __init__(self, protocol):
@@ -87,7 +88,7 @@ class RoutingHelper:
         """
         Run zebra and `self.protocol`
         """
-        logger.info('Running zebra and %s in routers', self.protocol)
+        logger.info('Running zebra and %s on routers', self.protocol)
         self.conf_dir = self._create_quagga_directory('/tmp')
         for router in self.routers:
             self.run_zebra(router)
