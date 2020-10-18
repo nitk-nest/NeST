@@ -99,11 +99,13 @@ class SsRunner(Runner):
             timestamp_pattern = r'timestamp:(?P<timestamp>\d+\.\d+)'
             timestamp = re.search(
                 timestamp_pattern, raw_stat).group("timestamp")
+
             for port in port_list:
+                # If port encoutered first time
                 if port not in stats_dict_list:
-                    stats_dict_list[port] = [{"timestamp": timestamp}]
-                else:
-                    stats_dict_list[port].append({"timestamp": timestamp})
+                    stats_dict_list[port] = [self.get_meta_item()]
+
+                stats_dict_list[port].append({"timestamp": timestamp})
 
             for param in SsRunner.param_list:
                 pattern = r'\s' + \

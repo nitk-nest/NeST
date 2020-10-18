@@ -37,12 +37,17 @@ def _extract_from_ss_flow(flow, node, dest_ip, dest_port):
     (timestamp, flow_params)
         Return timestamp and flow parameters
     """
-    if len(flow) == 0:
+    # "meta" item will always be present, hence `<= 1`
+    if len(flow) <= 1:
         raise ValueError('Flow from {} to destination {}:{}'
                          'doesn\'t have any parsed ss result.'.format(node,
                                                                       dest_ip, dest_port))
 
-    start_time = float(flow[0]['timestamp'])
+    # First item is the "meta" item with user given information
+    user_given_start_time = float(flow[0]['start_time'])
+
+    # "Bias" actual start_time in experiment with user given start time
+    start_time = float(flow[1]['timestamp']) - user_given_start_time
 
     timestamp = []
     flow_params = {}
@@ -50,7 +55,7 @@ def _extract_from_ss_flow(flow, node, dest_ip, dest_port):
     for param in _get_list_of_ss_params():
         flow_params[param] = []
 
-    for data in flow:
+    for data in flow[1:]:
         for stat in flow_params:
             if stat in data:
                 flow_params[stat].append(float(data[stat]))
