@@ -37,10 +37,21 @@ class TcRunner(Runner):
     """
 
     iterator = os.path.realpath(os.path.dirname(__file__)) + "/iterators/tc.sh"
+
     # tc versions are in date formatted
     # TODO: move these to a config file
-    old_tc_version = strptime("20180129", "%Y%m%d")
-    new_tc_version = strptime("20190319", "%Y%m%d")
+
+    # NOTE: Both the below versions are in OLD tc version format
+    # Refer docstring of `check_tc_version_format`
+
+    # Minimum version of tc required by nest
+    MINIMUM_SUPPORTED_VERSION = strptime("20180129", "%Y%m%d")
+
+    # tc version with good JSON support for displaying stats
+    JSON_SUPPORTED_VERSION = strptime("20190319", "%Y%m%d")
+
+    # Qdiscs supported prior to good JSON support in tc
+    PRIOR_JSON_QDISCS_SUPPORTED = ['codel', 'fq_codel', 'pie']
 
     def __init__(self, ns_id, dev, run_time):
         """
@@ -57,6 +68,8 @@ class TcRunner(Runner):
         """
         self.ns_id = ns_id
         self.dev = dev
+
+        # Start parsing from 0s
         super().__init__(0, run_time)
 
     def run(self):
@@ -165,7 +178,7 @@ class TcRunner(Runner):
         stats = re.sub(value_pattern, self.repl, stats)
         return stats
 
-    def old_tc_version_parse_helper(self, raw_stats, qdisc_param, qdisc_re):
+    def parsing_helper_before_good_json_support(self, raw_stats, qdisc_param, qdisc_re):
         """
         Parsing tc command on linux kernel versions
         4.15.0 to 5.4
@@ -196,7 +209,7 @@ class TcRunner(Runner):
             stats_dict = {}
             for qdisc_stat in raw_stat:
                 qdisc = qdisc_stat['kind']
-                if(qdisc in ['codel', 'fq_codel', 'pie']):
+                if qdisc in TcRunner.PRIOR_JSON_QDISCS_SUPPORTED:
                     handle = qdisc_stat['handle']
                     if handle not in aggregate_stats:
                         aggregate_stats[handle] = []
@@ -209,7 +222,7 @@ class TcRunner(Runner):
                     aggregate_stats[handle].append(stats_dict)
         return aggregate_stats
 
-    def new_tc_version_parse_helper(self, raw_stats):
+    def parsing_helper(self, raw_stats):
         """
         Parsing tc command on linux kernel version
         5.5 and above
@@ -234,7 +247,7 @@ class TcRunner(Runner):
             stats_dict = {}
             for qdisc_stat in raw_stat:
                 qdisc = qdisc_stat['kind']
-                if qdisc in ['codel', 'fq_codel', 'pie']:
+                if qdisc in TcRunner.PRIOR_JSON_QDISCS_SUPPORTED:
                     handle = qdisc_stat['handle']
                     if handle not in aggregate_stats:
                         aggregate_stats[handle] = []
@@ -261,7 +274,7 @@ class TcRunner(Runner):
         v5.6.0 - tc utility, iproute2-ss200330
 
         So the function will return 'new_version_format' for versions
-        after v5.8.0, else the function will return 'old_version_format'
+        after v5.7.0, else the function will return 'old_version_format'
         """
         old_version_format = "tc utility, iproute2-ss[0-9]{6}\n"
         tc_version = get_tc_version()
@@ -273,7 +286,9 @@ class TcRunner(Runner):
 
     def parsed_tc_version(self):
         """
-        parses the current tc version
+        [For OLD tc format, refer docstring of `check_tc_version_format`]
+
+        Parses the current tc version
 
         Returns
         -------
@@ -293,31 +308,32 @@ class TcRunner(Runner):
 
         # See `iterators/tc.sh` for output format
         raw_stats = self.out.read().decode().split("---")
-
-        qdisc_param = self.get_qdisc_specific_params()
-        qdisc_re = self.get_qdisc_re()
         aggregate_stats = {}
 
         tc_version_format = self.check_tc_version_format()
 
         if tc_version_format == 'new_version_format':
-            aggregate_stats = self.new_tc_version_parse_helper(raw_stats)
+            aggregate_stats = self.parsing_helper(raw_stats)
 
         elif tc_version_format == 'old_version_format':
             cur_tc_version = self.parsed_tc_version()
 
             # tc produces different JSON ouput format
             # based on the version
-            if cur_tc_version >= TcRunner.new_tc_version:
-                aggregate_stats = self.new_tc_version_parse_helper(raw_stats)
-            elif cur_tc_version >= TcRunner.old_tc_version:
-                aggregate_stats = self.old_tc_version_parse_helper(raw_stats,
-                                                                   qdisc_param, qdisc_re)
+            if cur_tc_version >= TcRunner.JSON_SUPPORTED_VERSION:
+                aggregate_stats = self.parsing_helper(raw_stats)
+
+            elif cur_tc_version >= TcRunner.MINIMUM_SUPPORTED_VERSION:
+                qdisc_param = self.get_qdisc_specific_params()
+                qdisc_re = self.get_qdisc_re()
+                aggregate_stats = self.parsing_helper_before_good_json_support(raw_stats,
+                                                                               qdisc_param,
+                                                                               qdisc_re)
             else:
                 # TODO: Not sure if it's the right exception to raise
                 raise SystemError(
                     f'NeST does not support qdisc parsing for tc version below \
-                        {TcRunner.old_tc_version}')
+                        {TcRunner.MINIMUM_SUPPORTED_VERSION}')
 
         # Store parsed results
         dev_name = TopologyMap.get_interface(self.ns_id, self.dev)['name']

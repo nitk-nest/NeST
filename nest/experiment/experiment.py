@@ -82,11 +82,6 @@ class Flow():
 class Experiment():
     """Handles experiment to be run on topology"""
 
-    # List of node and qdisc stats
-    # the API supports
-    node_stats = ['cwnd', 'rtt']
-    qdisc_stats = ['qlen', 'latency']
-
     def __init__(self, name):
         """
         Create experiment
@@ -160,29 +155,6 @@ class Experiment():
         flow._options = options #pylint: disable=protected-access
         self.add_flow(flow)
 
-    def require_node_stats(self, node, stats=''):
-        """
-        Stats to be obtained from node in the experiment
-
-        Parameters
-        ----------
-        node : Node
-            Node from which stats are to be obtained
-        stats : list(str)
-            Stats required (Default value = '')
-        """
-        # TODO: Leads to rewrite if the function is called
-        # twice with same 'node'
-
-        # for stat in stats:
-        #     if stat not in Experiment.node_stats:
-        #         raise ValueError('{} is not a valid Node property.'.format(stat))
-
-        self.node_stats.append({
-            'id': node.id,
-            'stats': stats
-        })
-
     def require_qdisc_stats(self, interface, stats=''):
         """
         Stats to be obtained from qdisc in interface
@@ -192,7 +164,7 @@ class Experiment():
         interface : Interface
             Interface containing the qdisc
         stats : list(str)
-            Stats required (Default value = '')
+            Stats required (Default value = '') [NOT SUPPORTED]
         """
         # TODO: Leads to rewrite if the function is called
         # twice with same 'interface'
