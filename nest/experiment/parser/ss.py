@@ -117,8 +117,9 @@ class SsRunner(Runner):
                 param_value = ''
                 for i in range(len(param_value_list)):
                     param_value = param_value_list[i].strip()
-                    # remove the units at the end
-                    param_value = re.sub(r'[A-Za-z]', '', param_value)
+                    # remove the units at the end and convert
+                    if param_value.endswith('bps'):
+                        param_value = self.convert_to(param_value)
                     try:
                         # rtt has both avg and dev rtt separated by a /
                         if param == 'rtt':
@@ -142,3 +143,15 @@ class SsRunner(Runner):
         Closes the temp files created
         """
         return super().clean_up()
+
+    @staticmethod
+    def convert_to(param_value, unit_out='Mbps'):
+        """
+        Converts parameter value to specified unit
+        """
+        converter = {'Kbps':1.0, 'Mbps':1000.0, 'Gbps':1000000.0}
+
+        unit_in = param_value[-4:]
+        param_value = re.sub(r'[A-Za-z]', '', param_value)
+        param_value = str(float(param_value)*converter[unit_in]/converter[unit_out])
+        return param_value
