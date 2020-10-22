@@ -15,6 +15,8 @@ from nest.engine.quagga import create_quagga_directory
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+# pylint:disable=too-few-public-methods
 class RoutingHelper:
     """
     Handles basic routing requirements for the topology.
@@ -51,51 +53,47 @@ class RoutingHelper:
         module = importlib.import_module(module_str)
         self.protocol_class = getattr(module, class_str)
 
-    def _create_quagga_directory(self, path):
-        """
-        Creates a directly for holding quagga related config
-        and pid files
-
-        Parameters
-        ----------
-        path : str
-            config directory path. Generally /tmp
-        """
-        dir_path = f'{path}/{IdGen.topology_id}_quagga-configs'
-        create_quagga_directory(dir_path)
-        return dir_path
-
     def populate_routing_tables(self):
         """
         Populate routing table using `self.protocol`
         """
-
-        self.setup_default_routes()
+        self._setup_default_routes()
 
         if self.protocol == 'static':
             pass  # TODO: add static routing
         else:
-            self.run_quagga()
+            self._run_quagga()
 
-    def setup_default_routes(self):
+    def _create_quagga_directory(self):
+        """
+        Creates a directly for holding quagga related config
+        and pid files.
+        Override this to create directory at a location other than /tmp
+        """
+        dir_path = f'/tmp/quagga-configs_{IdGen.topology_id}'
+        create_quagga_directory(dir_path)
+        return dir_path
+
+
+    def _setup_default_routes(self):
         """
         Setup default routes in hosts
         """
         for host in self.hosts:
             host.add_route('DEFAULT', host.interfaces[0])
 
-    def run_quagga(self):
+    def _run_quagga(self):
         """
         Run zebra and `self.protocol`
         """
         logger.info('Running zebra and %s on routers', self.protocol)
-        self.conf_dir = self._create_quagga_directory('/tmp')
+        self.conf_dir = self._create_quagga_directory()
         for router in self.routers:
-            self.run_zebra(router)
-            self.run_routing_protocol(router)
-        self.check_for_convergence()
+            self._run_zebra(router)
+            self._run_routing_protocol(router)
+        self._check_for_convergence()
 
-    def run_zebra(self, router):
+    def _run_zebra(self, router):
         """
         Create requird config file and run zebra
         """
@@ -103,7 +101,7 @@ class RoutingHelper:
         zebra.create_basic_config()
         zebra.run()
 
-    def run_routing_protocol(self, router):
+    def _run_routing_protocol(self, router):
         """
         Create requird config file and run `self.protocol`
         """
@@ -111,7 +109,7 @@ class RoutingHelper:
         protocol.create_basic_config()
         protocol.run()
 
-    def check_for_convergence(self):
+    def _check_for_convergence(self):
         """
         Wait for the routing protocol to converge.
         Override this for custom convergence check
