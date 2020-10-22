@@ -2,7 +2,7 @@
 # Copyright (c) 2019-2020 NITK Surathkal
 
 """
-Base class for Quagga
+Base class for Quagga.
 """
 
 from abc import ABC, abstractmethod
@@ -13,9 +13,20 @@ from nest.engine.quagga import chown_quagga, run_quagga
 
 class QuaggaBase(ABC):
     """
-    Abstract class for Quagga related processes. This class should
-    be inherited for adding other quagga daemons
+    Abstract class for Quagga related processes.
+    This class should be inherited for adding other quagga daemons.
 
+    Use `add_to_config` to sequentially add daemon related commands
+    for the config files.
+
+    Call `create_config_command` to actually create the file on disk
+
+    Finally call `run` to run the daemon. Uses the above created config file.
+
+    Note:
+    (ii): If you're using `RoutingHelper`, config files are created at the /tmp
+          directory.
+    (ii): Daemons may not work as expected if a config file is not created
     Attributes
     ----------
     conf: file-like
@@ -61,7 +72,6 @@ class QuaggaBase(ABC):
         """
         Creates config file on disk from `self.conf`
         """
-        create_conf_file(self.conf_file)
         with open(self.conf_file, 'w') as conf:
             chown_quagga(self.conf_file)
             self.conf.seek(0)
@@ -71,4 +81,5 @@ class QuaggaBase(ABC):
         """
         Run the `daemon` along with its config file
         """
-        run_quagga(self.router_ns_id, self.daemon, self.conf_file, self.pid_file)
+        run_quagga(self.router_ns_id, self.daemon,
+                   self.conf_file, self.pid_file)

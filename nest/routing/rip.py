@@ -9,6 +9,7 @@ from nest.routing.quagga_base import QuaggaBase
 class Rip(QuaggaBase):
     """
     Handles RIP related functionalities for quagga.
+    Refer to `QuaggaBase` for usage
     """
 
     def __init__(self, router_ns_id, interfaces, conf_dir):
