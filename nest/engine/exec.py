@@ -19,6 +19,7 @@ if LOG_COMMANDS:
     fh.setFormatter(formatter)
     logger.addHandler(fh)
 
+# pylint: disable=inconsistent-return-statements
 def exec_subprocess(cmd, shell=False, output=False, block=True):
     """
     Executes a command

@@ -8,7 +8,9 @@ Helped class for routing
 import time
 import logging
 import importlib
-from os import mkdir
+from os import mkdir, kill, path
+from shutil import rmtree
+from signal import SIGTERM
 from nest.topology.id_generator import IdGen
 from nest.routing.zebra import Zebra
 from nest.topology_map import TopologyMap
@@ -58,6 +60,8 @@ class RoutingHelper:
         module_str, class_str = RoutingHelper.module_map[self.protocol]
         module = importlib.import_module(module_str)
         self.protocol_class = getattr(module, class_str)
+        self.zebra_list = []
+        self.protocol_list = []
 
     def populate_routing_tables(self):
         """
@@ -111,6 +115,7 @@ class RoutingHelper:
         zebra = Zebra(router.id, router.interfaces, self.conf_dir)
         zebra.create_basic_config()
         zebra.run()
+        self.zebra_list.append(zebra)
 
     def _run_routing_protocol(self, router):
         """
@@ -120,6 +125,7 @@ class RoutingHelper:
             router.id, router.interfaces, self.conf_dir)
         protocol.create_basic_config()
         protocol.run()
+        self.protocol_list.append(protocol)
 
     def _check_for_convergence(self):
         """
@@ -143,3 +149,27 @@ class RoutingHelper:
                     break
 
         logger.info('Routing compeleted')
+        self._clean_up()
+
+    def _clean_up(self):
+        """
+        Terminates quagga daemons and deletes config files
+        """
+
+        # Stop zebra processes
+        for zebra in self.zebra_list:
+            with open(zebra.pid_file, 'r') as pid_file:
+                pid = int(pid_file.read())
+                print(pid)
+            kill(pid, SIGTERM)
+
+        # Stop protocol processes
+        for protocol in self.protocol_list:
+            with open(protocol.pid_file, 'r') as pid_file:
+                pid = int(pid_file.read())
+                print(pid)
+            kill(pid, SIGTERM)
+
+        # Delete config directory
+        if path.isdir(self.conf_dir):
+            rmtree(self.conf_dir)
