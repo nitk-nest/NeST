@@ -8,7 +8,7 @@ Base class for Quagga
 from abc import ABC, abstractmethod
 import io
 import shutil
-from nest.engine.quagga import run_quagga, create_conf_file
+from nest.engine.quagga import chown_quagga, run_quagga
 
 
 class QuaggaBase(ABC):
@@ -63,6 +63,7 @@ class QuaggaBase(ABC):
         """
         create_conf_file(self.conf_file)
         with open(self.conf_file, 'w') as conf:
+            chown_quagga(self.conf_file)
             self.conf.seek(0)
             shutil.copyfileobj(self.conf, conf)
 

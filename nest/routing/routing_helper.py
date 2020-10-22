@@ -8,10 +8,11 @@ Helped class for routing
 import time
 import logging
 import importlib
+from os import mkdir
 from nest.topology.id_generator import IdGen
 from nest.routing.zebra import Zebra
 from nest.topology_map import TopologyMap
-from nest.engine.quagga import create_quagga_directory
+from nest.engine.quagga import chown_quagga
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -69,9 +70,15 @@ class RoutingHelper:
         Creates a directly for holding quagga related config
         and pid files.
         Override this to create directory at a location other than /tmp
+
+        Returns
+        -------
+        str:
+            path of the created directory
         """
         dir_path = f'/tmp/quagga-configs_{IdGen.topology_id}'
-        create_quagga_directory(dir_path)
+        mkdir(dir_path)
+        chown_quagga(dir_path)
         return dir_path
 
 

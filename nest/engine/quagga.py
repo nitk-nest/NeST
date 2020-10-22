@@ -23,26 +23,14 @@ def run_quagga(ns_id, daemon, conf_file, pid_file):
     cmd = f'ip netns exec {ns_id} {daemon} -f {conf_file} -i {pid_file} -d'
     exec_subprocess(cmd)
 
-def create_quagga_directory(dir_path):
+def chown_quagga(path):
     """
-    Create a quagga owned directory for quagga configs
+    Change ownership of quagga config directory and files to quagga
 
     Parameters
     ----------
-    dir_path : str
-        path to config directory
+    path : str
+        path to file or directory
     """
-    cmd = f'sudo -u quagga -g quaggavty mkdir {dir_path}'
-    exec_subprocess(cmd)
-
-def create_conf_file(filename):
-    """
-    Create a quagga owned config file
-
-    Parameters
-    ----------
-    filename : str
-        path to config file
-    """
-    cmd = f'sudo -u quagga -g quaggavty touch {filename}'
+    cmd = f'sudo chown quagga {path}'
     exec_subprocess(cmd)
