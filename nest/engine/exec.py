@@ -19,7 +19,7 @@ if LOG_COMMANDS:
     fh.setFormatter(formatter)
     logger.addHandler(fh)
 
-def exec_subprocess(cmd, shell=False, output=False):
+def exec_subprocess(cmd, shell=False, output=False, block=True):
     """
     Executes a command
 
@@ -49,12 +49,13 @@ def exec_subprocess(cmd, shell=False, output=False):
         temp_cmd = cmd.split()
     proc = subprocess.Popen(temp_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell)
 
-    (stdout, _) = proc.communicate()
-    logger.trace(cmd)
+    if block:
+        (stdout, _) = proc.communicate()
+        logger.trace(cmd)
 
-    if output:
-        return stdout.decode()
-    return proc.returncode
+        if output:
+            return stdout.decode()
+        return proc.returncode
 
 def exec_exp_commands(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=None):
     """

@@ -3,6 +3,7 @@
 
 """Class to handles Ospf related functionalities"""
 
+from nest.engine.quagga import run_ospfd
 from nest.routing.quagga_base import QuaggaBase
 
 
@@ -30,3 +31,9 @@ class Ospf(QuaggaBase):
                 f' network {interface.address.get_subnet()} area 0.0.0.0')
 
         self.create_config()
+
+    def run(self):
+        """
+        Runs the ospfd command
+        """
+        run_ospfd(self.router_ns_id, self.conf_file, self.pid_file)

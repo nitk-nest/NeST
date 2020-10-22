@@ -8,7 +8,7 @@ Base class for Quagga.
 from abc import ABC, abstractmethod
 import io
 import shutil
-from nest.engine.quagga import chown_quagga, run_quagga
+from nest.engine.quagga import chown_quagga
 
 
 class QuaggaBase(ABC):
@@ -57,6 +57,12 @@ class QuaggaBase(ABC):
         Created minimum configuration for `daemon`
         """
 
+    @abstractmethod
+    def run(self):
+        """
+        Run the `daemon` along with its config file
+        """
+
     def add_to_config(self, command):
         """
         Add a line to `self.conf`
@@ -76,10 +82,3 @@ class QuaggaBase(ABC):
             chown_quagga(self.conf_file)
             self.conf.seek(0)
             shutil.copyfileobj(self.conf, conf)
-
-    def run(self):
-        """
-        Run the `daemon` along with its config file
-        """
-        run_quagga(self.router_ns_id, self.daemon,
-                   self.conf_file, self.pid_file)

@@ -4,6 +4,7 @@
 """Class to handle zebra"""
 
 from nest.routing.quagga_base import QuaggaBase
+from nest.engine.quagga import run_zebra
 
 
 class Zebra(QuaggaBase):
@@ -36,3 +37,9 @@ class Zebra(QuaggaBase):
             self.add_interface(interface.id)
             self.add_ip_address(interface.address.get_addr())
         self.create_config()
+
+    def run(self):
+        """
+        Runs the zebra daemon
+        """
+        run_zebra(self.router_ns_id, self.conf_file, self.pid_file)

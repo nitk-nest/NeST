@@ -3,6 +3,7 @@
 
 """Class to handles RIP related functionalities"""
 
+from nest.engine.quagga import run_ripd
 from nest.routing.quagga_base import QuaggaBase
 
 
@@ -54,3 +55,9 @@ class Rip(QuaggaBase):
             self.add_network(interface.id)
 
         self.create_config()
+
+    def run(self):
+        """
+        Runs the ripd command
+        """
+        run_ripd(self.router_ns_id, self.conf_file, self.pid_file)

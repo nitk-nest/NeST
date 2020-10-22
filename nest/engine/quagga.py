@@ -5,23 +5,55 @@
 
 from .exec import exec_subprocess
 
-def run_quagga(ns_id, daemon, conf_file, pid_file):
+
+def run_zebra(ns_id, conf_file, pid_file):
     """
-    Runs quagga related daemons like zebra, ospf and rip
+    Runs the zebra daemon
 
     Parameters
     ----------
     ns_id : str
         namespace of the router
-    daemon : str
-        quagga process to run(one of ['zebra'. 'ospfd])
     conf_file : str
         path to config file
     pid_file : str
         path to pid file
     """
-    cmd = f'ip netns exec {ns_id} {daemon} -f {conf_file} -i {pid_file} -d'
-    exec_subprocess(cmd)
+    cmd = f'ip netns exec {ns_id} zebra --config_file {conf_file} --pid_file {pid_file} --retain'
+    exec_subprocess(cmd, block=False)
+
+def run_ripd(ns_id, conf_file, pid_file):
+    """
+    Runs the zebra daemon
+
+    Parameters
+    ----------
+    ns_id : str
+        namespace of the router
+    conf_file : str
+        path to config file
+    pid_file : str
+        path to pid file
+    """
+    cmd = f'ip netns exec {ns_id} ripd --config_file {conf_file} --pid_file {pid_file} --retain'
+    exec_subprocess(cmd, block=False)
+
+def run_ospfd(ns_id, conf_file, pid_file):
+    """
+    Runs the zebra daemon
+
+    Parameters
+    ----------
+    ns_id : str
+        namespace of the router
+    conf_file : str
+        path to config file
+    pid_file : str
+        path to pid file
+    """
+    cmd = f'ip netns exec {ns_id} ospfd --config_file {conf_file} --pid_file {pid_file}'
+    exec_subprocess(cmd, block=False)
+
 
 def chown_quagga(path):
     """

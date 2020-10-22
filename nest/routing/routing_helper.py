@@ -18,6 +18,8 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 # pylint:disable=too-few-public-methods
+
+
 class RoutingHelper:
     """
     Handles basic routing requirements for the topology.
@@ -45,7 +47,10 @@ class RoutingHelper:
         'rip': ['nest.routing.rip', 'Rip']
     }
 
-    def __init__(self, protocol):
+    def __init__(self, protocol='static'):
+        if protocol == 'static':
+            raise NotImplementedError(
+                'Static routing is yet to be implemented. Use rip or ospf')
         self.protocol = protocol
         self.routers = TopologyMap.get_routers()
         self.hosts = TopologyMap.get_hosts()
@@ -81,7 +86,6 @@ class RoutingHelper:
         chown_quagga(dir_path)
         return dir_path
 
-
     def _setup_default_routes(self):
         """
         Setup default routes in hosts
@@ -112,7 +116,8 @@ class RoutingHelper:
         """
         Create requird config file and run `self.protocol`
         """
-        protocol = self.protocol_class(router.id, router.interfaces, self.conf_dir)
+        protocol = self.protocol_class(
+            router.id, router.interfaces, self.conf_dir)
         protocol.create_basic_config()
         protocol.run()
 
@@ -124,7 +129,7 @@ class RoutingHelper:
         logger.info('Waiting for %s to converge', self.protocol)
         interval = 2
         converged = False
-        #Ping between hosts until convergence
+        # Ping between hosts until convergence
         while not converged:
             time.sleep(interval)
             converged = True
