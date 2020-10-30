@@ -160,14 +160,12 @@ class RoutingHelper:
         for zebra in self.zebra_list:
             with open(zebra.pid_file, 'r') as pid_file:
                 pid = int(pid_file.read())
-                print(pid)
             kill(pid, SIGTERM)
 
         # Stop protocol processes
         for protocol in self.protocol_list:
             with open(protocol.pid_file, 'r') as pid_file:
                 pid = int(pid_file.read())
-                print(pid)
             kill(pid, SIGTERM)
 
         # Delete config directory

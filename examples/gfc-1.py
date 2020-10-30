@@ -6,6 +6,7 @@
 ########################
 from nest.experiment import *
 from nest.topology import *
+from nest.routing.routing_helper import RoutingHelper
 
 #############################################
 # This is an implementation of gfc-1 topology
@@ -120,66 +121,10 @@ r4_n7.set_address('10.0.18.6/24')
 n10_r4.set_address('10.0.17.5/24')
 r4_n10.set_address('10.0.17.6/24')
 
-# Adding default routes and subnet specific routes to route the network
-node[0].add_route('DEFAULT', n0_r0)
-node[3].add_route('DEFAULT', n3_r0)
-
-node[1].add_route('DEFAULT', n1_r1)
-node[5].add_route('DEFAULT', n5_r1)
-node[9].add_route('DEFAULT', n9_r1)
-
-node[2].add_route('DEFAULT', n2_r2)
-node[11].add_route('DEFAULT', n11_r2)
-
-node[4].add_route('DEFAULT', n4_r3)
-node[6].add_route('DEFAULT', n6_r3)
-node[8].add_route('DEFAULT', n8_r3)
-
-node[7].add_route('DEFAULT', n7_r4)
-node[10].add_route('DEFAULT', n10_r4)
-
-router[0].add_route(n0_r0.subnet, r0_n0)
-router[0].add_route(n3_r0.subnet, r0_n3)
-router[0].add_route('DEFAULT', r0_r1)
-
-router[1].add_route(n0_r0.subnet, r1_r0)
-router[1].add_route(n3_r0.subnet, r1_r0)
-router[1].add_route(r0_r1.subnet, r1_r0)
-router[1].add_route(n1_r1.subnet, r1_n1)
-router[1].add_route(n5_r1.subnet, r1_n5)
-router[1].add_route(n9_r1.subnet, r1_n9)
-router[1].add_route(r2_r1.subnet, r1_r2)
-router[1].add_route('DEFAULT', r1_r2)
-
-router[2].add_route(n0_r0.subnet, r2_r1)
-router[2].add_route(n3_r0.subnet, r2_r1)
-router[2].add_route(r0_r1.subnet, r2_r1)
-router[2].add_route(n1_r1.subnet, r2_r1)
-router[2].add_route(n5_r1.subnet, r2_r1)
-router[2].add_route(n9_r1.subnet, r2_r1)
-router[2].add_route(r1_r2.subnet, r2_r1)
-router[2].add_route(n2_r2.subnet, r2_n2)
-router[2].add_route(n11_r2.subnet, r2_n11)
-router[2].add_route(r3_r2.subnet, r2_r3)
-router[2].add_route(n4_r3.subnet, r2_r3)
-router[2].add_route(n6_r3.subnet, r2_r3)
-router[2].add_route(n8_r3.subnet, r2_r3)
-router[2].add_route(r4_r3.subnet, r2_r3)
-router[2].add_route(n7_r4.subnet, r2_r3)
-router[2].add_route(n10_r4.subnet, r2_r3)
-
-router[3].add_route(n4_r3.subnet, r3_n4)
-router[3].add_route(n6_r3.subnet, r3_n6)
-router[3].add_route(n8_r3.subnet, r3_n8)
-router[3].add_route(r4_r3.subnet, r3_r4)
-router[3].add_route(n7_r4.subnet, r3_r4)
-router[3].add_route(n10_r4.subnet, r3_r4)
-router[3].add_route('DEFAULT', r3_r2)
-
-router[4].add_route(n7_r4.subnet, r4_n7)
-router[4].add_route(n10_r4.subnet, r4_n10)
-router[4].add_route(r3_r4.subnet, r4_r3)
-router[4].add_route('DEFAULT', r4_r3)
+# Populate routing table using RIP.
+# Internally uses quagga. Refer `RoutingHelper` class
+# on how to add custom quagga configuration
+RoutingHelper(protocol='rip').populate_routing_tables()
 
 # Setting attributes to the interfaces on the nodes and the opposite end
 for n in node:
