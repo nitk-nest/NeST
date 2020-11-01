@@ -94,7 +94,7 @@ class TcRunner(Runner):
                 raise Exception(f'NeST does not support qdisc parsing for tc version below \
                                     {TcRunner.MINIMUM_SUPPORTED_VERSION}')
 
-            elif cur_tc_version < TcRunner.JSON_SUPPORTED_VERSION and \
+            if cur_tc_version < TcRunner.JSON_SUPPORTED_VERSION and \
                 self.qdisc not in TcRunner.JSON_SUPPORTED_VERSION:
 
                 raise Exception(f'NeST does not support {self.qdisc} qdisc parsing for tc \

@@ -117,7 +117,7 @@ class SsRunner(Runner):
                 param_value = ''
                 for i in range(len(param_value_list)):
                     param_value = param_value_list[i].strip()
-                    # remove the units at the end and convert
+                    # remove the (rate) units at the end and convert
                     if param_value.endswith('bps'):
                         param_value = self.convert_to(param_value)
                     try:
@@ -147,11 +147,13 @@ class SsRunner(Runner):
     @staticmethod
     def convert_to(param_value, unit_out='Mbps'):
         """
-        Converts parameter value to specified unit
+        Converts parameter value to specified unit [For bit per second]
         """
-        converter = {'Kbps':1.0, 'Mbps':1000.0, 'Gbps':1000000.0}
+        converter = {'bps': 1, 'Kbps': 1e3, 'Mbps': 1e6, 'Gbps': 1e9}
 
-        unit_in = param_value[-4:]
-        param_value = re.sub(r'[A-Za-z]', '', param_value)
-        param_value = str(float(param_value)*converter[unit_in]/converter[unit_out])
-        return param_value
+        # Extract value and unit
+        unit_in = re.sub(r'[0-9]', '', param_value)
+        extracted_param_value = float(re.sub(r'[A-Za-z]', '', param_value))
+
+        converted_param_value = str(extracted_param_value * converter[unit_in]/converter[unit_out])
+        return converted_param_value

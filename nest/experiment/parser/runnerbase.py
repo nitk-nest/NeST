@@ -57,7 +57,7 @@ class Runner:
         Return the meta item for the given flow.
         This "meta" information is required by plotter.
         """
-        meta_item =  {
+        meta_item = {
             'meta': True,
             'start_time': str(self.start_time),
             'stop_time': str(self.start_time + self.run_time)
