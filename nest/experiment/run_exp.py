@@ -411,10 +411,9 @@ def setup_tc_runners(dependency, qdisc_stats, exp_end):
     if dependency == 1 and len(qdisc_stats) > 0:
         logger.info('Running tc on requested interfaces...\n')
         for qdisc_stat in qdisc_stats:
-            tc_runner = TcRunner(
-                qdisc_stat['ns_id'], qdisc_stat['int_id'], exp_end)
-            runners.append(
-                tc_runner)
+            tc_runner = TcRunner(qdisc_stat['ns_id'], qdisc_stat['int_id'],
+                                 qdisc_stat['qdisc'], exp_end)
+            runners.append(tc_runner)
             workers.append(Process(target=tc_runner.run))
     elif dependency != 1:
         logger.warning('tc not found. Qdisc stats will not be collected')

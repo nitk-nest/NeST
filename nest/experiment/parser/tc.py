@@ -53,7 +53,7 @@ class TcRunner(Runner):
     # Qdiscs supported prior to good JSON support in tc
     PRIOR_JSON_QDISCS_SUPPORTED = ['codel', 'fq_codel', 'pie']
 
-    def __init__(self, ns_id, dev, run_time):
+    def __init__(self, ns_id, dev, qdisc, run_time):
         """
         Constructor to initialize tc runner
 
@@ -63,14 +63,43 @@ class TcRunner(Runner):
             network namespace to run tc from
         dev : str
             dev id to collect tc stats from
+        qdisc : str
+            qdisc name [eg. 'codel', 'pie']
         run_time : num
             total time to run tc for
         """
+
         self.ns_id = ns_id
         self.dev = dev
+        self.qdisc = qdisc
 
         # Start parsing from 0s
         super().__init__(0, run_time)
+
+        # Tc version check
+        self.version_check()
+
+    def version_check(self):
+        """
+        Check the tc version and throw exception if any
+        unsupported task is requested from NeST
+        """
+        tc_version_format = self.check_tc_version_format()
+
+        if tc_version_format == 'old_version_format':
+            cur_tc_version = self.parsed_tc_version()
+
+            if cur_tc_version < TcRunner.MINIMUM_SUPPORTED_VERSION:
+                # TODO: Not sure if it's the right exception to raise
+                raise Exception(f'NeST does not support qdisc parsing for tc version below \
+                                    {TcRunner.MINIMUM_SUPPORTED_VERSION}')
+
+            elif cur_tc_version < TcRunner.JSON_SUPPORTED_VERSION and \
+                self.qdisc not in TcRunner.JSON_SUPPORTED_VERSION:
+
+                raise Exception(f'NeST does not support {self.qdisc} qdisc parsing for tc \
+                                    version below {TcRunner.JSON_SUPPORTED_VERSION}. Supported \
+                                    qdiscs are {TcRunner.PRIOR_JSON_QDISCS_SUPPORTED}')
 
     def run(self):
         """
@@ -209,7 +238,7 @@ class TcRunner(Runner):
             stats_dict = {}
             for qdisc_stat in raw_stat:
                 qdisc = qdisc_stat['kind']
-                if qdisc in TcRunner.PRIOR_JSON_QDISCS_SUPPORTED:
+                if qdisc in TcRunner.PRIOR_JSON_QDISCS_SUPPORTED and qdisc == self.qdisc:
                     handle = qdisc_stat['handle']
                     if handle not in aggregate_stats:
                         aggregate_stats[handle] = []
@@ -247,7 +276,7 @@ class TcRunner(Runner):
             stats_dict = {}
             for qdisc_stat in raw_stat:
                 qdisc = qdisc_stat['kind']
-                if qdisc in TcRunner.PRIOR_JSON_QDISCS_SUPPORTED:
+                if qdisc == self.qdisc:        # To ignore the HTB qdisc
                     handle = qdisc_stat['handle']
                     if handle not in aggregate_stats:
                         aggregate_stats[handle] = []
@@ -329,11 +358,6 @@ class TcRunner(Runner):
                 aggregate_stats = self.parsing_helper_before_good_json_support(raw_stats,
                                                                                qdisc_param,
                                                                                qdisc_re)
-            else:
-                # TODO: Not sure if it's the right exception to raise
-                raise SystemError(
-                    f'NeST does not support qdisc parsing for tc version below \
-                        {TcRunner.MINIMUM_SUPPORTED_VERSION}')
 
         # Store parsed results
         dev_name = TopologyMap.get_interface(self.ns_id, self.dev)['name']
