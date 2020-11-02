@@ -167,7 +167,8 @@ class NetperfRunner(Runner):
         for i in range(len(throughputs)):
             stats_list.append({
                 'timestamp': timestamps[i],
-                'throughput': throughputs[i]
+                # Netperf provides throughput as sending rate from sender's side
+                'sending_rate': throughputs[i]
             })
 
         stats_dict = {f'{self.destination_ip}:{remote_port}': stats_list}

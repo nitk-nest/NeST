@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 #pylint: disable=invalid-name
 
-def simple_plot(title, x_list, y_list, x_label, y_label):
+def simple_plot(title, x_list, y_list, x_label, y_label, legend_string=None):
     """
     Plot values
 
@@ -24,6 +24,8 @@ def simple_plot(title, x_list, y_list, x_label, y_label):
         Label for x values
     y_label : str
         Label for y values
+    legend_string : None/str
+        If a string, then have a legend in the plot
 
     Returns
     -------
@@ -36,6 +38,9 @@ def simple_plot(title, x_list, y_list, x_label, y_label):
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
     ax.set_title(title)
+
+    if legend_string != None:
+        ax.legend([legend_string])
 
     return fig
 

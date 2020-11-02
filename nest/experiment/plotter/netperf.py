@@ -27,7 +27,7 @@ def _plot_netperf_flow(flow, node, dest):
     Returns
     -------
     tuple
-        Timestamped throughput values
+        Timestamped sending_rate values
     """
     # "meta" item will always be present, hence `<= 1`
     if len(flow) <= 1:
@@ -42,20 +42,22 @@ def _plot_netperf_flow(flow, node, dest):
     start_time = float(flow[1]['timestamp']) - user_given_start_time
 
     timestamp = []
-    throughput = []
+    sending_rate = []
 
     for data in flow[1:]:
-        throughput.append(float(data['throughput']))
+        sending_rate.append(float(data['sending_rate']))
         relative_time = float(data['timestamp']) - start_time
         timestamp.append(relative_time)
 
-    title = 'netperf: {dest}'.format(dest=dest)
-    fig = simple_plot(title, timestamp, throughput, 'Time(s)', 'throughput')
-    filename = '{node}_{dest}_throughput.png'.format(node=node, dest=dest)
+    # TODO: Check if sending_rate is always in Mbps
+    fig = simple_plot('Netperf', timestamp, sending_rate, 'Time (s)', 'Sending rate (Mbps)',
+                      legend_string=f'{node} to {dest}')
+
+    filename = '{node}_{dest}_sending_rate.png'.format(node=node, dest=dest)
     Pack.dump_plot('netperf', filename, fig)
     plt.close(fig)
 
-    return (timestamp, throughput)
+    return (timestamp, sending_rate)
 
 
 def plot_netperf(parsed_data):
@@ -77,10 +79,10 @@ def plot_netperf(parsed_data):
             for dest in connection:
                 flow = connection[dest]
                 values = _plot_netperf_flow(flow, node, dest)
-                all_flow_data.append({'label': dest, 'values': values})
+                all_flow_data.append({'label': f'{node} to {dest}', 'values': values})
 
-        fig = mix_plot('netperf', all_flow_data, 'Time(s)',
-                       'throughput', with_sum=True)
-        filename = f'mix_{node}_throughput.png'
+        fig = mix_plot('Netperf', all_flow_data, 'Time (s)',
+                       'Sending rate (Mbps)', with_sum=True)
+        filename = f'{node}_sending_rate.png'
         Pack.dump_plot('netperf', filename, fig)
         plt.close(fig)

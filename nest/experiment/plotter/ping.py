@@ -49,8 +49,8 @@ def _plot_ping_flow(flow, node, dest):
         relative_time = float(data['timestamp']) - start_time
         timestamp.append(relative_time)
 
-    title = 'ping: {dest}'.format(dest=dest)
-    fig = simple_plot(title, timestamp, rtt, 'Time(s)', 'ping')
+    fig = simple_plot('Ping', timestamp, rtt, 'Time (s)', 'RTT (ms)',
+                      legend_string=f'{node} to {dest}')
     filename = '{node}_{dest}_ping.png'.format(node=node, dest=dest)
     Pack.dump_plot('ping', filename, fig)
     plt.close(fig)
@@ -72,7 +72,6 @@ def plot_ping(parsed_data):
     for node in parsed_data:
         node_data = parsed_data[node]
 
-        # all_flow_data = []
         for connection in node_data:
             for dest in connection:
                 flow = connection[dest]
