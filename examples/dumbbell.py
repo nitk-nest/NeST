@@ -36,9 +36,13 @@ num_of_right_nodes = int(sys.argv[2])
 
 ###### TOPOLOGY CREATION ######
 
-# Creating the routers for the dumbel topology
+# Creating the routers for the dumbbell topology
 left_router = Node('left-router')
 right_router = Node('right-router')
+
+# Enabling ip forwarding for the routers
+left_router.enable_ip_forwarding()
+right_router.enable_ip_forwarding()
 
 # Lists to store all the left and right nodes
 left_nodes = []
@@ -147,7 +151,7 @@ for i in range(num_of_left_nodes):
 # the nodes on the right-side and the right-router
 for i in range(num_of_right_nodes):
     right_node_connections[i][0].set_attributes('100mbit', '5ms')
-    right_node_connections[i][0].set_attributes('100mbit', '5ms')
+    right_node_connections[i][1].set_attributes('100mbit', '5ms')
 
 
 # Setting up the attributes of the connections between
