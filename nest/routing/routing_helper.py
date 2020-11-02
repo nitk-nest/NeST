@@ -2,13 +2,14 @@
 # Copyright (c) 2019-2020 NITK Surathkal
 
 """
-Helped class for routing
+Helper class for routing
 """
 
 import time
 import logging
 import importlib
 from os import mkdir, kill, path
+import atexit
 from shutil import rmtree
 from signal import SIGTERM
 from nest.topology.id_generator import IdGen
@@ -49,19 +50,35 @@ class RoutingHelper:
         'rip': ['nest.routing.rip', 'Rip']
     }
 
-    def __init__(self, protocol='static'):
+    def __init__(self, protocol='static', hosts=None, routers=None):
+        """
+        Constructor for RoutingHelper
+
+        Parameters
+        ----------
+        protocol: str
+            routing protocol to be run. one of [ospf, rip]
+        hosts: List[Node]
+            List of hosts in the network. If `None`, considers the entire topology.
+            Use this if your topology has disjoint networks
+        routers: List[Node]
+            List of routers in the network. If `None`, considers the entire topology.
+            Use this if your topology has disjoint networks
+        """
         if protocol == 'static':
             raise NotImplementedError(
                 'Static routing is yet to be implemented. Use rip or ospf')
         self.protocol = protocol
-        self.routers = TopologyMap.get_routers()
-        self.hosts = TopologyMap.get_hosts()
+        self.routers = TopologyMap.get_routers() if routers is None else routers
+        self.hosts = TopologyMap.get_hosts() if hosts is None else hosts
         self.conf_dir = None
         module_str, class_str = RoutingHelper.module_map[self.protocol]
         module = importlib.import_module(module_str)
         self.protocol_class = getattr(module, class_str)
         self.zebra_list = []
         self.protocol_list = []
+
+        atexit.register(self._clean_up)
 
     def populate_routing_tables(self):
         """
