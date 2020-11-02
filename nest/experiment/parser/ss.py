@@ -129,8 +129,7 @@ class SsRunner(Runner):
                             stats_dict_list[port_list[i]
                                             ][-1]['dev_rtt'] = dev_rtt
                         else:
-                            stats_dict_list[port_list[i]
-                                            ][-1][param] = param_value
+                            stats_dict_list[port_list[i]][-1][param] = param_value
                     except TypeError:
                         pass
 

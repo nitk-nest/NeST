@@ -13,7 +13,51 @@ def _get_list_of_ss_params():
     """
     Return list of params parsed by ss
     """
-    return ['cwnd', 'rtt', 'dev_rtt', 'ssthresh', 'rto', 'delivery_rate']
+    return ['cwnd', 'rtt', 'dev_rtt', 'ssthresh', 'rto', 'delivery_rate', 'pacing_rate']
+
+def _get_ss_params_units():
+    """
+    Obtain the units of each ss parameters
+    """
+    units = {
+        'cwnd': None,
+        'rtt': 'ms',
+        'dev_rtt': 'ms',
+        'ssthresh': None,
+        'rto': 'ms',
+        'delivery_rate': 'Mbps',
+        'pacing_rate': 'Mbps'
+    }
+    return units
+
+def _get_nicer_param_names():
+    """
+    For example,
+    'rtt' -> 'RTT'
+    'delivery_rate' -> 'Delivery rate'
+    """
+    nice_names = {
+        'cwnd': 'CWND',
+        'rtt': 'RTT',
+        'dev_rtt': 'DevRTT',
+        'ssthresh': 'ssthresh',
+        'rto': 'RTO',
+        'delivery_rate': 'Delivery rate',
+        'pacing_rate': 'Pacing rate'
+    }
+    return nice_names
+
+def _get_ylabel(param):
+    # Get ss param units
+    units = _get_ss_params_units()
+    # Get "nicer" param names
+    nicer_param_names = _get_nicer_param_names()
+
+    ylabel = nicer_param_names[param]
+    if units[param] is not None:
+        ylabel += f' ({units[param]})'
+
+    return ylabel
 
 
 def _extract_from_ss_flow(flow, node, dest_ip, dest_port):
@@ -86,12 +130,11 @@ def _plot_ss_flow(flow, node, dest_ip, dest_port):
     """
     (timestamp, flow_params) = _extract_from_ss_flow(
         flow, node, dest_ip, dest_port)
+
     for param in flow_params:
-        # Plot the values
-        title = 'ss: {dest_ip}:{dest_port}'.format(
-            dest_ip=dest_ip, dest_port=dest_port)
-        fig = simple_plot(title, timestamp,
-                          flow_params[param], 'Time(s)', param)
+        fig = simple_plot('Socket Stats (ss)', timestamp, flow_params[param], 'Time (s)',
+                          _get_ylabel(param), legend_string=f'{node} to {dest_ip}:{dest_port}')
+
         filename = f'{node}_{dest_ip}:{dest_port}_{param}.png'
         Pack.dump_plot('ss', filename, fig)
         plt.close(fig)
@@ -123,8 +166,9 @@ def plot_ss(parsed_data):
                 for dest_port in flow_data:
                     flow = flow_data[dest_port]
                     values = _plot_ss_flow(flow, node, dest_ip, dest_port)
-                    all_flow_data.append(
-                        {'values': values, 'label': '{}:{}'.format(dest_ip, dest_port)})
+                    all_flow_data.append({
+                        'values': values,
+                        'label': f'{node} to {dest_ip}:{dest_port}'})
 
                 if len(all_flow_data) > 0:
 
@@ -146,7 +190,7 @@ def plot_ss(parsed_data):
                             data.append(
                                 {'values': (x_vals[i], y_vals[i]), 'label': labels[i]})
 
-                        fig = mix_plot('ss: ' + param, data, 'Time(s)', param)
-                        filename = f'mix_{node}_{dest_ip}_{param}.png'
+                        fig = mix_plot('Socket Stats (ss)', data, 'Time (s)', _get_ylabel(param))
+                        filename = f'{node}_{dest_ip}_{param}.png'
                         Pack.dump_plot('ss', filename, fig)
                         plt.close(fig)

@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 
 #pylint: disable=invalid-name
 
+#pylint: disable=too-many-arguments
 def simple_plot(title, x_list, y_list, x_label, y_label, legend_string=None):
     """
     Plot values
@@ -39,7 +40,7 @@ def simple_plot(title, x_list, y_list, x_label, y_label, legend_string=None):
     ax.set_ylabel(y_label)
     ax.set_title(title)
 
-    if legend_string != None:
+    if legend_string is not None:
         ax.legend([legend_string])
 
     return fig
