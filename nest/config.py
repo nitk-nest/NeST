@@ -7,6 +7,8 @@ import os
 import json
 import logging
 
+logger = logging.getLogger(__name__)
+
 default_value = {'topology': {}, 'experiment': {}, 'engine': {}}
 
 def import_default_config():
