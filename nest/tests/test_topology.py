@@ -8,17 +8,16 @@ from nest.topology import Node, connect
 from nest.clean_up import delete_namespaces
 
 #pylint: disable=missing-docstring
-
+#pylint: disable=invalid-name
 class TestTopology(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        cls.n0 = Node('n0')
-        cls.n1 = Node('n1')
+    def setUp(self):
+        self.n0 = Node('n0')
+        self.n1 = Node('n1')
 
-    @classmethod
-    def tearDownClass(cls):
+    def tearDown(self):
         delete_namespaces()
+
 
     def test_p2p(self):
         (n0_n1, n1_n0) = connect(self.n0, self.n1)
