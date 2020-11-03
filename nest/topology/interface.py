@@ -8,6 +8,7 @@ from .. import engine
 from .id_generator import IdGen
 from ..topology_map import TopologyMap
 from . import traffic_control
+from .. import config
 
 # TODO: Improve this module such that the below pylint disables are no
 # longer required
@@ -15,7 +16,6 @@ from . import traffic_control
 #pylint: disable=too-many-instance-attributes
 #pylint: disable=protected-access
 #pylint: disable=too-few-public-methods
-
 
 class Interface:
     """
@@ -327,7 +327,7 @@ class Interface:
 
         # TODO: find how to set a good bandwitdh
         default_bandwidth = {
-            'rate': '1024mbit'
+            'rate': config.get_value('default_bandwidth')
         }
 
         # TODO: Standardize this; seems like arbitrary handle values
@@ -362,7 +362,7 @@ class Interface:
 
         # TODO: find how to set a good bandwitdh
         default_bandwidth = {
-            'rate': '1024mbit'
+            'rate': config.get_value('default_bandwidth')
         }
 
         self.add_class('htb', '1:', '1:1', **default_bandwidth)
