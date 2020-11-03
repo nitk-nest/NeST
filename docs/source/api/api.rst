@@ -13,3 +13,4 @@ NeST APIs
 
    topology
    experiment
+   routing

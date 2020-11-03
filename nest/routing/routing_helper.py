@@ -31,7 +31,7 @@ class RoutingHelper:
 
     Attributes
     ----------
-    module_map : dict
+    _module_map : dict
         map between protocol string and its module and class
     protocol : str
         routing protocol(one of['ospf'])
@@ -45,7 +45,7 @@ class RoutingHelper:
         Protocol class which will later be instantiated
     """
 
-    module_map = {
+    _module_map = {
         'ospf': ['nest.routing.ospf', 'Ospf'],
         'rip': ['nest.routing.rip', 'Rip']
     }
@@ -72,7 +72,7 @@ class RoutingHelper:
         self.routers = TopologyMap.get_routers() if routers is None else routers
         self.hosts = TopologyMap.get_hosts() if hosts is None else hosts
         self.conf_dir = None
-        module_str, class_str = RoutingHelper.module_map[self.protocol]
+        module_str, class_str = RoutingHelper._module_map[self.protocol]
         module = importlib.import_module(module_str)
         self.protocol_class = getattr(module, class_str)
         self.zebra_list = []

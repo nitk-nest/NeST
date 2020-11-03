@@ -1,0 +1,45 @@
+Routing
+===============
+
+QuaggaBase
+---------------------------
+
+.. automodule:: nest.routing.quagga_base
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Zebra
+--------------------
+
+.. automodule:: nest.routing.zebra
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Ospf
+-------------------
+
+.. automodule:: nest.routing.ospf
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+Rip
+------------------
+
+.. automodule:: nest.routing.rip
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+RoutingHelper
+------------------------------
+
+.. automodule:: nest.routing.routing_helper
+   :special-members: __init__
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
