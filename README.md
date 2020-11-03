@@ -4,8 +4,10 @@
 collecting and visualizing data by providing a user friendly API, addressing
 common issues involved in conducting networking experiments.
 
+`NeST` source code repository is maintained at [GitLab](https://gitlab.com/nitk-nest/nest).
+
 ## Installation
-To install NeST from the [Python Package Index](https://pypi.org/project/nitk-nest/0.1/) run
+To install NeST from the [Python Package Index](https://pypi.org/project/nitk-nest) run
 ```
 pip install nitk-nest
 ```
@@ -34,6 +36,6 @@ sudo -E python -m unittest
 
 ## Contributing
 
-To contibute, read [Contributing.md](https://gitlab.com/nitk-nest/nest/-/blob/master/CONTRIBUTING.md)
+To contibute, read [CONTRIBUTING.md](https://gitlab.com/nitk-nest/nest/-/blob/master/CONTRIBUTING.md)
 
 **NOTE**: Running a script that uses NeST requires root access.
