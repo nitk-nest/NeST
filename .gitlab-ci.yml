@@ -16,6 +16,16 @@ before_script:
   - python -V
   - python -m venv venv
   - source venv/bin/activate
+  - apt-get update
+  - apt-get -y install quagga
+  - zebra -v
+  - mkdir -p  /run/quagga
+  - chown quagga:quagga /run/quagga
+  - rm -f /etc/quagga/daemons
+  - |
+    echo "zebra=yes
+    ospfd=yes
+    ripd=yes" >> /etc/quagga/daemons
 
 build nest:
   stage: build
@@ -32,7 +42,7 @@ run pylint:
 run unit tests:
   stage: test
   script:
-    - python -m unittest
+    - python -m unittest -v
 
 test docs:
   stage: test
