@@ -175,15 +175,17 @@ class RoutingHelper:
 
         # Stop zebra processes
         for zebra in self.zebra_list:
-            with open(zebra.pid_file, 'r') as pid_file:
-                pid = int(pid_file.read())
-            kill(pid, SIGTERM)
+            if path.isfile(zebra.pid_file):
+                with open(zebra.pid_file, 'r') as pid_file:
+                    pid = int(pid_file.read())
+                kill(pid, SIGTERM)
 
         # Stop protocol processes
         for protocol in self.protocol_list:
-            with open(protocol.pid_file, 'r') as pid_file:
-                pid = int(pid_file.read())
-            kill(pid, SIGTERM)
+            if path.isfile(protocol.pid_file):
+                with open(protocol.pid_file, 'r') as pid_file:
+                    pid = int(pid_file.read())
+                kill(pid, SIGTERM)
 
         # Delete config directory
         if path.isdir(self.conf_dir):

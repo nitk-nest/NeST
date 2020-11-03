@@ -19,8 +19,10 @@ def run_zebra(ns_id, conf_file, pid_file):
     pid_file : str
         path to pid file
     """
-    cmd = f'ip netns exec {ns_id} zebra --config_file {conf_file} --pid_file {pid_file} --retain'
-    exec_subprocess(cmd, block=False)
+    cmd = f'ip netns exec {ns_id} zebra --config_file {conf_file} \
+            --pid_file {pid_file} --retain --daemon'
+    exec_subprocess(cmd)
+
 
 def run_ripd(ns_id, conf_file, pid_file):
     """
@@ -35,8 +37,10 @@ def run_ripd(ns_id, conf_file, pid_file):
     pid_file : str
         path to pid file
     """
-    cmd = f'ip netns exec {ns_id} ripd --config_file {conf_file} --pid_file {pid_file} --retain'
-    exec_subprocess(cmd, block=False)
+    cmd = f'ip netns exec {ns_id} ripd --config_file {conf_file} \
+            --pid_file {pid_file} --retain --daemon'
+    exec_subprocess(cmd)
+
 
 def run_ospfd(ns_id, conf_file, pid_file):
     """
@@ -51,8 +55,8 @@ def run_ospfd(ns_id, conf_file, pid_file):
     pid_file : str
         path to pid file
     """
-    cmd = f'ip netns exec {ns_id} ospfd --config_file {conf_file} --pid_file {pid_file}'
-    exec_subprocess(cmd, block=False)
+    cmd = f'ip netns exec {ns_id} ospfd --config_file {conf_file} --pid_file {pid_file} --daemon'
+    exec_subprocess(cmd)
 
 
 def chown_quagga(path):
@@ -64,5 +68,5 @@ def chown_quagga(path):
     path : str
         path to file or directory
     """
-    cmd = f'sudo chown quagga {path}'
+    cmd = f'chown quagga {path}'
     exec_subprocess(cmd)

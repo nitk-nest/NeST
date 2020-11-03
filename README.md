@@ -23,7 +23,7 @@ The formatted documentation can also be read at:
 Tests can be found in `nest/tests` folder.\
 Run the below command in the repo's root folder to run the tests.
 ```
-sudo python -m unittest
+sudo python -m unittest -v
 ```
 
 **NOTE**: If tests are run from within a virtual environment, then an additional

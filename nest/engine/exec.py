@@ -20,7 +20,7 @@ if LOG_COMMANDS:
     logger.addHandler(fh)
 
 # pylint: disable=inconsistent-return-statements
-def exec_subprocess(cmd, shell=False, output=False, block=True):
+def exec_subprocess(cmd, shell=False, output=False):
     """
     Executes a command
 
@@ -50,13 +50,12 @@ def exec_subprocess(cmd, shell=False, output=False, block=True):
         temp_cmd = cmd.split()
     proc = subprocess.Popen(temp_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell)
 
-    if block:
-        (stdout, _) = proc.communicate()
-        logger.trace(cmd)
+    (stdout, _) = proc.communicate()
+    logger.trace(cmd)
 
-        if output:
-            return stdout.decode()
-        return proc.returncode
+    if output:
+        return stdout.decode()
+    return proc.returncode
 
 def exec_exp_commands(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=None):
     """
