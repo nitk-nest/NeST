@@ -131,7 +131,7 @@ class Experiment():
         flow._options = options #pylint: disable=protected-access
         self.add_flow(flow)
 
-    def add_udp_flow(self, flow, target_bw=1):
+    def add_udp_flow(self, flow, target_bandwidth='1mbit'):
         """
         Add UDP flow to experiment
 
@@ -140,16 +140,15 @@ class Experiment():
         flow : Flow
             Flow to be added to experiment
         target_bw :
-             (Default value = 1)
-
-        Returns
-        -------
-
+            UPD bandwidth (in Mbits) (Default value = '1mbit')
         """
+        if len(target_bandwidth) < 4 or target_bandwidth[-4:] != 'mbit':
+            raise Exception('Invalid bandwidth unit given to target_bandwidth parameter. ' \
+                            'Expecting mbit.')
 
         options = {
             'protocol': 'UDP',
-            'target_bw': target_bw
+            'target_bw': target_bandwidth
         }
 
         flow._options = options #pylint: disable=protected-access

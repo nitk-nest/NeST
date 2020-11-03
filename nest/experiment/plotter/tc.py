@@ -63,9 +63,8 @@ def _plot_tc_stats(stats, node, interface):
     """
     (qdisc, timestamp, stats_params) = _extract_from_tc_stats(stats, node, interface)
     for param in stats_params:
-        title = 'tc: {node}:{qdisc}'.format(node=node, qdisc=qdisc)
-        fig = simple_plot(title, timestamp,
-                          stats_params[param], 'Time(s)', param)
+        fig = simple_plot('Traffic Control (tc)', timestamp, stats_params[param],
+                          'Time (s)', param, legend_string=f'Interface {interface} in {node}')
         filename = f'{node}_{interface}_{qdisc}_{param}.png'
         Pack.dump_plot('tc', filename, fig)
         plt.close(fig)

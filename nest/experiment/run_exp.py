@@ -376,7 +376,7 @@ def setup_ss_runners(dependency, ss_schedules):
     runners = []
     workers = []
     if dependency == 1:
-        logger.info('Running ss on nodes...\n')
+        logger.info('Running ss on nodes...')
         for ns_id, timings in ss_schedules.items():
             ss_runner = SsRunner(ns_id[0], ns_id[1], timings[0],
                                  timings[1] - timings[0])
@@ -409,7 +409,7 @@ def setup_tc_runners(dependency, qdisc_stats, exp_end):
     runners = []
     workers = []
     if dependency == 1 and len(qdisc_stats) > 0:
-        logger.info('Running tc on requested interfaces...\n')
+        logger.info('Running tc on requested interfaces...')
         for qdisc_stat in qdisc_stats:
             tc_runner = TcRunner(qdisc_stat['ns_id'], qdisc_stat['int_id'],
                                  qdisc_stat['qdisc'], exp_end)
