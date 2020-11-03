@@ -34,12 +34,6 @@ sudo -E python -m unittest
 
 ## Contributing
 
-The repository is hosted on GitLab:
-[https://gitlab.com/nitk-nest/nest](https://gitlab.com/nitk-nest/nest).
-
-- Create an issue if required.
-- Create a merge request containing the necessary changes.
-- Make sure the code adheres to
-[pep8](https://www.python.org/dev/peps/pep-0008/) coding standards.
+To contibute, read [Contributing.md](https://gitlab.com/nitk-nest/nest/-/blob/master/CONTRIBUTING.md)
 
 **NOTE**: Running a script that uses NeST requires root access.
