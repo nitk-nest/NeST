@@ -35,5 +35,6 @@ def delete_namespaces():
     if config.get_value('delete_namespaces_on_termination'):
         for namepspace in namespaces:
             engine.delete_ns(namepspace['id'])
-
-        logger.info('Cleaned up environment!')
+            logger.info('Cleaned up environment!')
+    else:
+        logger.info('Namespaces not deleted')
