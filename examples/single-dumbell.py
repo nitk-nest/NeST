@@ -79,22 +79,18 @@ flow2 = Flow(peer2, peer1, eth_p1r1.get_address(), 0, 10, 4)
 # First experiment
 exp1 = Experiment('tcp_4up')
 exp1.add_flow(flow1)
-exp1.require_node_stats(peer1)
 exp1.require_qdisc_stats(eth_r1r2)
 exp1.require_qdisc_stats(eth_r2r1)
 
 # Second experiment
 exp2 = Experiment('tcp_4down')
 exp2.add_flow(flow2)
-exp2.require_node_stats(peer2)
 exp2.require_qdisc_stats(eth_r2r1)
 
 # Third experiment
 exp3 = Experiment('tcp_4up&down')
 exp3.add_flow(flow1)
 exp3.add_flow(flow2)
-exp3.require_node_stats(peer1)
-exp3.require_node_stats(peer2)
 
 ### Run the experiment! ###
 

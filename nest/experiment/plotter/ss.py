@@ -48,6 +48,20 @@ def _get_nicer_param_names():
     return nice_names
 
 def _get_ylabel(param):
+    """
+    Obtain y label for plots for a given parameter.
+
+    For eg. 'delivery_rate' -> 'Delivery rate (Mbps)'
+
+    Arguments
+    ---------
+        param : str
+            parameter
+
+    Returns
+    -------
+        str
+    """
     # Get ss param units
     units = _get_ss_params_units()
     # Get "nicer" param names

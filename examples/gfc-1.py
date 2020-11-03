@@ -222,7 +222,4 @@ gfc_exp.require_qdisc_stats(r1_r2)
 gfc_exp.require_qdisc_stats(r2_r3)
 gfc_exp.require_qdisc_stats(r3_r4)
 
-for i in range(6):
-    gfc_exp.require_node_stats(node[i])
-
 gfc_exp.run()
