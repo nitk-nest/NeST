@@ -4,5 +4,8 @@
         "delete_namespaces_on_termination": true,
         "default_bandwidth": "1024mbit"
     },
+    "experiment" : {
+        "plot_results": true
+    },
     "log_level": "DEBUG"
 }

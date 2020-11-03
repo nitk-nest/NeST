@@ -7,6 +7,7 @@ from multiprocessing import Process
 from collections import namedtuple, defaultdict
 import logging
 
+from nest import config
 from ..topology_map import TopologyMap
 from ..clean_up import kill_processes
 # Import results
@@ -128,12 +129,13 @@ def run_experiment(exp):
     # Output results as JSON dumps
     dump_json_ouputs()
 
-    logger.info('Plotting results...')
+    if config.get_value('plot_results'):
+        logger.info('Plotting results...')
 
-    # Plot results and dump them as images
-    run_workers(get_plotter_workers())
+        # Plot results and dump them as images
+        run_workers(get_plotter_workers())
 
-    logger.info('Plotting complete!')
+        logger.info('Plotting complete!')
 
     cleanup()
 
