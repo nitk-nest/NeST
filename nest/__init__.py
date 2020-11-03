@@ -39,7 +39,7 @@ if all(key in os.environ for key in ('SUDO_UID', 'SUDO_GID')):
 add_logging_level('TRACE', logging.DEBUG - 1, 'trace')
 logger = logging.getLogger(__name__)
 ch = logging.StreamHandler()    # Logger output will be output to stderr
-ch.setLevel(logging.DEBUG)
+ch.setLevel(config.get_value('log_level'))
 logger.addHandler(ch)
 formatter = logging.Formatter('[%(levelname)s] : %(message)s')
 ch.setFormatter(formatter)
