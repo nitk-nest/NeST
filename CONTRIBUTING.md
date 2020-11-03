@@ -1,9 +1,5 @@
 # Contributing to NeST
-`NeST` is a python3 package that handles testbed setup, testbed configuration,
-collecting and visualizing data by providing a user friendly API, addressing
-common issues involved in conducting networking experiments.
 #### Table Of Contents
-[What should I know before I get started?](#what-should-i-know-before-i-get-started)
 [How Can I Contribute?](#how-can-i-contribute)
   * [Reporting Bugs](#reporting-bugs)
   * [Suggesting Enhancements](#suggesting-enhancements)
@@ -14,16 +10,9 @@ common issues involved in conducting networking experiments.
   * [Documentation Styleguide](#documentation-styleguide)
   * [Code Style](#code-style)
 
-
-## What should I know before I get started?
-
-`NeST` has it's own architecture. The architecture is given below.
-(Add image here)
-Each module provides a specific service. Engine provides a set of low level APIs for other modules. Topology module creates the topology by using virtual nodes and interfaces. Experiment module provides APIs to generate traffic and extract the statistics from nodes and interfaces.
-
-
 ## How Can I Contribute?
 
+Refer [this](https://blog.apnic.net/2020/09/18/nest-a-simpleefficient-tool-to-study-congestion-control/) blog to get a brief overview of NeST.
 ### Reporting Bugs
 
 To report a bug in NeST, do the following
@@ -45,21 +34,22 @@ To contribute to NeST,
 * Fork the repository
 * Create a new branch with an appropriate name for the branch
 * Make sure the code follows the  [Styleguides](#styleguides)
-* Run all the unittests and add unittest if necessary
+* Run all the [tests](./README.md#unit-tests) and add unit test if necessary
 * Push the code to the relevant branch
-* Make a merge request (add link)
+* Ensure that the code passes the pipeline
+* Make a [merge request](https://gitlab.com/nitk-nest/nest/-/merge_requests/new)
 
-## How Can I Contribute?
+## Styleguides
 
 ### Git Commit Messages
 The commit messages usually follow the convention
-`\<module-name> : Commit message`
-`Deailed description of the commit`
+`<module-name> : Commit message`
+`Detailed description of the commit`
 
 ### Documentation Styleguide
-We follow the [Sphinx documentation](https://www.sphinx-doc.org/en/master/) style
+We follow the [Sphinx documentation](https://www.sphinx-doc.org/en/master/) style and refer [docs/README.md](./docs/README.md) to generate documentation.
 
 ### Code Style
-We follow the [PEP-8 coding sytle](https://www.python.org/dev/peps/pep-0008/) and the code written must get a 10/10 on pylint. This can be verified by running
+We follow the [PEP-8 coding sytle](https://www.python.org/dev/peps/pep-0008/) (with some exceptions) and the code written must get a 10/10 on pylint. This can be verified by running
 `pylint nest`
 from the root folder of the repository. If the code fails to adhere to the PEP-8 coding style, then the pipeline fails and the code will not be accepted
