@@ -1,8 +1,11 @@
+.. SPDX-License-Identifier: GPL-2.0-only
+   Copyright (c) 2019-2020 NITK Surathkal
+
 Topology
-=====================
+========
 
 Address
-----------------------------
+-------
 
 .. automodule:: nest.topology.address
    :members:
@@ -10,7 +13,7 @@ Address
    :show-inheritance:
 
 Interface
-------------------------------
+---------
 
 .. automodule:: nest.topology.interface
    :members:
@@ -18,7 +21,7 @@ Interface
    :show-inheritance:
 
 Node
--------------------------
+----
 
 .. automodule:: nest.topology.node
    :members:
@@ -26,7 +29,7 @@ Node
    :show-inheritance:
 
 Traffic Control
--------------------------------------
+---------------
 
 .. automodule:: nest.topology.traffic_control
    :members:
