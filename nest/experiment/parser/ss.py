@@ -151,8 +151,8 @@ class SsRunner(Runner):
         converter = {'bps': 1, 'Kbps': 1e3, 'Mbps': 1e6, 'Gbps': 1e9}
 
         # Extract value and unit
-        unit_in = re.sub(r'[0-9]', '', param_value)
-        extracted_param_value = float(re.sub(r'[A-Za-z]', '', param_value))
+        unit_in = re.sub(r'^\d*\.?\d*', '', param_value)
+        extracted_param_value = float(re.sub(r'[A-Za-z]*', '', param_value))
 
         converted_param_value = str(extracted_param_value * converter[unit_in]/converter[unit_out])
         return converted_param_value
