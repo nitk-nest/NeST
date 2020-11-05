@@ -3,6 +3,27 @@ NeST RELEASE NOTES
 
 This file contains NeST release notes (most recent release first).
 
+Release 0.2.1 (Dec 13, 2020)
+============================
+
+If available, the numbers below mark the issue numbers on GitLab (prefixed by '#'),
+or GitLab merge request number (prefixed by '!').
+
+New user-visible features
+-------------------------
+- !39: Added isis support in Quagga
+
+Bugs fixed
+----------
+- !25: In v0.2, there was an error in parsing stats from ss tool. This has been addressed in !25.
+- !35: Use agg backend for matplotlib. This is specifically for plotting graphs into files.
+- !31: Config value was being stored locally in a variable. This has been fixed.
+- #71: Fix Quagga issues in Arch.
+
+Other issues addressed
+----------------------
+- !26: Add an unit test for experiment module. This improves test coverage from 55% to 71%.
+
 Release 0.2 (Nov 03, 2020)
 ==========================
 
@@ -16,7 +37,8 @@ New user-visible features
 
 Bugs fixed
 ----------
-If available, the numbers below mark the issue numbers on GitLab.
+If available, the numbers below mark the issue numbers on GitLab (prefixed by '#').
+
 - #55: Routing error in examples/dumbbell.py has been fixed.
 - #40: delivery_rate and pacing_rate from ss are converted to one unit (Mbits) for plotting.
 - #31: Resolved errors in Address management.
