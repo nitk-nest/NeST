@@ -1,7 +1,6 @@
 # NeST: Network Stack Tester
 
 [![pipeline status](https://gitlab.com/nitk-nest/nest/badges/master/pipeline.svg)](https://gitlab.com/nitk-nest/nest/-/commits/master)
-[![coverage report](https://gitlab.com/nitk-nest/nest/badges/master/coverage.svg)](https://gitlab.com/nitk-nest/nest/-/commits/master)
 
 `NeST` is a python3 package that handles testbed setup, testbed configuration,
 collecting and visualizing data by providing a user friendly API, addressing
@@ -39,6 +38,6 @@ sudo -E python -m unittest -v
 
 ## Contributing
 
-To contibute, read [CONTRIBUTING.md](https://gitlab.com/nitk-nest/nest/-/blob/master/CONTRIBUTING.md)
+To contribute, read [CONTRIBUTING.md](https://gitlab.com/nitk-nest/nest/-/blob/master/CONTRIBUTING.md)
 
 **NOTE**: Running a script that uses NeST requires root access.
