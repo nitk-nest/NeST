@@ -1,3 +1,5 @@
+image: python:3.8
+
 stages:
   - build
   - test
@@ -11,60 +13,66 @@ cache:
     - venv/
 
 before_script:
-  - uname -r
-  - apt-get update
-
-  # Install python and create venv
-  - apt-get -y install python3 python3-pip
-  - python3 -V
-  - pip3 -V
-  - python3 -m venv venv
+  # Create virtual env
+  - python -V
+  - python -m venv venv
   - source venv/bin/activate
-
-  # Install Netperf
-  - apt-get -y install netperf
-  - netperf -V
-
-  # Install Quagga
-  - apt-get -y install quagga
-  - zebra -v
-  - mkdir -p  /run/quagga
-  - chown quagga:quagga /run/quagga
-  - rm -f /etc/quagga/daemons
-  - |
-    echo "zebra=yes
-    ospfd=yes
-    ripd=yes
-    isisd=yes" >> /etc/quagga/daemons
 
 build nest:
   stage: build
   script:
-    - pip3 install .
+    - pip install .
 
 run pylint:
   stage: test
   script:
-    - pip3 install pylint
+    - pip install pylint
     - pylint --version
     - pylint nest
 
 run unit tests:
   stage: test
   script:
+    # First install dependencies Netperf and Quagga
+
+    # Install netperf
+    - git clone https://github.com/HewlettPackard/netperf.git
+    - cd netperf
+    - git checkout netperf-2.7.0
+    - sh ./configure
+    - make install
+    - netperf -V
+    - cd ..
+
+    # Install quagga
+    - apt-get update
+    - apt-get -y install quagga
+    - zebra -v
+    - mkdir -p  /run/quagga
+    - chown quagga:quagga /run/quagga
+    - rm -f /etc/quagga/daemons
+    - |
+      echo "zebra=yes
+      ospfd=yes
+      ripd=yes" >> /etc/quagga/daemons
+
+    # Run unit tests
     - pip install coverage
     - coverage --version
     - coverage run --source nest -m unittest -v
     - coverage report
     - coverage xml
+
   artifacts:
     reports:
       cobertura: coverage.xml
+    paths:
+      - test-experiment*/
 
 test docs:
   stage: test
   script:
-    - pip3 install -r docs/doc_requirements.txt
+    - pip install -r docs/doc_requirements.txt
     - make -C docs html
   rules:
     - changes:
