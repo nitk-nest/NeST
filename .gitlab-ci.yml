@@ -42,7 +42,14 @@ run pylint:
 run unit tests:
   stage: test
   script:
-    - python -m unittest -v
+    - pip install coverage
+    - coverage --version
+    - coverage run --source nest -m unittest -v
+    - coverage report
+    - coverage xml
+  artifacts:
+    reports:
+      cobertura: coverage.xml
 
 test docs:
   stage: test
