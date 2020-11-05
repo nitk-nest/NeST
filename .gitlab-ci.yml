@@ -3,6 +3,7 @@ image: python:latest
 stages:
   - build
   - test
+  - release
 
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
@@ -77,3 +78,12 @@ test docs:
   rules:
     - changes:
         - docs/*
+
+upload to PyPI:
+  stage: release
+  script:
+    - pip install -U twine setuptools wheel
+    - python setup.py sdist bdist_wheel
+    - twine upload dist/* --verbose
+  only:
+    - tags
