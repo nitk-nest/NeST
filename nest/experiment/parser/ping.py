@@ -89,5 +89,3 @@ class PingRunner(Runner):
         stats_dict = {self.destination_ip: stats_list}
 
         PingResults.add_result(self.ns_id, stats_dict)
-
-        self.clean_up()

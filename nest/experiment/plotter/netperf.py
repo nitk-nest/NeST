@@ -31,9 +31,8 @@ def _plot_netperf_flow(flow, node, dest):
     """
     # "meta" item will always be present, hence `<= 1`
     if len(flow) <= 1:
-        raise ValueError('Flow from {} to destination {}'
-                         'doesn\'t have any parsed ss result.'.format(node,
-                                                                      dest))
+        raise ValueError(f'Flow from {node} to destination {dest} '
+                         f'doesn\'t have any parsed netperf result.')
 
     # First item is the "meta" item with user given information
     user_given_start_time = float(flow[0]['start_time'])

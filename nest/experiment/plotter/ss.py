@@ -97,9 +97,8 @@ def _extract_from_ss_flow(flow, node, dest_ip, dest_port):
     """
     # "meta" item will always be present, hence `<= 1`
     if len(flow) <= 1:
-        raise ValueError('Flow from {} to destination {}:{}'
-                         'doesn\'t have any parsed ss result.'.format(node,
-                                                                      dest_ip, dest_port))
+        raise ValueError(f'Flow from {node} to destination {dest_ip}:{dest_port} '
+                         f'doesn\'t have any parsed ss result.')
 
     # First item is the "meta" item with user given information
     user_given_start_time = float(flow[0]['start_time'])

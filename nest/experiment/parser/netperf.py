@@ -174,10 +174,3 @@ class NetperfRunner(Runner):
         stats_dict = {f'{self.destination_ip}:{remote_port}': stats_list}
 
         NetperfResults.add_result(self.ns_id, stats_dict)
-        self.clean_up()
-
-    def clean_up(self):
-        """
-        Closes the temp files created
-        """
-        return super().clean_up()

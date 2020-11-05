@@ -40,8 +40,7 @@ def run_experiment(exp):
     exp : Experiment
         The experiment attributes
     """
-
-    # Could be moved to config?
+    # TODO: Could be moved to config?
     tools = ['netperf', 'ss', 'tc', 'iperf3', 'ping']
     exp_workers = []    # Processes to setup flows and statistics collection
     Runners = namedtuple('runners', tools)

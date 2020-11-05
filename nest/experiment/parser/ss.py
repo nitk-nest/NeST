@@ -135,13 +135,6 @@ class SsRunner(Runner):
 
         SsResults.add_result(
             self.ns_id, {self.destination_ip: stats_dict_list})
-        self.clean_up()
-
-    def clean_up(self):
-        """
-        Closes the temp files created
-        """
-        return super().clean_up()
 
     @staticmethod
     def convert_to(param_value, unit_out='Mbps'):

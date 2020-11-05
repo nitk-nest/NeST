@@ -362,10 +362,3 @@ class TcRunner(Runner):
         # Store parsed results
         dev_name = TopologyMap.get_interface(self.ns_id, self.dev)['name']
         TcResults.add_result(self.ns_id, {dev_name: aggregate_stats})
-        self.clean_up()
-
-    def clean_up(self):
-        """
-        Closes the temp files created
-        """
-        return super().clean_up()

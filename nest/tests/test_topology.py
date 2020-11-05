@@ -6,6 +6,7 @@
 import unittest
 from nest.topology import Node, connect
 from nest.clean_up import delete_namespaces
+from nest.topology_map import TopologyMap
 
 #pylint: disable=missing-docstring
 #pylint: disable=invalid-name
@@ -17,6 +18,7 @@ class TestTopology(unittest.TestCase):
 
     def tearDown(self):
         delete_namespaces()
+        TopologyMap.delete_all_mapping()
 
 
     def test_p2p(self):

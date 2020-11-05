@@ -64,9 +64,9 @@ class Runner:
         }
         return meta_item
 
-    def clean_up(self):
+    def __del__(self):
         """
-        Closes the temp files created
+        Close the temp files created
         """
         self.out.close()
         self.err.close()

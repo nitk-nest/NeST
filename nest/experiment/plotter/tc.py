@@ -24,8 +24,8 @@ def _extract_from_tc_stats(stats, node, interface):
         Interface from which results were obtained from
     """
     if len(stats) == 0:
-        raise ValueError('qdisc at {} of {} doesn\'t have any'
-                         'parsed tc result.'.format(interface, node))
+        raise ValueError(f'qdisc at {interface} of {node} doesn\'t have any '
+                         f'parsed tc result.')
 
     qdisc = stats[0]['kind']
     start_time = float(stats[0]['timestamp'])
