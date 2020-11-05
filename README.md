@@ -1,5 +1,8 @@
 # NeST: Network Stack Tester
 
+[![pipeline status](https://gitlab.com/nitk-nest/nest/badges/master/pipeline.svg)](https://gitlab.com/nitk-nest/nest/-/commits/master)
+[![coverage report](https://gitlab.com/nitk-nest/nest/badges/master/coverage.svg)](https://gitlab.com/nitk-nest/nest/-/commits/master)
+
 `NeST` is a python3 package that handles testbed setup, testbed configuration,
 collecting and visualizing data by providing a user friendly API, addressing
 common issues involved in conducting networking experiments.
@@ -31,7 +34,7 @@ sudo python -m unittest -v
 **NOTE**: If tests are run from within a virtual environment, then an additional
 `-E` might be needed for `sudo`
 ```
-sudo -E python -m unittest
+sudo -E python -m unittest -v
 ```
 
 ## Contributing
