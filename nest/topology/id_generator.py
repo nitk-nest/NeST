@@ -21,7 +21,6 @@ class IdGen:
     """
     topology_id = ""
     counter = 0
-    is_unique_id = config.get_value('assign_random_names')
 
     def __init__(self, topology_id):
         """Initialize `topology_id`
@@ -49,7 +48,7 @@ class IdGen:
             Else, `name` is returned back
 
         """
-        if IdGen.is_unique_id:
+        if config.get_value('assign_random_names'):
             IdGen.counter += 1
             return IdGen.topology_id+"-"+str(IdGen.counter)
 
