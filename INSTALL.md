@@ -73,6 +73,13 @@ Install from the [Python Package Index](https://pypi.org/project/nitk-nest/)
 pip3 install nitk-nest
 ```
 
+**NOTE**: If you install NeST inside a virtual environment or in your "user" home directory,
+then you can run python scripts using NeST as follows:
+```
+sudo -E python3 <program.py>
+```
+Note that NeST requires **root** access currently to create and manage network namespaces.
+
 ### 2. From source
 
 1. Clone the repository
