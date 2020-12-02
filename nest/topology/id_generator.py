@@ -5,8 +5,9 @@
 
 from .. import config
 
-class IdGen:
+class IdGen: # pylint: disable=too-few-public-methods
     """Generate unique id for Topology entites
+
 
     Attributes
     ----------
@@ -53,19 +54,3 @@ class IdGen:
             return IdGen.topology_id+"-"+str(IdGen.counter)
 
         return name
-
-    @staticmethod
-    def enable_unique_id():
-        """
-        If disabled, enable generation of unique id
-
-        """
-        IdGen.is_unique_id = True
-
-    @staticmethod
-    def disable_unique_id():
-        """
-        If enabled, disable generation of unique id
-
-        """
-        IdGen.is_unique_id = False
