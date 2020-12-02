@@ -20,7 +20,7 @@ from nest.topology import *
 n0 = Node('n0')
 n1 = Node('n1')
 
-# Connects the above two nodes using a veth (virtual ethernet)
+# Connects the above two nodes using a veth (virtual Ethernet)
 # pair and returns the interfaces at the end points of the link
 # as a tuple `n0_n1` and `n1_n0`. `n0_n1` interface
 # is at `n0` and `n1_n0` interface is at `n1`.
@@ -40,7 +40,7 @@ n1_n0.set_address('10.0.0.2/24')
 # Attributes for the link from `n0` to `n1` are set at interface
 # `n0_n1` (and vice versa)
 # Note that the bandwidth (and latency) need not be the same in both
-# diretions, as in the real life scenario where upload bandwidth is
+# directions, as in the real life scenario where upload bandwidth is
 # typically lower than download bandwidth
 n0_n1.set_attributes('5mbit', '5ms', 'pfifo')
 n1_n0.set_attributes('10mbit', '100ms', 'pfifo')

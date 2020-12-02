@@ -9,7 +9,7 @@ from nest.experiment import *
 from nest.topology import *
 
 ##############################
-# Topology: Dumbell
+# Topology: Dumbbell
 #
 #   ln0----------------                      ---------------rn0
 #                      \                    /
@@ -25,12 +25,12 @@ from nest.topology import *
 #
 ##############################
 
-# Checking if the right arguements are input
+# Checking if the right arguments are input
 if len(sys.argv) != 3:
-    print('usage: python3 dumbell.py <number-of-left-nodes> <number-of-right-nodes>')
+    print('usage: python3 dumbbell.py <number-of-left-nodes> <number-of-right-nodes>')
     sys.exit(1)
 
-# Assigning number of nodes on either sides of the dumbel accordign to input
+# Assigning number of nodes on either sides of the dumbbell according to input
 num_of_left_nodes = int(sys.argv[1])
 num_of_right_nodes = int(sys.argv[2])
 
@@ -40,7 +40,7 @@ num_of_right_nodes = int(sys.argv[2])
 left_router = Node('left-router')
 right_router = Node('right-router')
 
-# Enabling ip forwarding for the routers
+# Enabling IP forwarding for the routers
 left_router.enable_ip_forwarding()
 right_router.enable_ip_forwarding()
 
@@ -84,7 +84,7 @@ print('Connections made')
 left_subnet = Subnet('10.0.0.0/24')
 
 for i in range(num_of_left_nodes):
-    # Copying a left-node's interface and it's pair to temperory variables
+    # Copying a left-node's interface and it's pair to temporary variables
     node_int = left_node_connections[i][0]
     router_int = left_node_connections[i][1]
 
@@ -96,7 +96,7 @@ for i in range(num_of_left_nodes):
 right_subnet = Subnet('10.0.1.0/24')
 
 for i in range(num_of_right_nodes):
-    # Copying a right-node's interface and it's pair to temperory variables
+    # Copying a right-node's interface and it's pair to temporary variables
     node_int = right_node_connections[i][0]
     router_int = right_node_connections[i][1]
 

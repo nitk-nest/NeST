@@ -26,8 +26,8 @@
     Netperf version 2.7.0
     ```
 
-    If netperf is not installed, then it can be obtained from your linux distribution packages.
-    For ubuntu run:
+    If netperf is not installed, then it can be obtained from your Linux distribution packages.
+    For Ubuntu run:
 
     ```shell
     sudo apt install netperf
@@ -42,15 +42,15 @@
     Linux your-system 5.4.0-51-generic #56-Ubuntu SMP Mon Oct 5 14:28:49 UTC  2020 x86_64
     ```
 
-    If iperf3 is not installed, then it can be obtained from your linux distribution packages.
-    For ubuntu run:
+    If iperf3 is not installed, then it can be obtained from your Linux distribution packages.
+    For Ubuntu run:
 
     ```shell
     sudo apt install iperf3
     ```
 
 5. Install and setup quagga  
-    To install quagga on ubuntu run
+    To install quagga on Ubuntu run
 
     ```shell
     sudo apt install quagga quagga-doc

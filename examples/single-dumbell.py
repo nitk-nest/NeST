@@ -25,7 +25,7 @@ peer2 = Node('peer-2')
 router1 = Node('router-1')
 router2 = Node('router-2')
 
-### Enable ip forwarding in routers ###
+### Enable IP forwarding in routers ###
 
 router1.enable_ip_forwarding()
 router2.enable_ip_forwarding()
@@ -94,7 +94,7 @@ exp3.add_flow(flow2)
 
 ### Run the experiment! ###
 
-# Run these experiments sequentially; seperately
+# Run these experiments sequentially; separately
 exp1.run()
 
 # TODO: Running multiple experiments haven't been

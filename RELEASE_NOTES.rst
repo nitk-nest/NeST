@@ -33,7 +33,7 @@ New user-visible features
 - Python APIs to create and manage network namespaces.
 - APIs to add interfaces to network namespaces.
 - APIs to handle address management and routing between network namespaces.
-- APIs to add queuing discplines to interfaces.
+- APIs to add queuing disciplines to interfaces.
 - APIs to run experiments on the built "virtual" topologies
 - Support for parsing output from tools such as Netperf, ss, tc and ping.
 - Create plots of statistics collected during experiment runs.
