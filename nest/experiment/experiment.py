@@ -140,7 +140,7 @@ class Experiment():
         flow : Flow
             Flow to be added to experiment
         target_bw :
-            UPD bandwidth (in Mbits) (Default value = '1mbit')
+            UDP bandwidth (in Mbits) (Default value = '1mbit')
         """
         if len(target_bandwidth) < 4 or target_bandwidth[-4:] != 'mbit':
             raise Exception('Invalid bandwidth unit given to target_bandwidth parameter. ' \

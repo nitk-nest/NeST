@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
-"""Class to handles Ospf related functionalities"""
+"""Class to handles OSPF related functionalities"""
 
 from nest.engine.quagga import run_ospfd
 from nest.routing.quagga_base import QuaggaBase
@@ -9,7 +9,7 @@ from nest.routing.quagga_base import QuaggaBase
 
 class Ospf(QuaggaBase):
     """
-    Handles Ospf related functionalities for quagga.
+    Handles OSPF related functionalities for Quagga.
     """
 
     def __init__(self, router_ns_id, interfaces, conf_dir):
@@ -17,7 +17,7 @@ class Ospf(QuaggaBase):
 
     def create_basic_config(self):
         """
-        Creates a file with basic configuration for ospf.
+        Creates a file with basic configuration for OSPF.
         Use base `add_to_config` directly for more complex configurations
         """
         for interface in self.interfaces:

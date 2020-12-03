@@ -51,7 +51,7 @@ def _get_ylabel(param):
     """
     Obtain y label for plots for a given parameter.
 
-    For eg. 'delivery_rate' -> 'Delivery rate (Mbps)'
+    For example, 'delivery_rate' -> 'Delivery rate (Mbps)'
 
     Arguments
     ---------
@@ -77,7 +77,7 @@ def _get_ylabel(param):
 def _extract_from_ss_flow(flow, node, dest_ip, dest_port):
     """
     Extract information from flow data and convert it to
-    conviniently plottable data format
+    conveniently plottable data format
 
     Parameters
     ----------

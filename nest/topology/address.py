@@ -13,7 +13,7 @@ class Address:
 
     def __init__(self, addr_str):
         """
-        The constructor validates the entered ip address.
+        The constructor validates the entered IP address.
 
         Parameters
         ----------

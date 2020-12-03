@@ -48,9 +48,9 @@ class Runner:
     def print_error(self):
         """
         Method to print error from `self.err`.
-        Should be overriden by base class
+        Should be overridden by base class
         """
-        self.logger.error('Unknown error occured')
+        self.logger.error('Unknown error occurred')
 
     def get_meta_item(self):
         """

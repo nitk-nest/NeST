@@ -57,7 +57,7 @@ class RoutingHelper:
         Parameters
         ----------
         protocol: str
-            routing protocol to be run. one of [ospf, rip]
+            routing protocol to be run. One of [ospf, rip]
         hosts: List[Node]
             List of hosts in the network. If `None`, considers the entire topology.
             Use this if your topology has disjoint networks
@@ -93,7 +93,7 @@ class RoutingHelper:
 
     def _create_quagga_directory(self):
         """
-        Creates a directly for holding quagga related config
+        Creates a directly for holding Quagga related config
         and pid files.
         Override this to create directory at a location other than /tmp
 
@@ -127,7 +127,7 @@ class RoutingHelper:
 
     def _run_zebra(self, router):
         """
-        Create requird config file and run zebra
+        Create required config file and run zebra
         """
         zebra = Zebra(router.id, router.interfaces, self.conf_dir)
         zebra.create_basic_config()
@@ -136,7 +136,7 @@ class RoutingHelper:
 
     def _run_routing_protocol(self, router):
         """
-        Create requird config file and run `self.protocol`
+        Create required config file and run `self.protocol`
         """
         protocol = self.protocol_class(
             router.id, router.interfaces, self.conf_dir)
@@ -165,12 +165,12 @@ class RoutingHelper:
                 if not converged:
                     break
 
-        logger.info('Routing compeleted')
+        logger.info('Routing completed')
         self._clean_up()
 
     def _clean_up(self):
         """
-        Terminates quagga daemons and deletes config files
+        Terminates Quagga daemons and deletes config files
         """
 
         # Stop zebra processes

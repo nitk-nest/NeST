@@ -2,9 +2,9 @@
 # Copyright (c) 2019-2020 NITK Surathkal
 
 """
-NeST internally uses auto-generated unique id's to name topologies.
-This module holds the mapping between user given names and
-nest's names.
+NeST internally uses auto-generated unique ids to name topologies.
+This module holds the mapping between the user given names and the names
+generated internally by NeST.
 """
 
 import json
@@ -16,10 +16,10 @@ logger.setLevel(logging.INFO)
 
 class TopologyMap():
     """
-    Store mapping between user given names and NeST's ids
+    Store mapping between user given names and NeST ids
     """
 
-    # topology_map contains the info about topology created
+    # topology_map contains the information about topology created
     topology_map = {
         'namespaces': [],
         'hosts': [],
@@ -28,7 +28,7 @@ class TopologyMap():
     # NOTE:
     # To figure out the contents of each dict keyword,
     # checkout the add_keyword function.
-    # For eg, to get the contents of qdisc parameter,
+    # For example, to get the contents of qdisc parameter,
     # checkout add_qdisc function
 
     # Pointer to topology_map['namespaces']
@@ -232,7 +232,7 @@ class TopologyMap():
     @staticmethod
     def get_namespace(ns_id, with_interfaces_pointer=False):
         """
-        Get namespace given it's id
+        Get namespace given its id
 
         Parameters
         ----------

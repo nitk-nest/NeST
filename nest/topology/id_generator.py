@@ -6,7 +6,7 @@
 from .. import config
 
 class IdGen: # pylint: disable=too-few-public-methods
-    """Generate unique id for Topology entites
+    """Generate unique id for Topology entities
 
 
     Attributes

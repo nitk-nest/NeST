@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
-"""ip link commands"""
+"""IP link commands"""
 
 from .exec import exec_subprocess
 
@@ -61,7 +61,7 @@ def set_int_up(ns_name, dev_name):
 
 def setup_veth(ns_name1, ns_name2, dev_name1, dev_name2):
     """
-    Sets up veth connection between interafaces. The interfaces are
+    Sets up veth connection between interfaces. The interfaces are
     set up as well.
 
     The connections are made between `dev_name1` in `ns_name1` and

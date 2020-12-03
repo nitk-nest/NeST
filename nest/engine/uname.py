@@ -6,6 +6,6 @@
 from .exec import exec_subprocess
 
 def get_kernel_version():
-    """Get linux kernel version of the system"""
+    """Get Linux kernel version of the system"""
     version = exec_subprocess('uname -r', output=True)
     return version.split('-')[0]

@@ -9,7 +9,7 @@ from nest.routing.quagga_base import QuaggaBase
 
 class Rip(QuaggaBase):
     """
-    Handles RIP related functionalities for quagga.
+    Handles RIP related functionalities for Quagga.
     Refer to `QuaggaBase` for usage
     """
 
@@ -18,7 +18,7 @@ class Rip(QuaggaBase):
 
     def add_rip(self):
         """
-        Add command to enable rip on router to config file
+        Add command to enable RIP on router to config file
         """
         self.add_to_config('router rip')
 
@@ -29,24 +29,24 @@ class Rip(QuaggaBase):
         Parameters
         ----------
         version : str
-            rip version. Recommended is v2
+            RIP version. Recommended is v2
         """
         self.add_to_config(f' version {version}')
 
     def add_network(self, network):
         """
-        Add command for subnet or interface to run rip on to config file
+        Add command for subnet or interface to run RIP on to config file
 
         Parameters
         ----------
         network : str
-            subnet or interface to run rip on
+            subnet or interface to run RIP on
         """
         self.add_to_config(f' network {network}')
 
     def create_basic_config(self):
         """
-        Creates a file with basic configuration for rip.
+        Creates a file with basic configuration for RIP.
         Use base `add_to_config` directly for more complex configurations
         """
         self.add_rip()

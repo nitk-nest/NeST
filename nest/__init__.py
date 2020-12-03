@@ -35,7 +35,7 @@ if all(key in os.environ for key in ('SUDO_UID', 'SUDO_GID')):
     User(user_id, group_id)
 
 # Set up logging
-# Added to avoid exec commands being printed everytime
+# Added to avoid exec commands being printed every time
 add_logging_level('TRACE', logging.DEBUG - 1, 'trace')
 logger = logging.getLogger(__name__)
 ch = logging.StreamHandler()    # Logger output will be output to stderr

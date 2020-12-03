@@ -26,7 +26,7 @@ class SsRunner(Runner):
     ns_id : str
         network namespace to run ss from
     destination_ip : str
-        ip address of the destination namespace
+        IP address of the destination namespace
     start_time : num
         time at which ss is to be run
     run_time : num
@@ -46,7 +46,7 @@ class SsRunner(Runner):
         ns_id : str
             network namespace to run ss from
         destination_ip : str
-            ip address of the destination namespace
+            IP address of the destination namespace
         start_time : num
             time at which ss is to be run
         run_time : num
@@ -101,7 +101,7 @@ class SsRunner(Runner):
                 timestamp_pattern, raw_stat).group("timestamp")
 
             for port in port_list:
-                # If port encoutered first time
+                # If port encountered first time
                 if port not in stats_dict_list:
                     stats_dict_list[port] = [self.get_meta_item()]
 
@@ -121,7 +121,7 @@ class SsRunner(Runner):
                     if param_value.endswith('bps'):
                         param_value = self.convert_to(param_value)
                     try:
-                        # rtt has both avg and dev rtt separated by a /
+                        # RTT has both average and RTT deviation separated by a /
                         if param == 'rtt':
                             avg_rtt = param_value.split('/')[0]
                             dev_rtt = param_value.split('/')[1]

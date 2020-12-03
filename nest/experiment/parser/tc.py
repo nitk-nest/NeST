@@ -3,7 +3,7 @@
 
 """
 Runs tc command and parses qdisc stats
-from it's output
+from its output
 """
 
 import re
@@ -27,7 +27,7 @@ class TcRunner(Runner):
     old_kernel_version : str
         minimum kernel version required
     new_kernel_version : str
-        kernel version from which tc has concrete json support
+        kernel version from which tc has concrete JSON support
     ns_id : str
         network namespace to run tc from
     dev : str
@@ -44,7 +44,7 @@ class TcRunner(Runner):
     # NOTE: Both the below versions are in OLD tc version format
     # Refer docstring of `check_tc_version_format`
 
-    # Minimum version of tc required by nest
+    # Minimum version of tc required by NeST
     MINIMUM_SUPPORTED_VERSION = strptime("20180129", "%Y%m%d")
 
     # tc version with good JSON support for displaying stats
@@ -127,7 +127,7 @@ class TcRunner(Runner):
         Returns
         -------
         dict:
-            qdisc keyed list of paramters to parsed
+            qdisc keyed list of parameters to parsed
         """
         qdisc_param = {
             'codel': ['count', 'lastcount', 'ldelay', 'drop_next'],
@@ -139,7 +139,7 @@ class TcRunner(Runner):
 
     def get_qdisc_re(self):
         """
-        Compile regular expression for parsing qdisc specific paramters
+        Compile regular expression for parsing qdisc specific parameters
 
         Returns
         -------
@@ -185,7 +185,7 @@ class TcRunner(Runner):
 
     def clean_json(self, stats):
         """
-        Json formatted tc stats with invalid json keys
+        JSON formatted tc stats with invalid JSON keys
         and values are removed or fixed
 
         Parameters
@@ -209,7 +209,7 @@ class TcRunner(Runner):
 
     def parsing_helper_before_good_json_support(self, raw_stats, qdisc_param, qdisc_re):
         """
-        Parsing tc command on linux kernel versions
+        Parsing tc command on Linux kernel versions
         4.15.0 to 5.4
 
         Parameters
@@ -219,7 +219,7 @@ class TcRunner(Runner):
         qdisc_param : dict
             parameters to be obtained for a specific qdisc
         qdisc_re : dict
-            regular expression for parsing qdisc specific paramters
+            regular expression for parsing qdisc specific parameters
 
         Returns
         -------
@@ -253,7 +253,7 @@ class TcRunner(Runner):
 
     def parsing_helper(self, raw_stats):
         """
-        Parsing tc command on linux kernel version
+        Parsing tc command on Linux kernel version
         5.5 and above
 
         Parameters
@@ -292,10 +292,10 @@ class TcRunner(Runner):
 
     def check_tc_version_format(self):
         """
-        iproute2 changed it's versioning format after v5.8.0
+        iproute2 changed its versioning format after v5.8.0
 
         For example, below are the output of `tc -V` for versions near
-        v5.8.0 (this list was compiled by checking the iproute2 git repo):
+        v5.8.0 (this list was compiled by checking the iproute2 git repository):
 
         main   - tc utility, iproute2-5.8.0
         v5.8.0 - tc utility, iproute2-v5.7.0-77-gb687d1067169
@@ -347,7 +347,7 @@ class TcRunner(Runner):
         elif tc_version_format == 'old_version_format':
             cur_tc_version = self.parsed_tc_version()
 
-            # tc produces different JSON ouput format
+            # tc produces different JSON output format
             # based on the version
             if cur_tc_version >= TcRunner.JSON_SUPPORTED_VERSION:
                 aggregate_stats = self.parsing_helper(raw_stats)

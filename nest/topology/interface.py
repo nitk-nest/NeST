@@ -41,7 +41,7 @@ class Interface:
         namespace is of namespace class and not a string
         pair is another object of Interface class to which this is connected
 
-        set_structure tells us if ifb, a default qdisc, netem and htb are added
+        set_structure tells us if ifb, a default qdisc, netem and HTB are added
         ifb is an object of interface class which tells the ifb associated with this interface
 
         qdisc_list, class_list, filter_list gives a list of all those as respective classes
@@ -133,12 +133,12 @@ class Interface:
     @address.setter
     def address(self, address):
         """
-        Assigns ip adress to an interface
+        Assigns IP address to an interface
 
         Parameters
         ----------
         address : Address or str
-            ip address to be assigned to the interface
+            IP address to be assigned to the interface
         """
         if isinstance(address, str):
             address = Address(address)
@@ -162,12 +162,12 @@ class Interface:
 
     def set_address(self, address):
         """
-        Assigns ip adress to an interface
+        Assigns IP address to an interface
 
         Parameters
         ----------
         address : Address or str
-            ip address to be assigned to the interface
+            IP address to be assigned to the interface
 
         *NOTE*: Maintained since mentioned in NeST paper.
         """
@@ -290,7 +290,7 @@ class Interface:
             filter parameters
         """
         # TODO: Verify type of parameters
-        # TODO: Reduce arguements to the engine functions by finding parent and handle automatically
+        # TODO: Reduce arguments to the engine functions by finding parent and handle automatically
 
         self.filter_list.append(
             traffic_control.Filter(
@@ -325,7 +325,7 @@ class Interface:
             'default': '1'
         }
 
-        # TODO: find how to set a good bandwitdh
+        # TODO: find how to set a good bandwidth
         default_bandwidth = {
             'rate': config.get_value('default_bandwidth')
         }
@@ -348,7 +348,7 @@ class Interface:
 
     def _set_structure(self):
         """
-        Sets a proper sturcture to the interface by creating htb class
+        Sets a proper structure to the interface by creating HTB class
         with default bandwidth and a netem qdisc as a child.
         (default bandwidth = 1024mbit)
         """
@@ -360,7 +360,7 @@ class Interface:
 
         self.add_qdisc('htb', 'root', '1:', **default_route)
 
-        # TODO: find how to set a good bandwitdh
+        # TODO: find how to set a good bandwidth
         default_bandwidth = {
             'rate': config.get_value('default_bandwidth')
         }
@@ -372,7 +372,7 @@ class Interface:
     def set_bandwidth(self, min_rate):
         """
         Sets a minimum bandwidth for the interface
-        It is done by adding a htb qdisc and a rate parameter to the class
+        It is done by adding a HTB qdisc and a rate parameter to the class
 
         Parameters
         ----------

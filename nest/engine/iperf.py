@@ -34,7 +34,7 @@ def run_iperf_client(ns_name, server_ip, run_time, flows, target_bw):
     flows : int
         number of parallel flows
     target_bw : int
-        target bandwidth of the udp flow in mbits
+        target bandwidth of the UDP flow in mbits
     """
 
     exec_subprocess(

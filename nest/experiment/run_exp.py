@@ -49,14 +49,14 @@ def run_experiment(exp):
                           iperf3=[], ping=[])  # Runner objects
 
     # Keep track of all destination nodes [to ensure netperf and iperf
-    # server is run atmost once]
+    # server is run at most once]
     destination_nodes = {
         'netperf': set(),
         'iperf3' : set()
     }
 
     # Contains start time and end time to run respective command
-    # from a source netns to destination addr
+    # from a source netns to destination address
     ss_schedules = defaultdict(lambda: (float('inf'), float('-inf')))
     ping_schedules = defaultdict(lambda: (float('inf'), float('-inf')))
 
@@ -257,7 +257,7 @@ def setup_tcp_flows(dependency, flow, ss_schedules, destination_nodes):
     Returns
     -------
     dependency: int
-        updated dependency incase netperf is not installed
+        updated dependency in case netperf is not installed
     netperf_runners: List[NetperfRunner]
         all the netperf flows generated
     workers: List[multiprocessing.Process]
@@ -319,8 +319,8 @@ def setup_udp_flows(dependency, flow, ss_schedules, destination_nodes):
 
     Returns
     -------
-    depedency: int
-        updated dependency incase iproute2 is not installed
+    dependency: int
+        updated dependency in case iproute2 is not installed
     iperf3_runners: List[NetperfRunner]
         all the iperf3 udp flows generated
     workers: List[multiprocessing.Process]

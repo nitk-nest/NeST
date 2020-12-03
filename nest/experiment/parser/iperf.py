@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
-""" Runs iperf command to setup udp flows """
+""" Runs iperf command to setup UDP flows """
 
 from time import sleep
 from .runnerbase import Runner
@@ -11,7 +11,7 @@ from ...engine.iperf import run_iperf_server, run_iperf_client
 class IperfRunner(Runner):
     """
     Runs iperf client and server. Currently being used
-    for udp flows only
+    for UDP flows only
 
     Attributes
     ----------
@@ -22,7 +22,7 @@ class IperfRunner(Runner):
     # pylint: disable=too-many-arguments
     def __init__(self, ns_id, destination_ip, bandwidth, n_flows, start_time, run_time):
         """
-        Constructor to initalize the runner
+        Constructor to initialize the runner
 
         Parameters
         ----------
@@ -31,7 +31,7 @@ class IperfRunner(Runner):
         destination : str
             the ip of server to which it has to connect
         bandwidth : int
-            target bandwidth of the udp flow in mbits
+            target bandwidth of the UDP flow in mbits
         n_flows : int
             number of parallel flows
         start_time : num

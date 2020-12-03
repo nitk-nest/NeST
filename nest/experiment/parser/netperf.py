@@ -2,7 +2,7 @@
 # Copyright (c) 2019-2020 NITK Surathkal
 
 """
-Runs netperf commands to setup tcp flow
+Runs netperf commands to setup TCP flow
 and collect throughput data
 """
 
@@ -16,7 +16,7 @@ from ...topology_map import TopologyMap
 
 class NetperfRunner(Runner):
     """
-    Runs netperf command and parses statistics from it's output
+    Runs netperf command and parses statistics from its output
 
     Attributes
     ----------
@@ -108,7 +108,7 @@ class NetperfRunner(Runner):
         netperf_options = copy.copy(NetperfRunner.default_netperf_options)
         test_options = None
 
-        # Change the default runtime
+        # Change the default run time
         netperf_options['testlen'] = '-l {}'.format(self.run_time)
         # Set test
         netperf_options['testname'] = '-t {}'.format(self.options['testname'])
@@ -161,7 +161,7 @@ class NetperfRunner(Runner):
         remote_port = re.search(remote_port_pattern, raw_stats).group('remote')
 
         # List storing collected stats
-        # First item as "meta" item with user given informataion
+        # First item as "meta" item with user given information
         stats_list = [self.get_meta_item()]
 
         for i in range(len(throughputs)):

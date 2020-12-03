@@ -67,7 +67,7 @@ class QuaggaBase(ABC):
         """
         Add a line to `self.conf`
 
-        Parmeters
+        Parameters
         ---------
         command : str
             command to add to config file

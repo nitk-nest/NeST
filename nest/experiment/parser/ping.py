@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
-"""Runs and rtt ouptut from ping command"""
+"""Runs and provides RTT output from ping command"""
 
 import re
 from time import sleep
@@ -12,14 +12,14 @@ from ...topology_map import TopologyMap
 
 class PingRunner(Runner):
     """
-    Runs ping command and parses statistics from it's output
+    Runs ping command and parses statistics from its output
 
     Attributes
     ----------
     ns_id : str
         network namespace to run netperf from
     destination_ip : str
-        ip address of the destination namespace
+        IP address of the destination namespace
     start_time : num
         time at which netperf is to run
     run_time : num
@@ -35,7 +35,7 @@ class PingRunner(Runner):
         ns_id : str
             network namespace to run netperf from
         destination_ip : str
-            ip address of the destination namespace
+            IP address of the destination namespace
         start_time : num
             time at which netperf is to run
         run_time : num
@@ -67,7 +67,7 @@ class PingRunner(Runner):
 
     def parse(self):
         """
-        parses the rtt from `self.out`
+        parses the RTT from `self.out`
         """
         self.out.seek(0)    # rewind to start of the temp file
         raw_stats = self.out.read().decode()
@@ -77,7 +77,7 @@ class PingRunner(Runner):
             'rtt')) for match in re.finditer(pattern, raw_stats)]
 
         # List storing collected stats
-        # First item as "meta" item with user given informataion
+        # First item as "meta" item with user given information
         stats_list = [self.get_meta_item()]
 
         for (timestamp, rtt) in timestamps_and_rtts:

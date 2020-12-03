@@ -55,7 +55,7 @@ class Node:
         Parameters
         ----------
         dest_addr: Address/str
-            Destination ip address of node to route to. 'DEFAULT' is
+            Destination IP address of node to route to. 'DEFAULT' is
             for all addresses
         via_interface: Interface
             `Interface` in `Node` to route via
@@ -102,7 +102,7 @@ class Node:
         Configure TCP parameters of `Node` available at
         /proc/sys/net/ipv4/tcp_*.
 
-        Eg. 'window_scaling', 'wmem', 'ecn', etc.
+        Example: 'window_scaling', 'wmem', 'ecn', etc.
 
         Parameters
         ----------
@@ -124,7 +124,7 @@ class Node:
         Configure UDP parameters of `Node` available at
         /proc/sys/net/ipv4/udp_*.
 
-        Eg. 'early_demux', 'l3mdev_accept', 'rmem_min', 'wmem_min'
+        Example: 'early_demux', 'l3mdev_accept', 'rmem_min', 'wmem_min'
 
         Parameters
         ----------
@@ -146,7 +146,7 @@ class Node:
         Read TCP parameters of `Node` available at
         `/proc/sys/net/ipv4/tcp_*`.
 
-        Eg. 'window_scaling', 'wmem', 'ecn', etc.
+        Example: 'window_scaling', 'wmem', 'ecn', etc.
 
         Parameters
         ----------
@@ -160,7 +160,7 @@ class Node:
             is returned.
 
         read tcp_parameters available at /proc/sys/net/ipv4/tcp_*
-        Eg. window_scaling, wmem, ecn, etc.
+        Example: window_scaling, wmem, ecn, etc.
         """
         return engine.read_kernel_param(self.id, 'net.ipv4.tcp_', param)
 
@@ -169,7 +169,7 @@ class Node:
         Read UDP parameters of `Node`available at
         `/proc/sys/net/ipv4/udp_*`.
 
-        Eg. 'early_demux', 'l3mdev_accept', 'rmem_min', 'wmem_min'
+        Example: 'early_demux', 'l3mdev_accept', 'rmem_min', 'wmem_min'
 
         Parameters
         ----------
@@ -199,7 +199,7 @@ class Node:
         Returns
         -------
         bool
-            `True` if `Node` can succesfully ping `destination_address`.
+            `True` if `Node` can successfully ping `destination_address`.
             Else `False`.
         """
         if isinstance(destination_address, str):

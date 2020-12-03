@@ -9,7 +9,7 @@ from nest.engine.quagga import run_zebra
 
 class Zebra(QuaggaBase):
     """
-    Handles zebra related functionalities for quagga.
+    Handles zebra related functionalities for Quagga.
     Refer to `QuaggaBase` for usage
     """
 
@@ -24,13 +24,13 @@ class Zebra(QuaggaBase):
 
     def add_ip_address(self, ip_address):
         """
-        Add ip address command to config file
+        Add IP address command to config file
         """
         self.add_to_config(f' ip address {ip_address}')
 
     def create_basic_config(self):
         """
-        Creates a file with basic configuration for ospf.
+        Creates a file with basic configuration for OSPF.
         Use base `add_to_config` directly for more complex configurations
         """
         for interface in self.interfaces:

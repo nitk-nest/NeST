@@ -5,7 +5,7 @@
 
 from .exec import exec_subprocess
 
-# Only bandwith and latency is considered
+# Only bandwidth and latency is considered
 # Assuming tc on egress
 # Using Netem
 
@@ -228,7 +228,7 @@ def add_filter(ns_name, dev_name, protocol, priority, filtertype, parent='', han
         name of the interface
     """
 
-    # TODO: Check if protocol can be removed from the arguments since it's always ip
+    # TODO: Check if protocol can be removed from the arguments since it's always IP
 
     if parent and parent != 'root':
         parent = 'parent ' + parent

@@ -85,7 +85,7 @@ class Pack():
     def set_owner(path):
         """
         Change file permission to that of the
-        actual user running (For eg. user running
+        actual user running (For example, user running
         sudo)
 
         Parameters

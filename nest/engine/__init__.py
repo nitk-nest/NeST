@@ -4,7 +4,7 @@
 """
 Engine sub-package provides low-level APIs to other sub-packages
 
-All the calls to linux kernel happens in this module.
+All the calls to Linux kernel happens in this module.
 """
 
 from .exec import *

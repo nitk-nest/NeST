@@ -12,7 +12,7 @@ from ..pack import Pack
 def _extract_from_tc_stats(stats, node, interface):
     """
     Extract information from tc stats and convert it to
-    conviniently plottable data format
+    conveniently plottable data format
 
     Parameters
     ----------

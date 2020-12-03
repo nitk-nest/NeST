@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
-""" API's to process config files """
+""" APIs to process config files """
 
 import os
 import json

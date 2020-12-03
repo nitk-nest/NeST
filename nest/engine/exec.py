@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
-"""Execute linux commands"""
+"""Execute Linux commands"""
 
 import logging
 import shlex
@@ -38,7 +38,7 @@ def exec_subprocess(cmd, shell=False, output=False):
     Returns
     -------
     int
-        Return code recieved after executing the command
+        Return code received after executing the command
     """
 
     # TODO: Commands with pipes are easily executed when
