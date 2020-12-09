@@ -25,7 +25,8 @@ before_script:
   - |
     echo "zebra=yes
     ospfd=yes
-    ripd=yes" >> /etc/quagga/daemons
+    ripd=yes
+    isisd=yes" >> /etc/quagga/daemons
 
 build nest:
   stage: build

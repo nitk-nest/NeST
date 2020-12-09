@@ -26,7 +26,7 @@ def run_zebra(ns_id, conf_file, pid_file):
 
 def run_ripd(ns_id, conf_file, pid_file):
     """
-    Runs the zebra daemon
+    Runs the ripd daemon
 
     Parameters
     ----------
@@ -44,7 +44,7 @@ def run_ripd(ns_id, conf_file, pid_file):
 
 def run_ospfd(ns_id, conf_file, pid_file):
     """
-    Runs the zebra daemon
+    Runs the ospfd daemon
 
     Parameters
     ----------
@@ -56,6 +56,22 @@ def run_ospfd(ns_id, conf_file, pid_file):
         path to pid file
     """
     cmd = f'ip netns exec {ns_id} ospfd --config_file {conf_file} --pid_file {pid_file} --daemon'
+    exec_subprocess(cmd)
+
+def run_isisd(ns_id, conf_file, pid_file):
+    """
+    Runs the isisd daemon
+
+    Parameters
+    ----------
+    ns_id : str
+        namespace of the router
+    conf_file : str
+        path to config file
+    pid_file : str
+        path to pid file
+    """
+    cmd = f'ip netns exec {ns_id} isisd --config_file {conf_file} --pid_file {pid_file} --daemon'
     exec_subprocess(cmd)
 
 

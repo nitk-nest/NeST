@@ -47,7 +47,8 @@ class RoutingHelper:
 
     _module_map = {
         'ospf': ['nest.routing.ospf', 'Ospf'],
-        'rip': ['nest.routing.rip', 'Rip']
+        'rip': ['nest.routing.rip', 'Rip'],
+        'isis': ['nest.routing.isis', 'Isis']
     }
 
     def __init__(self, protocol='static', hosts=None, routers=None):
