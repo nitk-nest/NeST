@@ -329,6 +329,8 @@ class TopologyMap():
         """
         TopologyMap.topology_map = {
             'namespaces': [],
+            'hosts': [],
+            'routers': []
         }
         TopologyMap.namespaces_pointer = {}
 
