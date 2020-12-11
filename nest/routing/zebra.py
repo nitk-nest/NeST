@@ -33,6 +33,10 @@ class Zebra(QuaggaBase):
         Creates a file with basic configuration for OSPF.
         Use base `add_to_config` directly for more complex configurations
         """
+
+        # up the loopback interface
+        self.add_interface('lo')
+        self.add_to_config(' no shutdown')
         for interface in self.interfaces:
             self.add_interface(interface.id)
             self.add_ip_address(interface.address.get_addr())
