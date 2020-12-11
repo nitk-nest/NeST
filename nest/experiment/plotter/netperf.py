@@ -3,11 +3,13 @@
 
 """Plot netperf results"""
 
+import logging
 import matplotlib.pyplot as plt
 
 from ..pack import Pack
 from .common import simple_plot, mix_plot
 
+logger = logging.getLogger(__name__)
 
 def _plot_netperf_flow(flow, node, dest):
     """
@@ -26,13 +28,14 @@ def _plot_netperf_flow(flow, node, dest):
 
     Returns
     -------
-    tuple
+    tuple/None
         Timestamped sending_rate values
     """
     # "meta" item will always be present, hence `<= 1`
     if len(flow) <= 1:
-        raise ValueError(f'Flow from {node} to destination {dest} '
-                         f'doesn\'t have any parsed netperf result.')
+        logger.warning('Flow from %s to destination %s '
+                       'doesn\'t have any parsed netperf result.', node, dest)
+        return None
 
     # First item is the "meta" item with user given information
     user_given_start_time = float(flow[0]['start_time'])
@@ -78,10 +81,12 @@ def plot_netperf(parsed_data):
             for dest in connection:
                 flow = connection[dest]
                 values = _plot_netperf_flow(flow, node, dest)
-                all_flow_data.append({'label': f'{node} to {dest}', 'values': values})
+                if values is not None:
+                    all_flow_data.append({'label': f'{node} to {dest}', 'values': values})
 
-        fig = mix_plot('Netperf', all_flow_data, 'Time (s)',
-                       'Sending rate (Mbps)', with_sum=True)
-        filename = f'{node}_sending_rate.png'
-        Pack.dump_plot('netperf', filename, fig)
-        plt.close(fig)
+        if len(all_flow_data) > 1:
+            fig = mix_plot('Netperf', all_flow_data, 'Time (s)',
+                        'Sending rate (Mbps)', with_sum=True)
+            filename = f'{node}_sending_rate.png'
+            Pack.dump_plot('netperf', filename, fig)
+            plt.close(fig)

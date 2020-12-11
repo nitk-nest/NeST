@@ -3,11 +3,13 @@
 
 """Plot ss results"""
 
+import logging
 import matplotlib.pyplot as plt
 
 from ..pack import Pack
 from .common import simple_plot, mix_plot
 
+logger = logging.getLogger(__name__)
 
 def _get_list_of_ss_params():
     """
@@ -92,13 +94,14 @@ def _extract_from_ss_flow(flow, node, dest_ip, dest_port):
 
     Returns
     -------
-    (timestamp, flow_params)
+    (timestamp, flow_params) or None
         Return timestamp and flow parameters
     """
     # "meta" item will always be present, hence `<= 1`
     if len(flow) <= 1:
-        raise ValueError(f'Flow from {node} to destination {dest_ip}:{dest_port} '
-                         f'doesn\'t have any parsed ss result.')
+        logger.warning('Flow from %s to destination %s:%s '
+                       'doesn\'t have any parsed ss result.', node, dest_ip, dest_port)
+        return None
 
     # First item is the "meta" item with user given information
     user_given_start_time = float(flow[0]['start_time'])
@@ -141,8 +144,10 @@ def _plot_ss_flow(flow, node, dest_ip, dest_port):
     dest_port : string
         Destination port of the flow
     """
-    (timestamp, flow_params) = _extract_from_ss_flow(
-        flow, node, dest_ip, dest_port)
+    values = _extract_from_ss_flow(flow, node, dest_ip, dest_port)
+    if values is None:
+        return None
+    (timestamp, flow_params) = values
 
     for param in flow_params:
         fig = simple_plot('Socket Stats (ss)', timestamp, flow_params[param], 'Time (s)',
@@ -179,11 +184,12 @@ def plot_ss(parsed_data):
                 for dest_port in flow_data:
                     flow = flow_data[dest_port]
                     values = _plot_ss_flow(flow, node, dest_ip, dest_port)
-                    all_flow_data.append({
-                        'values': values,
-                        'label': f'{node} to {dest_ip}:{dest_port}'})
+                    if values is not None:
+                        all_flow_data.append({
+                            'values': values,
+                            'label': f'{node} to {dest_ip}:{dest_port}'})
 
-                if len(all_flow_data) > 0:
+                if len(all_flow_data) > 1:
 
                     x_vals = []
                     labels = []

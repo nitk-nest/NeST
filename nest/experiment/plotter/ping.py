@@ -3,11 +3,13 @@
 
 """Plot ping results"""
 
+import logging
 import matplotlib.pyplot as plt
 
 from ..pack import Pack
 from .common import simple_plot
 
+logger = logging.getLogger(__name__)
 
 def _plot_ping_flow(flow, node, dest):
     """
@@ -26,13 +28,14 @@ def _plot_ping_flow(flow, node, dest):
 
     Returns
     -------
-    tuple
+    tuple/None
         Timestamped rtt values
     """
     # "meta" item will always be present, hence `<= 1`
     if len(flow) <= 1:
-        raise ValueError(f'Flow from {node} to destination {dest} '
-                         f'doesn\'t have any parsed ping result.')
+        logger.warning('Flow from %s to destination %s '
+                       'doesn\'t have any parsed ping result.', node, dest)
+        return None
 
     # First item is the "meta" item with user given information
     user_given_start_time = float(flow[0]['start_time'])

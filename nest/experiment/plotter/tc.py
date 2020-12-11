@@ -3,11 +3,13 @@
 
 """Plot tc results"""
 
+import logging
 import matplotlib.pyplot as plt
 
 from .common import simple_plot
 from ..pack import Pack
 
+logger = logging.getLogger(__name__)
 
 def _extract_from_tc_stats(stats, node, interface):
     """
@@ -24,8 +26,9 @@ def _extract_from_tc_stats(stats, node, interface):
         Interface from which results were obtained from
     """
     if len(stats) == 0:
-        raise ValueError(f'qdisc at {interface} of {node} doesn\'t have any '
-                         f'parsed tc result.')
+        logger.warning('Qdisc at %s of %s doesn\'t have any '
+                       'parsed tc result.', interface, node)
+        return None
 
     qdisc = stats[0]['kind']
     start_time = float(stats[0]['timestamp'])
@@ -61,7 +64,11 @@ def _plot_tc_stats(stats, node, interface):
     interface : str
         Interface from which results were obtained from
     """
-    (qdisc, timestamp, stats_params) = _extract_from_tc_stats(stats, node, interface)
+    values = _extract_from_tc_stats(stats, node, interface)
+    if values is None:
+        return
+    (qdisc, timestamp, stats_params) = values
+
     for param in stats_params:
         fig = simple_plot('Traffic Control (tc)', timestamp, stats_params[param],
                           'Time (s)', param, legend_string=f'Interface {interface} in {node}')
