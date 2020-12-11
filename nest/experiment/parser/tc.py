@@ -9,7 +9,7 @@ from its output
 import re
 import json
 import os
-from time import strptime
+from time import strptime, strftime
 from .runnerbase import Runner
 from ..results import TcResults
 from ...topology_map import TopologyMap
@@ -91,15 +91,17 @@ class TcRunner(Runner):
 
             if cur_tc_version < TcRunner.MINIMUM_SUPPORTED_VERSION:
                 # TODO: Not sure if it's the right exception to raise
-                raise Exception(f'NeST does not support qdisc parsing for tc version below \
-                                    {TcRunner.MINIMUM_SUPPORTED_VERSION}')
+                version = 'iproute2-ss' + strftime('%y%m%d', TcRunner.MINIMUM_SUPPORTED_VERSION)
+                raise Exception(f'NeST does not support qdisc parsing for tc version below ' \
+                                f'{version}')
 
-            if cur_tc_version < TcRunner.JSON_SUPPORTED_VERSION and \
-                self.qdisc not in TcRunner.JSON_SUPPORTED_VERSION:
+            if cur_tc_version < TcRunner.JSON_SUPPORTED_VERSION:
+                if self.qdisc not in TcRunner.PRIOR_JSON_QDISCS_SUPPORTED:
 
-                raise Exception(f'NeST does not support {self.qdisc} qdisc parsing for tc \
-                                    version below {TcRunner.JSON_SUPPORTED_VERSION}. Supported \
-                                    qdiscs are {TcRunner.PRIOR_JSON_QDISCS_SUPPORTED}')
+                    version = 'iproute2-ss' + strftime('%y%m%d', TcRunner.JSON_SUPPORTED_VERSION)
+                    raise Exception(f'NeST does not support {self.qdisc} qdisc parsing for tc ' \
+                                    f'version below {version}. Supported ' \
+                                    f'qdiscs are {TcRunner.PRIOR_JSON_QDISCS_SUPPORTED}')
 
     def run(self):
         """
@@ -199,7 +201,7 @@ class TcRunner(Runner):
             fixed json stats
         """
         # pattern to remove the options key
-        options_pattern = r'"options": {(.|\n)*?},'
+        options_pattern = r'"options":(\s)*{(.|\n)*?},'
         stats = re.sub(options_pattern, '', stats)
 
         # pattern to enclose all the values with " "
