@@ -2,23 +2,90 @@
 
 **NOTE**: `NeST` is supported for Linux systems only.
 
+## Installing NeST python package
+
+First, ensure that you have pip installed to install python3 packages.
+It can be installed from your Linux Package Manager. For example,
+this is the command to install pip in Ubuntu:
+
+```shell
+sudo apt install python3-pip
+```
+
+After installing pip, make sure you also upgrade it:
+
+```shell
+python3 -m pip install -U pip
+```
+
+Below are the two approaches to install NeST python package:
+
+### 1. From PyPi
+
+This is the recommended way to install for most users of NeST.
+
+The command will install NeST from
+[PyPI](https://pypi.org/project/nitk-nest/) (Python Package Index).
+
+```shell
+python3 -m pip install nitk-nest
+```
+
+### 2. From source
+
+Follow this approach if you want to contribute to NeST development or
+want the latest source code with unreleased features.
+
+1. Clone the repository
+
+    ```shell
+    git clone https://gitlab.com/nitk-nest/nest.git
+    ```
+
+2. Install via pip
+
+    If you are developing or contributing to NeST development, then it
+    is better to install NeST in editable mode.
+    In editable mode, your code changes are instantly propagated to the
+    library code without reinstalling.
+
+    ```shell
+    python3 -m pip install -e .
+    ```
+
+    If you are not developing, then run the below command:
+
+    ```shell
+    python3 -m pip install .
+    ```
+
+
 ## Install dependencies
 
-1. Ensure iproute2 suite is installed with your kernel
+NeST is an orchestration tool that relies on various network tools for its APIs.
+Below are the list of dependencies NeST requires. You do not need to install all of
+them. The dependencies you install will depend on your use case and how you would
+like to use NeST.
+
+**Core dependencies** will be marked as bold and *Optional dependencies*
+will be maked in italics.
+
+1. Ensure **iproute2** suite is installed with your kernel.
 
     ```shell
     $ ip -V
     ip utility, iproute2-ss200127
     ```
 
-2. Ensure ping is installed
+2. Ensure **ping** is installed
 
     ```shell
     $ ping -V
     ping from iputils s20190709
     ```
 
-3. Install netperf  
+3. Install **netperf**
+
     You can check if netperf is installed by running the command:
 
     ```shell
@@ -26,15 +93,22 @@
     Netperf version 2.7.0
     ```
 
-    If netperf is not installed, then it can be obtained from your Linux distribution packages.
+    If netperf is not installed, then it can be obtained from your
+    Linux distribution packages.
     For Ubuntu run:
 
     ```shell
     sudo apt install netperf
     ```
 
-4. Install iperf3  
-    You can check if iperf is installed by running the command:
+    Minimum version of netperf supported is 2.6.0
+
+4. Install *iperf3*
+
+    This is an optional dependency. You can install it if you want
+    NeST to internally use iperf3 to generate flows.
+
+    You can check if iperf3 is installed by running the command:
 
     ```shell
     $ iperf3 -v
@@ -49,8 +123,14 @@
     sudo apt install iperf3
     ```
 
-5. Install and setup quagga  
-    To install quagga on Ubuntu run
+5. Install and setup *Quagga*
+
+    This is an optional dependency. You can install it if you want to use
+    dynamic routing APIs in NeST.
+
+
+    Quagga can be obtained from your Linux distribution packages.
+    For Ubuntu run:
 
     ```shell
     sudo apt install quagga quagga-doc
@@ -62,6 +142,7 @@
     zebra=no -> zebra=yes
     ripd=no -> ripd=yes
     ospfd=no -> ospfd=yes
+    isisd=no -> isisd=yes
     ```
 
     If the `daemons` file doesn't exist create one and add the following lines to the file
@@ -73,51 +154,13 @@
     ospf6d=no
     ripd=yes
     ripngd=no
-    isisd=no
+    isisd=yes
     babeld=no
     ```
 
-   **Note**: Ensure that a quagga owned directory named 'quagga'   exists under `/run`
-
-## Installing NeST
-
-### 1. From PyPi
-
-Install from the [Python Package Index](https://pypi.org/project/nitk-nest/)
-
-```shell
-pip3 install nitk-nest
-```
-
-**NOTE**: If you install NeST inside a virtual environment or in your "user" home directory,
-then you can run python scripts using NeST as follows:
-
-```shell
-sudo -E python3 <program.py>
-```
-
-Note that NeST requires **root** access currently to create and manage network namespaces.
-
-### 2. From source
-
-1. Clone the repository
+   **Note**: Ensure that a quagga owned directory named 'quagga' exists under /run. If it doesn't exist run
 
     ```shell
-    git clone https://gitlab.com/nitk-nest/nest.git
-    ```
-
-2. Install via pip
-
-    If you are developing, then it is better to do it in editable mode.
-    In editable mode, your code changes are instantly propagated to the
-    library code without reinstalling.
-
-    ```shell
-    python -m pip install -e .
-    ```
-
-    If you are not developing, then run the below command:
-
-    ```shell
-    python -m pip install .
-    ```
+    sudo mkdir /run/quagga
+    sudo chown quagga /run/quagga
+    ````
