@@ -209,11 +209,11 @@ class Node:
             self.id, destination_address.get_addr(with_subnet=False))
         if verbose:
             if status:
-                logger.debug('SUCCESS: ping from %s to %s', self.name,
-                             destination_address.get_addr(with_subnet=False))
+                print(f'SUCCESS: ping from {self.name} to '
+                        f'{destination_address.get_addr(with_subnet=False)}')
             else:
-                logger.debug('FAILURE: ping from %s to %s', self.name,
-                             destination_address.get_addr(with_subnet=False))
+                print(f'FAILURE: ping from {self.name} to '
+                        f'{destination_address.get_addr(with_subnet=False)}')
         return status
 
     def enable_ip_forwarding(self):
