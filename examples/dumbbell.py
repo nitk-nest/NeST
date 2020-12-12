@@ -22,7 +22,6 @@ from nest.topology import *
 #   .               /                          \             .
 #   lnk------------                              ------------rnk
 #
-#
 ##############################
 
 # Checking if the right arguments are input
