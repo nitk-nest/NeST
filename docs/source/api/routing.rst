@@ -37,6 +37,14 @@ Rip
    :undoc-members:
    :show-inheritance:
 
+Isis
+----
+
+.. automodule:: nest.routing.isis
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 RoutingHelper
 -------------
 

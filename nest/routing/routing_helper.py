@@ -34,7 +34,7 @@ class RoutingHelper:
     _module_map : dict
         map between protocol string and its module and class
     protocol : str
-        routing protocol(one of['ospf'])
+        routing protocol(one of ['rip', 'ospf', 'isis'])
     routers : List[Node]
         routers in the topology
     hosts : List[Node]
