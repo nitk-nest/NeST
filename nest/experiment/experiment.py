@@ -185,7 +185,8 @@ class Experiment():
 
     def run(self):
         """Run the experiment"""
-        logger.info('Running experiment %s \n', self.name)
+        print()
+        logger.info('Running experiment %s ', self.name)
         Pack.init(self.name)
         run_experiment(self)
 

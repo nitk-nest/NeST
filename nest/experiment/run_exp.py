@@ -284,9 +284,9 @@ def setup_tcp_flows(dependency, flow, ss_schedules, destination_nodes):
         netperf_options = {}
         netperf_options['testname'] = 'TCP_STREAM'
         netperf_options['cong_algo'] = options['cong_algo']
-
-        logger.info('Running %s netperf flows from %s to %s...',
-                    n_flows, src_name, dst_addr)
+        f_flow = 'flow' if n_flows == 1 else 'flows'
+        logger.info('Running %s netperf %s from %s to %s...',
+                    n_flows, f_flow, src_name, dst_addr)
 
         # Create new processes to be run simultaneously
         for _ in range(n_flows):
@@ -342,9 +342,9 @@ def setup_udp_flows(dependency, flow, ss_schedules, destination_nodes):
             IperfRunner.run_server(dst_ns)
 
         src_name = TopologyMap.get_namespace(src_ns)['name']
-
-        logger.info('Running %s udp flows from %s to %s...',
-                    n_flows, src_name, dst_addr)
+        f_flow = 'flow' if n_flows == 1 else 'flows'
+        logger.info('Running %s udp %s from %s to %s...',
+                    n_flows, f_flow, src_name, dst_addr)
 
         runner_obj = IperfRunner(src_ns, dst_addr, options['target_bw'], n_flows,
                                  start_t, stop_t-start_t)
