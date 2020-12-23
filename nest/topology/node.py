@@ -45,6 +45,7 @@ class Node:
         self._interfaces = []
 
         engine.create_ns(self.id)
+        engine.set_interface_mode(self.id, 'lo', 'up')
         TopologyMap.add_namespace(self.id, self.name)
         TopologyMap.add_host(self)
 
