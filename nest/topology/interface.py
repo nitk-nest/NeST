@@ -3,12 +3,16 @@
 
 """API related to interfaces in topology"""
 
+from nest import engine
+from nest.topology_map import TopologyMap
+import nest.config as config
 from .address import Address
-from .. import engine
 from .id_generator import IdGen
-from ..topology_map import TopologyMap
 from . import traffic_control
-from .. import config
+
+# Max length of interface when Topology Map is disabled
+# i.e. 'assign_random_names' is set to False in config
+MAX_CUSTOM_NAME_LEN = 15
 
 # TODO: Improve this module such that the below pylint disables are no
 # longer required
@@ -36,18 +40,23 @@ class Interface:
 
     def __init__(self, interface_name):
         """
-        name is only used to display it to the user
-        id is the actual backend name
-        namespace is of namespace class and not a string
-        pair is another object of Interface class to which this is connected
+        Constructor of Interface.
 
-        set_structure tells us if ifb, a default qdisc, netem and HTB are added
-        ifb is an object of interface class which tells the ifb associated with this interface
+        *Note*: Unlike Node object, the creation of Interface object
+        does not actually create an interface in the backend. This has
+        to be done seperately by invoking engine.
+        [See `Veth` class for an example]
 
-        qdisc_list, class_list, filter_list gives a list of all those as respective classes
-
-        TODO: Add parameter list
+        Parameters
+        ----------
+        interface_name : str
+            Name of the interface
         """
+
+        if config.get_value('assign_random_names') is False:
+            if len(interface_name) > MAX_CUSTOM_NAME_LEN:
+                raise ValueError(f'Interface name {interface_name} is too long. Interface names '
+                                 f'should not exceed 15 characters')
 
         # TODO: name and address should be the only public members
         self._name = interface_name
@@ -318,7 +327,13 @@ class Interface:
         dev_name : string
             The interface to which the ifb was added
         """
-        self.ifb = Interface('ifb-' + dev_name)
+        ifb_name = 'ifb-' + dev_name
+        if config.get_value('assign_random_names') is False:
+            if len(ifb_name) > MAX_CUSTOM_NAME_LEN:
+                raise ValueError(f'Auto-generated IFB interface name {ifb_name} is too long. '
+                                 f'The length of name should not exceed 15 characters.')
+
+        self.ifb = Interface(ifb_name)
         engine.create_ifb(self.ifb.id)
 
         # Add ifb to namespace
@@ -509,45 +524,87 @@ class Veth:
         return (self.interface1, self.interface2)
 
 
-def connect(ns1, ns2, interface1_name='', interface2_name=''):
+def connect(node1, node2, interface1_name='', interface2_name=''):
     """
-    Connects two nodes `ns1` and `ns2`
+    Connects two nodes `node1` and `node2`.
+    Creates two paired Virtual Ethernet interfaces (veth) and returns
+    them as a 2-element tuple.
+    The first interface belongs to `node1`, and the second interface
+    belongs to `node2`.
+
+    Parameters
+    ----------
+    node1 : Node
+        First veth interface added in this node
+    node2 : Node
+        Second veth interface added in this node
+    interface1_name : str
+        Name of first veth interface
+    interface2_name : str
+        Name of second veth interface
+
+    Returns
+    -------
+    (interface1, interface2)
+        2 tuple of created (paired) veth interfaces. `interface1` is in
+        `n1` and `interface2` is in `n2`.
     """
+    # Number of connections between `node1` and `node2`, set to `None`
+    # initially since it hasn't been computed yet
+    connections = None
+
+    # Check interface names
+    if interface1_name == '':
+        connections = _number_of_connections(node1, node2)
+        interface1_name = _autogenerate_interface_name(node1, node2, connections)
+
+    if interface2_name == '':
+        if connections is None:
+            connections = _number_of_connections(node1, node2)
+        #pylint: disable=arguments-out-of-order
+        interface2_name = _autogenerate_interface_name(node2, node1, connections)
+
     # Create 2 interfaces
-
-    if interface1_name == '' and interface2_name == '':
-        connections = _number_of_connections(ns1, ns2)
-        interface1_name = ns1.name + '-' + ns2.name + '-' + str(connections)
-        interface2_name = ns2.name + '-' + ns1.name + '-' + str(connections)
-
     veth = Veth(interface1_name, interface2_name)
-    (int1, int2) = veth._get_interfaces()
+    (interface1, interface2) = veth._get_interfaces()
 
-    ns1._add_interface(int1)
-    ns2._add_interface(int2)
+    node1._add_interface(interface1)
+    node2._add_interface(interface2)
 
     # Set the proper structure for the veth
-    int1._set_structure()
-    int2._set_structure()
+    interface1._set_structure()
+    interface2._set_structure()
 
-    int1.set_mode('UP')
-    int2.set_mode('UP')
+    interface1.set_mode('UP')
+    interface2.set_mode('UP')
 
-    return (int1, int2)
+    return (interface1, interface2)
 
-
-def _number_of_connections(ns1, ns2):
+def _autogenerate_interface_name(node1, node2, connections):
     """
-    Return number of connections between the two namespaces
+    Auto-generate interface names based on respective node names
+    and number of connections
     """
+    interface_name = node1.name + '-' + node2.name + '-' + str(connections)
 
+    if config.get_value('assign_random_names') is False:
+        if len(interface_name) > MAX_CUSTOM_NAME_LEN:
+            raise ValueError(f'Auto-generated veth interface name {interface_name} is too long. '
+                             f'The length of name should not exceed 15 characters.')
+
+    return interface_name
+
+def _number_of_connections(node1, node2):
+    """
+    Return number of connections between the two nodes
+    """
     connections = 0
 
-    if len(ns1.interfaces) > len(ns2.interfaces):
-        ns1, ns2 = ns2, ns1
+    if len(node1.interfaces) > len(node2.interfaces):
+        node1, node2 = node2, node1
 
-    for interface in ns1.interfaces:
-        if interface.pair.node == ns2:
+    for interface in node1.interfaces:
+        if interface.pair.node == node2:
             connections = connections + 1
 
     return connections
