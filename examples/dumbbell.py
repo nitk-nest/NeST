@@ -160,14 +160,19 @@ right_router_connection.set_attributes('20mbit', '50ms', 'pie')
 
 ######  RUN TESTS ######
 
-# Add a flow from the last left node to the last right node
-flow = Flow(left_nodes[num_of_left_nodes-1], right_nodes[num_of_right_nodes-1], right_node_connections[num_of_right_nodes-1][0].get_address(), 0, 20, 2)
-
 # Giving the experiment a name
 experiment = Experiment('tcp-on-dumbbell')
 
-# Mentioning the flavour of TCP
-experiment.add_tcp_flow(flow, 'reno')
+# Add a flow from the left nodes to respective right nodes
+for i in range(min(num_of_left_nodes, num_of_right_nodes)):
+    flow = Flow(left_nodes[i], right_nodes[i],
+                right_node_connections[i][0].address, 0, 20, 1)
+    # Use TCP reno
+    experiment.add_tcp_flow(flow, 'reno')
+
+# Request traffic control stats
+experiment.require_qdisc_stats(left_router_connection)
+experiment.require_qdisc_stats(right_router_connection)
 
 # Running the experiment
 experiment.run()
