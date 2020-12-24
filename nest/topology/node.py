@@ -5,10 +5,11 @@
 
 import logging
 
+from nest import engine
+from nest.topology_map import TopologyMap
+import nest.config as config
 from .address import Address
-from .. import engine
 from .id_generator import IdGen
-from ..topology_map import TopologyMap
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,13 @@ class Node:
         """
         if name == '':
             raise ValueError('Node name can\'t be an empty string')
+        if config.get_value('assign_random_names') is False and len(name) > 3:
+            # We chose 3 because: 'ifb-ns1-ns2-20' is a potential IFB interface name
+            # and it's already 14 character long. Note that here node names
+            # are 'ns1' and 'ns2'. The `ip` utility won't accept interface names
+            # longer than 15 characters
+            logger.warning('%s is longer than 3 characters. It\'s safer to use '
+                        'node names with atmost 3 characters with the current config.', name)
 
         self._name = name
         self._id = IdGen.get_id(name)
