@@ -51,6 +51,8 @@ class Node:
         self._name = name
         self._id = IdGen.get_id(name)
         self._interfaces = []
+        # mpls max platform label kernel parameter
+        self._mpls_max_label = 0
 
         engine.create_ns(self.id)
         engine.set_interface_mode(self.id, 'lo', 'up')
@@ -144,6 +146,59 @@ class Node:
                     return interface
 
         return None
+
+    def add_route_mpls_push(self, dest_addr, next_hop_addr, label):
+        """
+        Add a route to the routing table of `Node`.
+
+        Parameters
+        ----------
+        dest_addr: Address/str
+            Destination ip address of node to route to. 'DEFAULT' is
+            for all addresses
+        next_hop_addr: Address/str, optional
+            IP address of next hop Node (or router), by default ''
+        label: the MPLS label pushed onto the packet
+        """
+        if isinstance(dest_addr, str):
+            dest_addr = Address(dest_addr)
+
+        if isinstance(next_hop_addr, str):
+            next_hop_addr = Address(next_hop_addr)
+
+        engine.add_mpls_route_push(self.id, dest_addr.get_addr(),
+                next_hop_addr.get_addr(with_subnet=False), label)
+
+    def add_route_mpls_switch(self, incoming_label, next_hop_addr, outgoing_label):
+        """
+
+        Parameters
+        ----------
+        incoming_label: The label that the packet carries when entering the interface
+        next_hop_addr: IP address of the next hop
+        outgoing_label: The label that is pushed onto the packet
+
+        """
+        if isinstance(next_hop_addr, str):
+            next_hop_addr = Address(next_hop_addr)
+
+        engine.add_mpls_route_switch(
+            self.id, incoming_label, next_hop_addr.get_addr(with_subnet=False), outgoing_label)
+
+    def add_route_mpls_pop(self, incoming_label, next_hop_addr):
+        """
+
+        Parameters
+        ----------
+        incoming_label: THe label that the packet carries when entering the interface
+        next_hop_addr: IP address of the next hop
+
+        """
+        if isinstance(next_hop_addr, str):
+            next_hop_addr = Address(next_hop_addr)
+
+        engine.add_mpls_route_pop(
+            self.id, incoming_label, next_hop_addr.get_addr(with_subnet=False))
 
     def _add_interface(self, interface):
         """
@@ -287,6 +342,22 @@ class Node:
         for i in range(len(self._interfaces)):
             interface_name = self._interfaces[i]
             interface_name.disable_ip_dad()
+
+    @property
+    def mpls_max_label(self):
+        """
+        Return the maximum mpls label set in the kernel for the current namespace
+        """
+        return self._mpls_max_label
+
+    @mpls_max_label.setter
+    def mpls_max_label(self, max_label=100000):
+        """
+        Sets the maximum mpls label in kernel for the current namespace
+        Default = 100000
+        """
+        engine.set_mpls_max_label_node(self.id, int(max_label))
+        self._mpls_max_label = int(max_label)
 
     @property
     def id(self):

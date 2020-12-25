@@ -5,7 +5,7 @@ Routing
 =======
 
 RoutingDaemonBase
-----------
+-----------------
 
 .. automodule:: nest.routing.route_daemons
    :members:

@@ -2,8 +2,10 @@
 # Copyright (c) 2019-2020 NITK Surathkal
 
 """IP link commands"""
-
+import logging
 from .exec import exec_subprocess
+
+logger = logging.getLogger(__name__)
 
 def create_veth(dev_name1, dev_name2):
     """
@@ -110,3 +112,20 @@ def set_interface_mode(ns_name, dev_name, mode):
         'up' or 'down'
     """
     exec_subprocess(f'ip netns exec {ns_name} ip link set dev {dev_name} {mode}')
+
+def set_mtu_interface(ns_name, dev_name, mtu_value):
+    """
+    Set the MTU for the interface
+
+    Parameters
+    ----------
+    ns_name : str
+    dev_name : str
+    mtu_value : int
+    """
+    exec_subprocess(f'ip netns exec {ns_name} ip link set dev {dev_name} mtu {mtu_value}')
+    # Verify if the mtu is set
+    mtu = int(exec_subprocess(
+        f' ip netns exec {ns_name} cat /sys/class/net/{dev_name}/mtu', output=True))
+    if mtu != mtu_value:
+        logger.error("MTU of interface %s wasn't set to %s!", str(dev_name), str(mtu_value))

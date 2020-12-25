@@ -8,7 +8,7 @@
         "plot_results": true
     },
     "engine" : {},
-    "dynamic_routing" : {
+    "routing" : {
         "routing_suite": "quagga"
     },
     "log_level": "INFO"

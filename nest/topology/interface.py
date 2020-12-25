@@ -3,6 +3,7 @@
 
 """API related to interfaces in topology"""
 
+import logging
 from nest import engine
 from nest.topology_map import TopologyMap
 import nest.config as config
@@ -13,6 +14,8 @@ from . import traffic_control
 # Max length of interface when Topology Map is disabled
 # i.e. 'assign_random_names' is set to False in config
 MAX_CUSTOM_NAME_LEN = 15
+
+logger = logging.getLogger(__name__)
 
 # TODO: Improve this module such that the below pylint disables are no
 # longer required
@@ -66,6 +69,8 @@ class Interface:
         self._address = None
         self._node = None
         self._pair = None
+        # Normally this is the default mtu value.
+        self._mtu = 1500
 
         self.set_structure = False
         self.ifb = None
@@ -76,6 +81,9 @@ class Interface:
         self.qdisc_list = []
         self.class_list = []
         self.filter_list = []
+
+        # mpls input
+        self._is_mpls_enabled = False
 
     @property
     def name(self):
@@ -160,6 +168,50 @@ class Interface:
             # TODO: Create our own error class
             raise NotImplementedError(
                 'You should assign the interface to node or router before assigning address to it.')
+
+    def enable_mpls(self):
+        """
+        Enables mpls input through the interface.
+        Requires mpls kernel modules to be loaded.
+
+        Run ``sudo modprobe mpls_iptunnel`` to load mpls modules.
+        """
+        if self.node is None:
+            raise NotImplementedError(
+                    'You should assign the interface to node or router before enabling mpls')
+        if self.node.mpls_max_label == 0:
+            # property setter.
+            # Alters: net.mpls.platform_labels=100000
+            self.node.mpls_max_label = 100000
+
+        if self._is_mpls_enabled is False:
+            engine.enable_mpls_interface(self.node.id, self.id)
+            self._is_mpls_enabled = True
+            self.mtu = 1504
+
+    def is_mpls_enabled(self):
+        """
+        Check if the interface has mpls enabled
+        """
+        return self._is_mpls_enabled
+
+    @property
+    def mtu(self):
+        """
+        Get the maximum transmit unit value for the interface
+        """
+        return self._mtu
+
+    @mtu.setter
+    def mtu(self, mtu_value):
+        """
+        Set the maximum transmit unit value for the interface
+        Default is 1500 bytes.
+        """
+        if self._mtu != mtu_value:
+            engine.set_mtu_interface(self.node.id, self.id, int(mtu_value))
+            self._mtu = mtu_value
+            logger.debug('MTU of interface %s set to %s', self.name, str(self.mtu))
 
     def get_address(self):
         """

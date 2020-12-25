@@ -2,8 +2,10 @@
 # Copyright (c) 2019-2020 NITK Surathkal
 
 """Sysctl commands"""
-
+import logging
 from .exec import exec_subprocess
+
+logger = logging.getLogger(__name__)
 
 def en_ip_forwarding(ns_name, ipv6=False):
     """
@@ -70,3 +72,42 @@ def read_kernel_param(ns_name, prefix, param):
     """
     value = exec_subprocess(f'ip netns exec {ns_name} sysctl -n {prefix}{param}', output=True)
     return value.rstrip('\n')
+
+def set_mpls_max_label_node(ns_name, max_num_labels):
+    """
+    Sets the maximum mpls label for the namespace
+
+    Parameters
+    ----------
+    ns_name: str
+    max_num_labels: int
+    """
+    exec_subprocess(f'ip netns exec {ns_name} sysctl -w net.mpls.platform_labels={max_num_labels}')
+    try:
+        max_label = int(exec_subprocess(
+            f'ip netns exec {ns_name} sysctl -n net/mpls/platform_labels', output=True))
+        if max_label != max_num_labels:
+            logger.error(
+                "platform_labels for node %s wasn't set to %s!", str(ns_name), str(max_num_labels))
+            logger.error("Ensure mpls kernel modules are loaded")
+    except ValueError:
+        logger.error("Couldn't set platform_labels. Ensure mpls kernel modules are loaded")
+
+def enable_mpls_interface(ns_name, dev_name):
+    """
+    Enable mpls input to interface through sysctl.
+
+    Parameters
+    ----------
+    ns_name: str
+    dev_name: str
+    """
+    exec_subprocess(
+        f'ip netns exec {ns_name} sysctl -w net.mpls.conf.{dev_name}.input=1', output=True)
+    try:
+        input_val = int(exec_subprocess(
+            f'ip netns exec {ns_name} sysctl -n net.mpls.conf.{dev_name}.input', output=True))
+        if input_val == 0:
+            logger.error("Couldn't enable mpls input for interface %s!!", dev_name)
+    except ValueError:
+        logger.error("Couldn't enable mpls input. Ensure mpls kernel modules are loaded")

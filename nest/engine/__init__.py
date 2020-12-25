@@ -18,3 +18,4 @@ from .setns import *
 from .sysctl import *
 from .tc import *
 from .uname import *
+from .ip_mpls_route import *

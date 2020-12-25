@@ -9,7 +9,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-default_value = {'topology': {}, 'experiment': {}, 'engine': {}, 'dynamic_routing': {}}
+default_value = {'topology': {}, 'experiment': {}, 'engine': {}, 'routing': {}}
 
 def import_default_config():
     """
@@ -43,8 +43,8 @@ def set_value(parameter, value):
         default_value['experiment'][parameter] = value
     elif parameter in default_value['engine']:
         default_value['engine'][parameter] = value
-    elif parameter in default_value['dynamic_routing']:
-        default_value['dynamic_routing'][parameter] = value
+    elif parameter in default_value['routing']:
+        default_value['routing'][parameter] = value
     else:
         logging.error('The given parameter %s does not exist', parameter)
 
@@ -70,8 +70,8 @@ def get_value(parameter):
         return default_value['experiment'][parameter]
     if parameter in default_value['engine']:
         return default_value['engine'][parameter]
-    if parameter in default_value['dynamic_routing']:
-        return default_value['dynamic_routing'][parameter]
+    if parameter in default_value['routing']:
+        return default_value['routing'][parameter]
 
     # If it belonged to none of them
     logging.error('The given parameter %s does not exist', parameter)
@@ -102,10 +102,10 @@ def import_custom_config(path):
         for parameter in data['engine']:
             if parameter in default_value['engine']:
                 default_value['engine'][parameter] = data['engine'][parameter]
-    if 'dynamic_routing' in data:
-        for parameter in data['dynamic_routing']:
-            if parameter in default_value['dynamic_routing']:
-                default_value['dynamic_routing'][parameter] = data['dynamic_routing'][parameter]
+    if 'routing' in data:
+        for parameter in data['routing']:
+            if parameter in default_value['routing']:
+                default_value['routing'][parameter] = data['routing'][parameter]
     for parameter in data:
         if not isinstance(default_value[parameter], dict):
             default_value[parameter] = data[parameter]
