@@ -7,9 +7,6 @@ Base class for other runners
 
 import tempfile
 import logging
-from ...engine import exec_exp_commands
-
-
 class Runner:
     """
     Base class for other runners
@@ -36,12 +33,16 @@ class Runner:
         self.start_time = start_time
         self.run_time = run_time
 
-    def run(self, command):
+    def run(self, engine_func):
         """
-        Runs the `command` and stores stdout or stderr
+        executes the given engine function and prints error(if any)
+
+        Parameters
+        ----------
+        engine_func: Function
+            engine function to be called
         """
-        return_code = exec_exp_commands(
-            command, stdout=self.out, stderr=self.err)
+        return_code = engine_func(self.out, self.err)
         if return_code != 0:
             self.print_error()
 

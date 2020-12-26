@@ -9,11 +9,13 @@ from its output
 import re
 import json
 import os
+from functools import partial
 from time import strptime, strftime
 from .runnerbase import Runner
 from ..results import TcResults
 from ...topology_map import TopologyMap
 from ...engine.tc import get_tc_version
+from ...engine.iterators import run_tc
 
 
 class TcRunner(Runner):
@@ -107,10 +109,8 @@ class TcRunner(Runner):
         """
         Runs the tc iterator
         """
-        command = "ip netns exec {ns_id} /bin/bash {iterator} {dev} {duration}".format(
-            ns_id=self.ns_id, iterator=TcRunner.iterator, dev=self.dev, duration=self.run_time)
 
-        super().run(command)
+        super().run(partial(run_tc, self.ns_id, TcRunner.iterator, self.dev, self.run_time))
 
     def print_error(self):
         """

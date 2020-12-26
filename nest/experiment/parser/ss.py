@@ -8,9 +8,11 @@ its output
 
 import os
 import re
+from functools import partial
 from ..results import SsResults
 from .runnerbase import Runner
 from ...topology_map import TopologyMap
+from ...engine.iterators import run_ss
 
 
 class SsRunner(Runner):
@@ -61,13 +63,9 @@ class SsRunner(Runner):
         Runs the ss iterator
         """
 
-        command = 'ip netns exec {ns_id} /bin/bash {iterator} {destination} {duration}\
-            {filter}  {start_time}'.format(
-                ns_id=self.ns_id, iterator=SsRunner.iterator, destination=self.destination_ip,
-                duration=self.run_time, filter="\"dport != 12865 and sport != 12865\"",
-                start_time=self.start_time)
-
-        super().run(command)
+        super().run(partial(run_ss, self.ns_id, SsRunner.iterator, self.destination_ip,
+                            self.run_time, "\"dport != 12865 and sport != 12865\"",
+                            self.start_time))
 
     def print_error(self):
         """

@@ -5,9 +5,11 @@
 
 import re
 from time import sleep
+from functools import partial
 from .runnerbase import Runner
 from ..results import PingResults
 from ...topology_map import TopologyMap
+from ...engine.ping import run_exp_ping
 
 
 class PingRunner(Runner):
@@ -52,9 +54,8 @@ class PingRunner(Runner):
         """
         if self.start_time > 0:
             sleep(self.start_time)
-        command = f'ip netns exec {self.ns_id} ping {self.destination_ip} -w {self.run_time} -D \
-            -i 0.2'
-        super().run(command)
+
+        super().run(partial(run_exp_ping, self.ns_id, self.destination_ip, self.run_time))
 
     def print_error(self):
         """

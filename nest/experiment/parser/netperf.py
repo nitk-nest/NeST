@@ -8,10 +8,11 @@ and collect throughput data
 
 import re
 import copy
+from functools import partial
 from ..results import NetperfResults
-from ...engine import exec_exp_commands
 from .runnerbase import Runner
 from ...topology_map import TopologyMap
+from ...engine.netperf import run_netperf, run_netserver
 
 
 class NetperfRunner(Runner):
@@ -94,8 +95,7 @@ class NetperfRunner(Runner):
         ns_id : str
             namespace to run netserver on
         """
-        command = f'ip netns exec {ns_id} netserver'
-        return_code = exec_exp_commands(command)
+        return_code = run_netserver(ns_id)
         if return_code != 0:
             ns_name = TopologyMap.get_namespace(ns_id)['name']
             print("Error running netserver at {}.".format(
@@ -125,10 +125,8 @@ class NetperfRunner(Runner):
         test_options_list = list(test_options.values())
         test_options_string = ' '.join(test_options_list)
 
-        command = f'ip netns exec {self.ns_id} netperf {netperf_options_string} -H \
-            {self.destination_ip} -s {self.start_time} -- {test_options_string}'
-
-        super().run(command)
+        super().run(partial(run_netperf, self.ns_id, netperf_options_string,
+                            self.destination_ip, self.start_time, test_options_string))
 
     def print_error(self):
         """
