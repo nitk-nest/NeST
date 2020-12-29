@@ -173,6 +173,12 @@ class Interface:
         """
         self.address = address
 
+    def disable_ip_dad(self):
+        """
+        Disables Duplicate addresses Detection (DAD) for an interface.
+        """
+        engine.disable_dad(self._node.id, self._id)
+
     def set_mode(self, mode):
         """
         Changes the mode of the interface

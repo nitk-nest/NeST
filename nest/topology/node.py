@@ -207,24 +207,32 @@ class Node:
             destination_address = Address(destination_address)
 
         status = engine.ping(
-            self.id, destination_address.get_addr(with_subnet=False))
+            self.id, destination_address.get_addr(with_subnet=False), destination_address.is_ipv6())
         if verbose:
             if status:
                 print(f'SUCCESS: ping from {self.name} to '
-                        f'{destination_address.get_addr(with_subnet=False)}')
+                      f'{destination_address.get_addr(with_subnet=False)}')
             else:
                 print(f'FAILURE: ping from {self.name} to '
-                        f'{destination_address.get_addr(with_subnet=False)}')
+                      f'{destination_address.get_addr(with_subnet=False)}')
         return status
 
-    def enable_ip_forwarding(self):
+    def enable_ip_forwarding(self, ipv6=False):
         """
         Enable IP forwarding in `Node`.
 
         After this method runs, the `Node` can be used as a router.
         """
-        engine.en_ip_forwarding(self.id)
+        engine.en_ip_forwarding(self.id, ipv6)
         TopologyMap.add_router(self)
+
+    def disable_ip_dad(self):
+        """
+        Disables Duplicate addresses Detection (DAD) for all interfaces of `Node`.
+        """
+        for i in range(len(self._interfaces)):
+            interface_name = self._interfaces[i]
+            interface_name.disable_ip_dad()
 
     @property
     def id(self):
