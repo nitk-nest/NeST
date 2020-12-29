@@ -5,7 +5,7 @@
 
 from .exec import exec_exp_commands, exec_subprocess
 
-def ping(ns_name, dest_addr):
+def ping(ns_name, dest_addr, ipv6=False):
     """
     Send a ping packet from ns_name to dest_addr
     if possible
@@ -22,7 +22,10 @@ def ping(ns_name, dest_addr):
     bool
         success of ping
     """
-    status = exec_subprocess(f'ip netns exec {ns_name} ping -c1 -q {dest_addr}')
+    if ipv6:
+        status = exec_subprocess(f'ip netns exec {ns_name} ping -6 -c1 -q {dest_addr}')
+    else:
+        status = exec_subprocess(f'ip netns exec {ns_name} ping -c1 -q {dest_addr}')
     return status == 0
 
 
