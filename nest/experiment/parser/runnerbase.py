@@ -42,7 +42,7 @@ class Runner:
         engine_func: Function
             engine function to be called
         """
-        return_code = engine_func(self.out, self.err)
+        return_code = engine_func(out=self.out, err=self.err)
         if return_code != 0:
             self.print_error()
 

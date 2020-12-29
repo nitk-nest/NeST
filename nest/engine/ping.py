@@ -26,7 +26,7 @@ def ping(ns_name, dest_addr):
     return status == 0
 
 
-def run_exp_ping(ns_id, destination_ip, run_time, stdout, stderr):
+def run_exp_ping(ns_id, destination_ip, run_time, out, err):
     """
     Run ping to extract stats
 
@@ -50,4 +50,4 @@ def run_exp_ping(ns_id, destination_ip, run_time, stdout, stderr):
     """
 
     return exec_exp_commands(f'ip netns exec {ns_id} ping {destination_ip} -w {run_time} -D \
-            -i 0.2', stdout=stdout, stderr=stderr)
+            -i 0.2', stdout=out, stderr=err)

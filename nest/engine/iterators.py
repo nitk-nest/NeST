@@ -38,7 +38,7 @@ def run_ss(ns_id, iterator, destination_ip, duration, ss_filter, start_time, out
 
 
 # pylint: disable=too-many-arguments
-def run_tc(ns_id, iterator, dev, duration, stdout, stderr):
+def run_tc(ns_id, iterator, dev, duration, out, err):
     """
     Executes the tc iterator script
 
@@ -63,5 +63,5 @@ def run_tc(ns_id, iterator, dev, duration, stdout, stderr):
         return code of the command executed
     """
     return exec_exp_commands(
-        f'ip netns exec {ns_id} /bin/bash {iterator} {dev} {duration}', stdout=stdout,
-        stderr=stderr)
+        f'ip netns exec {ns_id} /bin/bash {iterator} {dev} {duration}', stdout=out,
+        stderr=err)
