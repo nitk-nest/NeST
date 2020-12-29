@@ -4,6 +4,7 @@
 """Handles addresses of interfaces"""
 
 import ipaddress
+from ipaddress import ip_address, IPv6Address
 
 class Address:
     """Validate address.
@@ -66,6 +67,17 @@ class Address:
         if self.ip_addr == 'default':
             return False
         if self.ip_addr == self.get_subnet():
+            return True
+        return False
+
+    def is_ipv6(self):
+        """
+        Check if the address is IPv6 or not
+
+        Note: This takes care of 'DEFAULT' also
+        """
+        check_addr = self.ip_addr.split('/')[0]
+        if isinstance(ip_address(check_addr), IPv6Address):
             return True
         return False
 
