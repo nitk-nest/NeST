@@ -5,7 +5,7 @@
 
 from .exec import exec_subprocess
 
-def en_ip_forwarding(ns_name):
+def en_ip_forwarding(ns_name, ipv6=False):
     """
     Enables ip forwarding in a namespace. Used for routers
 
@@ -14,7 +14,23 @@ def en_ip_forwarding(ns_name):
     ns_name : str
         namespace name
     """
-    exec_subprocess(f'ip netns exec {ns_name} sysctl -w net.ipv4.ip_forward=1')
+    if ipv6:
+        exec_subprocess(f'ip netns exec {ns_name} sysctl -w net.ipv6.conf.all.forwarding=1')
+    else:
+        exec_subprocess(f'ip netns exec {ns_name} sysctl -w net.ipv4.ip_forward=1')
+
+def disable_dad(ns_name, int_name):
+    """
+    Disables DAD at nodes for IPv6 Addressing
+
+    Parameters
+    ----------
+    ns_name : str
+        namespace name
+    int_name : str
+        interface name
+    """
+    exec_subprocess(f'ip netns exec {ns_name} sysctl -w net.ipv6.conf.{int_name}.accept_dad=0')
 
 def configure_kernel_param(ns_name, prefix, param, value):
     """
