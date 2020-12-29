@@ -31,6 +31,19 @@ class TestTopology(unittest.TestCase):
 
         self.assertTrue(status)
 
+    def test_p2p_ipv6(self):
+        (n0_n1, n1_n0) = connect(self.n0, self.n1)
+
+        self.n0.disable_ip_dad()
+        self.n1.disable_ip_dad()
+
+        n0_n1.set_address('2001:1:1:1443::411/122')
+        n1_n0.set_address('2001:1:1:1443::412/122')
+
+        status = self.n0.ping(n1_n0.address, verbose=False)
+
+        self.assertTrue(status)
+
     def test_prp(self):
         # pylint: disable=invalid-name
         r = Node('r')
@@ -48,6 +61,29 @@ class TestTopology(unittest.TestCase):
         self.n1.add_route('DEFAULT', n1_r)
 
         status = self.n0.ping('10.1.2.1', verbose=False)
+
+        self.assertTrue(status)
+
+    def test_prp_ipv6(self):
+        # pylint: disable=invalid-name
+        r = Node('r')
+        r.enable_ip_forwarding(ipv6=True)
+
+        (n0_r, r_n0) = connect(self.n0, r)
+        (r_n1, n1_r) = connect(r, self.n1)
+
+        self.n0.disable_ip_dad()
+        self.n1.disable_ip_dad()
+
+        n0_r.set_address('2001:0001:0001:1443::0411/122')
+        r_n0.set_address('2001:0001:0001:1443::0412/122')
+        r_n1.set_address('2001:0001:0001:1444::0412/122')
+        n1_r.set_address('2001:0001:0001:1444::0411/122')
+
+        self.n0.add_route('DEFAULT', n0_r)
+        self.n1.add_route('DEFAULT', n1_r)
+
+        status = self.n0.ping(n1_r.address, verbose=False)
 
         self.assertTrue(status)
 
