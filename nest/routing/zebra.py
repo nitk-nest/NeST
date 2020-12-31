@@ -3,14 +3,14 @@
 
 """Class to handle zebra"""
 
-from nest.routing.quagga_base import QuaggaBase
-from nest.engine.quagga import run_zebra
+from nest.routing.route_daemons import RoutingDaemonBase
+from nest.engine.dynamic_routing import run_zebra
 
 
-class Zebra(QuaggaBase):
+class Zebra(RoutingDaemonBase):
     """
-    Handles zebra related functionalities for Quagga.
-    Refer to `QuaggaBase` for usage
+    Handles zebra related functionalities.
+    Refer to `DaemonBase` for usage
     """
 
     def __init__(self, router_ns_id, interfaces, conf_dir):
@@ -34,7 +34,7 @@ class Zebra(QuaggaBase):
         Use base `add_to_config` directly for more complex configurations
         """
 
-        # up the loopback interface
+        # Add loopback interface
         self.add_interface('lo')
         self.add_to_config(' no shutdown')
         for interface in self.interfaces:

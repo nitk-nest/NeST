@@ -3,13 +3,13 @@
 
 """Class to handles OSPF related functionalities"""
 
-from nest.engine.quagga import run_ospfd
-from nest.routing.quagga_base import QuaggaBase
+from nest.engine.dynamic_routing import run_ospfd
+from nest.routing.route_daemons import RoutingDaemonBase
 
 
-class Ospf(QuaggaBase):
+class Ospf(RoutingDaemonBase):
     """
-    Handles OSPF related functionalities for Quagga.
+    Handles OSPF related functionalities.
     """
 
     def __init__(self, router_ns_id, interfaces, conf_dir):
@@ -22,6 +22,8 @@ class Ospf(QuaggaBase):
         """
         for interface in self.interfaces:
             self.add_to_config(f'interface {interface.id}')
+            # send hello packets every 1 second for faster convergence
+            self.add_to_config('ip ospf hello-interval 1')
 
         self.add_to_config('router ospf')
         self.add_to_config(

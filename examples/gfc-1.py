@@ -122,8 +122,8 @@ n10_r4.set_address('10.0.17.5/24')
 r4_n10.set_address('10.0.17.6/24')
 
 # Populate routing table using RIP.
-# Internally uses quagga. Refer `RoutingHelper` class
-# on how to add custom quagga configuration
+# Internally uses quagga/frr. Refer `RoutingHelper` class
+# on how to add custom quagga/frr configuration
 RoutingHelper(protocol='rip').populate_routing_tables()
 
 # Setting attributes to the interfaces on the nodes and the opposite end

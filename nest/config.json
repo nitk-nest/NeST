@@ -7,5 +7,9 @@
     "experiment" : {
         "plot_results": true
     },
+    "engine" : {},
+    "dynamic_routing" : {
+        "routing_suite": "quagga"
+    },
     "log_level": "DEBUG"
 }

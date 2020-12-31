@@ -4,6 +4,7 @@
 """Test APIs from routing sub-package"""
 
 import unittest
+from nest import config
 from nest.topology_map import TopologyMap
 from nest.topology import Node, connect
 from nest.routing.routing_helper import RoutingHelper
@@ -38,6 +39,9 @@ class TestQuagga(unittest.TestCase):
 
         eth_r2p2.set_address('10.0.3.3/24')
         eth_p2r2.set_address('10.0.3.4/24')
+
+        config.set_value("routing_suite", "quagga") # Use quagga
+
 
     def tearDown(self):
         delete_namespaces()

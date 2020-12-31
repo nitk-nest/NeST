@@ -4,13 +4,13 @@
 """Class to handles IS-IS related functionalities"""
 
 import hashlib
-from nest.engine.quagga import run_isisd
-from nest.routing.quagga_base import QuaggaBase
+from nest.engine.dynamic_routing import run_isisd
+from nest.routing.route_daemons import RoutingDaemonBase
 
 
-class Isis(QuaggaBase):
+class Isis(RoutingDaemonBase):
     """
-    Handles IS-IS related functionalities for Quagga.
+    Handles IS-IS related functionalities.
     """
 
     def __init__(self, router_ns_id, interfaces, conf_dir):

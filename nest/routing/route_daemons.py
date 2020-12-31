@@ -2,19 +2,19 @@
 # Copyright (c) 2019-2020 NITK Surathkal
 
 """
-Base class for Quagga.
+Base class for Routing daemons.
 """
 
 from abc import ABC, abstractmethod
 import io
 import shutil
-from nest.engine.quagga import chown_quagga
+from nest.engine.dynamic_routing import chown_to_daemon
 
 
-class QuaggaBase(ABC):
+class RoutingDaemonBase(ABC):
     """
-    Abstract class for Quagga related processes.
-    This class should be inherited for adding other quagga daemons.
+    Abstract class for Dynamic routing related processes.
+    This class should be inherited for adding other daemons
 
     Use `add_to_config` to sequentially add daemon related commands
     for the config files.
@@ -24,9 +24,10 @@ class QuaggaBase(ABC):
     Finally call `run` to run the daemon. Uses the above created config file.
 
     Note:
-    (ii): If you're using `RoutingHelper`, config files are created at the /tmp
-          directory.
+    (i): If you're using `RoutingHelper`, config files are created at the /tmp
+    directory.
     (ii): Daemons may not work as expected if a config file is not created
+
     Attributes
     ----------
     conf: file-like
@@ -34,7 +35,7 @@ class QuaggaBase(ABC):
     router_ns_id : str
         Router namespace id
     daemon : str
-        quagga daemon to run(one of ['zebra', 'ospf'])
+        daemon to run(one of ['zebra', 'ospf', 'isis'])
     conf_file : str
         config file path
     pid_file : str
@@ -79,6 +80,6 @@ class QuaggaBase(ABC):
         Creates config file on disk from `self.conf`
         """
         with open(self.conf_file, 'w') as conf:
-            chown_quagga(self.conf_file)
+            chown_to_daemon(self.conf_file)
             self.conf.seek(0)
             shutil.copyfileobj(self.conf, conf)

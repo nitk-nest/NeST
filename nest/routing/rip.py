@@ -3,14 +3,14 @@
 
 """Class to handles RIP related functionalities"""
 
-from nest.engine.quagga import run_ripd
-from nest.routing.quagga_base import QuaggaBase
+from nest.engine.dynamic_routing import run_ripd
+from nest.routing.route_daemons import RoutingDaemonBase
 
 
-class Rip(QuaggaBase):
+class Rip(RoutingDaemonBase):
     """
-    Handles RIP related functionalities for Quagga.
-    Refer to `QuaggaBase` for usage
+    Handles RIP related functionalities.
+    Refer to `DaemonBase` for usage
     """
 
     def __init__(self, router_ns_id, interfaces, conf_dir):

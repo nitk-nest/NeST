@@ -15,7 +15,8 @@ from signal import SIGTERM
 from nest.topology.id_generator import IdGen
 from nest.routing.zebra import Zebra
 from nest.topology_map import TopologyMap
-from nest.engine.quagga import chown_quagga
+from nest.engine.dynamic_routing import chown_to_daemon
+from nest import config
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -40,7 +41,7 @@ class RoutingHelper:
     hosts : List[Node]
         hosts in the topology
     conf_dir : str
-        path for quagga config directory
+        path for config directory of daemons
     protocol_class : ABCMeta
         Protocol class which will later be instantiated
     """
@@ -58,7 +59,7 @@ class RoutingHelper:
         Parameters
         ----------
         protocol: str
-            routing protocol to be run. One of [ospf, rip]
+            routing protocol to be run. One of [ospf, rip, isis]
         hosts: List[Node]
             List of hosts in the network. If `None`, considers the entire topology.
             Use this if your topology has disjoint networks
@@ -90,11 +91,11 @@ class RoutingHelper:
         if self.protocol == 'static':
             pass  # TODO: add static routing
         else:
-            self._run_quagga()
+            self._run_dyn_routing()
 
-    def _create_quagga_directory(self):
+    def _create_conf_directory(self):
         """
-        Creates a directly for holding Quagga related config
+        Creates a directory for holding routing related config
         and pid files.
         Override this to create directory at a location other than /tmp
 
@@ -103,9 +104,10 @@ class RoutingHelper:
         str:
             path of the created directory
         """
-        dir_path = f'/tmp/quagga-configs_{IdGen.topology_id}'
+        salt = config.get_value('routing_suite') + str(time.clock_gettime(0))
+        dir_path = f'/tmp/{salt}-configs_{IdGen.topology_id}'
         mkdir(dir_path)
-        chown_quagga(dir_path)
+        chown_to_daemon(dir_path)
         return dir_path
 
     def _setup_default_routes(self):
@@ -115,12 +117,12 @@ class RoutingHelper:
         for host in self.hosts:
             host.add_route('DEFAULT', host.interfaces[0])
 
-    def _run_quagga(self):
+    def _run_dyn_routing(self):
         """
         Run zebra and `self.protocol`
         """
         logger.info('Running zebra and %s on routers', self.protocol)
-        self.conf_dir = self._create_quagga_directory()
+        self.conf_dir = self._create_conf_directory()
         for router in self.routers:
             self._run_zebra(router)
             self._run_routing_protocol(router)
@@ -167,26 +169,33 @@ class RoutingHelper:
                     break
 
         logger.info('Routing completed')
-        self._clean_up()
 
     def _clean_up(self):
         """
-        Terminates Quagga daemons and deletes config files
+        Terminates routing daemons and deletes config files
         """
+        # To preserve the routes, the daemons shouldn't be stopped
+        # Frrouting doesn't seem to have an option to not flush the routes installed
 
         # Stop zebra processes
         for zebra in self.zebra_list:
             if path.isfile(zebra.pid_file):
                 with open(zebra.pid_file, 'r') as pid_file:
                     pid = int(pid_file.read())
-                kill(pid, SIGTERM)
+                    try:
+                        kill(pid, SIGTERM)
+                    except ProcessLookupError:
+                        pass
 
         # Stop protocol processes
         for protocol in self.protocol_list:
             if path.isfile(protocol.pid_file):
                 with open(protocol.pid_file, 'r') as pid_file:
                     pid = int(pid_file.read())
-                kill(pid, SIGTERM)
+                    try:
+                        kill(pid, SIGTERM)
+                    except ProcessLookupError:
+                        pass
 
         # Delete config directory
         if path.isdir(self.conf_dir):

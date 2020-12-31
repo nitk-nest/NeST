@@ -57,10 +57,15 @@ run unit tests:
       ospfd=yes
       ripd=yes" >> /etc/quagga/daemons
 
+    # FRR can't be installed alongside quagga
+    
     # Run unit tests
     - pip install coverage
     - coverage --version
-    - coverage run --source nest -m unittest -v
+    - coverage run --parallel-mode --source nest -m unittest -v
+    - apt install -y frr
+    - coverage run --parallel-mode --source nest -m unittest nest/tests/test_routing_frr.py -v
+    - coverage combine
     - coverage report
     - coverage xml
 

@@ -4,10 +4,10 @@
 Routing
 =======
 
-QuaggaBase
+RoutingDaemonBase
 ----------
 
-.. automodule:: nest.routing.quagga_base
+.. automodule:: nest.routing.route_daemons
    :members:
    :undoc-members:
    :show-inheritance:

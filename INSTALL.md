@@ -123,11 +123,20 @@ will be maked in italics.
     sudo apt install iperf3
     ```
 
-5. Install and setup *Quagga*
+5. Install and setup a dynamic routing suite
 
-    This is an optional dependency. You can install it if you want to use
-    dynamic routing APIs in NeST.
+    This is an optional dependency. You can install either Frrouting **or** Quagga if you want to use dynamic routing APIs in NeST and change the routing_suite in config accordingly.
 
+    - *Frrouting*
+    
+    To install Frrouting on ubuntu run
+
+    ```shell
+    sudo apt install frr
+    ```
+    or follow these [steps](https://deb.frrouting.org)
+
+    - *Quagga*
 
     Quagga can be obtained from your Linux distribution packages.
     For Ubuntu run:
