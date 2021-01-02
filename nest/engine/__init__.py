@@ -14,6 +14,7 @@ from .ip_netns import *
 from .ip_route import *
 from .iperf import *
 from .ping import *
+from .setns import *
 from .sysctl import *
 from .tc import *
 from .uname import *
