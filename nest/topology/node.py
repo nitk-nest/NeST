@@ -57,6 +57,22 @@ class Node:
         TopologyMap.add_namespace(self.id, self.name)
         TopologyMap.add_host(self)
 
+    def __enter__(self):
+        """
+        Enter the context of this `Node`.
+        For eg., all commands in this context will only be able to see
+        interfaces inside this `Node`
+        """
+        # Go to network namespace corresponding to `Node`
+        engine.set_ns(self.id)
+
+    def __exit__(self, *args):
+        """
+        Exit the context of this `Node`
+        """
+        # Switch back to default network namespace
+        engine.set_ns(None)
+
     def add_route(self, dest_addr, via_interface, next_hop_addr=''):
         """
         Add a route to the routing table of `Node`.

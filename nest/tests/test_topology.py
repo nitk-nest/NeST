@@ -4,6 +4,8 @@
 """Test APIs from topology sub-package"""
 
 import unittest
+import subprocess
+
 from nest.topology import Node, connect
 from nest.clean_up import delete_namespaces
 from nest.topology_map import TopologyMap
@@ -162,6 +164,19 @@ class TestTopology(unittest.TestCase):
         # Enable topology map
         config.set_value('assign_random_names', True)
 
+    def test_run_inside_node(self):
+        (n0_n1, n1_n0) = connect(self.n0, self.n1)
+
+        n0_n1.set_address('10.0.0.1/24')
+        n1_n0.set_address('10.0.0.2/24')
+
+        # Run ping from self.n0 to self.n1
+        with self.n0:
+            command = f'ping -c 1 {n1_n0.address.get_addr(with_subnet=False)}'
+            proc = subprocess.Popen(command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            (stdout, _) = proc.communicate()
+
+        self.assertEqual(stdout[:4], b'PING', 'Invalid ping output')
 
 if __name__ == '__main__':
     unittest.main()

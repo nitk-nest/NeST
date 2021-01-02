@@ -12,6 +12,8 @@ In topology creation,
 * Nodes are created
 * Connections are made between nodes
 * Addresses are assigned to interfaces
+* Bandwidth and latency are set
+* Qdiscs are installed
 """
 
 import uuid
