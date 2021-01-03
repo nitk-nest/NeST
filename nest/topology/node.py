@@ -107,6 +107,44 @@ class Node:
             self.id, dest_addr_str, next_hop_addr.get_addr(with_subnet=False),
             via_interface.id)
 
+    def get_interface(self, node, connection_number=1):
+        """
+        Get the interface in `self` connected to `node`.
+        By default, this returns a veth interface.
+
+        `connection_number` is an optional argument used when there
+        multiple connections between `self` and `node`.
+
+        Parameters
+        ----------
+        node: Node
+            The other end point of the `veth` interface
+        connection_number: int
+            If there are multiple connections, then this argument
+            uniquely identifies the connection
+
+        Returns
+        -------
+        Interface
+            Return the interface between `self` and `node`. Use
+            `connection_number` to uniquly identify an interface if
+            there are multiple connections.
+            If no interface is found, then return None.
+        """
+        if connection_number <= 0:
+            raise ValueError('connection_number should be greater than 0')
+
+        for interface in self.interfaces:
+            if hasattr(interface.pair, 'node'): # True if interface is a `veth`
+                pair_node = interface.pair.node
+                if node == pair_node:
+                    connection_number -= 1
+
+                if connection_number == 0:
+                    return interface
+
+        return None
+
     def _add_interface(self, interface):
         """
         Add `interface` to `Node`
@@ -128,18 +166,15 @@ class Node:
 
         Example: 'window_scaling', 'wmem', 'ecn', etc.
 
+        If TCP Parameter `param` is valid, then new `value` is set
+        for this `param`.
+
         Parameters
         ----------
         param: str
             TCP parameter to be configured
         value: str
             New value of TCP parameter `param`
-
-        Returns
-        -------
-        str
-            If TCP Parameter `param` is valid, then new `value` is set
-            for this `param`.
         """
         engine.configure_kernel_param(self.id, 'net.ipv4.tcp_', param, value)
 
@@ -150,18 +185,15 @@ class Node:
 
         Example: 'early_demux', 'l3mdev_accept', 'rmem_min', 'wmem_min'
 
+        If UDP Parameter `param` is valid, then new `value` is set
+        for this `param`.
+
         Parameters
         ----------
         param: str
             TCP parameter to be configured
         value: str
             New value of TCP parameter `param`
-
-        Returns
-        -------
-        str
-            If TCP Parameter `param` is valid, then new `value` is set
-            for this `param`.
         """
         engine.configure_kernel_param(self.id, 'net.ipv4.udp_', param, value)
 
@@ -182,9 +214,6 @@ class Node:
         str
             If TCP Parameter `param` is valid, then corresponding value
             is returned.
-
-        read tcp_parameters available at /proc/sys/net/ipv4/tcp_*
-        Example: window_scaling, wmem, ecn, etc.
         """
         return engine.read_kernel_param(self.id, 'net.ipv4.tcp_', param)
 
@@ -208,7 +237,7 @@ class Node:
         """
         return engine.read_kernel_param(self.id, 'net.ipv4.udp_', param)
 
-    def ping(self, destination_address, verbose=True):
+    def ping(self, destination_address, packets=1, verbose=True):
         """
         Ping from current `Node` to destination address
         if there is a route.
@@ -217,6 +246,8 @@ class Node:
         ----------
         destination_address: Address/str
             IP address to ping to
+        duration: int
+            Number of ping packets sent (default: 1)
         verbose: bool
             If `True`, print extensive ping success/failure details
 
@@ -229,8 +260,8 @@ class Node:
         if isinstance(destination_address, str):
             destination_address = Address(destination_address)
 
-        status = engine.ping(
-            self.id, destination_address.get_addr(with_subnet=False), destination_address.is_ipv6())
+        status = engine.ping(self.id, destination_address.get_addr(with_subnet=False),
+                             packets, destination_address.is_ipv6())
         if verbose:
             if status:
                 print(f'SUCCESS: ping from {self.name} to '
