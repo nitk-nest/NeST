@@ -1,15 +1,36 @@
 .. SPDX-License-Identifier: GPL-2.0-only
-   Copyright (c) 2019-2020 NITK Surathkal
+   Copyright (c) 2019-2021 NITK Surathkal
 
-Welcome to NeST's documentation!
-================================
+NeST: Network Stack Tester
+==========================
 
-What is NeST?
--------------
+**NeST** is a python3 package aiding researchers and beginners alike in
+emulating real-world networks. Here is a small *peak* into the APIs NeST provides::
 
-`NeST` is a python3 package that handles testbed setup, testbed configuration,
-collecting and visualizing data by providing a user friendly API, addressing
-common issues involved in conducting networking experiments.
+   >>> # Create two nodes, emulating two network devices
+   >>> node1 = Node('node1')
+   >>> node2 = Node('node2')
+   >>>
+   >>> # Connect the above nodes, with eth1 and eth2 being
+   >>> # respective interfaces of node1 and node2
+   >>> eth1, eth2 = connect(node1, node2)
+   >>>
+   >>> # Assign addresses to the above two interfaces
+   >>> eth1.set_address('10.0.0.1/24')
+   >>> eth2.set_address('10.0.0.2/24')
+   >>>
+   >>> # Ping between the two nodes!
+   >>> node1.ping(eth2.address)  # address of eth2 in node1
+   SUCCESS: ping from node1 to 10.0.0.2
+
+**NeST** provides a set of APIs for:
+
+* Creation of network testbed
+* Configuration of network testbed
+* Setup network experiment on the testbed
+* Collection and Visualization of the data from the network experiment
+
+NeST is officially supported for Python 3.6+.
 
 .. toctree::
    :caption: Contents
