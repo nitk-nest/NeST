@@ -14,7 +14,7 @@ NeST was accepted at [ANRW'20](https://irtf.org/anrw/2020/).
 ## Installation
 
 Instructions to install `NeST` can be found in
-[INSTALL.md](https://gitlab.com/nitk-nest/nest/-/blob/master/INSTALL.md).
+[install.rst](https://gitlab.com/nitk-nest/nest/-/blob/master/docs/source/user/install.rst).
 
 ## Documentation
 

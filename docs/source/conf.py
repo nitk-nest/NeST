@@ -17,7 +17,7 @@ with open("../../nest/version.py") as fp:
 # Project information
 
 project = "NeST"
-copyright = "2020, NITK"
+copyright = "2019-2021 NITK Surathkal"
 author = "Shanthanu S Rai, Narayan G, Dhanasekhar M, Leslie Monis, Mohit P. Tahiliani"
 release = ver["__version__"]
 

@@ -32,6 +32,18 @@ emulating real-world networks. Here is a small *peak* into the APIs NeST provide
 
 NeST is officially supported for Python 3.6+.
 
+------------------------------------------------------------------------
+
+This below section contains step-by-step information to get started with
+using **NeST**.
+
+.. toctree::
+   :caption: The User Guide
+   :maxdepth: 2
+
+   user/install
+
+
 .. toctree::
    :caption: Contents
    :maxdepth: 2
