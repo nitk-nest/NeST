@@ -20,6 +20,7 @@ MAX_CUSTOM_NAME_LEN = 15
 #pylint: disable=too-many-instance-attributes
 #pylint: disable=protected-access
 #pylint: disable=too-few-public-methods
+#pylint: disable=too-many-public-methods
 
 class Interface:
     """
@@ -443,7 +444,7 @@ class Interface:
         engine.change_qdisc(self.node.id, self.id, 'netem', '1:1', '11:', **delay_parameter)
 
 
-    def add_packet_corruption(self, corrupt_rate, correlation_rate = ''):
+    def set_packet_corruption(self, corrupt_rate, correlation_rate = ''):
         """
         allows the emulation of random noise introducing an error in a
         random position for a chosen percent of packets.
@@ -465,6 +466,30 @@ class Interface:
         }
 
         engine.change_qdisc(self.node.id, self.id, 'netem', '1:1', '11:', **corrupt_parameter)
+
+    def set_packet_loss(self, loss_rate, correlation_rate = ''):
+        """
+        adds an independent loss probability to the packets outgoing from
+        the chosen network interface.
+        It is also possible to add a correlation
+
+        Parameters
+        ----------
+        loss_rate : str
+            rate of the packets to be lost
+        correlation_rate : str
+            correlation between the lost packets
+        """
+
+        if self.set_structure is False:
+            self._set_structure()
+
+        loss_parameter = {
+            'loss': loss_rate,
+            '' : correlation_rate
+        }
+
+        engine.change_qdisc(self.node.id, self.id, 'netem', '1:1', '11:', **loss_parameter)
 
 
     def set_qdisc(self, qdisc, bandwidth, **kwargs):
