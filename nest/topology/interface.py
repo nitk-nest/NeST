@@ -442,6 +442,31 @@ class Interface:
         # It could lead to a potential bug!
         engine.change_qdisc(self.node.id, self.id, 'netem', '1:1', '11:', **delay_parameter)
 
+
+    def add_packet_corruption(self, corrupt_rate, correlation_rate = ''):
+        """
+        allows the emulation of random noise introducing an error in a
+        random position for a chosen percent of packets.
+        It is also possible to add a correlation.
+
+        Parameters
+        ----------
+        corrupt_rate : str
+        rate of the packets to be corrupted
+        correlation_rate : str
+        correlation between the corrupted packets
+        """
+        if self.set_structure is False:
+            self._set_structure()
+
+        corrupt_parameter = {
+            'corrupt': corrupt_rate,
+            '' : correlation_rate
+        }
+
+        engine.change_qdisc(self.node.id, self.id, 'netem', '1:1', '11:', **corrupt_parameter)
+
+
     def set_qdisc(self, qdisc, bandwidth, **kwargs):
         """
         Adds the Queueing algorithm to the interface
