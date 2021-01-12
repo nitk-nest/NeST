@@ -25,7 +25,7 @@ class Flow:
         destination_address,
         start_time,
         stop_time,
-        number_of_flows,
+        number_of_streams,
     ):
         """
         'Flow' object in the topology
@@ -42,15 +42,15 @@ class Flow:
             Time to start flow (in seconds)
         stop_time : int
             Time to stop flow (in seconds)
-        number_of_flows : int
-            Number of flows
+        number_of_streams : int
+            Number of streams in the flow
         """
         self.source_node = source_node
         self.destination_node = destination_node
         self.destination_address = destination_address
         self.start_time = start_time
         self.stop_time = stop_time
-        self.number_of_flows = number_of_flows
+        self.number_of_streams = number_of_streams
 
         self._options = {"protocol": "TCP", "cong_algo": "cubic"}
 
@@ -79,7 +79,7 @@ class Flow:
             self.destination_address.get_addr(with_subnet=False),
             self.start_time,
             self.stop_time,
-            self.number_of_flows,
+            self.number_of_streams,
             self._options,
         ]
 
@@ -88,7 +88,7 @@ class Flow:
         return (
             f"{classname}({self.source_node!r}, {self.destination_node!r},"
             f" {self.destination_address!r}), {self.start_time!r}, {self.stop_time!r}"
-            f" {self.number_of_flows!r})"
+            f" {self.number_of_streams!r})"
         )
 
 

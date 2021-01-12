@@ -42,23 +42,22 @@ n2_n1.set_address("10.0.0.2/24")
 # Note that the bandwidth (and latency) need not be the same in both
 # directions, as in the real life scenario where upload bandwidth is
 # typically lower than download bandwidth
-n1_n2.set_attributes("5mbit", "5ms", "pfifo")
-n2_n1.set_attributes("10mbit", "100ms", "pfifo")
+n1_n2.set_attributes("5mbit", "5ms")
+n2_n1.set_attributes("10mbit", "100ms")
 
 # Defines a flow between the two nodes `n1` and `n2`
 # The API takes in the source node, destination node,
 # destination address, start time and end time of
-# the flow and the number of flows
-flow = Flow(n1, n2, n2_n1.address, 0, 10, 2)
+# the flow and the number of streams
+flow = Flow(n1, n2, n2_n1.address, 0, 120, 1)
 
 # Define an experiment to be run on the above topology.
 # The API takes the experiment name as a string
-exp = Experiment("tcp_2up")
+exp = Experiment("tcp_1up")
 
 # Add the above defined flow to the experiment.
-# The TCP flavor of the traffic generated can be
-# optionally given. Below we have chosen TCP Reno
-exp.add_tcp_flow(flow, "reno")
+# The default TCP flavor used is 'cubic'
+exp.add_tcp_flow(flow)
 
 # The experiment is run on the above topology with
 # the mentioned configurations.
