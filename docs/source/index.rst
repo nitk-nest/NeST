@@ -38,15 +38,14 @@ This below section contains step-by-step information to get started with
 using **NeST**.
 
 .. toctree::
-   :caption: The User Guide
+   :caption: User Guide
    :maxdepth: 2
 
    user/install
-
+   user/tutorial
 
 .. toctree::
-   :caption: Contents
+   :caption: API Guide
    :maxdepth: 2
 
-   tutorial/tutorial
    api/api
