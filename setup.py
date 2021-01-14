@@ -47,6 +47,7 @@ setup(
     keywords="network, namespace, linux",
     packages=find_packages(),
     package_data={
+        "nest.experiment": ["info/README.txt"],
         "nest.experiment.parser": ["iterators/*.sh"],
         "nest": ["config.json"],
     },

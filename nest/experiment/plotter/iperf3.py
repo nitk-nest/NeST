@@ -91,7 +91,7 @@ def _plot_iperf3_flow(flow, node, dest_ip, local_port):
         legend_string=f"{node} from port {local_port} to {dest_ip}",
     )
 
-    filename = f"{node}_{dest_ip}_{local_port}.png"
+    filename = f"{node}_{dest_ip}_{local_port}_sending_rate.png"
     Pack.dump_plot("iperf3", filename, fig)
     plt.close(fig)
 

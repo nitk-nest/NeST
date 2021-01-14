@@ -8,11 +8,8 @@ __pycache__
 # vscode settings
 .vscode/
 
-# Output result dumps
-*.json
-
-# png images
-*.png
+# Ignore NeST output
+*_dump/
 
 # logs
 *.log

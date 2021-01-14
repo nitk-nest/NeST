@@ -1,7 +1,8 @@
 {
     "engine" : {},
     "experiment" : {
-        "plot_results": true
+        "plot_results": true,
+        "readme_in_stats_folder": true
     },
     "routing" : {
         "routing_suite": "quagga",

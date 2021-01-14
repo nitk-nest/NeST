@@ -6,12 +6,13 @@
 from multiprocessing import Process
 from collections import namedtuple, defaultdict
 import logging
-from nest.logging_helper import DuplicateFilter
+import os
 
+from nest.logging_helper import DuplicateFilter
 from nest import config
-from ..topology_map import TopologyMap
-from ..clean_up import kill_processes
-from ..engine.util import is_dependency_installed
+from nest.topology_map import TopologyMap
+from nest.clean_up import kill_processes
+from .pack import Pack
 
 # Import results
 from .results import SsResults, NetperfResults, Iperf3Results, TcResults, PingResults
@@ -29,6 +30,7 @@ from .plotter.netperf import plot_netperf
 from .plotter.iperf3 import plot_iperf3
 from .plotter.tc import plot_tc
 from .plotter.ping import plot_ping
+from ..engine.util import is_dependency_installed
 
 logger = logging.getLogger(__name__)
 if not any(isinstance(filter, DuplicateFilter) for filter in logger.filters):
@@ -142,6 +144,10 @@ def run_experiment(exp):
         run_workers(setup_plotter_workers())
 
         logger.info("Plotting complete!")
+
+    if config.get_value("readme_in_stats_folder"):
+        content = get_readme_content()
+        Pack.dump_file("README.txt", content)
 
     cleanup()
 
@@ -535,3 +541,15 @@ def _get_start_stop_time_for_ss(src_ns, dst_addr, start_t, stop_t, ss_schedules)
         )
 
     return ss_schedules
+
+
+def get_readme_content():
+    """
+    Return the content present in data/info.txt file
+    """
+
+    relative_path = os.path.join("info", "README.txt")
+    readme_path = os.path.join(os.path.dirname(__file__), relative_path)
+    with open(readme_path, "r") as file:
+        content = file.read()
+    return content
