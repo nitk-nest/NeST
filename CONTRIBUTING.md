@@ -38,6 +38,7 @@ To suggest an enhancement, you can do the following
 * Add the label 'enhancement'
 
 ### Code Contribution
+
 To contribute to NeST,
 
 * [Fork](https://docs.gitlab.com/ee/gitlab-basics/fork-project.html) the repository
@@ -69,8 +70,64 @@ when merging the MR.
 
 ## Styleguides
 
+We highly recommened installing the following tools and setting up git
+hooks as shown below (the below commands should be run inside NeST repo):
+
+```sh
+$ pip install pre-commit gitlint
+$ pre-commit install
+$ gitlint install-hook
+```
+
+This will help in catching simple violations in code standards early and
+lead to smoother code reviews.
+
+Below, we specifiy in detail about certain standards we maintain in the repo:
+
+### Code Style
+
+To maintain uniformity across the codebase and avoid having arguments over
+trivial formatting issues, we use the [black](https://github.com/psf/black)
+formatter. In some rare occasions when we are not satisfied with black formatting
+in some specific parts of code, we disable black for that specific part
+using the ```# fmt: on\off``` (as mentioned in black's documentation) comment inline.
+
+In addition, we use [pylint](https://www.pylint.org/) for
+checking for some trivial syntax errors, common mistakes and compliance with
+[PEP-8 coding sytle](https://www.python.org/dev/peps/pep-0008/) (with some exceptions).
+The exceptions are commented inline in code as:
+
+```python
+# pylint: disable=missing-docstring
+```
+
+You may check [`.pylintrc`](.pylintrc) for inspecting pylint default configuration.
+
+The code is expected to get 10/10 when running pylint as shown below:
+
+```bash
+pylint nest
+```
+
+The CI pipeline will fail if the code doesn't confirm to black formatting
+or get a score of 10/10 in pylint.
+
+**NOTE**: If you have installed the pre-commit hook, then there is no need to
+run black and pylint seperately. It will automatically be run just before you commit
+your changes.
+
+### Documentation Style
+
+We follow the [NumPy Style](https://www.sphinx-doc.org/en/master/usage/extensions/example_numpy.html)
+for Python docstring. When a new class/function is added in NeST, along with code, the
+docstring is also added (complying the the NumPy style).
+
+We use [Sphinx](https://www.sphinx-doc.org/en/master/) for auto-generating
+documentation from docstrings in code. Refer [`docs`](./docs) folder for more details.
+
 ### Git Commit Messages
-The commit messages usually follow the convention
+
+The commit messages typically follow the convention
 
 ```
 <directory>: Commit message
@@ -91,31 +148,9 @@ plotter: Fix typo in ss.py
 Signed-off-by: name <email>
 ```
 
-The "Signed-off-by" is added by `git commit --signoff` or `git commit -s`.
+The "Signed-off-by" line is added automatically by using the signoff flag while commiting:
+`git commit --signoff` or `git commit -s`.
 
-### Documentation Style
-
-We follow the [NumPy Style](https://www.sphinx-doc.org/en/master/usage/extensions/example_numpy.html)
-for Python docstring.
-
-We use [Sphinx](https://www.sphinx-doc.org/en/master/) for auto-generating
-documentation from docstrings in code. Refer [`docs`](./docs) folder for more details.
-
-### Code Style
-
-We follow the [PEP-8 coding sytle](https://www.python.org/dev/peps/pep-0008/)
-(with some exceptions). The exceptions are commented inline in code as:
-
-```python
-#pylint: disable=missing-docstring
-```
-
-You may check [`.pylintrc`](.pylintrc) for inspecting pylint default configuration.
-
-The code is expected to get 10/10 when running pylint as shown below:
-
-```bash
-pylint nest
-```
-
-The pipeline will fail if the code doesn't get a score of 10/10 in pylint.
+Also note that the commit title is atmost 50 characters long and commit body is
+atmost 72 characters long. A single newline seperates the commit title from
+the commit body.
