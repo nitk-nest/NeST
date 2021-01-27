@@ -11,6 +11,7 @@ from .common import simple_plot
 
 logger = logging.getLogger(__name__)
 
+
 def _plot_ping_flow(flow, node, dest):
     """
     Plot ping stats of the flow
@@ -33,28 +34,37 @@ def _plot_ping_flow(flow, node, dest):
     """
     # "meta" item will always be present, hence `<= 1`
     if len(flow) <= 1:
-        logger.warning('Flow from %s to destination %s '
-                       'doesn\'t have any parsed ping result.', node, dest)
+        logger.warning(
+            "Flow from %s to destination %s " "doesn't have any parsed ping result.",
+            node,
+            dest,
+        )
         return None
 
     # First item is the "meta" item with user given information
-    user_given_start_time = float(flow[0]['start_time'])
+    user_given_start_time = float(flow[0]["start_time"])
 
     # "Bias" actual start_time in experiment with user given start time
-    start_time = float(flow[1]['timestamp']) - user_given_start_time
+    start_time = float(flow[1]["timestamp"]) - user_given_start_time
 
     timestamp = []
     rtt = []
 
     for data in flow[1:]:
-        rtt.append(float(data['rtt']))
-        relative_time = float(data['timestamp']) - start_time
+        rtt.append(float(data["rtt"]))
+        relative_time = float(data["timestamp"]) - start_time
         timestamp.append(relative_time)
 
-    fig = simple_plot('Ping', timestamp, rtt, 'Time (s)', 'RTT (ms)',
-                      legend_string=f'{node} to {dest}')
-    filename = '{node}_{dest}_ping.png'.format(node=node, dest=dest)
-    Pack.dump_plot('ping', filename, fig)
+    fig = simple_plot(
+        "Ping",
+        timestamp,
+        rtt,
+        "Time (s)",
+        "RTT (ms)",
+        legend_string=f"{node} to {dest}",
+    )
+    filename = "{node}_{dest}_ping.png".format(node=node, dest=dest)
+    Pack.dump_plot("ping", filename, fig)
     plt.close(fig)
 
     return (timestamp, rtt)

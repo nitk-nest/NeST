@@ -3,8 +3,8 @@
 
 """Stores user information"""
 
-#pylint: disable=too-few-public-methods
-class User():
+# pylint: disable=too-few-public-methods
+class User:
     """
     User info (user id and group id) stored here.
 
@@ -16,6 +16,7 @@ class User():
         Group id of user
 
     """
+
     user_id = -1
     group_id = -1
 

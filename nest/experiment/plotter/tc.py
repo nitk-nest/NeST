@@ -11,6 +11,7 @@ from ..pack import Pack
 
 logger = logging.getLogger(__name__)
 
+
 def _extract_from_tc_stats(stats, node, interface):
     """
     Extract information from tc stats and convert it to
@@ -26,24 +27,25 @@ def _extract_from_tc_stats(stats, node, interface):
         Interface from which results were obtained from
     """
     if len(stats) == 0:
-        logger.warning('Qdisc at %s of %s doesn\'t have any '
-                       'parsed tc result.', interface, node)
+        logger.warning(
+            "Qdisc at %s of %s doesn't have any " "parsed tc result.", interface, node
+        )
         return None
 
-    qdisc = stats[0]['kind']
-    start_time = float(stats[0]['timestamp'])
+    qdisc = stats[0]["kind"]
+    start_time = float(stats[0]["timestamp"])
 
     timestamp = []
     stats_params = {}
 
     for param in stats[0]:
-        if param not in ('timestamp', 'kind'):
+        if param not in ("timestamp", "kind"):
             stats_params[param] = []
 
     for data in stats:
         for param in stats_params:
             stats_params[param].append(data[param])
-        relative_time = float(data['timestamp']) - start_time
+        relative_time = float(data["timestamp"]) - start_time
         timestamp.append(relative_time)
 
     return (qdisc, timestamp, stats_params)
@@ -70,10 +72,16 @@ def _plot_tc_stats(stats, node, interface):
     (qdisc, timestamp, stats_params) = values
 
     for param in stats_params:
-        fig = simple_plot('Traffic Control (tc)', timestamp, stats_params[param],
-                          'Time (s)', param, legend_string=f'Interface {interface} in {node}')
-        filename = f'{node}_{interface}_{qdisc}_{param}.png'
-        Pack.dump_plot('tc', filename, fig)
+        fig = simple_plot(
+            "Traffic Control (tc)",
+            timestamp,
+            stats_params[param],
+            "Time (s)",
+            param,
+            legend_string=f"Interface {interface} in {node}",
+        )
+        filename = f"{node}_{interface}_{qdisc}_{param}.png"
+        Pack.dump_plot("tc", filename, fig)
         plt.close(fig)
 
 

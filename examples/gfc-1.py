@@ -22,41 +22,57 @@ from nest.routing.routing_helper import RoutingHelper
 #              n3      n1    n5      n2      n4
 #############################################
 
-r0_r1_bandwidth = '50mbit'
-r1_r2_bandwidth = '150mbit'
-r2_r3_bandwidth = '150mbit'
-r3_r4_bandwidth = '100mbit'
+r0_r1_bandwidth = "50mbit"
+r1_r2_bandwidth = "150mbit"
+r2_r3_bandwidth = "150mbit"
+r3_r4_bandwidth = "100mbit"
 
-link_bandwidth = '150mbit'
+link_bandwidth = "150mbit"
 
-r0_r1_latency = '0.25ms'
-r1_r2_latency = '0.25ms'
-r2_r3_latency = '0.25ms'
-r3_r4_latency = '0.25ms'
+r0_r1_latency = "0.25ms"
+r1_r2_latency = "0.25ms"
+r2_r3_latency = "0.25ms"
+r3_r4_latency = "0.25ms"
 
-link_latency = '0.001ms'
+link_latency = "0.001ms"
 
-qdisc = 'codel'
+qdisc = "codel"
 
-r0_r1_qdisc_parameters = {'ce_threshold': '4.8ms',
-                          'limit': '1000', 'target': '100ms', 'ecn': ''}
-r1_r2_qdisc_parameters = {'ce_threshold': '1.6ms',
-                          'limit': '1000', 'target': '100ms', 'ecn': ''}
-r2_r3_qdisc_parameters = {'ce_threshold': '1.6ms',
-                          'limit': '1000', 'target': '100ms', 'ecn': ''}
-r3_r4_qdisc_parameters = {'ce_threshold': '2.4ms',
-                          'limit': '1000', 'target': '100ms', 'ecn': ''}
+r0_r1_qdisc_parameters = {
+    "ce_threshold": "4.8ms",
+    "limit": "1000",
+    "target": "100ms",
+    "ecn": "",
+}
+r1_r2_qdisc_parameters = {
+    "ce_threshold": "1.6ms",
+    "limit": "1000",
+    "target": "100ms",
+    "ecn": "",
+}
+r2_r3_qdisc_parameters = {
+    "ce_threshold": "1.6ms",
+    "limit": "1000",
+    "target": "100ms",
+    "ecn": "",
+}
+r3_r4_qdisc_parameters = {
+    "ce_threshold": "2.4ms",
+    "limit": "1000",
+    "target": "100ms",
+    "ecn": "",
+}
 
 # Creating all the nodes
 node = []
 for i in range(12):
-    node.append(Node('node' + str(i)))
-    node[i].configure_tcp_param('ecn', '1')
+    node.append(Node("node" + str(i)))
+    node[i].configure_tcp_param("ecn", "1")
 
 # Creating all the routers
 router = []
 for i in range(5):
-    router.append(Node('router' + str(i)))
+    router.append(Node("router" + str(i)))
     router[-1].enable_ip_forwarding()
 
 # Making the necessary connections
@@ -83,48 +99,48 @@ for i in range(5):
 (r4_n10, n10_r4) = connect(router[4], node[10])
 
 # Setting addresses to the interfaces
-r0_r1.set_address('10.0.2.2/24')
-r1_r0.set_address('10.0.2.3/24')
-r1_r2.set_address('10.0.3.3/24')
-r2_r1.set_address('10.0.3.4/24')
-r2_r3.set_address('10.0.4.4/24')
-r3_r2.set_address('10.0.4.5/24')
-r3_r4.set_address('10.0.5.5/24')
-r4_r3.set_address('10.0.5.6/24')
+r0_r1.set_address("10.0.2.2/24")
+r1_r0.set_address("10.0.2.3/24")
+r1_r2.set_address("10.0.3.3/24")
+r2_r1.set_address("10.0.3.4/24")
+r2_r3.set_address("10.0.4.4/24")
+r3_r2.set_address("10.0.4.5/24")
+r3_r4.set_address("10.0.5.5/24")
+r4_r3.set_address("10.0.5.6/24")
 
-n0_r0.set_address('10.0.1.1/24')
-r0_n0.set_address('10.0.1.2/24')
-n3_r0.set_address('10.0.9.1/24')
-r0_n3.set_address('10.0.9.2/24')
+n0_r0.set_address("10.0.1.1/24")
+r0_n0.set_address("10.0.1.2/24")
+n3_r0.set_address("10.0.9.1/24")
+r0_n3.set_address("10.0.9.2/24")
 
-n1_r1.set_address('10.0.11.1/24')
-r1_n1.set_address('10.0.11.3/24')
-n5_r1.set_address('10.0.12.1/24')
-r1_n5.set_address('10.0.12.3/24')
-n9_r1.set_address('10.0.10.1/24')
-r1_n9.set_address('10.0.10.3/24')
+n1_r1.set_address("10.0.11.1/24")
+r1_n1.set_address("10.0.11.3/24")
+n5_r1.set_address("10.0.12.1/24")
+r1_n5.set_address("10.0.12.3/24")
+n9_r1.set_address("10.0.10.1/24")
+r1_n9.set_address("10.0.10.3/24")
 
-n2_r2.set_address('10.0.14.1/24')
-r2_n2.set_address('10.0.14.4/24')
-n11_r2.set_address('10.0.13.1/24')
-r2_n11.set_address('10.0.13.4/24')
+n2_r2.set_address("10.0.14.1/24")
+r2_n2.set_address("10.0.14.4/24")
+n11_r2.set_address("10.0.13.1/24")
+r2_n11.set_address("10.0.13.4/24")
 
-n4_r3.set_address('10.0.16.3/24')
-r3_n4.set_address('10.0.16.5/24')
-n6_r3.set_address('10.0.6.6/24')
-r3_n6.set_address('10.0.6.5/24')
-n8_r3.set_address('10.0.15.2/24')
-r3_n8.set_address('10.0.15.5/24')
+n4_r3.set_address("10.0.16.3/24")
+r3_n4.set_address("10.0.16.5/24")
+n6_r3.set_address("10.0.6.6/24")
+r3_n6.set_address("10.0.6.5/24")
+n8_r3.set_address("10.0.15.2/24")
+r3_n8.set_address("10.0.15.5/24")
 
-n7_r4.set_address('10.0.18.5/24')
-r4_n7.set_address('10.0.18.6/24')
-n10_r4.set_address('10.0.17.5/24')
-r4_n10.set_address('10.0.17.6/24')
+n7_r4.set_address("10.0.18.5/24")
+r4_n7.set_address("10.0.18.6/24")
+n10_r4.set_address("10.0.17.5/24")
+r4_n10.set_address("10.0.17.6/24")
 
 # Populate routing table using RIP.
 # Internally uses quagga/frr. Refer `RoutingHelper` class
 # on how to add custom quagga/frr configuration
-RoutingHelper(protocol='rip').populate_routing_tables()
+RoutingHelper(protocol="rip").populate_routing_tables()
 
 # Setting attributes to the interfaces on the nodes and the opposite end
 for n in node:
@@ -133,20 +149,16 @@ for n in node:
         i.pair.set_attributes(link_bandwidth, link_latency)
 
 # Setting attributes for the interfaces between routers
-r0_r1.set_attributes(r0_r1_bandwidth, r0_r1_latency,
-                     qdisc, **r0_r1_qdisc_parameters)
+r0_r1.set_attributes(r0_r1_bandwidth, r0_r1_latency, qdisc, **r0_r1_qdisc_parameters)
 r1_r0.set_attributes(r0_r1_bandwidth, r0_r1_latency)
 
-r1_r2.set_attributes(r1_r2_bandwidth, r1_r2_latency,
-                     qdisc, **r1_r2_qdisc_parameters)
+r1_r2.set_attributes(r1_r2_bandwidth, r1_r2_latency, qdisc, **r1_r2_qdisc_parameters)
 r2_r1.set_attributes(r1_r2_bandwidth, r1_r2_latency)
 
-r2_r3.set_attributes(r2_r3_bandwidth, r2_r3_latency,
-                     qdisc, **r2_r3_qdisc_parameters)
+r2_r3.set_attributes(r2_r3_bandwidth, r2_r3_latency, qdisc, **r2_r3_qdisc_parameters)
 r3_r2.set_attributes(r2_r3_bandwidth, r2_r3_latency)
 
-r3_r4.set_attributes(r3_r4_bandwidth, r3_r4_latency,
-                     qdisc, **r3_r4_qdisc_parameters)
+r3_r4.set_attributes(r3_r4_bandwidth, r3_r4_latency, qdisc, **r3_r4_qdisc_parameters)
 r4_r3.set_attributes(r3_r4_bandwidth, r3_r4_latency)
 
 time = 120
@@ -158,7 +170,7 @@ flows.append(Flow(node[3], node[9], n9_r1.get_address(), 0, time, 6))
 flows.append(Flow(node[4], node[10], n10_r4.get_address(), 0, time, 6))
 flows.append(Flow(node[5], node[11], n11_r2.get_address(), 0, time, 2))
 
-gfc_exp = Experiment('gfc')
+gfc_exp = Experiment("gfc")
 for flow in flows:
     gfc_exp.add_tcp_flow(flow)
 

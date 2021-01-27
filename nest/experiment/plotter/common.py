@@ -6,9 +6,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-#pylint: disable=invalid-name
+# pylint: disable=invalid-name
 
-#pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments
 def simple_plot(title, x_list, y_list, x_label, y_label, legend_string=None):
     """
     Plot values
@@ -70,28 +70,28 @@ def mix_plot(title, data, x_label, y_label, with_sum=False):
     fig, ax = plt.subplots()
     # TODO: I couldn't think of better variable name :(
     for chunk in data:
-        (x_list, y_list) = chunk['values']
-        label = chunk['label']
+        (x_list, y_list) = chunk["values"]
+        label = chunk["label"]
         ax.plot(x_list, y_list, label=label)
 
     if with_sum:
 
         x = []
         for chunk in data:
-            (x_list, _) = chunk['values']
+            (x_list, _) = chunk["values"]
             x.append(x_list)
 
         # Get sorted list of all x values
         x = np.unique(np.concatenate(x))
 
-        total = np.array([0.0]*len(x))
+        total = np.array([0.0] * len(x))
         for chunk in data:
-            (x_list, y_list) = chunk['values']
+            (x_list, y_list) = chunk["values"]
             # Interpolate y values on the combined x values
             y = np.interp(x, x_list, y_list, left=0, right=0)
             total += y
 
-        ax.plot(x, total, label='sum', alpha=0.5)
+        ax.plot(x, total, label="sum", alpha=0.5)
 
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)

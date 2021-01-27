@@ -10,6 +10,7 @@ All the calls to Linux kernel happens in this module.
 from .exec import *
 from .ip_address import *
 from .ip_link import *
+from .ip_mpls_route import *
 from .ip_netns import *
 from .ip_route import *
 from .iperf import *
@@ -18,4 +19,3 @@ from .setns import *
 from .sysctl import *
 from .tc import *
 from .uname import *
-from .ip_mpls_route import *

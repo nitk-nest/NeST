@@ -5,6 +5,7 @@
 
 from .exec import exec_subprocess
 
+
 def create_ns(ns_name):
     """
     Create namespace if it doesn't already exist
@@ -14,7 +15,7 @@ def create_ns(ns_name):
     ns_name : str
         namespace name
     """
-    exec_subprocess(f'ip netns add {ns_name}')
+    exec_subprocess(f"ip netns add {ns_name}")
 
 
 def delete_ns(ns_name):
@@ -26,7 +27,7 @@ def delete_ns(ns_name):
     ns_name : str
         namespace name
     """
-    exec_subprocess(f'ip netns del {ns_name}')
+    exec_subprocess(f"ip netns del {ns_name}")
 
 
 def kill_all_processes(ns_name):
@@ -39,4 +40,4 @@ def kill_all_processes(ns_name):
         Namespace name
     """
 
-    exec_subprocess(f'kill $(ip netns pids {ns_name})', shell=True)
+    exec_subprocess(f"kill $(ip netns pids {ns_name})", shell=True)

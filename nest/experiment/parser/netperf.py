@@ -38,28 +38,32 @@ class NetperfRunner(Runner):
     """
 
     tcp_output_options = [
-        'THROUGHPUT', 'LOCAL_CONG_CONTROL', 'REMOTE_CONG_CONTROL', 'TRANSPORT_MSS',
-        'LOCAL_SOCKET_TOS', 'REMOTE_SOCKET_TOS'
+        "THROUGHPUT",
+        "LOCAL_CONG_CONTROL",
+        "REMOTE_CONG_CONTROL",
+        "TRANSPORT_MSS",
+        "LOCAL_SOCKET_TOS",
+        "REMOTE_SOCKET_TOS",
     ]
 
     default_netperf_options = {
-        'banner': '-P 0',                   # Disable test banner
-        'ipv4': '-4',                       # IPv4 Addresses
-        'testname': '-t TCP_STREAM',        # Test type (NOTE: TCP_STREAM only for now)
-        'fill_file': '-F /dev/urandom',     # File to transmit (NOTE: Inspired from flent)
-        'testlen': '-l 10',                 # Length of test (NOTE: Default 10s)
-        'intervel': '-D -0.2',              # Generated interim results every INTERVAL secs
-        'debug': '-d',                      # Enable debug mode
+        "banner": "-P 0",  # Disable test banner
+        "ipv4": "-4",  # IPv4 Addresses
+        "testname": "-t TCP_STREAM",  # Test type (NOTE: TCP_STREAM only for now)
+        "fill_file": "-F /dev/urandom",  # File to transmit (NOTE: Inspired from flent)
+        "testlen": "-l 10",  # Length of test (NOTE: Default 10s)
+        "intervel": "-D -0.2",  # Generated interim results every INTERVAL secs
+        "debug": "-d",  # Enable debug mode
     }
 
     netperf_tcp_options = {
-        'cong_algo': '-K cubic',             # Congestion algorithm
-        'stats': '-k THROUGHPUT'             # Stats required
+        "cong_algo": "-K cubic",  # Congestion algorithm
+        "stats": "-k THROUGHPUT",  # Stats required
     }
 
     netperf_udp_options = {
-        'routing': '-R 1',                    # Enable routing
-        'stats': '-k THROUGHPUT'              # Stats required
+        "routing": "-R 1",  # Enable routing
+        "stats": "-k THROUGHPUT",  # Stats required
     }
 
     def __init__(self, ns_id, destination_ip, start_time, run_time, **kwargs):
@@ -97,9 +101,8 @@ class NetperfRunner(Runner):
         """
         return_code = run_netserver(ns_id)
         if return_code != 0:
-            ns_name = TopologyMap.get_namespace(ns_id)['name']
-            print("Error running netserver at {}.".format(
-                ns_name))
+            ns_name = TopologyMap.get_namespace(ns_id)["name"]
+            print("Error running netserver at {}.".format(ns_name))
 
     def run(self):
         """
@@ -109,24 +112,31 @@ class NetperfRunner(Runner):
         test_options = None
 
         # Change the default run time
-        netperf_options['testlen'] = '-l {}'.format(self.run_time)
+        netperf_options["testlen"] = "-l {}".format(self.run_time)
         # Set test
-        netperf_options['testname'] = '-t {}'.format(self.options['testname'])
+        netperf_options["testname"] = "-t {}".format(self.options["testname"])
 
-        if netperf_options['testname'] == '-t TCP_STREAM':
+        if netperf_options["testname"] == "-t TCP_STREAM":
             test_options = copy.copy(NetperfRunner.netperf_tcp_options)
-            test_options['cong_alg'] = '-K {}'.format(
-                self.options['cong_algo'])
-        elif netperf_options['testname'] == '-t UDP_STREAM':
+            test_options["cong_alg"] = "-K {}".format(self.options["cong_algo"])
+        elif netperf_options["testname"] == "-t UDP_STREAM":
             test_options = copy.copy(NetperfRunner.netperf_udp_options)
 
         netperf_options_list = list(netperf_options.values())
-        netperf_options_string = ' '.join(netperf_options_list)
+        netperf_options_string = " ".join(netperf_options_list)
         test_options_list = list(test_options.values())
-        test_options_string = ' '.join(test_options_list)
+        test_options_string = " ".join(test_options_list)
 
-        super().run(partial(run_netperf, self.ns_id, netperf_options_string,
-                            self.destination_ip, self.start_time, test_options_string))
+        super().run(
+            partial(
+                run_netperf,
+                self.ns_id,
+                netperf_options_string,
+                self.destination_ip,
+                self.start_time,
+                test_options_string,
+            )
+        )
 
     def print_error(self):
         """
@@ -134,41 +144,47 @@ class NetperfRunner(Runner):
         """
         self.err.seek(0)  # rewind to start of file
         error = self.err.read().decode()
-        ns_name = TopologyMap.get_namespace(self.ns_id)['name']
-        self.logger.error('Running netperf at %s. %s', ns_name, error)
+        ns_name = TopologyMap.get_namespace(self.ns_id)["name"]
+        self.logger.error("Running netperf at %s. %s", ns_name, error)
 
     def parse(self):
         """
         Parse netperf output from `self.out`
         """
-        self.out.seek(0)    # rewind to start of the temp file
+        self.out.seek(0)  # rewind to start of the temp file
         raw_stats = self.out.read().decode()
 
         # pattern that matches the netperf output corresponding to throughput
-        throughput_pattern = r'NETPERF_INTERIM_RESULT\[\d+]=(?P<throughput>\d+\.\d+)'
-        throughputs = [throughput.group('throughput') for throughput in re.finditer(
-            throughput_pattern, raw_stats)]
+        throughput_pattern = r"NETPERF_INTERIM_RESULT\[\d+]=(?P<throughput>\d+\.\d+)"
+        throughputs = [
+            throughput.group("throughput")
+            for throughput in re.finditer(throughput_pattern, raw_stats)
+        ]
 
         # pattern that matches the netperf output corresponding to interval
-        timestamp_pattern = r'NETPERF_ENDING\[\d+]=(?P<timestamp>\d+\.\d+)'
-        timestamps = [timestamp.group('timestamp') for timestamp in re.finditer(
-            timestamp_pattern, raw_stats)]
+        timestamp_pattern = r"NETPERF_ENDING\[\d+]=(?P<timestamp>\d+\.\d+)"
+        timestamps = [
+            timestamp.group("timestamp")
+            for timestamp in re.finditer(timestamp_pattern, raw_stats)
+        ]
 
         # pattern that gives the remote port
-        remote_port_pattern = r'remote port is (?P<remote>\d+)'
-        remote_port = re.search(remote_port_pattern, raw_stats).group('remote')
+        remote_port_pattern = r"remote port is (?P<remote>\d+)"
+        remote_port = re.search(remote_port_pattern, raw_stats).group("remote")
 
         # List storing collected stats
         # First item as "meta" item with user given information
         stats_list = [self.get_meta_item()]
 
         for i in range(len(throughputs)):
-            stats_list.append({
-                'timestamp': timestamps[i],
-                # Netperf provides throughput as sending rate from sender's side
-                'sending_rate': throughputs[i]
-            })
+            stats_list.append(
+                {
+                    "timestamp": timestamps[i],
+                    # Netperf provides throughput as sending rate from sender's side
+                    "sending_rate": throughputs[i],
+                }
+            )
 
-        stats_dict = {f'{self.destination_ip}:{remote_port}': stats_list}
+        stats_dict = {f"{self.destination_ip}:{remote_port}": stats_list}
 
         NetperfResults.add_result(self.ns_id, stats_dict)

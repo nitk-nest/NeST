@@ -46,12 +46,12 @@ class RoutingHelper:
     """
 
     _module_map = {
-        'ospf': ['nest.routing.ospf', 'Ospf'],
-        'rip': ['nest.routing.rip', 'Rip'],
-        'isis': ['nest.routing.isis', 'Isis']
+        "ospf": ["nest.routing.ospf", "Ospf"],
+        "rip": ["nest.routing.rip", "Rip"],
+        "isis": ["nest.routing.isis", "Isis"],
     }
 
-    def __init__(self, protocol='static', hosts=None, routers=None):
+    def __init__(self, protocol="static", hosts=None, routers=None):
         """
         Constructor for RoutingHelper
 
@@ -66,9 +66,10 @@ class RoutingHelper:
             List of routers in the network. If `None`, considers the entire topology.
             Use this if your topology has disjoint networks
         """
-        if protocol == 'static':
+        if protocol == "static":
             raise NotImplementedError(
-                'Static routing is yet to be implemented. Use rip or ospf')
+                "Static routing is yet to be implemented. Use rip or ospf"
+            )
         self.protocol = protocol
         self.routers = TopologyMap.get_routers() if routers is None else routers
         self.hosts = TopologyMap.get_hosts() if hosts is None else hosts
@@ -87,7 +88,7 @@ class RoutingHelper:
         """
         self._setup_default_routes()
 
-        if self.protocol == 'static':
+        if self.protocol == "static":
             pass  # TODO: add static routing
         else:
             self._run_dyn_routing()
@@ -103,8 +104,8 @@ class RoutingHelper:
         str:
             path of the created directory
         """
-        salt = config.get_value('routing_suite') + str(time.clock_gettime(0))
-        dir_path = f'/tmp/{salt}-configs_{IdGen.topology_id}'
+        salt = config.get_value("routing_suite") + str(time.clock_gettime(0))
+        dir_path = f"/tmp/{salt}-configs_{IdGen.topology_id}"
         mkdir(dir_path)
         chown_to_daemon(dir_path)
         return dir_path
@@ -114,13 +115,13 @@ class RoutingHelper:
         Setup default routes in hosts
         """
         for host in self.hosts:
-            host.add_route('DEFAULT', host.interfaces[0])
+            host.add_route("DEFAULT", host.interfaces[0])
 
     def _run_dyn_routing(self):
         """
         Run zebra and `self.protocol`
         """
-        logger.info('Running zebra and %s on routers', self.protocol)
+        logger.info("Running zebra and %s on routers", self.protocol)
         self.conf_dir = self._create_conf_directory()
         for router in self.routers:
             self._run_zebra(router)
@@ -140,8 +141,7 @@ class RoutingHelper:
         """
         Create required config file and run `self.protocol`
         """
-        protocol = self.protocol_class(
-            router.id, router.interfaces, self.conf_dir)
+        protocol = self.protocol_class(router.id, router.interfaces, self.conf_dir)
         protocol.create_basic_config()
         protocol.run()
         self.protocol_list.append(protocol)
@@ -151,7 +151,7 @@ class RoutingHelper:
         Wait for the routing protocol to converge.
         Override this for custom convergence check
         """
-        logger.info('Waiting for %s to converge', self.protocol)
+        logger.info("Waiting for %s to converge", self.protocol)
         interval = 2
         converged = False
         # Ping between hosts until convergence
@@ -159,15 +159,16 @@ class RoutingHelper:
             time.sleep(interval)
             converged = True
             for i in range(len(self.hosts)):
-                for j in range(i+1, len(self.hosts)):
-                    if not self.hosts[i].ping(self.hosts[j].interfaces[0].address.get_addr(),
-                                              verbose=False):
+                for j in range(i + 1, len(self.hosts)):
+                    if not self.hosts[i].ping(
+                        self.hosts[j].interfaces[0].address.get_addr(), verbose=False
+                    ):
                         converged = False
                         break
                 if not converged:
                     break
 
-        logger.info('Routing completed')
+        logger.info("Routing completed")
 
     def _clean_up(self):
         """
@@ -179,7 +180,7 @@ class RoutingHelper:
         # Stop zebra processes
         for zebra in self.zebra_list:
             if path.isfile(zebra.pid_file):
-                with open(zebra.pid_file, 'r') as pid_file:
+                with open(zebra.pid_file, "r") as pid_file:
                     pid = int(pid_file.read())
                     try:
                         kill(pid, SIGTERM)
@@ -189,7 +190,7 @@ class RoutingHelper:
         # Stop protocol processes
         for protocol in self.protocol_list:
             if path.isfile(protocol.pid_file):
-                with open(protocol.pid_file, 'r') as pid_file:
+                with open(protocol.pid_file, "r") as pid_file:
                     pid = int(pid_file.read())
                     try:
                         kill(pid, SIGTERM)

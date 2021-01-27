@@ -9,7 +9,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-default_value = {'topology': {}, 'experiment': {}, 'engine': {}, 'routing': {}}
+default_value = {"topology": {}, "experiment": {}, "engine": {}, "routing": {}}
+
 
 def import_default_config():
     """
@@ -20,9 +21,12 @@ def import_default_config():
     dict
         The information in the default config file as a python dictionary
     """
-    with open(os.path.realpath(os.path.dirname(__file__)) + '/config.json', 'r') as json_file:
+    with open(
+        os.path.realpath(os.path.dirname(__file__)) + "/config.json", "r"
+    ) as json_file:
         data = json.load(json_file)
         return data
+
 
 def set_value(parameter, value):
     """
@@ -37,16 +41,17 @@ def set_value(parameter, value):
     """
     if parameter in default_value:
         default_value[parameter] = value
-    elif parameter in default_value['topology']:
-        default_value['topology'][parameter] = value
-    elif parameter in default_value['experiment']:
-        default_value['experiment'][parameter] = value
-    elif parameter in default_value['engine']:
-        default_value['engine'][parameter] = value
-    elif parameter in default_value['routing']:
-        default_value['routing'][parameter] = value
+    elif parameter in default_value["topology"]:
+        default_value["topology"][parameter] = value
+    elif parameter in default_value["experiment"]:
+        default_value["experiment"][parameter] = value
+    elif parameter in default_value["engine"]:
+        default_value["engine"][parameter] = value
+    elif parameter in default_value["routing"]:
+        default_value["routing"][parameter] = value
     else:
-        logging.error('The given parameter %s does not exist', parameter)
+        logging.error("The given parameter %s does not exist", parameter)
+
 
 def get_value(parameter):
     """
@@ -64,18 +69,19 @@ def get_value(parameter):
     """
     if parameter in default_value:
         return default_value[parameter]
-    if parameter in default_value['topology']:
-        return default_value['topology'][parameter]
-    if parameter in default_value['experiment']:
-        return default_value['experiment'][parameter]
-    if parameter in default_value['engine']:
-        return default_value['engine'][parameter]
-    if parameter in default_value['routing']:
-        return default_value['routing'][parameter]
+    if parameter in default_value["topology"]:
+        return default_value["topology"][parameter]
+    if parameter in default_value["experiment"]:
+        return default_value["experiment"][parameter]
+    if parameter in default_value["engine"]:
+        return default_value["engine"][parameter]
+    if parameter in default_value["routing"]:
+        return default_value["routing"][parameter]
 
     # If it belonged to none of them
-    logging.error('The given parameter %s does not exist', parameter)
-    return 'The given parameter %s does not exist'
+    logging.error("The given parameter %s does not exist", parameter)
+    return "The given parameter %s does not exist"
+
 
 def import_custom_config(path):
     """
@@ -87,25 +93,25 @@ def import_custom_config(path):
     path: str
         The path in which the json file
     """
-    #pylint: disable=too-many-branches
-    with open(path, 'r') as json_file:
+    # pylint: disable=too-many-branches
+    with open(path, "r") as json_file:
         data = json.load(json_file)
-    if 'topology' in data:
-        for parameter in data['topology']:
-            if parameter in default_value['topology']:
-                default_value['topology'][parameter] = data['topology'][parameter]
-    if 'experiment' in data:
-        for parameter in data['experiment']:
-            if parameter in default_value['experiment']:
-                default_value['experiment'][parameter] = data['experiment'][parameter]
-    if 'engine' in data:
-        for parameter in data['engine']:
-            if parameter in default_value['engine']:
-                default_value['engine'][parameter] = data['engine'][parameter]
-    if 'routing' in data:
-        for parameter in data['routing']:
-            if parameter in default_value['routing']:
-                default_value['routing'][parameter] = data['routing'][parameter]
+    if "topology" in data:
+        for parameter in data["topology"]:
+            if parameter in default_value["topology"]:
+                default_value["topology"][parameter] = data["topology"][parameter]
+    if "experiment" in data:
+        for parameter in data["experiment"]:
+            if parameter in default_value["experiment"]:
+                default_value["experiment"][parameter] = data["experiment"][parameter]
+    if "engine" in data:
+        for parameter in data["engine"]:
+            if parameter in default_value["engine"]:
+                default_value["engine"][parameter] = data["engine"][parameter]
+    if "routing" in data:
+        for parameter in data["routing"]:
+            if parameter in default_value["routing"]:
+                default_value["routing"][parameter] = data["routing"][parameter]
     for parameter in data:
         if not isinstance(default_value[parameter], dict):
             default_value[parameter] = data[parameter]

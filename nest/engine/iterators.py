@@ -33,8 +33,12 @@ def run_ss(ns_id, iterator, destination_ip, duration, ss_filter, start_time, out
     int
         return code of the command executed
     """
-    return exec_exp_commands(f'ip netns exec {ns_id} /bin/bash {iterator} {destination_ip} \
-                                {duration} {ss_filter}  {start_time}', stdout=out, stderr=err)
+    return exec_exp_commands(
+        f"ip netns exec {ns_id} /bin/bash {iterator} {destination_ip} \
+                                {duration} {ss_filter}  {start_time}",
+        stdout=out,
+        stderr=err,
+    )
 
 
 # pylint: disable=too-many-arguments
@@ -63,5 +67,7 @@ def run_tc(ns_id, iterator, dev, duration, out, err):
         return code of the command executed
     """
     return exec_exp_commands(
-        f'ip netns exec {ns_id} /bin/bash {iterator} {dev} {duration}', stdout=out,
-        stderr=err)
+        f"ip netns exec {ns_id} /bin/bash {iterator} {dev} {duration}",
+        stdout=out,
+        stderr=err,
+    )

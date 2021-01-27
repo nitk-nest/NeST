@@ -11,10 +11,10 @@ from nest import config
 
 logger = logging.getLogger(__name__)
 # pylint: disable=no-member
-if config.get_value('log_level') == 'TRACE':
-    fh = logging.FileHandler('commands.sh', 'w')
+if config.get_value("log_level") == "TRACE":
+    fh = logging.FileHandler("commands.sh", "w")
     fh.setLevel(logging.TRACE)
-    formatter = logging.Formatter('%(message)s')
+    formatter = logging.Formatter("%(message)s")
     fh.setFormatter(formatter)
     logger.addHandler(fh)
 
@@ -47,7 +47,9 @@ def exec_subprocess(cmd, shell=False, output=False):
     temp_cmd = cmd
     if shell is False:
         temp_cmd = cmd.split()
-    proc = subprocess.Popen(temp_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell)
+    proc = subprocess.Popen(
+        temp_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell
+    )
 
     (stdout, _) = proc.communicate()
     logger.trace(cmd)
@@ -56,7 +58,10 @@ def exec_subprocess(cmd, shell=False, output=False):
         return stdout.decode()
     return proc.returncode
 
-def exec_exp_commands(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=None):
+
+def exec_exp_commands(
+    cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=None
+):
     """
     executes experiment related commands like ss, tc and netperf
 
@@ -81,5 +86,5 @@ def exec_exp_commands(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeo
         proc.communicate(timeout=timeout)
     except subprocess.TimeoutExpired:
         proc.kill()
-        stderr.write(b'Connection timeout')
+        stderr.write(b"Connection timeout")
     return proc.returncode

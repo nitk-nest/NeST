@@ -8,14 +8,15 @@ from .. import engine
 # TODO: Improve this module such that the below pylint disables are no
 # longer required
 
-#pylint: disable=too-few-public-methods
-#pylint: disable=too-many-arguments
-#pylint: disable=too-many-instance-attributes
+# pylint: disable=too-few-public-methods
+# pylint: disable=too-many-arguments
+# pylint: disable=too-many-instance-attributes
+
 
 class Qdisc:
     """Handle Queueing Discipline"""
 
-    def __init__(self, namespace_id, dev_id, qdisc, parent='root', handle='', **kwargs):
+    def __init__(self, namespace_id, dev_id, qdisc, parent="root", handle="", **kwargs):
         """
         Constructor to add a qdisc (Queueing Discipline) to an interface (device)
 
@@ -48,7 +49,9 @@ class Qdisc:
 class Class:
     """Handle classes associated to qdisc"""
 
-    def __init__(self, namespace_id, dev_id, qdisc, parent='root', classid='', **kwargs):
+    def __init__(
+        self, namespace_id, dev_id, qdisc, parent="root", classid="", **kwargs
+    ):
         """
         Constructor to create an object that represents a class
 
@@ -69,19 +72,28 @@ class Class:
         """
         self.namespace_id = namespace_id
         self.dev_id = dev_id
-        self.qdisc = qdisc          # NOTE: should be renamed to knid
+        self.qdisc = qdisc  # NOTE: should be renamed to knid
         self.parent = parent
         self.classid = classid
 
-        engine.add_class(namespace_id, dev_id, parent,
-                         qdisc, classid, **kwargs)
+        engine.add_class(namespace_id, dev_id, parent, qdisc, classid, **kwargs)
 
 
 class Filter:
     """Handle filters to assign to class/qdisc"""
 
-    def __init__(self, namespace_id, dev_id, protocol, priority, filtertype, flowid,
-                 parent='root', handle='', **kwargs):
+    def __init__(
+        self,
+        namespace_id,
+        dev_id,
+        protocol,
+        priority,
+        filtertype,
+        flowid,
+        parent="root",
+        handle="",
+        **kwargs
+    ):
         """
         Constructor to design a Filter to assign to a Class or Qdisc
 
@@ -116,5 +128,13 @@ class Filter:
         self.parent = parent
         self.handle = handle
 
-        engine.add_filter(namespace_id, dev_id, protocol, priority,
-                          filtertype, parent, handle, **kwargs)
+        engine.add_filter(
+            namespace_id,
+            dev_id,
+            protocol,
+            priority,
+            filtertype,
+            parent,
+            handle,
+            **kwargs
+        )

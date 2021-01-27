@@ -7,6 +7,7 @@ from .exec import exec_subprocess
 
 logger = logging.getLogger(__name__)
 
+
 def create_veth(dev_name1, dev_name2):
     """
     Create a veth pair with endpoint interfaces `dev_name1`
@@ -17,7 +18,7 @@ def create_veth(dev_name1, dev_name2):
     dev_name1 : str
     dev_name2 : str
     """
-    exec_subprocess(f'ip link add {dev_name1} type veth peer name {dev_name2}')
+    exec_subprocess(f"ip link add {dev_name1} type veth peer name {dev_name2}")
 
 
 def create_ifb(dev_name):
@@ -30,7 +31,7 @@ def create_ifb(dev_name):
         interface names
     """
 
-    exec_subprocess(f'ip link add {dev_name} type ifb')
+    exec_subprocess(f"ip link add {dev_name} type ifb")
 
 
 def add_int_to_ns(ns_name, dev_name):
@@ -44,7 +45,7 @@ def add_int_to_ns(ns_name, dev_name):
     dev_name : str
         interface name
     """
-    exec_subprocess(f'ip link set {dev_name} netns {ns_name}')
+    exec_subprocess(f"ip link set {dev_name} netns {ns_name}")
 
 
 def set_int_up(ns_name, dev_name):
@@ -58,7 +59,7 @@ def set_int_up(ns_name, dev_name):
     dev_name : str
         interface name
     """
-    exec_subprocess(f'ip netns exec {ns_name} ip link set dev {dev_name} up')
+    exec_subprocess(f"ip netns exec {ns_name} ip link set dev {dev_name} up")
 
 
 def setup_veth(ns_name1, ns_name2, dev_name1, dev_name2):
@@ -111,7 +112,8 @@ def set_interface_mode(ns_name, dev_name, mode):
     mode : str
         'up' or 'down'
     """
-    exec_subprocess(f'ip netns exec {ns_name} ip link set dev {dev_name} {mode}')
+    exec_subprocess(f"ip netns exec {ns_name} ip link set dev {dev_name} {mode}")
+
 
 def set_mtu_interface(ns_name, dev_name, mtu_value):
     """
@@ -123,9 +125,16 @@ def set_mtu_interface(ns_name, dev_name, mtu_value):
     dev_name : str
     mtu_value : int
     """
-    exec_subprocess(f'ip netns exec {ns_name} ip link set dev {dev_name} mtu {mtu_value}')
+    exec_subprocess(
+        f"ip netns exec {ns_name} ip link set dev {dev_name} mtu {mtu_value}"
+    )
     # Verify if the mtu is set
-    mtu = int(exec_subprocess(
-        f' ip netns exec {ns_name} cat /sys/class/net/{dev_name}/mtu', output=True))
+    mtu = int(
+        exec_subprocess(
+            f" ip netns exec {ns_name} cat /sys/class/net/{dev_name}/mtu", output=True
+        )
+    )
     if mtu != mtu_value:
-        logger.error("MTU of interface %s wasn't set to %s!", str(dev_name), str(mtu_value))
+        logger.error(
+            "MTU of interface %s wasn't set to %s!", str(dev_name), str(mtu_value)
+        )

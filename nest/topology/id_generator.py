@@ -5,7 +5,8 @@
 
 from .. import config
 
-class IdGen: # pylint: disable=too-few-public-methods
+
+class IdGen:  # pylint: disable=too-few-public-methods
     """Generate unique id for Topology entities
 
 
@@ -20,6 +21,7 @@ class IdGen: # pylint: disable=too-few-public-methods
         (default is True)
 
     """
+
     topology_id = ""
     counter = 0
 
@@ -49,8 +51,8 @@ class IdGen: # pylint: disable=too-few-public-methods
             Else, `name` is returned back
 
         """
-        if config.get_value('assign_random_names'):
+        if config.get_value("assign_random_names"):
             IdGen.counter += 1
-            return IdGen.topology_id+"-"+str(IdGen.counter)
+            return IdGen.topology_id + "-" + str(IdGen.counter)
 
         return name

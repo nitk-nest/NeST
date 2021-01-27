@@ -13,17 +13,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class TopologyMap():
+class TopologyMap:
     """
     Store mapping between user given names and NeST ids
     """
 
     # topology_map contains the information about topology created
-    topology_map = {
-        'namespaces': [],
-        'hosts': [],
-        'routers': []
-    }
+    topology_map = {"namespaces": [], "hosts": [], "routers": []}
     # NOTE:
     # To figure out the contents of each dict keyword,
     # checkout the add_keyword function.
@@ -47,20 +43,15 @@ class TopologyMap():
             namespace name
         """
         if ns_id in TopologyMap.namespaces_pointer:
-            raise ValueError(
-                f'Namespace with id {ns_id} already exists in TopologyMap')
+            raise ValueError(f"Namespace with id {ns_id} already exists in TopologyMap")
 
         namespaces = TopologyMap.get_namespaces()
 
-        namespaces.append({
-            'id': ns_id,
-            'name': ns_name,
-            'interfaces': []
-        })
+        namespaces.append({"id": ns_id, "name": ns_name, "interfaces": []})
 
         TopologyMap.namespaces_pointer[ns_id] = {
-            'pos': len(namespaces)-1,
-            'interfaces_pointer': {}
+            "pos": len(namespaces) - 1,
+            "interfaces_pointer": {},
         }
 
     @staticmethod
@@ -113,28 +104,24 @@ class TopologyMap():
             interface name
         """
         if ns_id not in TopologyMap.namespaces_pointer:
-            raise ValueError(
-                f'Namespace with id {ns_id} doesn\'t exist in TopologyMap')
+            raise ValueError(f"Namespace with id {ns_id} doesn't exist in TopologyMap")
 
-        if int_id in TopologyMap.namespaces_pointer[ns_id]['interfaces_pointer']:
+        if int_id in TopologyMap.namespaces_pointer[ns_id]["interfaces_pointer"]:
             raise ValueError(
-                f'Interface with id {int_id} already present in namespace {ns_id}')
+                f"Interface with id {int_id} already present in namespace {ns_id}"
+            )
 
         # TODO: classes not added yet to list
         interfaces = TopologyMap.get_interfaces(ns_id)
 
-        interfaces.append({
-            'id': int_id,
-            'name': int_name,
-            'qdiscs': []
-        })
+        interfaces.append({"id": int_id, "name": int_name, "qdiscs": []})
 
-        TopologyMap.namespaces_pointer[ns_id]['interfaces_pointer'][int_id] = {
-            'pos': len(interfaces)-1
+        TopologyMap.namespaces_pointer[ns_id]["interfaces_pointer"][int_id] = {
+            "pos": len(interfaces) - 1
         }
 
     @staticmethod
-    def add_qdisc(ns_id, int_id, kind, handle, parent=''):
+    def add_qdisc(ns_id, int_id, kind, handle, parent=""):
         """
         Add qdisc to topology_map
 
@@ -152,21 +139,17 @@ class TopologyMap():
             qdisc parent (Default value = '')
         """
         if ns_id not in TopologyMap.namespaces_pointer:
-            raise ValueError(
-                f'Namespace with id {ns_id} doesn\'t exist in TopologyMap')
+            raise ValueError(f"Namespace with id {ns_id} doesn't exist in TopologyMap")
 
-        if int_id not in TopologyMap.namespaces_pointer[ns_id]['interfaces_pointer']:
+        if int_id not in TopologyMap.namespaces_pointer[ns_id]["interfaces_pointer"]:
             raise ValueError(
-                f'Interface with id {int_id} doesn\'t exist in namespace {ns_id}')
+                f"Interface with id {int_id} doesn't exist in namespace {ns_id}"
+            )
 
         # TODO: Check if qdisc is already present?
 
         qdiscs = TopologyMap.get_qdiscs(ns_id, int_id)
-        qdiscs.append({
-            'kind': kind,
-            'handle': handle,
-            'parent': parent
-        })
+        qdiscs.append({"kind": kind, "handle": handle, "parent": parent})
 
     @staticmethod
     def delete_qdisc(ns_id, int_id, handle):
@@ -185,7 +168,7 @@ class TopologyMap():
         qdiscs = TopologyMap.get_qdiscs(ns_id, int_id)
         counter = 0
         for qdisc in qdiscs:
-            if qdisc['handle'] == handle:
+            if qdisc["handle"] == handle:
                 qdiscs.pop(counter)
                 break
             counter += 1
@@ -204,7 +187,7 @@ class TopologyMap():
         -------
         List[Dict]
         """
-        return TopologyMap.topology_map['namespaces']
+        return TopologyMap.topology_map["namespaces"]
 
     @staticmethod
     def get_routers():
@@ -215,7 +198,7 @@ class TopologyMap():
         -------
         List[Dict]
         """
-        return TopologyMap.topology_map['routers']
+        return TopologyMap.topology_map["routers"]
 
     @staticmethod
     def get_hosts():
@@ -226,7 +209,7 @@ class TopologyMap():
         -------
         List[Dict]
         """
-        return TopologyMap.topology_map['hosts']
+        return TopologyMap.topology_map["hosts"]
 
     @staticmethod
     def get_namespace(ns_id, with_interfaces_pointer=False):
@@ -247,10 +230,10 @@ class TopologyMap():
         """
         namespaces = TopologyMap.get_namespaces()
         namespace_pointer = TopologyMap.namespaces_pointer[ns_id]
-        namespace = namespaces[namespace_pointer['pos']]
+        namespace = namespaces[namespace_pointer["pos"]]
 
         if with_interfaces_pointer:
-            return (namespace_pointer['interfaces_pointer'], namespace)
+            return (namespace_pointer["interfaces_pointer"], namespace)
 
         return namespace
 
@@ -269,7 +252,7 @@ class TopologyMap():
             List[Dict]
         """
         namespace = TopologyMap.get_namespace(ns_id)
-        interfaces = namespace['interfaces']
+        interfaces = namespace["interfaces"]
 
         return interfaces
 
@@ -292,10 +275,11 @@ class TopologyMap():
             Interface details
         """
         (interfaces_pointer, _) = TopologyMap.get_namespace(
-            ns_id, with_interfaces_pointer=True)
+            ns_id, with_interfaces_pointer=True
+        )
         interfaces = TopologyMap.get_interfaces(ns_id)
         interface_pointer = interfaces_pointer[int_id]
-        interface = interfaces[interface_pointer['pos']]
+        interface = interfaces[interface_pointer["pos"]]
 
         return interface
 
@@ -317,7 +301,7 @@ class TopologyMap():
             List[Dict]
         """
         interface = TopologyMap.get_interface(ns_id, int_id)
-        qdiscs = interface['qdiscs']
+        qdiscs = interface["qdiscs"]
 
         return qdiscs
 
@@ -326,11 +310,7 @@ class TopologyMap():
         """
         Delete all mappings stored in `TopologyMap`.
         """
-        TopologyMap.topology_map = {
-            'namespaces': [],
-            'hosts': [],
-            'routers': []
-        }
+        TopologyMap.topology_map = {"namespaces": [], "hosts": [], "routers": []}
         TopologyMap.namespaces_pointer = {}
 
     @staticmethod
@@ -338,8 +318,8 @@ class TopologyMap():
         """
         Dump generated topology_map. (for debugging purposes)
         """
-        logger.debug('Config')
-        logger.debug('------')
+        logger.debug("Config")
+        logger.debug("------")
         logger.debug(json.dumps(TopologyMap.topology_map, indent=4))
 
         # print()

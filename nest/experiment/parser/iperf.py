@@ -65,5 +65,6 @@ class IperfRunner(Runner):
         """
         if self.start_time != 0:
             sleep(self.start_time)
-        run_iperf_client(self.ns_id, self.destination_ip,
-                         self.run_time, self.n_flows, self.bandwidth)
+        run_iperf_client(
+            self.ns_id, self.destination_ip, self.run_time, self.n_flows, self.bandwidth
+        )

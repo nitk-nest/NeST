@@ -38,15 +38,18 @@ class Node:
         name: str
             The name of the node to be created
         """
-        if name == '':
-            raise ValueError('Node name can\'t be an empty string')
-        if config.get_value('assign_random_names') is False and len(name) > 3:
+        if name == "":
+            raise ValueError("Node name can't be an empty string")
+        if config.get_value("assign_random_names") is False and len(name) > 3:
             # We chose 3 because: 'ifb-ns1-ns2-20' is a potential IFB interface name
             # and it's already 14 character long. Note that here node names
             # are 'ns1' and 'ns2'. The `ip` utility won't accept interface names
             # longer than 15 characters
-            logger.warning('%s is longer than 3 characters. It\'s safer to use '
-                        'node names with atmost 3 characters with the current config.', name)
+            logger.warning(
+                "%s is longer than 3 characters. It's safer to use "
+                "node names with atmost 3 characters with the current config.",
+                name,
+            )
 
         self._name = name
         self._id = IdGen.get_id(name)
@@ -55,7 +58,7 @@ class Node:
         self._mpls_max_label = 0
 
         engine.create_ns(self.id)
-        engine.set_interface_mode(self.id, 'lo', 'up')
+        engine.set_interface_mode(self.id, "lo", "up")
         TopologyMap.add_namespace(self.id, self.name)
         TopologyMap.add_host(self)
 
@@ -75,7 +78,7 @@ class Node:
         # Switch back to default network namespace
         engine.set_ns(None)
 
-    def add_route(self, dest_addr, via_interface, next_hop_addr=''):
+    def add_route(self, dest_addr, via_interface, next_hop_addr=""):
         """
         Add a route to the routing table of `Node`.
 
@@ -92,22 +95,25 @@ class Node:
         if isinstance(dest_addr, str):
             dest_addr = Address(dest_addr)
 
-        if next_hop_addr != '':
+        if next_hop_addr != "":
             if isinstance(next_hop_addr, str):
                 next_hop_addr = Address(next_hop_addr)
         else:
             # Assuming veth pair
             next_hop_addr = via_interface.pair.address
 
-        dest_addr_str = ''
+        dest_addr_str = ""
         if dest_addr.is_subnet():
             dest_addr_str = dest_addr.get_addr()
         else:
             dest_addr_str = dest_addr.get_addr(with_subnet=False)
 
         engine.add_route(
-            self.id, dest_addr_str, next_hop_addr.get_addr(with_subnet=False),
-            via_interface.id)
+            self.id,
+            dest_addr_str,
+            next_hop_addr.get_addr(with_subnet=False),
+            via_interface.id,
+        )
 
     def get_interface(self, node, connection_number=1):
         """
@@ -134,10 +140,10 @@ class Node:
             If no interface is found, then return None.
         """
         if connection_number <= 0:
-            raise ValueError('connection_number should be greater than 0')
+            raise ValueError("connection_number should be greater than 0")
 
         for interface in self.interfaces:
-            if hasattr(interface.pair, 'node'): # True if interface is a `veth`
+            if hasattr(interface.pair, "node"):  # True if interface is a `veth`
                 pair_node = interface.pair.node
                 if node == pair_node:
                     connection_number -= 1
@@ -166,8 +172,12 @@ class Node:
         if isinstance(next_hop_addr, str):
             next_hop_addr = Address(next_hop_addr)
 
-        engine.add_mpls_route_push(self.id, dest_addr.get_addr(),
-                next_hop_addr.get_addr(with_subnet=False), label)
+        engine.add_mpls_route_push(
+            self.id,
+            dest_addr.get_addr(),
+            next_hop_addr.get_addr(with_subnet=False),
+            label,
+        )
 
     def add_route_mpls_switch(self, incoming_label, next_hop_addr, outgoing_label):
         """
@@ -183,7 +193,11 @@ class Node:
             next_hop_addr = Address(next_hop_addr)
 
         engine.add_mpls_route_switch(
-            self.id, incoming_label, next_hop_addr.get_addr(with_subnet=False), outgoing_label)
+            self.id,
+            incoming_label,
+            next_hop_addr.get_addr(with_subnet=False),
+            outgoing_label,
+        )
 
     def add_route_mpls_pop(self, incoming_label, next_hop_addr):
         """
@@ -198,7 +212,8 @@ class Node:
             next_hop_addr = Address(next_hop_addr)
 
         engine.add_mpls_route_pop(
-            self.id, incoming_label, next_hop_addr.get_addr(with_subnet=False))
+            self.id, incoming_label, next_hop_addr.get_addr(with_subnet=False)
+        )
 
     def _add_interface(self, interface):
         """
@@ -231,7 +246,7 @@ class Node:
         value: str
             New value of TCP parameter `param`
         """
-        engine.configure_kernel_param(self.id, 'net.ipv4.tcp_', param, value)
+        engine.configure_kernel_param(self.id, "net.ipv4.tcp_", param, value)
 
     def configure_udp_param(self, param, value):
         """
@@ -250,7 +265,7 @@ class Node:
         value: str
             New value of TCP parameter `param`
         """
-        engine.configure_kernel_param(self.id, 'net.ipv4.udp_', param, value)
+        engine.configure_kernel_param(self.id, "net.ipv4.udp_", param, value)
 
     def read_tcp_param(self, param):
         """
@@ -270,7 +285,7 @@ class Node:
             If TCP Parameter `param` is valid, then corresponding value
             is returned.
         """
-        return engine.read_kernel_param(self.id, 'net.ipv4.tcp_', param)
+        return engine.read_kernel_param(self.id, "net.ipv4.tcp_", param)
 
     def read_udp_param(self, param):
         """
@@ -290,7 +305,7 @@ class Node:
             If UDP Parameter `param` is valid, then corresponding value
             is returned.
         """
-        return engine.read_kernel_param(self.id, 'net.ipv4.udp_', param)
+        return engine.read_kernel_param(self.id, "net.ipv4.udp_", param)
 
     def ping(self, destination_address, packets=1, verbose=True):
         """
@@ -315,15 +330,23 @@ class Node:
         if isinstance(destination_address, str):
             destination_address = Address(destination_address)
 
-        status = engine.ping(self.id, destination_address.get_addr(with_subnet=False),
-                             packets, destination_address.is_ipv6())
+        status = engine.ping(
+            self.id,
+            destination_address.get_addr(with_subnet=False),
+            packets,
+            destination_address.is_ipv6(),
+        )
         if verbose:
             if status:
-                print(f'SUCCESS: ping from {self.name} to '
-                      f'{destination_address.get_addr(with_subnet=False)}')
+                print(
+                    f"SUCCESS: ping from {self.name} to "
+                    f"{destination_address.get_addr(with_subnet=False)}"
+                )
             else:
-                print(f'FAILURE: ping from {self.name} to '
-                      f'{destination_address.get_addr(with_subnet=False)}')
+                print(
+                    f"FAILURE: ping from {self.name} to "
+                    f"{destination_address.get_addr(with_subnet=False)}"
+                )
         return status
 
     def enable_ip_forwarding(self, ipv6=False):
@@ -378,4 +401,4 @@ class Node:
 
     def __repr__(self):
         classname = self.__class__.__name__
-        return f'{classname}({self.name!r})'
+        return f"{classname}({self.name!r})"

@@ -21,7 +21,7 @@ def kill_processes():
     Kill any running processes in namespaces
     """
     for namespace in TopologyMap.get_namespaces():
-        engine.kill_all_processes(namespace['id'])
+        engine.kill_all_processes(namespace["id"])
 
 
 @atexit.register
@@ -31,9 +31,9 @@ def delete_namespaces():
     """
     namespaces = TopologyMap.get_namespaces()
 
-    if config.get_value('delete_namespaces_on_termination'):
+    if config.get_value("delete_namespaces_on_termination"):
         for namepspace in namespaces:
-            engine.delete_ns(namepspace['id'])
-        logger.info('Cleaned up environment!')
+            engine.delete_ns(namepspace["id"])
+        logger.info("Cleaned up environment!")
     else:
-        logger.info('Namespaces not deleted')
+        logger.info("Namespaces not deleted")

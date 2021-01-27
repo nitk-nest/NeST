@@ -5,6 +5,7 @@
 
 from .exec import exec_subprocess
 
+
 def add_mpls_route_push(host_name, dest_ip, next_hop_ip, label):
     """
     Adds a route in routing table of host.
@@ -20,8 +21,10 @@ def add_mpls_route_push(host_name, dest_ip, next_hop_ip, label):
     label : str
         the label that is to be pushed onto the packet
     """
-    exec_subprocess(f'ip netns exec {host_name} ip route add {dest_ip}'
-                    f' encap mpls {label} via inet {next_hop_ip}')
+    exec_subprocess(
+        f"ip netns exec {host_name} ip route add {dest_ip}"
+        f" encap mpls {label} via inet {next_hop_ip}"
+    )
 
 
 def add_mpls_route_switch(host_name, incoming_label, next_hop_ip, outgoing_label):
@@ -39,8 +42,10 @@ def add_mpls_route_switch(host_name, incoming_label, next_hop_ip, outgoing_label
     outgoing_label : str
         the label that is to be pushed onto the packet
     """
-    exec_subprocess(f'ip netns exec {host_name} ip -f mpls route add {incoming_label}'
-                    f' as {outgoing_label} via inet {next_hop_ip}')
+    exec_subprocess(
+        f"ip netns exec {host_name} ip -f mpls route add {incoming_label}"
+        f" as {outgoing_label} via inet {next_hop_ip}"
+    )
 
 
 def add_mpls_route_pop(host_name, incoming_label, next_hop_ip):
@@ -56,5 +61,7 @@ def add_mpls_route_pop(host_name, incoming_label, next_hop_ip):
     incoming_label : str
         the label that is on the packet when it arrives at the node
     """
-    exec_subprocess(f'ip netns exec {host_name} ip -f mpls route add {incoming_label}'
-                    f' via inet {next_hop_ip}')
+    exec_subprocess(
+        f"ip netns exec {host_name} ip -f mpls route add {incoming_label}"
+        f" via inet {next_hop_ip}"
+    )

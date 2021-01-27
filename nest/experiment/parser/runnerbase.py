@@ -7,6 +7,8 @@ Base class for other runners
 
 import tempfile
 import logging
+
+
 class Runner:
     """
     Base class for other runners
@@ -50,7 +52,7 @@ class Runner:
         Method to print error from `self.err`.
         Should be overridden by base class
         """
-        self.logger.error('Unknown error occurred')
+        self.logger.error("Unknown error occurred")
 
     def get_meta_item(self):
         """
@@ -58,9 +60,9 @@ class Runner:
         This "meta" information is required by plotter.
         """
         meta_item = {
-            'meta': True,
-            'start_time': str(self.start_time),
-            'stop_time': str(self.start_time + self.run_time)
+            "meta": True,
+            "start_time": str(self.start_time),
+            "stop_time": str(self.start_time + self.run_time),
         }
         return meta_item
 

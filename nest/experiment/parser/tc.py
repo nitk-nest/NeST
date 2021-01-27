@@ -53,7 +53,7 @@ class TcRunner(Runner):
     JSON_SUPPORTED_VERSION = strptime("20190319", "%Y%m%d")
 
     # Qdiscs supported prior to good JSON support in tc
-    PRIOR_JSON_QDISCS_SUPPORTED = ['codel', 'fq_codel', 'pie']
+    PRIOR_JSON_QDISCS_SUPPORTED = ["codel", "fq_codel", "pie"]
 
     def __init__(self, ns_id, dev, qdisc, run_time):
         """
@@ -88,29 +88,39 @@ class TcRunner(Runner):
         """
         tc_version_format = self.check_tc_version_format()
 
-        if tc_version_format == 'old_version_format':
+        if tc_version_format == "old_version_format":
             cur_tc_version = self.parsed_tc_version()
 
             if cur_tc_version < TcRunner.MINIMUM_SUPPORTED_VERSION:
                 # TODO: Not sure if it's the right exception to raise
-                version = 'iproute2-ss' + strftime('%y%m%d', TcRunner.MINIMUM_SUPPORTED_VERSION)
-                raise Exception(f'NeST does not support qdisc parsing for tc version below ' \
-                                f'{version}')
+                version = "iproute2-ss" + strftime(
+                    "%y%m%d", TcRunner.MINIMUM_SUPPORTED_VERSION
+                )
+                raise Exception(
+                    f"NeST does not support qdisc parsing for tc version below "
+                    f"{version}"
+                )
 
             if cur_tc_version < TcRunner.JSON_SUPPORTED_VERSION:
                 if self.qdisc not in TcRunner.PRIOR_JSON_QDISCS_SUPPORTED:
 
-                    version = 'iproute2-ss' + strftime('%y%m%d', TcRunner.JSON_SUPPORTED_VERSION)
-                    raise Exception(f'NeST does not support {self.qdisc} qdisc parsing for tc ' \
-                                    f'version below {version}. Supported ' \
-                                    f'qdiscs are {TcRunner.PRIOR_JSON_QDISCS_SUPPORTED}')
+                    version = "iproute2-ss" + strftime(
+                        "%y%m%d", TcRunner.JSON_SUPPORTED_VERSION
+                    )
+                    raise Exception(
+                        f"NeST does not support {self.qdisc} qdisc parsing for tc "
+                        f"version below {version}. Supported "
+                        f"qdiscs are {TcRunner.PRIOR_JSON_QDISCS_SUPPORTED}"
+                    )
 
     def run(self):
         """
         Runs the tc iterator
         """
 
-        super().run(partial(run_tc, self.ns_id, TcRunner.iterator, self.dev, self.run_time))
+        super().run(
+            partial(run_tc, self.ns_id, TcRunner.iterator, self.dev, self.run_time)
+        )
 
     def print_error(self):
         """
@@ -118,9 +128,8 @@ class TcRunner(Runner):
         """
         self.err.seek(0)  # rewind to start of file
         error = self.err.read().decode()
-        ns_name = TopologyMap.get_namespace(self.ns_id)['name']
-        self.logger.error(
-            'Collecting qdisc stats at %s. %s', ns_name, error)
+        ns_name = TopologyMap.get_namespace(self.ns_id)["name"]
+        self.logger.error("Collecting qdisc stats at %s. %s", ns_name, error)
 
     def get_qdisc_specific_params(self):
         """
@@ -132,10 +141,9 @@ class TcRunner(Runner):
             qdisc keyed list of parameters to parsed
         """
         qdisc_param = {
-            'codel': ['count', 'lastcount', 'ldelay', 'drop_next'],
-            'fq_codel': ['maxpacket',
-                         'drop_overlimit', 'new_flow_count'],
-            'pie': ['prob', 'delay', 'avg_dq_rate']
+            "codel": ["count", "lastcount", "ldelay", "drop_next"],
+            "fq_codel": ["maxpacket", "drop_overlimit", "new_flow_count"],
+            "pie": ["prob", "delay", "avg_dq_rate"],
         }
         return qdisc_param
 
@@ -149,17 +157,23 @@ class TcRunner(Runner):
             qdisc keyed regular expression
         """
         qdisc_re = {}
-        qdisc_re['codel'] = re.compile(r'count (?P<count>\d+) '
-                                       r'lastcount (?P<lastcount>\d+) '
-                                       r'ldelay (?P<ldelay>[0-9\.]+[mu]?s) '
-                                       r"(?P<dropping>dropping)? ?"
-                                       r'drop_next (?P<drop_next>-?[0-9\.]+[mu]?s)')
-        qdisc_re['fq_codel'] = re.compile(r'maxpacket (?P<maxpacket>\d+) '
-                                          r'drop_overlimit (?P<drop_overlimit>\d+) '
-                                          r'new_flow_count (?P<new_flow_count>\d+) ')
-        qdisc_re['pie'] = re.compile(r'prob (?P<prob>[0-9\.]+) '
-                                     r'delay (?P<delay>[0-9\.]+[mu]?s) '
-                                     r'avg_dq_rate (?P<avg_dq_rate>\d+)')
+        qdisc_re["codel"] = re.compile(
+            r"count (?P<count>\d+) "
+            r"lastcount (?P<lastcount>\d+) "
+            r"ldelay (?P<ldelay>[0-9\.]+[mu]?s) "
+            r"(?P<dropping>dropping)? ?"
+            r"drop_next (?P<drop_next>-?[0-9\.]+[mu]?s)"
+        )
+        qdisc_re["fq_codel"] = re.compile(
+            r"maxpacket (?P<maxpacket>\d+) "
+            r"drop_overlimit (?P<drop_overlimit>\d+) "
+            r"new_flow_count (?P<new_flow_count>\d+) "
+        )
+        qdisc_re["pie"] = re.compile(
+            r"prob (?P<prob>[0-9\.]+) "
+            r"delay (?P<delay>[0-9\.]+[mu]?s) "
+            r"avg_dq_rate (?P<avg_dq_rate>\d+)"
+        )
         return qdisc_re
 
     def repl(self, match):
@@ -177,7 +191,7 @@ class TcRunner(Runner):
             string to replace the matched string
         """
         if match.group(1):
-            if match.group(1).endswith(','):
+            if match.group(1).endswith(","):
                 value = repr(match.group(1))
                 return ':"{}",'.format(value)
 
@@ -202,10 +216,10 @@ class TcRunner(Runner):
         """
         # pattern to remove the options key
         options_pattern = r'"options":(\s)*{(.|\n)*?},'
-        stats = re.sub(options_pattern, '', stats)
+        stats = re.sub(options_pattern, "", stats)
 
         # pattern to enclose all the values with " "
-        value_pattern = r':(\s(\w|\s|\n|\.)+,?)'
+        value_pattern = r":(\s(\w|\s|\n|\.)+,?)"
         stats = re.sub(value_pattern, self.repl, stats)
         return stats
 
@@ -232,22 +246,24 @@ class TcRunner(Runner):
         aggregate_stats = {}
 
         for raw_stat in raw_stats[:-1]:
-            timestamp_pattern = r'timestamp:(?P<timestamp>\d+\.\d+)'
-            timestamp = re.search(
-                timestamp_pattern, raw_stat).group("timestamp")
+            timestamp_pattern = r"timestamp:(?P<timestamp>\d+\.\d+)"
+            timestamp = re.search(timestamp_pattern, raw_stat).group("timestamp")
             raw_stat = re.sub(timestamp_pattern, "", raw_stat)
             raw_stat = json.loads(self.clean_json(raw_stat))
             stats_dict = {}
             for qdisc_stat in raw_stat:
-                qdisc = qdisc_stat['kind']
-                if qdisc in TcRunner.PRIOR_JSON_QDISCS_SUPPORTED and qdisc == self.qdisc:
-                    handle = qdisc_stat['handle']
+                qdisc = qdisc_stat["kind"]
+                if (
+                    qdisc in TcRunner.PRIOR_JSON_QDISCS_SUPPORTED
+                    and qdisc == self.qdisc
+                ):
+                    handle = qdisc_stat["handle"]
                     if handle not in aggregate_stats:
                         aggregate_stats[handle] = []
-                    qdisc_stat = qdisc_stat['qlen']
+                    qdisc_stat = qdisc_stat["qlen"]
                     search_obj = qdisc_re[qdisc].search(qdisc_stat)
-                    stats_dict['timestamp'] = str(timestamp)
-                    stats_dict['kind'] = qdisc
+                    stats_dict["timestamp"] = str(timestamp)
+                    stats_dict["kind"] = qdisc
                     for param in qdisc_param[qdisc]:
                         stats_dict[param] = search_obj.group(param)
                     aggregate_stats[handle].append(stats_dict)
@@ -270,24 +286,23 @@ class TcRunner(Runner):
         """
         aggregate_stats = {}
         for raw_stat in raw_stats[:-1]:
-            timestamp_pattern = r'timestamp:(?P<timestamp>\d+\.\d+)'
-            timestamp = re.search(
-                timestamp_pattern, raw_stat).group('timestamp')
-            raw_stat = re.sub(timestamp_pattern, '', raw_stat)
+            timestamp_pattern = r"timestamp:(?P<timestamp>\d+\.\d+)"
+            timestamp = re.search(timestamp_pattern, raw_stat).group("timestamp")
+            raw_stat = re.sub(timestamp_pattern, "", raw_stat)
             raw_stat = json.loads(raw_stat)
             stats_dict = {}
             for qdisc_stat in raw_stat:
-                qdisc = qdisc_stat['kind']
-                if qdisc == self.qdisc:        # To ignore the HTB qdisc
-                    handle = qdisc_stat['handle']
+                qdisc = qdisc_stat["kind"]
+                if qdisc == self.qdisc:  # To ignore the HTB qdisc
+                    handle = qdisc_stat["handle"]
                     if handle not in aggregate_stats:
                         aggregate_stats[handle] = []
 
-                    stats_dict['timestamp'] = str(timestamp)
+                    stats_dict["timestamp"] = str(timestamp)
                     stats_dict.update(qdisc_stat)
-                    stats_dict.pop('handle', None)
-                    stats_dict.pop('options', None)
-                    stats_dict.pop('parent', None)
+                    stats_dict.pop("handle", None)
+                    stats_dict.pop("options", None)
+                    stats_dict.pop("parent", None)
 
                     aggregate_stats[handle].append(stats_dict)
         return aggregate_stats
@@ -311,9 +326,9 @@ class TcRunner(Runner):
         tc_version = get_tc_version()
 
         if re.search(old_version_format, tc_version):
-            return 'old_version_format'
+            return "old_version_format"
 
-        return 'new_version_format'
+        return "new_version_format"
 
     def parsed_tc_version(self):
         """
@@ -335,7 +350,7 @@ class TcRunner(Runner):
         Parses the required data from tc-qdisc output
         """
 
-        self.out.seek(0)    # rewind to start of the temp file
+        self.out.seek(0)  # rewind to start of the temp file
 
         # See `iterators/tc.sh` for output format
         raw_stats = self.out.read().decode().split("---")
@@ -343,10 +358,10 @@ class TcRunner(Runner):
 
         tc_version_format = self.check_tc_version_format()
 
-        if tc_version_format == 'new_version_format':
+        if tc_version_format == "new_version_format":
             aggregate_stats = self.parsing_helper(raw_stats)
 
-        elif tc_version_format == 'old_version_format':
+        elif tc_version_format == "old_version_format":
             cur_tc_version = self.parsed_tc_version()
 
             # tc produces different JSON output format
@@ -357,10 +372,10 @@ class TcRunner(Runner):
             elif cur_tc_version >= TcRunner.MINIMUM_SUPPORTED_VERSION:
                 qdisc_param = self.get_qdisc_specific_params()
                 qdisc_re = self.get_qdisc_re()
-                aggregate_stats = self.parsing_helper_before_good_json_support(raw_stats,
-                                                                               qdisc_param,
-                                                                               qdisc_re)
+                aggregate_stats = self.parsing_helper_before_good_json_support(
+                    raw_stats, qdisc_param, qdisc_re
+                )
 
         # Store parsed results
-        dev_name = TopologyMap.get_interface(self.ns_id, self.dev)['name']
+        dev_name = TopologyMap.get_interface(self.ns_id, self.dev)["name"]
         TcResults.add_result(self.ns_id, {dev_name: aggregate_stats})

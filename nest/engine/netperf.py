@@ -7,7 +7,9 @@ from .exec import exec_exp_commands
 # pylint: disable=too-many-arguments
 
 
-def run_netperf(ns_id, netperf_options, destination_ip, start_time, test_options, out, err):
+def run_netperf(
+    ns_id, netperf_options, destination_ip, start_time, test_options, out, err
+):
     """
     Run netperf
 
@@ -35,8 +37,12 @@ def run_netperf(ns_id, netperf_options, destination_ip, start_time, test_options
     int
         return code of the command executed
     """
-    return exec_exp_commands(f'ip netns exec {ns_id} netperf {netperf_options} -H \
-                {destination_ip} -s {start_time} -- {test_options}', stdout=out, stderr=err)
+    return exec_exp_commands(
+        f"ip netns exec {ns_id} netperf {netperf_options} -H \
+                {destination_ip} -s {start_time} -- {test_options}",
+        stdout=out,
+        stderr=err,
+    )
 
 
 def run_netserver(ns_id):
@@ -53,4 +59,4 @@ def run_netserver(ns_id):
     int
         return code of the command executed
     """
-    return exec_exp_commands(f'ip netns exec {ns_id} netserver')
+    return exec_exp_commands(f"ip netns exec {ns_id} netserver")

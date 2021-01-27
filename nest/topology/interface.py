@@ -20,10 +20,11 @@ logger = logging.getLogger(__name__)
 # TODO: Improve this module such that the below pylint disables are no
 # longer required
 
-#pylint: disable=too-many-instance-attributes
-#pylint: disable=protected-access
-#pylint: disable=too-few-public-methods
-#pylint: disable=too-many-public-methods
+# pylint: disable=too-many-instance-attributes
+# pylint: disable=protected-access
+# pylint: disable=too-few-public-methods
+# pylint: disable=too-many-public-methods
+
 
 class Interface:
     """
@@ -57,10 +58,12 @@ class Interface:
             Name of the interface
         """
 
-        if config.get_value('assign_random_names') is False:
+        if config.get_value("assign_random_names") is False:
             if len(interface_name) > MAX_CUSTOM_NAME_LEN:
-                raise ValueError(f'Interface name {interface_name} is too long. Interface names '
-                                 f'should not exceed 15 characters')
+                raise ValueError(
+                    f"Interface name {interface_name} is too long. Interface names "
+                    f"should not exceed 15 characters"
+                )
 
         # TODO: name and address should be the only public members
         self._name = interface_name
@@ -167,7 +170,8 @@ class Interface:
         else:
             # TODO: Create our own error class
             raise NotImplementedError(
-                'You should assign the interface to node or router before assigning address to it.')
+                "You should assign the interface to node or router before assigning address to it."
+            )
 
     def enable_mpls(self):
         """
@@ -178,7 +182,8 @@ class Interface:
         """
         if self.node is None:
             raise NotImplementedError(
-                    'You should assign the interface to node or router before enabling mpls')
+                "You should assign the interface to node or router before enabling mpls"
+            )
         if self.node.mpls_max_label == 0:
             # property setter.
             # Alters: net.mpls.platform_labels=100000
@@ -211,7 +216,7 @@ class Interface:
         if self._mtu != mtu_value:
             engine.set_mtu_interface(self.node.id, self.id, int(mtu_value))
             self._mtu = mtu_value
-            logger.debug('MTU of interface %s set to %s', self.name, str(self.mtu))
+            logger.debug("MTU of interface %s set to %s", self.name, str(self.mtu))
 
     def get_address(self):
         """
@@ -250,16 +255,18 @@ class Interface:
         mode : string
             interface mode to be set
         """
-        if mode in ('UP', 'DOWN'):
+        if mode in ("UP", "DOWN"):
             if self.node is not None:
-                engine.set_interface_mode(
-                    self.node.id, self.id, mode.lower())
+                engine.set_interface_mode(self.node.id, self.id, mode.lower())
             else:
                 # TODO: Create our own error class
                 raise NotImplementedError(
-                    'You should assign the interface to node or router before setting it\'s mode')
+                    "You should assign the interface to node or router before setting it's mode"
+                )
         else:
-            raise ValueError(f'{mode} is not a valid mode (it has to be either "UP" or "DOWN")')
+            raise ValueError(
+                f'{mode} is not a valid mode (it has to be either "UP" or "DOWN")'
+            )
 
     def get_qdisc(self):
         """
@@ -268,11 +275,11 @@ class Interface:
         """
         if self.ifb is not None:
             for qdisc in self.ifb.qdisc_list:
-                if qdisc.parent == '1:1' and qdisc.handle == '11:':
+                if qdisc.parent == "1:1" and qdisc.handle == "11:":
                     return qdisc
         return None
 
-    def add_qdisc(self, qdisc, parent='root', handle='', **kwargs):
+    def add_qdisc(self, qdisc, parent="root", handle="", **kwargs):
         """
         Add a qdisc (Queueing Discipline) to this interface
 
@@ -287,8 +294,11 @@ class Interface:
         handle : string
             id of the filter (Default value = '')
         """
-        self.qdisc_list.append(traffic_control.Qdisc(
-            self.node.id, self.id, qdisc, parent, handle, **kwargs))
+        self.qdisc_list.append(
+            traffic_control.Qdisc(
+                self.node.id, self.id, qdisc, parent, handle, **kwargs
+            )
+        )
 
         # Add qdisc to TopologyMap
         TopologyMap.add_qdisc(self.node.id, self.id, qdisc, handle, parent=parent)
@@ -308,14 +318,15 @@ class Interface:
         counter = 0
         for qdisc in self.qdisc_list:
             if qdisc.handle == handle:
-                engine.delete_qdisc(qdisc.namespace_id,
-                                    qdisc.dev_id, qdisc.parent, qdisc.handle)
+                engine.delete_qdisc(
+                    qdisc.namespace_id, qdisc.dev_id, qdisc.parent, qdisc.handle
+                )
                 TopologyMap.delete_qdisc(self.node.id, self.id, handle)
                 self.qdisc_list.pop(counter)
                 break
             counter += 1
 
-    def add_class(self, qdisc, parent='root', classid='', **kwargs):
+    def add_class(self, qdisc, parent="root", classid="", **kwargs):
         """
         Create an object that represents a class
 
@@ -328,14 +339,25 @@ class Interface:
         classid : string
             id of the class (Default value = '')
         """
-        self.class_list.append(traffic_control.Class(
-            self.node.id, self.id, qdisc, parent, classid, **kwargs))
+        self.class_list.append(
+            traffic_control.Class(
+                self.node.id, self.id, qdisc, parent, classid, **kwargs
+            )
+        )
 
         return self.class_list[-1]
 
-    #pylint: disable=too-many-arguments
-    def add_filter(self, priority, filtertype, flowid, protocol='ip', parent='root',
-                   handle='', **kwargs):
+    # pylint: disable=too-many-arguments
+    def add_filter(
+        self,
+        priority,
+        filtertype,
+        flowid,
+        protocol="ip",
+        parent="root",
+        handle="",
+        **kwargs,
+    ):
         """
         Design a Filter to assign to a Class or Qdisc
 
@@ -362,8 +384,17 @@ class Interface:
 
         self.filter_list.append(
             traffic_control.Filter(
-                self.node.id, self.id, protocol, priority, filtertype,
-                flowid, parent, handle, **kwargs))
+                self.node.id,
+                self.id,
+                protocol,
+                priority,
+                filtertype,
+                flowid,
+                parent,
+                handle,
+                **kwargs,
+            )
+        )
 
         return self.filter_list[-1]
 
@@ -380,11 +411,13 @@ class Interface:
         dev_name : string
             The interface to which the ifb was added
         """
-        ifb_name = 'ifb-' + dev_name
-        if config.get_value('assign_random_names') is False:
+        ifb_name = "ifb-" + dev_name
+        if config.get_value("assign_random_names") is False:
             if len(ifb_name) > MAX_CUSTOM_NAME_LEN:
-                raise ValueError(f'Auto-generated IFB interface name {ifb_name} is too long. '
-                                 f'The length of name should not exceed 15 characters.')
+                raise ValueError(
+                    f"Auto-generated IFB interface name {ifb_name} is too long. "
+                    f"The length of name should not exceed 15 characters."
+                )
 
         self.ifb = Interface(ifb_name)
         engine.create_ifb(self.ifb.id)
@@ -393,32 +426,30 @@ class Interface:
         self.node._add_interface(self.ifb)
 
         # Set interface up
-        self.ifb.set_mode('UP')
+        self.ifb.set_mode("UP")
 
-        default_route = {
-            'default': '1'
-        }
+        default_route = {"default": "1"}
 
         # TODO: find how to set a good bandwidth
-        default_bandwidth = {
-            'rate': config.get_value('default_bandwidth')
-        }
+        default_bandwidth = {"rate": config.get_value("default_bandwidth")}
 
         # TODO: Standardize this; seems like arbitrary handle values
         # were chosen.
-        self.ifb.add_qdisc('htb', 'root', '1:', **default_route)
-        self.ifb.add_class('htb', '1:', '1:1', **default_bandwidth)
-        self.ifb.add_qdisc('pfifo', '1:1', '11:')
+        self.ifb.add_qdisc("htb", "root", "1:", **default_route)
+        self.ifb.add_class("htb", "1:", "1:1", **default_bandwidth)
+        self.ifb.add_qdisc("pfifo", "1:1", "11:")
 
         action_redirect = {
-            'match': 'u32 0 0',  # from man page examples
-            'action': 'mirred',
-            'egress': 'redirect',
-            'dev': self.ifb.id
+            "match": "u32 0 0",  # from man page examples
+            "action": "mirred",
+            "egress": "redirect",
+            "dev": self.ifb.id,
         }
 
         # NOTE: Use Filter API
-        engine.add_filter(self.node.id, self.id, 'ip', '1', 'u32', parent='1:', **action_redirect)
+        engine.add_filter(
+            self.node.id, self.id, "ip", "1", "u32", parent="1:", **action_redirect
+        )
 
     def _set_structure(self):
         """
@@ -428,20 +459,16 @@ class Interface:
         """
         self.set_structure = True
 
-        default_route = {
-            'default': '1'
-        }
+        default_route = {"default": "1"}
 
-        self.add_qdisc('htb', 'root', '1:', **default_route)
+        self.add_qdisc("htb", "root", "1:", **default_route)
 
         # TODO: find how to set a good bandwidth
-        default_bandwidth = {
-            'rate': config.get_value('default_bandwidth')
-        }
+        default_bandwidth = {"rate": config.get_value("default_bandwidth")}
 
-        self.add_class('htb', '1:', '1:1', **default_bandwidth)
+        self.add_class("htb", "1:", "1:1", **default_bandwidth)
 
-        self.add_qdisc('netem', '1:1', '11:')
+        self.add_qdisc("netem", "1:1", "11:")
 
     def set_bandwidth(self, min_rate):
         """
@@ -461,13 +488,13 @@ class Interface:
         if self.set_structure is False:
             self._set_structure()
 
-        min_bandwidth_parameter = {
-            'rate': min_rate
-        }
+        min_bandwidth_parameter = {"rate": min_rate}
 
         # TODO: Check the created API
         # TODO: This should be handled by self.change_class
-        engine.change_class(self.node.id, self.id, '1:', 'htb', '1:1', **min_bandwidth_parameter)
+        engine.change_class(
+            self.node.id, self.id, "1:", "htb", "1:1", **min_bandwidth_parameter
+        )
 
     def set_delay(self, delay):
         """
@@ -487,16 +514,15 @@ class Interface:
         if self.set_structure is False:
             self._set_structure()
 
-        delay_parameter = {
-            'delay': delay
-        }
+        delay_parameter = {"delay": delay}
 
         # TODO: This should be handled by self.change_qdisc
         # It could lead to a potential bug!
-        engine.change_qdisc(self.node.id, self.id, 'netem', '1:1', '11:', **delay_parameter)
+        engine.change_qdisc(
+            self.node.id, self.id, "netem", "1:1", "11:", **delay_parameter
+        )
 
-
-    def set_packet_corruption(self, corrupt_rate, correlation_rate = ''):
+    def set_packet_corruption(self, corrupt_rate, correlation_rate=""):
         """
         allows the emulation of random noise introducing an error in a
         random position for a chosen percent of packets.
@@ -512,14 +538,13 @@ class Interface:
         if self.set_structure is False:
             self._set_structure()
 
-        corrupt_parameter = {
-            'corrupt': corrupt_rate,
-            '' : correlation_rate
-        }
+        corrupt_parameter = {"corrupt": corrupt_rate, "": correlation_rate}
 
-        engine.change_qdisc(self.node.id, self.id, 'netem', '1:1', '11:', **corrupt_parameter)
+        engine.change_qdisc(
+            self.node.id, self.id, "netem", "1:1", "11:", **corrupt_parameter
+        )
 
-    def set_packet_loss(self, loss_rate, correlation_rate = ''):
+    def set_packet_loss(self, loss_rate, correlation_rate=""):
         """
         adds an independent loss probability to the packets outgoing from
         the chosen network interface.
@@ -536,13 +561,11 @@ class Interface:
         if self.set_structure is False:
             self._set_structure()
 
-        loss_parameter = {
-            'loss': loss_rate,
-            '' : correlation_rate
-        }
+        loss_parameter = {"loss": loss_rate, "": correlation_rate}
 
-        engine.change_qdisc(self.node.id, self.id, 'netem', '1:1', '11:', **loss_parameter)
-
+        engine.change_qdisc(
+            self.node.id, self.id, "netem", "1:1", "11:", **loss_parameter
+        )
 
     def set_qdisc(self, qdisc, bandwidth, **kwargs):
         """
@@ -567,15 +590,14 @@ class Interface:
         if self.ifb is None:
             self._create_and_mirred_to_ifb(self.name)
 
-        min_bandwidth_parameter = {
-            'rate': bandwidth
-        }
+        min_bandwidth_parameter = {"rate": bandwidth}
 
-        engine.change_class(self.node.id, self.ifb.id,
-                            '1:', 'htb', '1:1', **min_bandwidth_parameter)
+        engine.change_class(
+            self.node.id, self.ifb.id, "1:", "htb", "1:1", **min_bandwidth_parameter
+        )
 
-        self.ifb.delete_qdisc('11:')
-        self.ifb.add_qdisc(qdisc, '1:1', '11:', **kwargs)
+        self.ifb.delete_qdisc("11:")
+        self.ifb.add_qdisc(qdisc, "1:1", "11:", **kwargs)
 
     def set_attributes(self, bandwidth, delay, qdisc=None, **kwargs):
         """
@@ -600,7 +622,8 @@ class Interface:
 
     def __repr__(self):
         classname = self.__class__.__name__
-        return f'{classname}({self.name!r})'
+        return f"{classname}({self.name!r})"
+
 
 class Veth:
     """Handle creation of Veth pairs"""
@@ -626,7 +649,7 @@ class Veth:
         return (self.interface1, self.interface2)
 
 
-def connect(node1, node2, interface1_name='', interface2_name=''):
+def connect(node1, node2, interface1_name="", interface2_name=""):
     """
     Connects two nodes `node1` and `node2`.
     Creates two paired Virtual Ethernet interfaces (veth) and returns
@@ -656,14 +679,14 @@ def connect(node1, node2, interface1_name='', interface2_name=''):
     connections = None
 
     # Check interface names
-    if interface1_name == '':
+    if interface1_name == "":
         connections = _number_of_connections(node1, node2)
         interface1_name = _autogenerate_interface_name(node1, node2, connections)
 
-    if interface2_name == '':
+    if interface2_name == "":
         if connections is None:
             connections = _number_of_connections(node1, node2)
-        #pylint: disable=arguments-out-of-order
+        # pylint: disable=arguments-out-of-order
         interface2_name = _autogenerate_interface_name(node2, node1, connections)
 
     # Create 2 interfaces
@@ -677,24 +700,28 @@ def connect(node1, node2, interface1_name='', interface2_name=''):
     interface1._set_structure()
     interface2._set_structure()
 
-    interface1.set_mode('UP')
-    interface2.set_mode('UP')
+    interface1.set_mode("UP")
+    interface2.set_mode("UP")
 
     return (interface1, interface2)
+
 
 def _autogenerate_interface_name(node1, node2, connections):
     """
     Auto-generate interface names based on respective node names
     and number of connections
     """
-    interface_name = node1.name + '-' + node2.name + '-' + str(connections)
+    interface_name = node1.name + "-" + node2.name + "-" + str(connections)
 
-    if config.get_value('assign_random_names') is False:
+    if config.get_value("assign_random_names") is False:
         if len(interface_name) > MAX_CUSTOM_NAME_LEN:
-            raise ValueError(f'Auto-generated veth interface name {interface_name} is too long. '
-                             f'The length of name should not exceed 15 characters.')
+            raise ValueError(
+                f"Auto-generated veth interface name {interface_name} is too long. "
+                f"The length of name should not exceed 15 characters."
+            )
 
     return interface_name
+
 
 def _number_of_connections(node1, node2):
     """

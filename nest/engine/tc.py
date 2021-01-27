@@ -9,6 +9,7 @@ from .exec import exec_subprocess
 # Assuming tc on egress
 # Using Netem
 
+
 def add_traffic_control(host_name, dev_name, rate, latency):
     """
     Add traffic control to host
@@ -23,11 +24,13 @@ def add_traffic_control(host_name, dev_name, rate, latency):
         latency of the link
     dev_name : str
     """
-    exec_subprocess(f'tc -n {host_name} qdisc add dev {dev_name} root'
-                    f' netem rate {rate} latency {latency}')
+    exec_subprocess(
+        f"tc -n {host_name} qdisc add dev {dev_name} root"
+        f" netem rate {rate} latency {latency}"
+    )
 
 
-def add_qdisc(ns_name, dev_name, qdisc, parent='', handle='', **kwargs):
+def add_qdisc(ns_name, dev_name, qdisc, parent="", handle="", **kwargs):
     """
     Add a qdisc on an interface
 
@@ -44,21 +47,23 @@ def add_qdisc(ns_name, dev_name, qdisc, parent='', handle='', **kwargs):
     dev_name : str
         name of the interface
     """
-    if parent and parent != 'root':
-        parent = 'parent ' + parent
+    if parent and parent != "root":
+        parent = "parent " + parent
 
     if handle:
-        handle = 'handle ' + handle
+        handle = "handle " + handle
 
-    qdisc_params = ''
+    qdisc_params = ""
     for param, value in kwargs.items():
-        qdisc_params += param + ' ' + value + ' '
+        qdisc_params += param + " " + value + " "
 
-    exec_subprocess(f'tc -n {ns_name} qdisc add dev {dev_name}'
-                    f' {parent} {handle} {qdisc} {qdisc_params}')
+    exec_subprocess(
+        f"tc -n {ns_name} qdisc add dev {dev_name}"
+        f" {parent} {handle} {qdisc} {qdisc_params}"
+    )
 
 
-def change_qdisc(ns_name, dev_name, qdisc, parent='', handle='', **kwargs):
+def change_qdisc(ns_name, dev_name, qdisc, parent="", handle="", **kwargs):
     """
     Change a qdisc that is already present on an interface
 
@@ -75,21 +80,23 @@ def change_qdisc(ns_name, dev_name, qdisc, parent='', handle='', **kwargs):
     dev_name : str
         name of the interface
     """
-    if parent and parent != 'root':
-        parent = 'parent ' + parent
+    if parent and parent != "root":
+        parent = "parent " + parent
 
     if handle:
-        handle = 'handle ' + handle
+        handle = "handle " + handle
 
-    qdisc_params = ''
+    qdisc_params = ""
     for param, value in kwargs.items():
-        qdisc_params += param + ' ' + value + ' '
+        qdisc_params += param + " " + value + " "
 
-    exec_subprocess(f'tc -n {ns_name} qdisc change dev {dev_name}'
-                    f' {parent} {handle} {qdisc} {qdisc_params}')
+    exec_subprocess(
+        f"tc -n {ns_name} qdisc change dev {dev_name}"
+        f" {parent} {handle} {qdisc} {qdisc_params}"
+    )
 
 
-def replace_qdisc(ns_name, dev_name, qdisc, parent='', handle='', **kwargs):
+def replace_qdisc(ns_name, dev_name, qdisc, parent="", handle="", **kwargs):
     """
     Replace a qdisc that is already present on an interface
 
@@ -106,21 +113,23 @@ def replace_qdisc(ns_name, dev_name, qdisc, parent='', handle='', **kwargs):
     dev_name : str
         name of the interface
     """
-    if parent and parent != 'root':
-        parent = 'parent ' + parent
+    if parent and parent != "root":
+        parent = "parent " + parent
 
     if handle:
-        handle = 'handle ' + handle
+        handle = "handle " + handle
 
-    qdisc_params = ''
+    qdisc_params = ""
     for param, value in kwargs.items():
-        qdisc_params += param + ' ' + value + ' '
+        qdisc_params += param + " " + value + " "
 
-    exec_subprocess(f'tc -n {ns_name} qdisc replace dev {dev_name}'
-                    f' {parent} {handle} {qdisc} {qdisc_params}')
+    exec_subprocess(
+        f"tc -n {ns_name} qdisc replace dev {dev_name}"
+        f" {parent} {handle} {qdisc} {qdisc_params}"
+    )
 
 
-def delete_qdisc(ns_name, dev_name, parent='', handle=''):
+def delete_qdisc(ns_name, dev_name, parent="", handle=""):
     """
     Add a qdisc on an interface
 
@@ -137,16 +146,16 @@ def delete_qdisc(ns_name, dev_name, parent='', handle=''):
     dev_name : str
         name of the interface
     """
-    if parent and parent != 'root':
-        parent = 'parent ' + parent
+    if parent and parent != "root":
+        parent = "parent " + parent
 
     if handle:
-        handle = 'handle ' + handle
+        handle = "handle " + handle
 
-    exec_subprocess(f'tc -n {ns_name} qdisc del dev {dev_name} {parent} {handle}')
+    exec_subprocess(f"tc -n {ns_name} qdisc del dev {dev_name} {parent} {handle}")
 
 
-def add_class(ns_name, dev_name, parent, qdisc, classid='', **kwargs):
+def add_class(ns_name, dev_name, parent, qdisc, classid="", **kwargs):
     """
     Add a class to a qdisc
 
@@ -164,17 +173,19 @@ def add_class(ns_name, dev_name, parent, qdisc, classid='', **kwargs):
         name of the interface
     """
     if classid:
-        classid = 'classid ' + classid
+        classid = "classid " + classid
 
-    qdisc_params = ''
+    qdisc_params = ""
     for param, value in kwargs.items():
-        qdisc_params += param + ' ' + value + ' '
+        qdisc_params += param + " " + value + " "
 
-    exec_subprocess(f'tc -n {ns_name} class add dev {dev_name} parent {parent}'
-                    f' {classid} {qdisc} {qdisc_params}')
+    exec_subprocess(
+        f"tc -n {ns_name} class add dev {dev_name} parent {parent}"
+        f" {classid} {qdisc} {qdisc_params}"
+    )
 
 
-def change_class(ns_name, dev_name, parent, qdisc, classid='', **kwargs):
+def change_class(ns_name, dev_name, parent, qdisc, classid="", **kwargs):
     """
     Change a class that is already present on an interface
 
@@ -193,18 +204,22 @@ def change_class(ns_name, dev_name, parent, qdisc, classid='', **kwargs):
     """
 
     if classid:
-        classid = 'classid ' + classid
+        classid = "classid " + classid
 
-    qdisc_params = ''
+    qdisc_params = ""
     for param, value in kwargs.items():
-        qdisc_params += param + ' ' + value + ' '
+        qdisc_params += param + " " + value + " "
 
-    exec_subprocess(f'tc -n {ns_name} class change dev {dev_name} parent {parent}'
-                    f' {classid} {qdisc} {qdisc_params}')
+    exec_subprocess(
+        f"tc -n {ns_name} class change dev {dev_name} parent {parent}"
+        f" {classid} {qdisc} {qdisc_params}"
+    )
 
 
 # pylint: disable=too-many-arguments
-def add_filter(ns_name, dev_name, protocol, priority, filtertype, parent='', handle='', **kwargs):
+def add_filter(
+    ns_name, dev_name, protocol, priority, filtertype, parent="", handle="", **kwargs
+):
     """
     Add a filter to a class
 
@@ -230,19 +245,22 @@ def add_filter(ns_name, dev_name, protocol, priority, filtertype, parent='', han
 
     # TODO: Check if protocol can be removed from the arguments since it's always IP
 
-    if parent and parent != 'root':
-        parent = 'parent ' + parent
+    if parent and parent != "root":
+        parent = "parent " + parent
 
     if handle:
-        handle = 'handle ' + handle
+        handle = "handle " + handle
 
-    filter_params = ''
+    filter_params = ""
 
     for param, value in kwargs.items():
-        filter_params += param + ' ' + value + ' '
+        filter_params += param + " " + value + " "
 
-    exec_subprocess(f'tc -n {ns_name} filter add dev {dev_name} {parent} {handle}'
-                    f' protocol {protocol} prio {priority} {filtertype} {filter_params}')
+    exec_subprocess(
+        f"tc -n {ns_name} filter add dev {dev_name} {parent} {handle}"
+        f" protocol {protocol} prio {priority} {filtertype} {filter_params}"
+    )
+
 
 def get_tc_version():
     """
@@ -253,4 +271,4 @@ def get_tc_version():
     str
         string containing current tc version
     """
-    return exec_subprocess('tc -V', output=True)
+    return exec_subprocess("tc -V", output=True)

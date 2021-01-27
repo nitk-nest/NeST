@@ -27,7 +27,7 @@ class Results:
             parsed stats
         """
         # Convert nest's internal name to user given name
-        ns_name = TopologyMap.get_namespace(ns_id)['name']
+        ns_name = TopologyMap.get_namespace(ns_id)["name"]
 
         item = results_q.get()
         if ns_name not in item:
@@ -79,7 +79,7 @@ class Results:
         """
         results = Results.get_results(results_q)
         json_stats = json.dumps(results, indent=4)
-        Pack.dump_file('{}.json'.format(toolname), json_stats)
+        Pack.dump_file("{}.json".format(toolname), json_stats)
 
 
 # Shared variables to aggregate results
@@ -116,7 +116,7 @@ class SsResults:
     @staticmethod
     def output_to_file():
         """Outputs the aggregated ss stats to file"""
-        Results.output_to_file(ss_results_q, 'ss')
+        Results.output_to_file(ss_results_q, "ss")
 
 
 # Shared variables to aggregate results
@@ -153,7 +153,7 @@ class NetperfResults:
     @staticmethod
     def output_to_file():
         """Outputs the aggregated netperf stats to file"""
-        Results.output_to_file(netperf_results_q, 'netperf')
+        Results.output_to_file(netperf_results_q, "netperf")
 
 
 # Shared variables to aggregate results
@@ -190,7 +190,7 @@ class TcResults:
     @staticmethod
     def output_to_file():
         """Outputs the aggregated tc stats to file"""
-        Results.output_to_file(tc_results_q, 'tc')
+        Results.output_to_file(tc_results_q, "tc")
 
 
 ping_results_q = Manager().Queue()
@@ -226,4 +226,4 @@ class PingResults:
     @staticmethod
     def output_to_file():
         """Outputs the aggregated ping stats to file"""
-        Results.output_to_file(ping_results_q, 'ping')
+        Results.output_to_file(ping_results_q, "ping")

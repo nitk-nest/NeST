@@ -14,13 +14,13 @@ class Rip(RoutingDaemonBase):
     """
 
     def __init__(self, router_ns_id, interfaces, conf_dir):
-        super().__init__(router_ns_id, interfaces, 'ripd', conf_dir)
+        super().__init__(router_ns_id, interfaces, "ripd", conf_dir)
 
     def add_rip(self):
         """
         Add command to enable RIP on router to config file
         """
-        self.add_to_config('router rip')
+        self.add_to_config("router rip")
 
     def add_version(self, version):
         """
@@ -31,7 +31,7 @@ class Rip(RoutingDaemonBase):
         version : str
             RIP version. Recommended is v2
         """
-        self.add_to_config(f' version {version}')
+        self.add_to_config(f" version {version}")
 
     def add_network(self, network):
         """
@@ -42,7 +42,7 @@ class Rip(RoutingDaemonBase):
         network : str
             subnet or interface to run RIP on
         """
-        self.add_to_config(f' network {network}')
+        self.add_to_config(f" network {network}")
 
     def create_basic_config(self):
         """

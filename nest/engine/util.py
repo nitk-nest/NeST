@@ -5,6 +5,7 @@
 
 from .exec import exec_subprocess
 
+
 def is_dependency_installed(tool):
     """
     util to check if a tool is installed
@@ -20,5 +21,5 @@ def is_dependency_installed(tool):
         true if the `tool` is installed
 
     """
-    return_code = exec_subprocess(f'type {tool}', shell=True)
+    return_code = exec_subprocess(f"type {tool}", shell=True)
     return return_code == 0

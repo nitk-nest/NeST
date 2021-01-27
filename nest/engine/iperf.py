@@ -15,8 +15,7 @@ def run_iperf_server(ns_name):
     ns_name : str
         name of the server namespace
     """
-    exec_subprocess(
-        f'ip netns exec {ns_name}  iperf3 -s -D')   # runs server as a daemon
+    exec_subprocess(f"ip netns exec {ns_name}  iperf3 -s -D")  # runs server as a daemon
 
 
 def run_iperf_client(ns_name, server_ip, run_time, flows, target_bw):
@@ -38,5 +37,6 @@ def run_iperf_client(ns_name, server_ip, run_time, flows, target_bw):
     """
 
     exec_subprocess(
-        f'ip netns exec {ns_name} iperf3 -u -c {server_ip} -P {flows} -t {run_time} \
-            -b {target_bw}m -i 0')
+        f"ip netns exec {ns_name} iperf3 -u -c {server_ip} -P {flows} -t {run_time} \
+            -b {target_bw}m -i 0"
+    )

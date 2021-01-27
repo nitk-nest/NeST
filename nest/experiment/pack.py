@@ -9,10 +9,10 @@ import time
 from nest.user import User
 
 
-class Pack():
+class Pack:
     """Handles packaging results"""
 
-    FOLDER = ''
+    FOLDER = ""
 
     @staticmethod
     def init(exp_name):
@@ -24,9 +24,10 @@ class Pack():
         exp_name : str
             Name of experiment
         """
-        timestamp = time.strftime('%d-%m-%Y-%H:%M:%S')
-        Pack.FOLDER = '{exp_name}({timestamp})_dump'.format(
-            exp_name=exp_name, timestamp=timestamp)
+        timestamp = time.strftime("%d-%m-%Y-%H:%M:%S")
+        Pack.FOLDER = "{exp_name}({timestamp})_dump".format(
+            exp_name=exp_name, timestamp=timestamp
+        )
         os.mkdir(Pack.FOLDER)
         Pack.set_owner(Pack.FOLDER)
 
@@ -43,7 +44,7 @@ class Pack():
             Content to be stored in file
         """
         path = os.path.join(Pack.FOLDER, filename)
-        with open(path, 'w') as file:
+        with open(path, "w") as file:
             file.write(content)
         Pack.set_owner(path)
 

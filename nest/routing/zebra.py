@@ -14,19 +14,19 @@ class Zebra(RoutingDaemonBase):
     """
 
     def __init__(self, router_ns_id, interfaces, conf_dir):
-        super().__init__(router_ns_id, interfaces, 'zebra', conf_dir)
+        super().__init__(router_ns_id, interfaces, "zebra", conf_dir)
 
     def add_interface(self, interface):
         """
         Add interface command to config file
         """
-        self.add_to_config(f'interface {interface}')
+        self.add_to_config(f"interface {interface}")
 
     def add_ip_address(self, ip_address):
         """
         Add IP address command to config file
         """
-        self.add_to_config(f' ip address {ip_address}')
+        self.add_to_config(f" ip address {ip_address}")
 
     def create_basic_config(self):
         """
@@ -35,8 +35,8 @@ class Zebra(RoutingDaemonBase):
         """
 
         # Add loopback interface
-        self.add_interface('lo')
-        self.add_to_config(' no shutdown')
+        self.add_interface("lo")
+        self.add_to_config(" no shutdown")
         for interface in self.interfaces:
             self.add_interface(interface.id)
             self.add_ip_address(interface.address.get_addr())

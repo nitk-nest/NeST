@@ -13,7 +13,7 @@ class Ospf(RoutingDaemonBase):
     """
 
     def __init__(self, router_ns_id, interfaces, conf_dir):
-        super().__init__(router_ns_id, interfaces, 'ospfd', conf_dir)
+        super().__init__(router_ns_id, interfaces, "ospfd", conf_dir)
 
     def create_basic_config(self):
         """
@@ -21,16 +21,18 @@ class Ospf(RoutingDaemonBase):
         Use base `add_to_config` directly for more complex configurations
         """
         for interface in self.interfaces:
-            self.add_to_config(f'interface {interface.id}')
+            self.add_to_config(f"interface {interface.id}")
             # send hello packets every 1 second for faster convergence
-            self.add_to_config('ip ospf hello-interval 1')
+            self.add_to_config("ip ospf hello-interval 1")
 
-        self.add_to_config('router ospf')
+        self.add_to_config("router ospf")
         self.add_to_config(
-            f'ospf router-id {self.interfaces[0].address.get_addr(with_subnet=False)}')
+            f"ospf router-id {self.interfaces[0].address.get_addr(with_subnet=False)}"
+        )
         for interface in self.interfaces:
             self.add_to_config(
-                f' network {interface.address.get_subnet()} area 0.0.0.0')
+                f" network {interface.address.get_subnet()} area 0.0.0.0"
+            )
 
         self.create_config()
 

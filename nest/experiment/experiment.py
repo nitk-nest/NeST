@@ -11,14 +11,21 @@ from .pack import Pack
 
 logger = logging.getLogger(__name__)
 
-#pylint: disable=too-many-instance-attributes
-#pylint: disable=too-few-public-methods
-class Flow():
+# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-few-public-methods
+class Flow:
     """Defines a flow in the topology"""
 
-    #pylint: disable=too-many-arguments
-    def __init__(self, source_node, destination_node, destination_address, start_time, stop_time,
-                 number_of_flows):
+    # pylint: disable=too-many-arguments
+    def __init__(
+        self,
+        source_node,
+        destination_node,
+        destination_address,
+        start_time,
+        stop_time,
+        number_of_flows,
+    ):
         """
         'Flow' object in the topology
 
@@ -44,10 +51,7 @@ class Flow():
         self.stop_time = stop_time
         self.number_of_flows = number_of_flows
 
-        self._options = {
-            'protocol': 'TCP',
-            'cong_algo': 'cubic'
-        }
+        self._options = {"protocol": "TCP", "cong_algo": "cubic"}
 
     @property
     def destination_address(self):
@@ -68,17 +72,26 @@ class Flow():
         NOTE: To be used internally
         """
 
-        return [self.source_node.id, self.destination_node.id,
-                self.destination_address.get_addr(with_subnet=False),
-                self.start_time, self.stop_time, self.number_of_flows, self._options]
+        return [
+            self.source_node.id,
+            self.destination_node.id,
+            self.destination_address.get_addr(with_subnet=False),
+            self.start_time,
+            self.stop_time,
+            self.number_of_flows,
+            self._options,
+        ]
 
     def __repr__(self):
         classname = self.__class__.__name__
-        return (f'{classname}({self.source_node!r}, {self.destination_node!r},'
-                f' {self.destination_address!r}), {self.start_time!r}, {self.stop_time!r}'
-                f' {self.number_of_flows!r})')
+        return (
+            f"{classname}({self.source_node!r}, {self.destination_node!r},"
+            f" {self.destination_address!r}), {self.start_time!r}, {self.stop_time!r}"
+            f" {self.number_of_flows!r})"
+        )
 
-class Experiment():
+
+class Experiment:
     """Handles experiment to be run on topology"""
 
     def __init__(self, name):
@@ -108,7 +121,7 @@ class Experiment():
         """
         self.flows.append(copy.deepcopy(flow))
 
-    def add_tcp_flow(self, flow, congestion_algorithm='cubic'):
+    def add_tcp_flow(self, flow, congestion_algorithm="cubic"):
         """
         Add TCP flow to experiment
 
@@ -122,15 +135,12 @@ class Experiment():
 
         # TODO: Verify congestion algorithm
 
-        options = {
-            'protocol': 'TCP',
-            'cong_algo': congestion_algorithm
-        }
+        options = {"protocol": "TCP", "cong_algo": congestion_algorithm}
 
-        flow._options = options #pylint: disable=protected-access
+        flow._options = options  # pylint: disable=protected-access
         self.add_flow(flow)
 
-    def add_udp_flow(self, flow, target_bandwidth='1mbit'):
+    def add_udp_flow(self, flow, target_bandwidth="1mbit"):
         """
         Add UDP flow to experiment
 
@@ -141,19 +151,18 @@ class Experiment():
         target_bw :
             UDP bandwidth (in Mbits) (Default value = '1mbit')
         """
-        if len(target_bandwidth) < 4 or target_bandwidth[-4:] != 'mbit':
-            raise Exception('Invalid bandwidth unit given to target_bandwidth parameter. ' \
-                            'Expecting mbit.')
+        if len(target_bandwidth) < 4 or target_bandwidth[-4:] != "mbit":
+            raise Exception(
+                "Invalid bandwidth unit given to target_bandwidth parameter. "
+                "Expecting mbit."
+            )
 
-        options = {
-            'protocol': 'UDP',
-            'target_bw': target_bandwidth
-        }
+        options = {"protocol": "UDP", "target_bw": target_bandwidth}
 
-        flow._options = options #pylint: disable=protected-access
+        flow._options = options  # pylint: disable=protected-access
         self.add_flow(flow)
 
-    def require_qdisc_stats(self, interface, stats=''):
+    def require_qdisc_stats(self, interface, stats=""):
         """
         Stats to be obtained from qdisc in interface
 
@@ -172,23 +181,24 @@ class Experiment():
         #         raise ValueError('{} is not a valid Queue property.'.format(stat))
 
         if interface.get_qdisc() is None:
-            raise ValueError(
-                'Given interface hasn\'t been assigned any qdisc.')
+            raise ValueError("Given interface hasn't been assigned any qdisc.")
 
-        self.qdisc_stats.append({
-            'ns_id': interface.node.id,
-            'int_id': interface.ifb.id,
-            'qdisc': interface.get_qdisc().qdisc,
-            'stats': stats
-        })
+        self.qdisc_stats.append(
+            {
+                "ns_id": interface.node.id,
+                "int_id": interface.ifb.id,
+                "qdisc": interface.get_qdisc().qdisc,
+                "stats": stats,
+            }
+        )
 
     def run(self):
         """Run the experiment"""
         print()
-        logger.info('Running experiment %s ', self.name)
+        logger.info("Running experiment %s ", self.name)
         Pack.init(self.name)
         run_experiment(self)
 
     def __repr__(self):
         classname = self.__class__.__name__
-        return f'{classname}({self.name!r})'
+        return f"{classname}({self.name!r})"

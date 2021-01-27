@@ -36,8 +36,15 @@ class SsRunner(Runner):
     """
 
     iterator = os.path.realpath(os.path.dirname(__file__)) + "/iterators/ss.sh"
-    param_list = ['cwnd', 'rwnd', 'rtt', 'ssthresh',
-                  'rto', 'delivery_rate', 'pacing_rate']
+    param_list = [
+        "cwnd",
+        "rwnd",
+        "rtt",
+        "ssthresh",
+        "rto",
+        "delivery_rate",
+        "pacing_rate",
+    ]
 
     def __init__(self, ns_id, destination_ip, start_time, run_time):
         """
@@ -63,9 +70,17 @@ class SsRunner(Runner):
         Runs the ss iterator
         """
 
-        super().run(partial(run_ss, self.ns_id, SsRunner.iterator, self.destination_ip,
-                            self.run_time, "\"dport != 12865 and sport != 12865\"",
-                            self.start_time))
+        super().run(
+            partial(
+                run_ss,
+                self.ns_id,
+                SsRunner.iterator,
+                self.destination_ip,
+                self.run_time,
+                '"dport != 12865 and sport != 12865"',
+                self.start_time,
+            )
+        )
 
     def print_error(self):
         """
@@ -73,8 +88,8 @@ class SsRunner(Runner):
         """
         self.err.seek(0)  # rewind to start of file
         error = self.err.read().decode()
-        ns_name = TopologyMap.get_namespace(self.ns_id)['name']
-        self.logger.error('Collecting socket stats at %s. %s', ns_name, error)
+        ns_name = TopologyMap.get_namespace(self.ns_id)["name"]
+        self.logger.error("Collecting socket stats at %s. %s", ns_name, error)
 
     # pylint: disable=too-many-locals
     def parse(self):
@@ -83,7 +98,7 @@ class SsRunner(Runner):
         """
         stats_dict_list = {}
 
-        self.out.seek(0)    # rewind to start of the temp file
+        self.out.seek(0)  # rewind to start of the temp file
 
         # See `iterators/ss.h` for output format
         raw_stats = self.out.read().decode().split("---")
@@ -91,12 +106,12 @@ class SsRunner(Runner):
         for raw_stat in raw_stats[:-1]:
 
             # Pattern to capture port numbers of flows to `destination ip`
-            port_pattern = re.escape(self.destination_ip) + r':(?P<port>\d+)'
-            port_list = [port.group('port')
-                         for port in re.finditer(port_pattern, raw_stat)]
-            timestamp_pattern = r'timestamp:(?P<timestamp>\d+\.\d+)'
-            timestamp = re.search(
-                timestamp_pattern, raw_stat).group("timestamp")
+            port_pattern = re.escape(self.destination_ip) + r":(?P<port>\d+)"
+            port_list = [
+                port.group("port") for port in re.finditer(port_pattern, raw_stat)
+            ]
+            timestamp_pattern = r"timestamp:(?P<timestamp>\d+\.\d+)"
+            timestamp = re.search(timestamp_pattern, raw_stat).group("timestamp")
 
             for port in port_list:
                 # If port encountered first time
@@ -106,44 +121,47 @@ class SsRunner(Runner):
                 stats_dict_list[port].append({"timestamp": timestamp})
 
             for param in SsRunner.param_list:
-                pattern = r'\s' + \
-                    re.escape(param) + \
-                    r'[\s:](?P<value>\w+\.?\w*(?:[\/\,]\w+\.?\w*)*)\s'
+                pattern = (
+                    r"\s"
+                    + re.escape(param)
+                    + r"[\s:](?P<value>\w+\.?\w*(?:[\/\,]\w+\.?\w*)*)\s"
+                )
                 # result list stores all the string that is matched by the `pattern`
-                param_value_list = [value.group('value')
-                                    for value in re.finditer(pattern, raw_stat)]
-                param_value = ''
+                param_value_list = [
+                    value.group("value") for value in re.finditer(pattern, raw_stat)
+                ]
+                param_value = ""
                 for i in range(len(param_value_list)):
                     param_value = param_value_list[i].strip()
                     # remove the (rate) units at the end and convert
-                    if param_value.endswith('bps'):
+                    if param_value.endswith("bps"):
                         param_value = self.convert_to(param_value)
                     try:
                         # RTT has both average and RTT deviation separated by a /
-                        if param == 'rtt':
-                            avg_rtt = param_value.split('/')[0]
-                            dev_rtt = param_value.split('/')[1]
-                            stats_dict_list[port_list[i]][-1]['rtt'] = avg_rtt
-                            stats_dict_list[port_list[i]
-                                            ][-1]['dev_rtt'] = dev_rtt
+                        if param == "rtt":
+                            avg_rtt = param_value.split("/")[0]
+                            dev_rtt = param_value.split("/")[1]
+                            stats_dict_list[port_list[i]][-1]["rtt"] = avg_rtt
+                            stats_dict_list[port_list[i]][-1]["dev_rtt"] = dev_rtt
                         else:
                             stats_dict_list[port_list[i]][-1][param] = param_value
                     except TypeError:
                         pass
 
-        SsResults.add_result(
-            self.ns_id, {self.destination_ip: stats_dict_list})
+        SsResults.add_result(self.ns_id, {self.destination_ip: stats_dict_list})
 
     @staticmethod
-    def convert_to(param_value, unit_out='Mbps'):
+    def convert_to(param_value, unit_out="Mbps"):
         """
         Converts parameter value to specified unit [For bit per second]
         """
-        converter = {'bps': 1, 'Kbps': 1e3, 'Mbps': 1e6, 'Gbps': 1e9}
+        converter = {"bps": 1, "Kbps": 1e3, "Mbps": 1e6, "Gbps": 1e9}
 
         # Extract value and unit
-        unit_in = re.sub(r'^\d*\.?\d*', '', param_value)
-        extracted_param_value = float(re.sub(r'[A-Za-z]*', '', param_value))
+        unit_in = re.sub(r"^\d*\.?\d*", "", param_value)
+        extracted_param_value = float(re.sub(r"[A-Za-z]*", "", param_value))
 
-        converted_param_value = str(extracted_param_value * converter[unit_in]/converter[unit_out])
+        converted_param_value = str(
+            extracted_param_value * converter[unit_in] / converter[unit_out]
+        )
         return converted_param_value

@@ -14,7 +14,7 @@ class Isis(RoutingDaemonBase):
     """
 
     def __init__(self, router_ns_id, interfaces, conf_dir):
-        super().__init__(router_ns_id, interfaces, 'isisd', conf_dir)
+        super().__init__(router_ns_id, interfaces, "isisd", conf_dir)
 
     def create_basic_config(self):
         """
@@ -22,18 +22,25 @@ class Isis(RoutingDaemonBase):
         Use base `add_to_config` directly for more complex configurations
         """
 
-        area_id = '00.0000.0000.0000.0000.0000.0000'
-        system_id_hash = str(int(hashlib.sha256(self.interfaces[0].address.get_addr(
-            with_subnet=False).encode('utf-8')).hexdigest(), 16))[:12]
-        system_id = '.'.join(map(''.join, zip(*[iter(system_id_hash)]*4)))
+        area_id = "00.0000.0000.0000.0000.0000.0000"
+        system_id_hash = str(
+            int(
+                hashlib.sha256(
+                    self.interfaces[0]
+                    .address.get_addr(with_subnet=False)
+                    .encode("utf-8")
+                ).hexdigest(),
+                16,
+            )
+        )[:12]
+        system_id = ".".join(map("".join, zip(*[iter(system_id_hash)] * 4)))
 
-        self.add_to_config('router isis {self.router_ns_id}')
-        self.add_to_config('is-type level-1')
-        self.add_to_config(
-            f'net {area_id}.{system_id}.00')
+        self.add_to_config("router isis {self.router_ns_id}")
+        self.add_to_config("is-type level-1")
+        self.add_to_config(f"net {area_id}.{system_id}.00")
         for interface in self.interfaces:
-            self.add_to_config(f'interface {interface.id}')
-            self.add_to_config(' ip router isis {self.router_ns_id}')
+            self.add_to_config(f"interface {interface.id}")
+            self.add_to_config(" ip router isis {self.router_ns_id}")
 
         self.create_config()
 

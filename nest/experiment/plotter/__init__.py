@@ -9,8 +9,8 @@ from matplotlib import style
 # Also fixes https://gitlab.com/nitk-nest/nest/-/issues/73
 # Many plotting processes were connecting to X-server simultaneously.
 # This created errors as X-server couldn't handle requests
-matplotlib.use('agg')
+matplotlib.use("agg")
 
 # Set plot style
-style.use('seaborn-paper')
-style.use('ggplot')
+style.use("seaborn-paper")
+style.use("ggplot")

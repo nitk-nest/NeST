@@ -48,8 +48,8 @@ class RoutingDaemonBase(ABC):
         self.conf = io.StringIO()
         self.router_ns_id = router_ns_id
         self.daemon = daemon
-        self.conf_file = f'{conf_dir}/{self.router_ns_id}_{daemon}.conf'
-        self.pid_file = f'{conf_dir}/{self.router_ns_id}_{daemon}.pid'
+        self.conf_file = f"{conf_dir}/{self.router_ns_id}_{daemon}.conf"
+        self.pid_file = f"{conf_dir}/{self.router_ns_id}_{daemon}.pid"
         self.interfaces = interfaces
 
     @abstractmethod
@@ -73,13 +73,13 @@ class RoutingDaemonBase(ABC):
         command : str
             command to add to config file
         """
-        self.conf.write(f'{command}\n')
+        self.conf.write(f"{command}\n")
 
     def create_config(self):
         """
         Creates config file on disk from `self.conf`
         """
-        with open(self.conf_file, 'w') as conf:
+        with open(self.conf_file, "w") as conf:
             chown_to_daemon(self.conf_file)
             self.conf.seek(0)
             shutil.copyfileobj(self.conf, conf)

@@ -55,7 +55,9 @@ class PingRunner(Runner):
         if self.start_time > 0:
             sleep(self.start_time)
 
-        super().run(partial(run_exp_ping, self.ns_id, self.destination_ip, self.run_time))
+        super().run(
+            partial(run_exp_ping, self.ns_id, self.destination_ip, self.run_time)
+        )
 
     def print_error(self):
         """
@@ -63,29 +65,28 @@ class PingRunner(Runner):
         """
         self.err.seek(0)  # rewind to start of file
         error = self.err.read().decode()
-        ns_name = TopologyMap.get_namespace(self.ns_id)['name']
-        self.logger.error('Collecting latency at %s. %s', ns_name, error)
+        ns_name = TopologyMap.get_namespace(self.ns_id)["name"]
+        self.logger.error("Collecting latency at %s. %s", ns_name, error)
 
     def parse(self):
         """
         parses the RTT from `self.out`
         """
-        self.out.seek(0)    # rewind to start of the temp file
+        self.out.seek(0)  # rewind to start of the temp file
         raw_stats = self.out.read().decode()
 
-        pattern = r'\[(?P<timestamp>\d+\.\d+)\].*time=(?P<rtt>\d+(\.\d+)?)'
-        timestamps_and_rtts = [(match.group('timestamp'), match.group(
-            'rtt')) for match in re.finditer(pattern, raw_stats)]
+        pattern = r"\[(?P<timestamp>\d+\.\d+)\].*time=(?P<rtt>\d+(\.\d+)?)"
+        timestamps_and_rtts = [
+            (match.group("timestamp"), match.group("rtt"))
+            for match in re.finditer(pattern, raw_stats)
+        ]
 
         # List storing collected stats
         # First item as "meta" item with user given information
         stats_list = [self.get_meta_item()]
 
         for (timestamp, rtt) in timestamps_and_rtts:
-            stats_list.append({
-                'timestamp': timestamp,
-                'rtt': rtt
-            })
+            stats_list.append({"timestamp": timestamp, "rtt": rtt})
 
         stats_dict = {self.destination_ip: stats_list}
 
