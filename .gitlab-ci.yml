@@ -37,13 +37,17 @@ build nest:
   script:
     - pip install .
 
-run pylint:
+run style check:
   stage: test
   script:
-    - pip install matplotlib numpy  # For pylint import check
-    - pip install pylint
-    - pylint --version
-    - pylint nest
+    - pip install pre-commit
+    - pre-commit --version
+    - pre-commit run --all-files
+
+    - pip install gitlint
+    - gitlint --version
+    - git fetch
+    - gitlint --commits origin/master..HEAD
 
 run unit tests:
   stage: test
@@ -84,7 +88,6 @@ run unit tests:
     - coverage combine
     - coverage report
     - coverage xml
-
   artifacts:
     reports:
       cobertura: coverage.xml
