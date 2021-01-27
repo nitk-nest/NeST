@@ -58,4 +58,3 @@ def add_mpls_route_pop(host_name, incoming_label, next_hop_ip):
     """
     exec_subprocess(f'ip netns exec {host_name} ip -f mpls route add {incoming_label}'
                     f' via inet {next_hop_ip}')
-                    

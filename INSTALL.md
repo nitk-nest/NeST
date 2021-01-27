@@ -128,7 +128,7 @@ will be maked in italics.
     This is an optional dependency. You can install either Frrouting **or** Quagga if you want to use dynamic routing APIs in NeST and change the routing_suite in config accordingly.
 
     - *Frrouting*
-    
+
     To install Frrouting on ubuntu run
 
     ```shell

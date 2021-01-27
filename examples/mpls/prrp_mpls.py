@@ -14,7 +14,7 @@ from nest.topology import *
 #       --(101)->    --(102)->
 #                    <-(202)--    <-(201)--
 # We use penultimate hop popping here
-# Labels are specified in brackets                       
+# Labels are specified in brackets
 ################################################
 
 ### Set log level ###
