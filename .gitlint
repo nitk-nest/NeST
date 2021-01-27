@@ -1,0 +1,8 @@
+[general]
+ignore=title-trailing-punctuation, body-min-length, body-is-missing, body-trailing-whitespace
+
+[title-max-length]
+line-length=50
+
+[body-max-line-length]
+line-length=72
