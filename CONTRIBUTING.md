@@ -131,12 +131,18 @@ The commit messages typically follow the convention
 
 ```
 <directory>: Commit message
+
 Detailed description of the commit
 
 Signed-off-by: name <email>
 ```
 
 The "\<directory\>" indicates the location of major changes done in the commit.
+The "Commit message" is written in present-tense, imperative-style
+just as [git](https://git-scm.com/docs/SubmittingPatches#describe-changes) follows.
+The commit title (1st line) is maintained to lesser than 50 characters
+long and the commit body (rest of it) can be upto 72 characters long per line
+with a newline between the commit title and body.
 Often, this path is shortened for brewity. An example commit message for fixing
 a typo in `nest/experiment/plotter/ss.py` would be:
 
@@ -150,7 +156,3 @@ Signed-off-by: name <email>
 
 The "Signed-off-by" line is added automatically by using the signoff flag while commiting:
 `git commit --signoff` or `git commit -s`.
-
-Also note that the commit title is atmost 50 characters long and commit body is
-atmost 72 characters long. A single newline seperates the commit title from
-the commit body.
