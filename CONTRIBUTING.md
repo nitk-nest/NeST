@@ -48,11 +48,24 @@ To contribute to NeST,
 * Ensure that the code passes the pipeline
 * Make a [merge request](https://gitlab.com/nitk-nest/nest/-/merge_requests/new)
 
+#### NOTE on Merge Request Pipelines
+
+For new contributors, most likely the Pipelines won't get succesfully triggered.
+You will observe that the pipeline is "stuck" and it won't run any checks on your MR.
+
+This is intentional. The pipelines run on private VMs owned by us, and we
+want to ensure that no malicious code is run on the VM. Hence, after a
+Developer reviews your MR and is confident that the changes are safe,
+they will trigger the pipeline manually for the MR (on your behalf).
+
 ### MR conflicts resolution
 
 There may be MR conflicts if the master gets updated before your MR
 gets accepted. If this happens, then **rebase** your branch on top of the updated
 master to get the latest changes. **Do not create a merge commit**.
+
+An exception to the above *rule* is if you intend to squash your commits
+when merging the MR.
 
 ## Styleguides
 
