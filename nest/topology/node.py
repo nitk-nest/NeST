@@ -246,7 +246,7 @@ class Node:
         ----------
         destination_address: Address/str
             IP address to ping to
-        duration: int
+        packets: int
             Number of ping packets sent (default: 1)
         verbose: bool
             If `True`, print extensive ping success/failure details

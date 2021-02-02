@@ -27,15 +27,15 @@ n2 = Node('n2')
 n1_n2.set_address('10.0.0.1/24')
 n2_n1.set_address('10.0.0.2/24')
 
-# Set duration ping run for and number of packets to be captured
+# Set number of ping packets sent and number of packets to be captured
 # by tcpdump
-DURATION = 10
+PING_PACKETS_SENT = 10
 MAX_PACKETS_CAPTURED = 20
 
 # Initiate ping (for 10s) in n1 as a seperate process
-print(f'Running ping for {DURATION} seconds from n1 to n2...')
+print(f'Sending {PING_PACKETS_SENT} ping packets from n1 to n2...')
 process = multiprocessing.Process(target=n1.ping,
-            args=(n2_n1.address, DURATION, False))
+            args=(n2_n1.address, PING_PACKETS_SENT, False))
 process.start()
 
 # Now run a packet capture in n2
