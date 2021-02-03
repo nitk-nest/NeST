@@ -28,7 +28,6 @@ class Runner:
         self.err = tempfile.TemporaryFile()
 
         self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.INFO)
 
         self.start_time = start_time
         self.run_time = run_time

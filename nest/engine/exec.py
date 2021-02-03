@@ -7,12 +7,11 @@ import logging
 import shlex
 import subprocess
 
-LOG_COMMANDS = False # TODO: Should be config parameter
+from nest import config
 
 logger = logging.getLogger(__name__)
-if LOG_COMMANDS:
-    # pylint: disable=no-member
-    logger.setLevel(logging.TRACE)
+# pylint: disable=no-member
+if config.get_value('log_level') == 'TRACE':
     fh = logging.FileHandler('commands.sh', 'w')
     fh.setLevel(logging.TRACE)
     formatter = logging.Formatter('%(message)s')

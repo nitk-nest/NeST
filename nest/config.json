@@ -11,5 +11,5 @@
     "dynamic_routing" : {
         "routing_suite": "quagga"
     },
-    "log_level": "DEBUG"
+    "log_level": "INFO"
 }

@@ -35,11 +35,18 @@ if all(key in os.environ for key in ('SUDO_UID', 'SUDO_GID')):
     User(user_id, group_id)
 
 # Set up logging
-# Added to avoid exec commands being printed every time
+log_level = config.get_value('log_level')
+
+# Logging level TRACE is used to output all the commands executed by engine to a file
 add_logging_level('TRACE', logging.DEBUG - 1, 'trace')
+
 logger = logging.getLogger(__name__)
+logger.setLevel(log_level)
 ch = logging.StreamHandler()    # Logger output will be output to stderr
-ch.setLevel(config.get_value('log_level'))
+if log_level == 'TRACE':
+    ch.setLevel(logging.DEBUG)  # To avoid engine commands to be printed on stdout
+else:
+    ch.setLevel(log_level)
 logger.addHandler(ch)
 formatter = logging.Formatter('[%(levelname)s] : %(message)s')
 ch.setFormatter(formatter)

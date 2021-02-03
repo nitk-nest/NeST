@@ -19,7 +19,6 @@ from nest.engine.dynamic_routing import chown_to_daemon
 from nest import config
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 # pylint:disable=too-few-public-methods
 

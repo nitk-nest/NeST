@@ -26,7 +26,6 @@ from ..experiment.parser.iperf import IperfRunner
 from ..engine.util import is_dependency_installed
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 #pylint: disable=too-many-locals
 

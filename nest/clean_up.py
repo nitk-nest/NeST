@@ -14,7 +14,6 @@ from . import engine
 from .topology_map import TopologyMap
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 def kill_processes():

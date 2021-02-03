@@ -10,7 +10,6 @@ from .run_exp import run_experiment
 from .pack import Pack
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 #pylint: disable=too-many-instance-attributes
 #pylint: disable=too-few-public-methods
