@@ -98,6 +98,28 @@ def run_isisd(ns_id, conf_file, pid_file):
     exec_subprocess(cmd)
 
 
+def run_ldpd(ns_id, conf_file, pid_file):
+    """
+    Runs the ldp daemon (MPLS)
+    Requires frr routing_suite
+
+    Parameters
+    ----------
+    ns_id : str
+        namespace of the router
+    conf_file : str
+        path to config file
+    pid_file : str
+        path to pid file
+    """
+    if config.get_value("routing_suite") == "frr":
+        cmd = f"ip netns exec {ns_id} /usr/lib/frr/ldpd --config_file {conf_file} \
+            --pid_file {pid_file} --daemon -N {ns_id}"
+        exec_subprocess(cmd)
+    else:
+        raise Exception("Ldp requires Frrouting")
+
+
 def chown_to_daemon(path):
     """
     Change ownership of config directory and files to daemon userid

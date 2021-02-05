@@ -45,6 +45,14 @@ Isis
    :undoc-members:
    :show-inheritance:
 
+Ldp
+---
+
+.. automodule:: nest.routing.ldp
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 RoutingHelper
 -------------
 

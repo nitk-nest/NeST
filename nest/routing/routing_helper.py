@@ -14,6 +14,7 @@ from shutil import rmtree
 from signal import SIGTERM
 from nest.topology.id_generator import IdGen
 from nest.routing.zebra import Zebra
+from nest.routing.ldp import Ldp
 from nest.topology_map import TopologyMap
 from nest.engine.dynamic_routing import chown_to_daemon
 from nest import config
@@ -21,6 +22,7 @@ from nest import config
 logger = logging.getLogger(__name__)
 
 # pylint:disable=too-few-public-methods
+# pylint:disable=too-many-instance-attributes
 
 
 class RoutingHelper:
@@ -51,7 +53,7 @@ class RoutingHelper:
         "isis": ["nest.routing.isis", "Isis"],
     }
 
-    def __init__(self, protocol="static", hosts=None, routers=None):
+    def __init__(self, protocol="static", hosts=None, routers=None, ldp_routers=None):
         """
         Constructor for RoutingHelper
 
@@ -65,6 +67,9 @@ class RoutingHelper:
         routers: List[Node]
             List of routers in the network. If `None`, considers the entire topology.
             Use this if your topology has disjoint networks
+        ldp_routers: List[Node]
+            List of Routers which are to be used with mpls.
+            Only enables ldp discovery on interfaces with mpls enabled
         """
         if protocol == "static":
             raise NotImplementedError(
@@ -73,12 +78,14 @@ class RoutingHelper:
         self.protocol = protocol
         self.routers = TopologyMap.get_routers() if routers is None else routers
         self.hosts = TopologyMap.get_hosts() if hosts is None else hosts
+        self.ldp_routers = ldp_routers if ldp_routers is not None else []
         self.conf_dir = None
         module_str, class_str = RoutingHelper._module_map[self.protocol]
         module = importlib.import_module(module_str)
         self.protocol_class = getattr(module, class_str)
         self.zebra_list = []
         self.protocol_list = []
+        self.ldp_list = []
 
         atexit.register(self._clean_up)
 
@@ -126,6 +133,8 @@ class RoutingHelper:
         for router in self.routers:
             self._run_zebra(router)
             self._run_routing_protocol(router)
+            if router in self.ldp_routers:
+                self._run_ldp(router)
         self._check_for_convergence()
 
     def _run_zebra(self, router):
@@ -145,6 +154,21 @@ class RoutingHelper:
         protocol.create_basic_config()
         protocol.run()
         self.protocol_list.append(protocol)
+
+    def _run_ldp(self, router):
+        """
+        Create required config file and run ldp
+        """
+        mpls_interfaces = []
+        for interface in router.interfaces:
+            if interface.is_mpls_enabled():
+                mpls_interfaces.append(interface)
+        if len(mpls_interfaces) == 0:
+            raise Exception("MPLS isn't enabled in any interface!")
+        ldp = Ldp(router.id, mpls_interfaces, self.conf_dir)
+        ldp.create_basic_config()
+        ldp.run()
+        self.ldp_list.append(ldp)
 
     def _check_for_convergence(self):
         """
@@ -176,6 +200,16 @@ class RoutingHelper:
         """
         # To preserve the routes, the daemons shouldn't be stopped
         # Frrouting doesn't seem to have an option to not flush the routes installed
+
+        # Stop ldp processes
+        for ldp in self.ldp_list:
+            if path.isfile(ldp.pid_file):
+                with open(ldp.pid_file, "r") as pid_file:
+                    pid = int(pid_file.read())
+                    try:
+                        kill(pid, SIGTERM)
+                    except ProcessLookupError:
+                        pass
 
         # Stop zebra processes
         for zebra in self.zebra_list:
