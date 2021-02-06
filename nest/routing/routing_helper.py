@@ -12,6 +12,7 @@ from os import mkdir, kill, path
 import atexit
 from shutil import rmtree
 from signal import SIGTERM
+from nest.exceptions import RequiredDependencyNotFound
 from nest.topology.id_generator import IdGen
 from nest.routing.zebra import Zebra
 from nest.routing.ldp import Ldp
@@ -98,7 +99,10 @@ class RoutingHelper:
         if self.protocol == "static":
             pass  # TODO: add static routing
         else:
-            self._run_dyn_routing()
+            try:
+                self._run_dyn_routing()
+            except RequiredDependencyNotFound:
+                return
 
     def _create_conf_directory(self):
         """

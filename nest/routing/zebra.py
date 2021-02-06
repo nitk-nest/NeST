@@ -3,6 +3,7 @@
 
 """Class to handle zebra"""
 
+from nest.exceptions import RequiredDependencyNotFound
 from nest.routing.route_daemons import RoutingDaemonBase
 from nest.engine.dynamic_routing import run_zebra
 
@@ -50,3 +51,7 @@ class Zebra(RoutingDaemonBase):
         Runs the zebra daemon
         """
         run_zebra(self.router_ns_id, self.conf_file, self.pid_file)
+
+    def handle_dependecy_error(self):
+        self.logger.error('Zebra not found. Routes from routing protocols cannot be added.')
+        raise RequiredDependencyNotFound()
