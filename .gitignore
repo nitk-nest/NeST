@@ -14,5 +14,8 @@ __pycache__
 # png images
 *.png
 
+# logs
+*.log
+
 # Output on nest install
 nitk_nest.egg-info

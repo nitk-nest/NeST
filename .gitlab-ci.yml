@@ -63,6 +63,8 @@ run unit tests:
       cobertura: coverage.xml
     paths:
       - test-experiment*/
+      - quagga-logs*/
+      - frr-logs*/
 
 test docs:
   image: $CONTAINER_TEST_IMAGE

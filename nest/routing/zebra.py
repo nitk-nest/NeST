@@ -3,6 +3,7 @@
 
 """Class to handle zebra"""
 
+from functools import partial
 from nest.exceptions import RequiredDependencyNotFound
 from nest.routing.route_daemons import RoutingDaemonBase
 from nest.engine.dynamic_routing import run_zebra
@@ -14,8 +15,8 @@ class Zebra(RoutingDaemonBase):
     Refer to `DaemonBase` for usage
     """
 
-    def __init__(self, router_ns_id, interfaces, conf_dir):
-        super().__init__(router_ns_id, interfaces, "zebra", conf_dir)
+    def __init__(self, router_ns_id, interfaces, conf_dir, **kwargs):
+        super().__init__(router_ns_id, interfaces, "zebra", conf_dir, **kwargs)
 
     def add_interface(self, interface):
         """
@@ -44,14 +45,21 @@ class Zebra(RoutingDaemonBase):
         for interface in self.interfaces:
             self.add_interface(interface.id)
             self.add_ip_address(interface.address.get_addr())
-        self.create_config()
+        if self.log_file is not None:
+            self.add_to_config(f"log file {self.log_file}")
 
     def run(self):
         """
         Runs the zebra daemon
         """
-        run_zebra(self.router_ns_id, self.conf_file, self.pid_file)
+        super().run(
+            engine_func=partial(
+                run_zebra, self.router_ns_id, self.conf_file, self.pid_file
+            )
+        )
 
     def handle_dependecy_error(self):
-        self.logger.error('Zebra not found. Routes from routing protocols cannot be added.')
+        self.logger.error(
+            "Zebra not found. Routes from routing protocols cannot be added."
+        )
         raise RequiredDependencyNotFound()

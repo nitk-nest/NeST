@@ -4,7 +4,9 @@
 """Test APIs from routing sub-package"""
 
 import unittest
+import os
 from nest import config
+from nest.topology.id_generator import IdGen
 from nest.topology_map import TopologyMap
 from nest.topology import Node, connect
 from nest.routing.routing_helper import RoutingHelper
@@ -74,6 +76,19 @@ class TestQuagga(unittest.TestCase):
 
         status = self.n1.ping("10.0.1.1", verbose=False)
         self.assertTrue(status)
+
+    def test_logs(self):
+        config.set_value("routing_logs", True)
+
+        RoutingHelper("rip").populate_routing_tables()
+
+        self.assertTrue(
+            os.path.isdir(
+                f"{config.get_value('routing_suite')}-logs_{IdGen.topology_id}"
+            )
+        )
+
+        config.set_value("routing_logs", False)
 
 
 if __name__ == "__main__":

@@ -8,16 +8,16 @@ Helper class for routing
 import time
 import logging
 import importlib
-from os import mkdir, kill, path
+from os import mkdir, kill, path, listdir
 import atexit
-from shutil import rmtree
+from shutil import rmtree, chown
 from signal import SIGTERM
 from nest.exceptions import RequiredDependencyNotFound
 from nest.topology.id_generator import IdGen
 from nest.routing.zebra import Zebra
 from nest.routing.ldp import Ldp
 from nest.topology_map import TopologyMap
-from nest.engine.dynamic_routing import chown_to_daemon
+from nest.user import User
 from nest import config
 
 logger = logging.getLogger(__name__)
@@ -81,6 +81,7 @@ class RoutingHelper:
         self.hosts = TopologyMap.get_hosts() if hosts is None else hosts
         self.ldp_routers = ldp_routers if ldp_routers is not None else []
         self.conf_dir = None
+        self.log_dir = None
         module_str, class_str = RoutingHelper._module_map[self.protocol]
         module = importlib.import_module(module_str)
         self.protocol_class = getattr(module, class_str)
@@ -104,6 +105,18 @@ class RoutingHelper:
             except RequiredDependencyNotFound:
                 return
 
+    def _create_directory(self, dir_path):
+        """
+        Creates a quagga/frr owned directory at `dir_path`
+
+        Parmeters
+        ---------
+        dir_path: path of the directory to be created
+
+        """
+        mkdir(dir_path)
+        chown(dir_path, user=config.get_value("routing_suite"))
+
     def _create_conf_directory(self):
         """
         Creates a directory for holding routing related config
@@ -117,9 +130,21 @@ class RoutingHelper:
         """
         salt = config.get_value("routing_suite") + str(time.clock_gettime(0))
         dir_path = f"/tmp/{salt}-configs_{IdGen.topology_id}"
-        mkdir(dir_path)
-        chown_to_daemon(dir_path)
+        self._create_directory(dir_path)
         return dir_path
+
+    def _create_log_directory(self):
+        """
+        Creates a directory for holding routing log files.
+
+        Returns
+        -------
+        str:
+            path of the created directory
+        """
+        log_path = f"{config.get_value('routing_suite')}-logs_{IdGen.topology_id}"
+        self._create_directory(log_path)
+        return log_path
 
     def _setup_default_routes(self):
         """
@@ -134,6 +159,9 @@ class RoutingHelper:
         """
         logger.info("Running zebra and %s on routers", self.protocol)
         self.conf_dir = self._create_conf_directory()
+        if config.get_value("routing_logs"):
+            self.log_dir = self._create_log_directory()
+
         for router in self.routers:
             self._run_zebra(router)
             self._run_routing_protocol(router)
@@ -145,7 +173,7 @@ class RoutingHelper:
         """
         Create required config file and run zebra
         """
-        zebra = Zebra(router.id, router.interfaces, self.conf_dir)
+        zebra = Zebra(router.id, router.interfaces, self.conf_dir, log_dir=self.log_dir)
         zebra.create_basic_config()
         zebra.run()
         self.zebra_list.append(zebra)
@@ -154,7 +182,9 @@ class RoutingHelper:
         """
         Create required config file and run `self.protocol`
         """
-        protocol = self.protocol_class(router.id, router.interfaces, self.conf_dir)
+        protocol = self.protocol_class(
+            router.id, router.interfaces, self.conf_dir, log_dir=self.log_dir
+        )
         protocol.create_basic_config()
         protocol.run()
         self.protocol_list.append(protocol)
@@ -238,3 +268,13 @@ class RoutingHelper:
         # Delete config directory
         if path.isdir(self.conf_dir):
             rmtree(self.conf_dir)
+
+        # Change ownership of log files to current user
+        if self.log_dir is not None and path.isdir(self.log_dir):
+            chown(self.log_dir, user=User.user_id, group=User.group_id)
+            for file in listdir(self.log_dir):
+                chown(
+                    path.join(self.log_dir, file),
+                    user=User.user_id,
+                    group=User.group_id,
+                )

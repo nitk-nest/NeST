@@ -54,6 +54,7 @@ def add_logging_level(level_name, level_num, method_name=None):
     setattr(logging.getLoggerClass(), method_name, log_for_level)
     setattr(logging, method_name, log_to_root)
 
+
 # pylint: disable=too-few-public-methods
 class DuplicateFilter(logging.Filter):
     """

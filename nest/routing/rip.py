@@ -3,6 +3,7 @@
 
 """Class to handles RIP related functionalities"""
 
+from functools import partial
 from nest.engine.dynamic_routing import run_ripd
 from nest.routing.route_daemons import RoutingDaemonBase
 
@@ -13,8 +14,8 @@ class Rip(RoutingDaemonBase):
     Refer to `DaemonBase` for usage
     """
 
-    def __init__(self, router_ns_id, interfaces, conf_dir):
-        super().__init__(router_ns_id, interfaces, "ripd", conf_dir)
+    def __init__(self, router_ns_id, interfaces, conf_dir, **kwargs):
+        super().__init__(router_ns_id, interfaces, "ripd", conf_dir, **kwargs)
 
     def add_rip(self):
         """
@@ -44,11 +45,15 @@ class Rip(RoutingDaemonBase):
         self.add_rip()
         for interface in self.interfaces:
             self.add_network(interface.id)
-
-        self.create_config()
+        if self.log_file is not None:
+            self.add_to_config(f"log file {self.log_file}")
 
     def run(self):
         """
         Runs the ripd command
         """
-        run_ripd(self.router_ns_id, self.conf_file, self.pid_file, self.ipv6)
+        super().run(
+            engine_func=partial(
+                run_ripd, self.router_ns_id, self.conf_file, self.pid_file, self.ipv6
+            )
+        )

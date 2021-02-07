@@ -2,6 +2,8 @@
 # Copyright (c) 2019-2020 NITK Surathkal
 
 """Routing commands"""
+from os import path
+from nest.engine.util import is_dependency_installed
 from .. import config
 from .exec import exec_subprocess
 
@@ -136,17 +138,28 @@ def run_ldpd(ns_id, conf_file, pid_file):
         raise Exception("Ldp requires Frrouting")
 
 
-def chown_to_daemon(path):
+def supports_dynamic_routing(daemon):
     """
-    Change ownership of config directory and files to daemon userid
+    Checks whether frr/quagga is installed
 
     Parameters
     ----------
-    path : str
-        path to file or directory
+    daemon : str
+        routing daemon
+
+    Returns
+    -------
+    bool
+        true if frr/quagga is installed
     """
+
+    if config.get_value("routing_suite") == "quagga":
+        return is_dependency_installed(daemon)
+
     if config.get_value("routing_suite") == "frr":
-        cmd = f"chown frr {path}"
-    else:
-        cmd = f"chown quagga {path}"
-    exec_subprocess(cmd)
+        # /usr/lib/ is the default installation path for frr which is not in PATH.
+        # This results in `is_dependency_installed` always returning false for frr, hence we
+        # check if the daemon binary exists
+        return path.isfile(f"{FRR_DAEMONPATH}{daemon}")
+
+    return False

@@ -4,7 +4,8 @@
         "plot_results": true
     },
     "routing" : {
-        "routing_suite": "quagga"
+        "routing_suite": "quagga",
+        "routing_logs": false
     },
     "topology" : {
         "assign_random_names": true,

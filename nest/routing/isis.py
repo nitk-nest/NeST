@@ -4,6 +4,7 @@
 """Class to handles IS-IS related functionalities"""
 
 import hashlib
+from functools import partial
 from nest.engine.dynamic_routing import run_isisd
 from nest.routing.route_daemons import RoutingDaemonBase
 
@@ -13,8 +14,8 @@ class Isis(RoutingDaemonBase):
     Handles IS-IS related functionalities.
     """
 
-    def __init__(self, router_ns_id, interfaces, conf_dir):
-        super().__init__(router_ns_id, interfaces, "isisd", conf_dir)
+    def __init__(self, router_ns_id, interfaces, conf_dir, **kwargs):
+        super().__init__(router_ns_id, interfaces, "isisd", conf_dir, **kwargs)
 
     def create_basic_config(self):
         """
@@ -45,10 +46,15 @@ class Isis(RoutingDaemonBase):
             else:
                 self.add_to_config(f" ip router isis {self.router_ns_id}")
 
-        self.create_config()
+        if self.log_file is not None:
+            self.add_to_config(f"log file {self.log_file}")
 
     def run(self):
         """
         Runs the isisd command
         """
-        run_isisd(self.router_ns_id, self.conf_file, self.pid_file)
+        super().run(
+            engine_func=partial(
+                run_isisd, self.router_ns_id, self.conf_file, self.pid_file
+            )
+        )
