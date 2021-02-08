@@ -11,84 +11,51 @@ workflow:
 default:
   tags:
     - nest
-  image: python:latest
+  image: docker:20.10.3
 
 stages:
+  - build_docker
   - build
   - test
   - release
+  - push_docker
 
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:master
 
-cache:
-  paths:
-    - .cache/pip
-    - venv/
-
-before_script:
-  # Create virtual env
-  - python -V
-  - python -m venv venv
-  - source venv/bin/activate
-
-build nest:
-  stage: build
+# https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#making-docker-in-docker-builds-faster-with-docker-layer-caching
+build docker:
+  tags:
+    - dind-runner
+  services:
+    - docker:dind
+  stage: build_docker
   script:
-    - pip install .
+    - docker login -u $CI_DEPLOY_USERNAME -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
+    - docker pull $CONTAINER_RELEASE_IMAGE || true
+    - docker build --cache-from $CONTAINER_RELEASE_IMAGE -t $CONTAINER_TEST_IMAGE .
+    - docker push $CONTAINER_TEST_IMAGE
 
 run style check:
+  image: $CONTAINER_TEST_IMAGE
   stage: test
   script:
-    - pip install pre-commit
     - pre-commit --version
     - pre-commit run --all-files
 
-    - pip install gitlint
     - gitlint --version
     - git fetch
     - gitlint --commits origin/master..HEAD
 
 run unit tests:
+  image: $CONTAINER_TEST_IMAGE
   stage: test
   script:
-    # Install NeST
     - pip install .
-
-    # Install dependencies Netperf and Quagga
-    # Install netperf
-    - git clone https://github.com/HewlettPackard/netperf.git
-    - cd netperf
-    - git checkout netperf-2.7.0
-    - sh ./configure
-    - make install
-    - netperf -V
-    - cd ..
-
-    # Install quagga
-    - apt-get update
-    - apt-get -y install quagga
-    - zebra -v
-    - mkdir -p  /run/quagga
-    - chown quagga:quagga /run/quagga
-    - rm -f /etc/quagga/daemons
-    - |
-      echo "zebra=yes
-      ospfd=yes
-      ospf6d=yes
-      ripd=yes
-      ripngd=yes" >> /etc/quagga/daemons
-
-    # FRR can't be installed alongside quagga
-
-    # Run unit tests
-    - pip install coverage
     - coverage --version
-    - coverage run --parallel-mode --source nest -m unittest -v
-    - apt install -y frr
-    - coverage run --parallel-mode --source nest -m unittest nest/tests/test_routing_frr.py -v
-    - coverage run --parallel-mode --source nest -m unittest nest/tests/test_routing_frr_ipv6.py -v
-    - coverage combine
+    - coverage run --source nest -m unittest -v
     - coverage report
     - coverage xml
   artifacts:
@@ -98,6 +65,7 @@ run unit tests:
       - test-experiment*/
 
 test docs:
+  image: $CONTAINER_TEST_IMAGE
   stage: test
   script:
     - pip install -r docs/doc_requirements.txt
@@ -107,10 +75,27 @@ test docs:
         - docs/*
 
 upload to PyPI:
+  image: $CONTAINER_TEST_IMAGE
   stage: release
   script:
     - pip install -U twine setuptools wheel
     - python setup.py sdist bdist_wheel
     - twine upload dist/* --verbose
-  only:
-    - tags
+  rules:
+    - if: $CI_COMMIT_TAG
+
+push_docker:
+  tags:
+    - dind-runner
+  services:
+    - docker:dind
+  stage: push_docker
+  script:
+   - docker login -u $CI_DEPLOY_USERNAME -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
+   - docker pull $CONTAINER_TEST_IMAGE
+   - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
+   - docker push $CONTAINER_RELEASE_IMAGE
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      changes:
+        - "Dockerfile"
