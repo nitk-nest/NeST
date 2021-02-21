@@ -1,0 +1,11 @@
+# git blame ignore list
+
+# This file contains list of git commits which introduced big
+# changes in codebase which we don't want to see in git blame output.
+# For eg. formatting changes
+
+# This list can be added to your git config by running the following command:
+# $ git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Migrate code style to Black
+f9062ca638d41a9bb1cb7fccc67ff0d4e8ef1e27
