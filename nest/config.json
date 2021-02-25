@@ -8,6 +8,7 @@
         "plot_results": true
     },
     "engine" : {},
+    "disable_dad" : true,
     "routing" : {
         "routing_suite": "quagga"
     },

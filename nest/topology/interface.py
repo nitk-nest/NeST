@@ -703,6 +703,11 @@ def connect(node1, node2, interface1_name="", interface2_name=""):
     interface1.set_mode("UP")
     interface2.set_mode("UP")
 
+    # Disabling Duplicate Address Detection(DAD) at the interfaces
+    if config.get_value("disable_dad") is True:
+        interface1.disable_ip_dad()
+        interface2.disable_ip_dad()
+
     return (interface1, interface2)
 
 
