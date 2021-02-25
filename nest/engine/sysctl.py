@@ -8,7 +8,7 @@ from .exec import exec_subprocess
 logger = logging.getLogger(__name__)
 
 
-def en_ip_forwarding(ns_name, ipv6=False):
+def en_ip_forwarding(ns_name, ipv4=True, ipv6=True):
     """
     Enables ip forwarding in a namespace. Used for routers
 
@@ -16,12 +16,16 @@ def en_ip_forwarding(ns_name, ipv6=False):
     ----------
     ns_name : str
         namespace name
+    ipv4 : bool
+        if `True`, enables ipv4 ip forwarding
+    ipv6 : bool
+        if `True`, enables ipv6 ip forwarding
     """
     if ipv6:
         exec_subprocess(
             f"ip netns exec {ns_name} sysctl -w net.ipv6.conf.all.forwarding=1"
         )
-    else:
+    if ipv4:
         exec_subprocess(f"ip netns exec {ns_name} sysctl -w net.ipv4.ip_forward=1")
 
 
