@@ -355,13 +355,18 @@ class Node:
                 )
         return status
 
-    def enable_ip_forwarding(self, ipv6=False):
+    def enable_ip_forwarding(self, ipv4=True, ipv6=True):
         """
         Enable IP forwarding in `Node`.
 
         After this method runs, the `Node` can be used as a router.
         """
-        engine.en_ip_forwarding(self.id, ipv6)
+        if not ipv4 and not ipv6:
+            raise Exception(
+                "IP Forwarding cannot be false for both IPv4 and IPv6 addresses"
+            )
+
+        engine.en_ip_forwarding(self.id, ipv4, ipv6)
         TopologyMap.add_router(self)
 
     def disable_ip_dad(self):
