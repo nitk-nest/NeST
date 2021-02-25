@@ -35,12 +35,12 @@ class Isis(RoutingDaemonBase):
         )[:12]
         system_id = ".".join(map("".join, zip(*[iter(system_id_hash)] * 4)))
 
-        self.add_to_config("router isis {self.router_ns_id}")
+        self.add_to_config(f"router isis {self.router_ns_id}")
         self.add_to_config("is-type level-1")
         self.add_to_config(f"net {area_id}.{system_id}.00")
         for interface in self.interfaces:
             self.add_to_config(f"interface {interface.id}")
-            self.add_to_config(" ip router isis {self.router_ns_id}")
+            self.add_to_config(f" ip router isis {self.router_ns_id}")
 
         self.create_config()
 
