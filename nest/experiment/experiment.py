@@ -5,6 +5,7 @@
 
 import copy
 import logging
+from nest.network_utilities import ipv6_dad_check
 from ..topology import Address
 from .run_exp import run_experiment
 from .pack import Pack
@@ -192,6 +193,7 @@ class Experiment:
             }
         )
 
+    @ipv6_dad_check
     def run(self):
         """Run the experiment"""
         print()
