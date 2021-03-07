@@ -8,6 +8,8 @@ import logging
 from nest import engine
 from nest.topology_map import TopologyMap
 import nest.config as config
+from nest.network_utilities import ipv6_dad_check
+import nest.global_variables as g_var
 from .address import Address
 from .id_generator import IdGen
 
@@ -56,6 +58,9 @@ class Node:
         self._interfaces = []
         # mpls max platform label kernel parameter
         self._mpls_max_label = 0
+        # Global variable disables when any new node is created
+        # to ensure DAD check (if applicable)
+        g_var.IS_DAD_CHECKED = False
 
         engine.create_ns(self.id)
         engine.set_interface_mode(self.id, "lo", "up")
@@ -307,6 +312,7 @@ class Node:
         """
         return engine.read_kernel_param(self.id, "net.ipv4.udp_", param)
 
+    @ipv6_dad_check
     def ping(self, destination_address, packets=1, verbose=True):
         """
         Ping from current `Node` to destination address
