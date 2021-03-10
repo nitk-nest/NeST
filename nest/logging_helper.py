@@ -53,3 +53,28 @@ def add_logging_level(level_name, level_num, method_name=None):
     setattr(logging, level_name, level_num)
     setattr(logging.getLoggerClass(), method_name, log_for_level)
     setattr(logging, method_name, log_to_root)
+
+
+# pylint: disable=too-few-public-methods
+class DuplicateFilter(logging.Filter):
+    """
+    Filters duplicate log messages.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.messages = set()
+
+    def filter(self, record):
+        """
+        Checks whether log message is already
+        logged and adds it to the current set of
+        logged message accordingly
+        """
+        log_message = record.getMessage()
+
+        if log_message in self.messages:
+            return 0
+
+        self.messages.add(log_message)
+        return 1

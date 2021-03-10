@@ -6,6 +6,7 @@
 from multiprocessing import Process
 from collections import namedtuple, defaultdict
 import logging
+from nest.logging_helper import DuplicateFilter
 
 from nest import config
 from ..topology_map import TopologyMap
@@ -29,10 +30,13 @@ from ..experiment.parser.iperf import IperfRunner
 from ..engine.util import is_dependency_installed
 
 logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
+if not any(isinstance(filter, DuplicateFilter) for filter in logger.filters):
+    # Duplicate filter is added to avoid logging of same error
+    # messages incase any of the tools is not installed
+    logger.addFilter(DuplicateFilter())
 
 # pylint: disable=too-many-locals
-
-
 def run_experiment(exp):
     """
     Run experiment
@@ -42,9 +46,8 @@ def run_experiment(exp):
     exp : Experiment
         The experiment attributes
     """
-    # TODO: Could be moved to config?
+
     tools = ["netperf", "ss", "tc", "iperf3", "ping"]
-    exp_workers = []  # Processes to setup flows and statistics collection
     Runners = namedtuple("runners", tools)
     exp_runners = Runners(
         netperf=[], ss=[], tc=[], iperf3=[], ping=[]
@@ -59,7 +62,6 @@ def run_experiment(exp):
     ss_schedules = defaultdict(lambda: (float("inf"), float("-inf")))
     ping_schedules = defaultdict(lambda: (float("inf"), float("-inf")))
 
-    # exp_start = float('inf')
     exp_end_t = float("-inf")
 
     dependencies = get_dependency_status(tools)
@@ -77,7 +79,6 @@ def run_experiment(exp):
             options,
         ] = flow._get_props()  # pylint: disable=protected-access
 
-        # exp_start = min(exp_start, start_t)
         exp_end_t = max(exp_end_t, stop_t)
 
         (min_start, max_stop) = ping_schedules[(src_ns, dst_addr)]
@@ -88,12 +89,7 @@ def run_experiment(exp):
 
         # Setup TCP/UDP flows
         if options["protocol"] == "TCP":
-            (
-                dependencies["netperf"],
-                tcp_runners,
-                tcp_workers,
-                ss_schedules,
-            ) = setup_tcp_flows(
+            (tcp_runners, ss_schedules,) = setup_tcp_flows(
                 dependencies["netperf"],
                 flow,
                 ss_schedules,
@@ -101,47 +97,38 @@ def run_experiment(exp):
             )
 
             exp_runners.netperf.extend(tcp_runners)
-            exp_workers.extend(tcp_workers)
 
             # Update destination nodes
             destination_nodes["netperf"].add(dst_ns)
 
         elif options["protocol"] == "UDP":
-            dependencies["iperf3"], udp_runners, upd_workers = setup_udp_flows(
+            udp_runners = setup_udp_flows(
                 dependencies["iperf3"], flow, ss_schedules, destination_nodes["iperf3"]
             )
 
             exp_runners.iperf3.extend(udp_runners)
-            exp_workers.extend(upd_workers)
 
             # Update destination nodes
             destination_nodes["iperf3"].add(dst_ns)
 
-    if dependencies["netperf"] == 1:
-        ss_workers, ss_runners = setup_ss_runners(dependencies["ss"], ss_schedules)
-        exp_workers.extend(ss_workers)
+    if dependencies["netperf"]:
+        ss_runners = setup_ss_runners(dependencies["ss"], ss_schedules)
         exp_runners.ss.extend(ss_runners)
 
-        tc_workers, tc_runners = setup_tc_runners(
-            dependencies["tc"], exp.qdisc_stats, exp_end_t
-        )
-        exp_workers.extend(tc_workers)
-        exp_runners.ss.extend(tc_runners)
+        tc_runners = setup_tc_runners(dependencies["tc"], exp.qdisc_stats, exp_end_t)
+        exp_runners.tc.extend(tc_runners)
 
-    ping_workers, ping_runners = setup_ping_runners(
-        dependencies["ping"], ping_schedules
-    )
-    exp_workers.extend(ping_workers)
+    ping_runners = setup_ping_runners(dependencies["ping"], ping_schedules)
     exp_runners.ping.extend(ping_runners)
 
-    # Start traffic generation and parsing
-    run_workers(exp_workers)
+    # Start traffic generation
+    run_workers(setup_flow_workers(exp_runners))
 
     logger.info("Experiment complete!")
     logger.info("Parsing statistics...")
 
     # Parse the stored statistics
-    run_workers(get_parser_workers(exp_runners))
+    run_workers(setup_parser_workers(exp_runners))
 
     logger.info("Output results as JSON dump")
 
@@ -152,7 +139,7 @@ def run_experiment(exp):
         logger.info("Plotting results...")
 
         # Plot results and dump them as images
-        run_workers(get_plotter_workers())
+        run_workers(setup_plotter_workers())
 
         logger.info("Plotting complete!")
 
@@ -177,7 +164,7 @@ def run_workers(workers):
         worker.join()
 
 
-def get_plotter_workers():
+def setup_plotter_workers():
     """
     Setup plotting processes
 
@@ -206,13 +193,35 @@ def dump_json_ouputs():
     PingResults.output_to_file()
 
 
-def get_parser_workers(runners_list):
+def setup_flow_workers(exp_runners):
+    """
+    Setup flow generation and stats collection processes(netperf, ss, tc, iperf...)
+
+    Parameters
+    ----------
+    exp_runners: collections.NamedTuple
+        all(netperf, ping, ss, tc..) the runners
+
+    Returns
+    -------
+    List[multiprocessing.Process]
+        flow generation and stats collection processes
+    """
+    workers = []
+
+    for runners in exp_runners:
+        workers.extend([Process(target=runner.run) for runner in runners])
+
+    return workers
+
+
+def setup_parser_workers(exp_runners):
     """
     Setup parsing processes
 
     Parameters
     ----------
-    runners_list: collections.NamedTuple
+    exp_runners: collections.NamedTuple
         all(netperf, ping, ss, tc..) the runners
 
     Returns
@@ -220,21 +229,21 @@ def get_parser_workers(runners_list):
     List[multiprocessing.Process]
         parsers
     """
-    runners = []
+    parsers = []
 
-    for ss_runner in runners_list.ss:
-        runners.append(Process(target=ss_runner.parse))
+    for ss_runner in exp_runners.ss:
+        parsers.append(Process(target=ss_runner.parse))
 
-    for netperf_runner in runners_list.netperf:
-        runners.append(Process(target=netperf_runner.parse))
+    for netperf_runner in exp_runners.netperf:
+        parsers.append(Process(target=netperf_runner.parse))
 
-    for tc_runner in runners_list.tc:
-        runners.append(Process(target=tc_runner.parse))
+    for tc_runner in exp_runners.tc:
+        parsers.append(Process(target=tc_runner.parse))
 
-    for ping_runner in runners_list.ping:
-        runners.append(Process(target=ping_runner.parse))
+    for ping_runner in exp_runners.ping:
+        parsers.append(Process(target=ping_runner.parse))
 
-    return runners
+    return parsers
 
 
 def get_dependency_status(tools):
@@ -253,7 +262,7 @@ def get_dependency_status(tools):
     """
     dependencies = {}
     for dependency in tools:
-        dependencies[dependency] = int(is_dependency_installed(dependency))
+        dependencies[dependency] = is_dependency_installed(dependency)
     return dependencies
 
 
@@ -283,12 +292,9 @@ def setup_tcp_flows(dependency, flow, ss_schedules, destination_nodes):
         updated ss_schedules
     """
     netperf_runners = []
-    workers = []
-    if dependency == 0:
+    if not dependency:
         logger.warning("Netperf not found. Tcp flows cannot be generated")
-        # To avoid duplicate warning messages
-        dependency = 2
-    elif dependency == 1:
+    else:
         # Get flow attributes
         [
             src_ns,
@@ -324,14 +330,13 @@ def setup_tcp_flows(dependency, flow, ss_schedules, destination_nodes):
                 src_ns, dst_addr, start_t, stop_t - start_t, **netperf_options
             )
             netperf_runners.append(runner_obj)
-            workers.append(Process(target=runner_obj.run))
 
         # Find the start time and stop time to run ss command in `src_ns` to a `dst_addr`
-        ss_schedules = _find_start_stop_time_for_ss(
+        ss_schedules = _get_start_stop_time_for_ss(
             src_ns, dst_addr, start_t, stop_t, ss_schedules
         )
 
-    return dependency, netperf_runners, workers, ss_schedules
+    return netperf_runners, ss_schedules
 
 
 def setup_udp_flows(dependency, flow, ss_schedules, destination_nodes):
@@ -359,12 +364,9 @@ def setup_udp_flows(dependency, flow, ss_schedules, destination_nodes):
         Processes to run iperf3 udp flows
     """
     iperf3_runners = []
-    workers = []
-    if dependency == 0:
+    if dependency:
         logger.warning("Iperf3 not found. Udp flows cannot be generated")
-        # To avoid duplicate warning messages
-        dependency = 2
-    elif dependency == 1:
+    else:
         # Get flow attributes
         [
             src_ns,
@@ -390,14 +392,13 @@ def setup_udp_flows(dependency, flow, ss_schedules, destination_nodes):
             src_ns, dst_addr, options["target_bw"], n_flows, start_t, stop_t - start_t
         )
         iperf3_runners.append(runner_obj)
-        workers.append(Process(target=runner_obj.run))
 
         # Find the start time and stop time to run ss command in `src_ns` to a `dst_addr`
-        ss_schedules = _find_start_stop_time_for_ss(
+        ss_schedules = _get_start_stop_time_for_ss(
             src_ns, dst_addr, start_t, stop_t, ss_schedules
         )
 
-    return dependency, iperf3_runners, workers
+    return iperf3_runners
 
 
 def setup_ss_runners(dependency, ss_schedules):
@@ -418,18 +419,16 @@ def setup_ss_runners(dependency, ss_schedules):
     runners: List[SsRunners]
     """
     runners = []
-    workers = []
-    if dependency == 1:
+    if dependency:
         logger.info("Running ss on nodes...")
         for ns_id, timings in ss_schedules.items():
             ss_runner = SsRunner(
                 ns_id[0], ns_id[1], timings[0], timings[1] - timings[0]
             )
             runners.append(ss_runner)
-            workers.append(Process(target=ss_runner.run))
     else:
         logger.warning("ss not found. Sockets stats will not be collected")
-    return workers, runners
+    return runners
 
 
 def setup_tc_runners(dependency, qdisc_stats, exp_end):
@@ -451,18 +450,16 @@ def setup_tc_runners(dependency, qdisc_stats, exp_end):
     runners: List[TcRunners]
     """
     runners = []
-    workers = []
-    if dependency == 1 and len(qdisc_stats) > 0:
+    if dependency and len(qdisc_stats) > 0:
         logger.info("Running tc on requested interfaces...")
         for qdisc_stat in qdisc_stats:
             tc_runner = TcRunner(
                 qdisc_stat["ns_id"], qdisc_stat["int_id"], qdisc_stat["qdisc"], exp_end
             )
             runners.append(tc_runner)
-            workers.append(Process(target=tc_runner.run))
-    elif dependency != 1:
+    elif not dependency:
         logger.warning("tc not found. Qdisc stats will not be collected")
-    return workers, runners
+    return runners
 
 
 def setup_ping_runners(dependency, ping_schedules):
@@ -483,17 +480,15 @@ def setup_ping_runners(dependency, ping_schedules):
     runners: List[SsRunners]
     """
     runners = []
-    workers = []
-    if dependency == 1:
+    if dependency:
         for ns_id, timings in ping_schedules.items():
             ping_runner = PingRunner(
                 ns_id[0], ns_id[1], timings[0], timings[1] - timings[0]
             )
             runners.append(ping_runner)
-            workers.append(Process(target=ping_runner.run))
     else:
         logger.warning("ping not found")
-    return workers, runners
+    return runners
 
 
 def cleanup():
@@ -510,25 +505,27 @@ def cleanup():
 
 
 # Helper methods
-def _find_start_stop_time_for_ss(src_ns, dst_addr, start_t, stop_t, ss_schedules):
+def _get_start_stop_time_for_ss(src_ns, dst_addr, start_t, stop_t, ss_schedules):
     """
     Find the start time and stop time to run ss command in node `src_ns`
     to a `dst_addr`
 
-    Args:
-        src_ns: Node
-            ss run from `src_ns`
-        dst_addr: Address
-            Destination address
-        start_t: int
-            Start time of ss command
-        stop_t: int
-            Stop time of ss command
-        ss_schedules: list
-            List with ss command schedules
+    Parameters
+    ----------
+    src_ns: Node
+        ss run from `src_ns`
+    dst_addr: Address
+        Destination address
+    start_t: int
+        Start time of ss command
+    stop_t: int
+        Stop time of ss command
+    ss_schedules: list
+        List with ss command schedules
 
-    Returns:
-        List: Updated ss_schedules
+    Returns
+    -------
+    List: Updated ss_schedules
     """
     if (src_ns, dst_addr) not in ss_schedules:
         ss_schedules[(src_ns, dst_addr)] = (start_t, stop_t)
