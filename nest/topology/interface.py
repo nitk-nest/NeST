@@ -6,6 +6,7 @@
 import logging
 from nest import engine
 from nest.topology_map import TopologyMap
+import nest.global_variables as g_var
 import nest.config as config
 from .address import Address
 from .id_generator import IdGen
@@ -172,6 +173,10 @@ class Interface:
             raise NotImplementedError(
                 "You should assign the interface to node or router before assigning address to it."
             )
+
+        # Global variable to check if address is ipv6 or not for DAD check
+        if address.is_ipv6() is True:
+            g_var.IS_IPV6 = True
 
     def enable_mpls(self):
         """
