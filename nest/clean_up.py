@@ -8,6 +8,7 @@ and delete all namespaces after the experiment is complete.
 
 import atexit
 import logging
+from nest.network_utilities import ipv6_dad_check
 from . import config
 
 from . import engine
@@ -25,6 +26,7 @@ def kill_processes():
 
 
 @atexit.register
+@ipv6_dad_check
 def delete_namespaces():
     """
     Delete all the newly generated namespaces
