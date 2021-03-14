@@ -5,11 +5,7 @@
 from .exec import exec_exp_commands
 
 # pylint: disable=too-many-arguments
-
-
-def run_netperf(
-    ns_id, netperf_options, destination_ip, start_time, test_options, out, err
-):
+def run_netperf(ns_id, netperf_options, destination_ip, test_options, out, err):
     """
     Run netperf
 
@@ -21,8 +17,6 @@ def run_netperf(
         default options to run netperf command with
     destination_ip : str
         ip address of the destination namespace
-    start_time : num
-        time at which netperf is to run
     run_time : num
         total time to run netperf for
     test_options : str
@@ -38,8 +32,7 @@ def run_netperf(
         return code of the command executed
     """
     return exec_exp_commands(
-        f"ip netns exec {ns_id} netperf {netperf_options} -H \
-                {destination_ip} -s {start_time} -- {test_options}",
+        f"ip netns exec {ns_id} netperf {netperf_options} -H {destination_ip} -- {test_options}",
         stdout=out,
         stderr=err,
     )

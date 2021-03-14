@@ -8,6 +8,7 @@ and collect throughput data
 
 import re
 import copy
+from time import sleep
 from functools import partial
 from ..results import NetperfResults
 from .runnerbase import Runner
@@ -46,25 +47,29 @@ class NetperfRunner(Runner):
         "REMOTE_SOCKET_TOS",
     ]
 
+    # fmt: off
+
     default_netperf_options = {
-        "banner": "-P 0",  # Disable test banner
-        "ipv4": "-4",  # IPv4 Addresses
-        "testname": "-t TCP_STREAM",  # Test type (NOTE: TCP_STREAM only for now)
-        "fill_file": "-F /dev/urandom",  # File to transmit (NOTE: Inspired from flent)
-        "testlen": "-l 10",  # Length of test (NOTE: Default 10s)
-        "intervel": "-D -0.2",  # Generated interim results every INTERVAL secs
-        "debug": "-d",  # Enable debug mode
+        "banner": "-P 0",                   # Disable test banner
+        "ipv4": "-4",                       # IPv4 Addresses
+        "testname": "-t TCP_STREAM",        # Test type (NOTE: TCP_STREAM only for now)
+        "fill_file": "-F /dev/urandom",     # File to transmit (NOTE: Inspired from flent)
+        "testlen": "-l 10",                 # Length of test (NOTE: Default 10s)
+        "intervel": "-D -0.2",              # Generated interim results every INTERVAL secs
+        "debug": "-d",                      # Enable debug mode
     }
 
     netperf_tcp_options = {
-        "cong_algo": "-K cubic",  # Congestion algorithm
-        "stats": "-k THROUGHPUT",  # Stats required
+        "cong_algo": "-K cubic",            # Congestion algorithm
+        "stats": "-k THROUGHPUT",           # Stats required
     }
 
     netperf_udp_options = {
-        "routing": "-R 1",  # Enable routing
-        "stats": "-k THROUGHPUT",  # Stats required
+        "routing": "-R 1",                  # Enable routing
+        "stats": "-k THROUGHPUT",           # Stats required
     }
+
+    # fmt: on
 
     def __init__(self, ns_id, destination_ip, start_time, run_time, **kwargs):
         """
@@ -113,6 +118,7 @@ class NetperfRunner(Runner):
 
         # Change the default run time
         netperf_options["testlen"] = "-l {}".format(self.run_time)
+
         # Set test
         netperf_options["testname"] = "-t {}".format(self.options["testname"])
 
@@ -127,13 +133,15 @@ class NetperfRunner(Runner):
         test_options_list = list(test_options.values())
         test_options_string = " ".join(test_options_list)
 
+        if self.start_time > 0:
+            sleep(self.start_time)
+
         super().run(
             partial(
                 run_netperf,
                 self.ns_id,
                 netperf_options_string,
                 self.destination_ip,
-                self.start_time,
                 test_options_string,
             )
         )
