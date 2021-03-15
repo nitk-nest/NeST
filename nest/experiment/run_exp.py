@@ -364,7 +364,7 @@ def setup_udp_flows(dependency, flow, ss_schedules, destination_nodes):
         Processes to run iperf3 udp flows
     """
     iperf3_runners = []
-    if dependency:
+    if not dependency:
         logger.warning("Iperf3 not found. Udp flows cannot be generated")
     else:
         # Get flow attributes
