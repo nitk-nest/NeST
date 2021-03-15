@@ -18,7 +18,8 @@ def run_iperf_server(ns_name):
     exec_subprocess(f"ip netns exec {ns_name}  iperf3 -s -D")  # runs server as a daemon
 
 
-def run_iperf_client(ns_name, server_ip, run_time, flows, target_bw):
+# pylint: disable=too-many-arguments
+def run_iperf_client(ns_name, server_ip, run_time, flows, target_bw, ipv6):
     """
     Run Iperf Client
 
@@ -34,9 +35,17 @@ def run_iperf_client(ns_name, server_ip, run_time, flows, target_bw):
         number of parallel flows
     target_bw : int
         target bandwidth of the UDP flow in mbits
+    ipv6 : bool
+        determines if destination_ip is ipv4/ipv6
     """
 
-    exec_subprocess(
-        f"ip netns exec {ns_name} iperf3 -u -c {server_ip} -P {flows} -t {run_time} \
-            -b {target_bw}m -i 0"
-    )
+    if ipv6:
+        exec_subprocess(
+            f"ip netns exec {ns_name} iperf3 -6 -u -c {server_ip} -P {flows} -t {run_time} \
+                -b {target_bw}m -i 0"
+        )
+    else:
+        exec_subprocess(
+            f"ip netns exec {ns_name} iperf3 -u -c {server_ip} -P {flows} -t {run_time} \
+                -b {target_bw}m -i 0"
+        )
