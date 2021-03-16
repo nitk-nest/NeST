@@ -40,10 +40,9 @@ class IperfRunner(Runner):
             test duration
         """
         self.ns_id = ns_id
-        self.destination_ip = destination_ip
         self.bandwidth = bandwidth
         self.n_flows = n_flows
-        super().__init__(start_time, run_time)
+        super().__init__(start_time, run_time, destination_ip)
 
     # Should this be placed somewhere else?
     @staticmethod
@@ -66,5 +65,10 @@ class IperfRunner(Runner):
         if self.start_time != 0:
             sleep(self.start_time)
         run_iperf_client(
-            self.ns_id, self.destination_ip, self.run_time, self.n_flows, self.bandwidth
+            self.ns_id,
+            self.destination_address.get_addr(with_subnet=False),
+            self.run_time,
+            self.n_flows,
+            self.bandwidth,
+            self.destination_address.is_ipv6(),
         )

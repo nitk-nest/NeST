@@ -7,6 +7,7 @@ Base class for other runners
 
 import tempfile
 import logging
+from nest.topology import Address
 
 
 class Runner:
@@ -20,17 +21,26 @@ class Runner:
     err : File
         temporary file to hold any errors
     start_time : num
-            time at which netperf is to run
+            time at which utility is to run
     run_time : num
-        total time to run netperf for
+        total time for a utility to run
+    destination_address : Address
+        Address of the destination node for the runner
     """
 
-    def __init__(self, start_time, run_time):
+    def __init__(self, start_time, run_time, destination_ip="::1"):
+        """
+        Parameters
+        ----------
+        destination_ip : str
+            ip address of the destination namespace
+        """
         self.out = tempfile.TemporaryFile()
         self.err = tempfile.TemporaryFile()
 
         self.logger = logging.getLogger(__name__)
 
+        self.destination_address = Address(destination_ip)
         self.start_time = start_time
         self.run_time = run_time
 

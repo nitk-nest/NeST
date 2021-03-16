@@ -44,8 +44,7 @@ class PingRunner(Runner):
             total time to run netperf for
         """
         self.ns_id = ns_id
-        self.destination_ip = destination_ip
-        super().__init__(start_time, run_time)
+        super().__init__(start_time, run_time, destination_ip)
 
     # pylint: disable=arguments-differ
     def run(self):
@@ -56,7 +55,13 @@ class PingRunner(Runner):
             sleep(self.start_time)
 
         super().run(
-            partial(run_exp_ping, self.ns_id, self.destination_ip, self.run_time)
+            partial(
+                run_exp_ping,
+                self.ns_id,
+                self.destination_address.get_addr(with_subnet=False),
+                self.run_time,
+                self.destination_address.is_ipv6(),
+            )
         )
 
     def print_error(self):
@@ -88,6 +93,6 @@ class PingRunner(Runner):
         for (timestamp, rtt) in timestamps_and_rtts:
             stats_list.append({"timestamp": timestamp, "rtt": rtt})
 
-        stats_dict = {self.destination_ip: stats_list}
+        stats_dict = {self.destination_address.get_addr(with_subnet=False): stats_list}
 
         PingResults.add_result(self.ns_id, stats_dict)

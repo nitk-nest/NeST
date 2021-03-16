@@ -51,7 +51,6 @@ class NetperfRunner(Runner):
 
     default_netperf_options = {
         "banner": "-P 0",                   # Disable test banner
-        "ipv4": "-4",                       # IPv4 Addresses
         "testname": "-t TCP_STREAM",        # Test type (NOTE: TCP_STREAM only for now)
         "fill_file": "-F /dev/urandom",     # File to transmit (NOTE: Inspired from flent)
         "testlen": "-l 10",                 # Length of test (NOTE: Default 10s)
@@ -89,9 +88,8 @@ class NetperfRunner(Runner):
             netperf options to override
         """
         self.ns_id = ns_id
-        self.destination_ip = destination_ip
         self.options = copy.deepcopy(kwargs)
-        super().__init__(start_time, run_time)
+        super().__init__(start_time, run_time, destination_ip)
 
     # Should this be placed somewhere else?
     @staticmethod
@@ -141,8 +139,9 @@ class NetperfRunner(Runner):
                 run_netperf,
                 self.ns_id,
                 netperf_options_string,
-                self.destination_ip,
+                self.destination_address.get_addr(with_subnet=False),
                 test_options_string,
+                self.destination_address.is_ipv6(),
             )
         )
 
@@ -192,7 +191,7 @@ class NetperfRunner(Runner):
                     "sending_rate": throughputs[i],
                 }
             )
-
-        stats_dict = {f"{self.destination_ip}:{remote_port}": stats_list}
+        destination_ip = self.destination_address.get_addr(with_subnet=False)
+        stats_dict = {f"{destination_ip}:{remote_port}": stats_list}
 
         NetperfResults.add_result(self.ns_id, stats_dict)

@@ -62,8 +62,7 @@ class SsRunner(Runner):
             total time to run ss for
         """
         self.ns_id = ns_id
-        self.destination_ip = destination_ip
-        super().__init__(start_time, run_time)
+        super().__init__(start_time, run_time, destination_ip)
 
     def run(self):
         """
@@ -75,10 +74,11 @@ class SsRunner(Runner):
                 run_ss,
                 self.ns_id,
                 SsRunner.iterator,
-                self.destination_ip,
+                self.destination_address.get_addr(with_subnet=False),
                 self.run_time,
                 '"dport != 12865 and sport != 12865"',
                 self.start_time,
+                self.destination_address.is_ipv6(),
             )
         )
 
@@ -102,11 +102,15 @@ class SsRunner(Runner):
 
         # See `iterators/ss.h` for output format
         raw_stats = self.out.read().decode().split("---")
+        destination_ip = self.destination_address.get_addr(with_subnet=False)
 
         for raw_stat in raw_stats[:-1]:
 
             # Pattern to capture port numbers of flows to `destination ip`
-            port_pattern = re.escape(self.destination_ip) + r":(?P<port>\d+)"
+            if self.destination_address.is_ipv6():
+                port_pattern = re.escape(destination_ip) + r"]:(?P<port>\d+)"
+            else:
+                port_pattern = re.escape(destination_ip) + r":(?P<port>\d+)"
             port_list = [
                 port.group("port") for port in re.finditer(port_pattern, raw_stat)
             ]
@@ -148,7 +152,8 @@ class SsRunner(Runner):
                     except TypeError:
                         pass
 
-        SsResults.add_result(self.ns_id, {self.destination_ip: stats_dict_list})
+        destination_ip = self.destination_address.get_addr(with_subnet=False)
+        SsResults.add_result(self.ns_id, {destination_ip: stats_dict_list})
 
     @staticmethod
     def convert_to(param_value, unit_out="Mbps"):
