@@ -75,7 +75,9 @@ run unit tests:
     - |
       echo "zebra=yes
       ospfd=yes
-      ripd=yes" >> /etc/quagga/daemons
+      ospf6d=yes
+      ripd=yes
+      ripngd=yes" >> /etc/quagga/daemons
 
     # FRR can't be installed alongside quagga
 
@@ -85,6 +87,7 @@ run unit tests:
     - coverage run --parallel-mode --source nest -m unittest -v
     - apt install -y frr
     - coverage run --parallel-mode --source nest -m unittest nest/tests/test_routing_frr.py -v
+    - coverage run --parallel-mode --source nest -m unittest nest/tests/test_routing_frr_ipv6.py -v
     - coverage combine
     - coverage report
     - coverage xml
