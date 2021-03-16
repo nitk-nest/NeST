@@ -26,7 +26,10 @@ class Zebra(RoutingDaemonBase):
         """
         Add IP address command to config file
         """
-        self.add_to_config(f" ip address {ip_address}")
+        if self.ipv6:
+            self.add_to_config(f" ipv6 address {ip_address}")
+        else:
+            self.add_to_config(f" ip address {ip_address}")
 
     def create_basic_config(self):
         """

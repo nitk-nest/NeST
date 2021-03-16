@@ -3,8 +3,10 @@
 
 """Class to handles OSPF related functionalities"""
 
+import random
 from nest.engine.dynamic_routing import run_ospfd
 from nest.routing.route_daemons import RoutingDaemonBase
+import nest.config as config
 
 
 class Ospf(RoutingDaemonBase):
@@ -20,19 +22,40 @@ class Ospf(RoutingDaemonBase):
         Creates a file with basic configuration for OSPF.
         Use base `add_to_config` directly for more complex configurations
         """
-        for interface in self.interfaces:
-            self.add_to_config(f"interface {interface.id}")
-            # send hello packets every 1 second for faster convergence
-            self.add_to_config("ip ospf hello-interval 1")
+        if self.ipv6:
+            for interface in self.interfaces:
+                self.add_to_config(f"interface {interface.id}")
+                # send hello packets every 1 second for faster convergence
+                self.add_to_config("ipv6 ospf6 hello-interval 1")
 
-        self.add_to_config("router ospf")
-        self.add_to_config(
-            f"ospf router-id {self.interfaces[0].address.get_addr(with_subnet=False)}"
-        )
-        for interface in self.interfaces:
-            self.add_to_config(
-                f" network {interface.address.get_subnet()} area 0.0.0.0"
+            self.add_to_config("router ospf6")
+
+            # Generates random router-id in A.B.C.D format
+            router_id = ".".join(
+                map(str, (random.randint(0, 255) for _ in range(0, 4)))
             )
+            # for quagga
+            if config.get_value("routing_suite") == "quagga":
+                self.add_to_config(f"router-id {router_id}")
+            # for frr
+            else:
+                self.add_to_config(f"ospf6 router-id {router_id}")
+            for interface in self.interfaces:
+                self.add_to_config(f" interface {interface.id} area 0.0.0.0")
+        else:
+            for interface in self.interfaces:
+                self.add_to_config(f"interface {interface.id}")
+                # send hello packets every 1 second for faster convergence
+                self.add_to_config("ip ospf hello-interval 1")
+
+            self.add_to_config("router ospf")
+            self.add_to_config(
+                f"ospf router-id {self.interfaces[0].address.get_addr(with_subnet=False)}"
+            )
+            for interface in self.interfaces:
+                self.add_to_config(
+                    f" network {interface.address.get_subnet()} area 0.0.0.0"
+                )
 
         self.create_config()
 
@@ -40,4 +63,4 @@ class Ospf(RoutingDaemonBase):
         """
         Runs the ospfd command
         """
-        run_ospfd(self.router_ns_id, self.conf_file, self.pid_file)
+        run_ospfd(self.router_ns_id, self.conf_file, self.pid_file, self.ipv6)

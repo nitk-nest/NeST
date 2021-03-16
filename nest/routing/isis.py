@@ -40,7 +40,10 @@ class Isis(RoutingDaemonBase):
         self.add_to_config(f"net {area_id}.{system_id}.00")
         for interface in self.interfaces:
             self.add_to_config(f"interface {interface.id}")
-            self.add_to_config(f" ip router isis {self.router_ns_id}")
+            if self.ipv6:
+                self.add_to_config(f" ipv6 router isis {self.router_ns_id}")
+            else:
+                self.add_to_config(f" ip router isis {self.router_ns_id}")
 
         self.create_config()
 
