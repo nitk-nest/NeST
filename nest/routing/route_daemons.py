@@ -51,6 +51,7 @@ class RoutingDaemonBase(ABC):
         self.conf_file = f"{conf_dir}/{self.router_ns_id}_{daemon}.conf"
         self.pid_file = f"{conf_dir}/{self.router_ns_id}_{daemon}.pid"
         self.interfaces = interfaces
+        self.ipv6 = interfaces[0].address.is_ipv6()
 
     @abstractmethod
     def create_basic_config(self):
