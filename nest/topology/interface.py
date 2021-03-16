@@ -453,7 +453,7 @@ class Interface:
 
         # NOTE: Use Filter API
         engine.add_filter(
-            self.node.id, self.id, "ip", "1", "u32", parent="1:", **action_redirect
+            self.node.id, self.id, "all", "1", "u32", parent="1:", **action_redirect
         )
 
     def _set_structure(self):
