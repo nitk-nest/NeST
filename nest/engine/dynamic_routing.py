@@ -32,7 +32,7 @@ def run_zebra(ns_id, conf_file, pid_file):
     exec_subprocess(cmd)
 
 
-def run_ripd(ns_id, conf_file, pid_file):
+def run_ripd(ns_id, conf_file, pid_file, ipv6):
     """
     Runs the ripd daemon
 
@@ -46,15 +46,23 @@ def run_ripd(ns_id, conf_file, pid_file):
         path to pid file
     """
     if config.get_value("routing_suite") == "frr":
-        cmd = f"ip netns exec {ns_id} {FRR_DAEMONPATH}ripd --config_file {conf_file} \
-                --pid_file {pid_file} --daemon -N {ns_id}"
+        if ipv6:
+            cmd = f"ip netns exec {ns_id} {FRR_DAEMONPATH}ripngd --config_file {conf_file} \
+                    --pid_file {pid_file} --daemon -N {ns_id}"
+        else:
+            cmd = f"ip netns exec {ns_id} {FRR_DAEMONPATH}ripd --config_file {conf_file} \
+                    --pid_file {pid_file} --daemon -N {ns_id}"
     else:
-        cmd = f"ip netns exec {ns_id} ripd --config_file {conf_file} \
-                --pid_file {pid_file} --retain --daemon"
+        if ipv6:
+            cmd = f"ip netns exec {ns_id} ripngd --config_file {conf_file} \
+                    --pid_file {pid_file} --retain --daemon"
+        else:
+            cmd = f"ip netns exec {ns_id} ripd --config_file {conf_file} \
+                    --pid_file {pid_file} --retain --daemon"
     exec_subprocess(cmd)
 
 
-def run_ospfd(ns_id, conf_file, pid_file):
+def run_ospfd(ns_id, conf_file, pid_file, ipv6):
     """
     Runs the ospfd daemon
 
@@ -68,11 +76,19 @@ def run_ospfd(ns_id, conf_file, pid_file):
         path to pid file
     """
     if config.get_value("routing_suite") == "frr":
-        cmd = f"ip netns exec {ns_id} {FRR_DAEMONPATH}ospfd --config_file {conf_file} \
-            --pid_file {pid_file} --daemon -N {ns_id}"
+        if ipv6:
+            cmd = f"ip netns exec {ns_id} {FRR_DAEMONPATH}ospf6d --config_file {conf_file} \
+                --pid_file {pid_file} --daemon -N {ns_id}"
+        else:
+            cmd = f"ip netns exec {ns_id} {FRR_DAEMONPATH}ospfd --config_file {conf_file} \
+                --pid_file {pid_file} --daemon -N {ns_id}"
     else:
-        cmd = f"ip netns exec {ns_id} ospfd --config_file {conf_file} \
+        if ipv6:
+            cmd = f"ip netns exec {ns_id} ospf6d --config_file {conf_file} \
             --pid_file {pid_file} --daemon"
+        else:
+            cmd = f"ip netns exec {ns_id} ospfd --config_file {conf_file} \
+                --pid_file {pid_file} --daemon"
     exec_subprocess(cmd)
 
 
