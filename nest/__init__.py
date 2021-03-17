@@ -16,7 +16,9 @@ nest is imported:
 import logging
 import os
 import sys
+import signal
 
+from nest import clean_up
 from .logging_helper import add_logging_level
 from .user import User
 from . import config
@@ -52,3 +54,6 @@ else:
 logger.addHandler(ch)
 formatter = logging.Formatter("[%(levelname)s] : %(message)s")
 ch.setFormatter(formatter)
+
+# On recieving Termination signal, execute the given function
+signal.signal(signal.SIGTERM, clean_up.delete_namespaces)
