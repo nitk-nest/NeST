@@ -150,7 +150,9 @@ will be maked in italics.
     ```
     zebra=no -> zebra=yes
     ripd=no -> ripd=yes
+    ripngd=no -> ripngd=yes
     ospfd=no -> ospfd=yes
+    ospf6d=no -> ospf6d=yes
     isisd=no -> isisd=yes
     ```
 
@@ -160,9 +162,9 @@ will be maked in italics.
     zebra=yes
     bgpd=no
     ospfd=yes
-    ospf6d=no
+    ospf6d=yes
     ripd=yes
-    ripngd=no
+    ripngd=yes
     isisd=yes
     babeld=no
     ```
