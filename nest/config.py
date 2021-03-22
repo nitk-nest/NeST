@@ -100,18 +100,29 @@ def import_custom_config(path):
         for parameter in data["engine"]:
             if parameter in default_value["engine"]:
                 default_value["engine"][parameter] = data["engine"][parameter]
+            else:
+                logger.error("The given parameter %s does not exist", parameter)
     if "experiment" in data:
         for parameter in data["experiment"]:
             if parameter in default_value["experiment"]:
                 default_value["experiment"][parameter] = data["experiment"][parameter]
+            else:
+                logger.error("The given parameter %s does not exist", parameter)
     if "routing" in data:
         for parameter in data["routing"]:
             if parameter in default_value["routing"]:
                 default_value["routing"][parameter] = data["routing"][parameter]
+            else:
+                logger.error("The given parameter %s does not exist", parameter)
     if "topology" in data:
         for parameter in data["topology"]:
             if parameter in default_value["topology"]:
                 default_value["topology"][parameter] = data["topology"][parameter]
+            else:
+                logger.error("The given parameter %s does not exist", parameter)
     for parameter in data:
-        if not isinstance(default_value[parameter], dict):
-            default_value[parameter] = data[parameter]
+        if parameter in default_value.keys():
+            if not isinstance(default_value[parameter], dict):
+                default_value[parameter] = data[parameter]
+        else:
+            logger.error("The given parameter %s does not exist", parameter)
