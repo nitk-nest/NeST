@@ -1,16 +1,16 @@
 {
-    "topology" : {
-        "assign_random_names": true,
-        "delete_namespaces_on_termination": true,
-        "default_bandwidth": "1024mbit"
-    },
+    "engine" : {},
     "experiment" : {
         "plot_results": true
     },
-    "engine" : {},
-    "disable_dad" : true,
     "routing" : {
         "routing_suite": "quagga"
     },
+    "topology" : {
+        "assign_random_names": true,
+        "default_bandwidth": "1024mbit",
+        "delete_namespaces_on_termination": true
+    },
+    "disable_dad" : true,
     "log_level": "INFO"
 }
