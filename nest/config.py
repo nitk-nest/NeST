@@ -50,7 +50,7 @@ def set_value(parameter, value):
     elif parameter in default_value:
         default_value[parameter] = value
     else:
-        logging.error("The given parameter %s does not exist", parameter)
+        logger.error("The given parameter %s does not exist", parameter)
 
 
 def get_value(parameter):
@@ -79,7 +79,7 @@ def get_value(parameter):
         return default_value[parameter]
 
     # If it belonged to none of them
-    logging.error("The given parameter %s does not exist", parameter)
+    logger.error("The given parameter %s does not exist", parameter)
     return "The given parameter %s does not exist"
 
 
