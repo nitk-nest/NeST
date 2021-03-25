@@ -11,7 +11,6 @@ import re
 from functools import partial
 from ..results import SsResults
 from .runnerbase import Runner
-from ...topology_map import TopologyMap
 from ...engine.iterators import run_ss
 
 
@@ -61,8 +60,7 @@ class SsRunner(Runner):
         run_time : num
             total time to run ss for
         """
-        self.ns_id = ns_id
-        super().__init__(start_time, run_time, destination_ip)
+        super().__init__(ns_id, start_time, run_time, destination_ip)
 
     def run(self):
         """
@@ -79,17 +77,9 @@ class SsRunner(Runner):
                 '"dport != 12865 and sport != 12865"',
                 self.start_time,
                 self.destination_address.is_ipv6(),
-            )
+            ),
+            error_string_prefix="Collecting socket stats",
         )
-
-    def print_error(self):
-        """
-        Method to print error from `self.err`
-        """
-        self.err.seek(0)  # rewind to start of file
-        error = self.err.read().decode()
-        ns_name = TopologyMap.get_namespace(self.ns_id)["name"]
-        self.logger.error("Collecting socket stats at %s. %s", ns_name, error)
 
     # pylint: disable=too-many-locals
     def parse(self):

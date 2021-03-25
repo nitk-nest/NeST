@@ -54,7 +54,7 @@ class NetperfRunner(Runner):
         "testname": "-t TCP_STREAM",        # Test type (NOTE: TCP_STREAM only for now)
         "fill_file": "-F /dev/urandom",     # File to transmit (NOTE: Inspired from flent)
         "testlen": "-l 10",                 # Length of test (NOTE: Default 10s)
-        "interval": "-D -0.2",              # Generated interim results every INTERVAL secs
+        "interval": "-D -0.2",              # Generate interim results every INTERVAL secs
         "debug": "-d",                      # Enable debug mode
     }
 
@@ -87,9 +87,8 @@ class NetperfRunner(Runner):
         **kwargs
             netperf options to override
         """
-        self.ns_id = ns_id
         self.options = copy.deepcopy(kwargs)
-        super().__init__(start_time, run_time, destination_ip)
+        super().__init__(ns_id, start_time, run_time, destination_ip)
 
     # Should this be placed somewhere else?
     @staticmethod
@@ -115,14 +114,15 @@ class NetperfRunner(Runner):
         test_options = None
 
         # Change the default run time
-        netperf_options["testlen"] = "-l {}".format(self.run_time)
+        netperf_options["testlen"] = f"-l {self.run_time}"
 
         # Set test
-        netperf_options["testname"] = "-t {}".format(self.options["testname"])
+        netperf_options["testname"] = f"-t {self.options['testname']}"
 
         if netperf_options["testname"] == "-t TCP_STREAM":
             test_options = copy.copy(NetperfRunner.netperf_tcp_options)
-            test_options["cong_alg"] = "-K {}".format(self.options["cong_algo"])
+            test_options["cong_alg"] = f"-K {self.options['cong_algo']}"
+
         elif netperf_options["testname"] == "-t UDP_STREAM":
             test_options = copy.copy(NetperfRunner.netperf_udp_options)
 
@@ -142,17 +142,9 @@ class NetperfRunner(Runner):
                 self.destination_address.get_addr(with_subnet=False),
                 test_options_string,
                 self.destination_address.is_ipv6(),
-            )
+            ),
+            error_string_prefix="Running netperf",
         )
-
-    def print_error(self):
-        """
-        Method to print error from `self.err`
-        """
-        self.err.seek(0)  # rewind to start of file
-        error = self.err.read().decode()
-        ns_name = TopologyMap.get_namespace(self.ns_id)["name"]
-        self.logger.error("Running netperf at %s. %s", ns_name, error)
 
     def parse(self):
         """

@@ -70,13 +70,11 @@ class TcRunner(Runner):
         run_time : num
             total time to run tc for
         """
-
-        self.ns_id = ns_id
         self.dev = dev
         self.qdisc = qdisc
 
         # Start parsing from 0s
-        super().__init__(0, run_time)
+        super().__init__(ns_id, 0, run_time)
 
         # Tc version check
         self.version_check()
@@ -117,19 +115,10 @@ class TcRunner(Runner):
         """
         Runs the tc iterator
         """
-
         super().run(
-            partial(run_tc, self.ns_id, TcRunner.iterator, self.dev, self.run_time)
+            partial(run_tc, self.ns_id, TcRunner.iterator, self.dev, self.run_time),
+            error_string_prefix="Collecting qdisc stats",
         )
-
-    def print_error(self):
-        """
-        Method to print error from `self.err`
-        """
-        self.err.seek(0)  # rewind to start of file
-        error = self.err.read().decode()
-        ns_name = TopologyMap.get_namespace(self.ns_id)["name"]
-        self.logger.error("Collecting qdisc stats at %s. %s", ns_name, error)
 
     def get_qdisc_specific_params(self):
         """

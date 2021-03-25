@@ -8,7 +8,6 @@ from time import sleep
 from functools import partial
 from .runnerbase import Runner
 from ..results import PingResults
-from ...topology_map import TopologyMap
 from ...engine.ping import run_exp_ping
 
 
@@ -35,7 +34,7 @@ class PingRunner(Runner):
         Parameters
         ----------
         ns_id : str
-            network namespace to run netperf from
+            network namespace to run ping from
         destination_ip : str
             IP address of the destination namespace
         start_time : num
@@ -43,8 +42,7 @@ class PingRunner(Runner):
         run_time : num
             total time to run netperf for
         """
-        self.ns_id = ns_id
-        super().__init__(start_time, run_time, destination_ip)
+        super().__init__(ns_id, start_time, run_time, destination_ip)
 
     # pylint: disable=arguments-differ
     def run(self):
@@ -61,17 +59,9 @@ class PingRunner(Runner):
                 self.destination_address.get_addr(with_subnet=False),
                 self.run_time,
                 self.destination_address.is_ipv6(),
-            )
+            ),
+            error_string_prefix="Collecting latency",
         )
-
-    def print_error(self):
-        """
-        Method to print error from `self.err`
-        """
-        self.err.seek(0)  # rewind to start of file
-        error = self.err.read().decode()
-        ns_name = TopologyMap.get_namespace(self.ns_id)["name"]
-        self.logger.error("Collecting latency at %s. %s", ns_name, error)
 
     def parse(self):
         """

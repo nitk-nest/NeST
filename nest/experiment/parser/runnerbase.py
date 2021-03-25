@@ -8,6 +8,7 @@ Base class for other runners
 import tempfile
 import logging
 from nest.topology import Address
+from nest.topology_map import TopologyMap
 
 
 class Runner:
@@ -28,7 +29,7 @@ class Runner:
         Address of the destination node for the runner
     """
 
-    def __init__(self, start_time, run_time, destination_ip="::1"):
+    def __init__(self, ns_id, start_time, run_time, destination_ip="::1"):
         """
         Parameters
         ----------
@@ -40,11 +41,12 @@ class Runner:
 
         self.logger = logging.getLogger(__name__)
 
-        self.destination_address = Address(destination_ip)
+        self.ns_id = ns_id
         self.start_time = start_time
         self.run_time = run_time
+        self.destination_address = Address(destination_ip)
 
-    def run(self, engine_func):
+    def run(self, engine_func, error_string_prefix="Error"):
         """
         executes the given engine function and prints error(if any)
 
@@ -55,14 +57,16 @@ class Runner:
         """
         return_code = engine_func(out=self.out, err=self.err)
         if return_code != 0:
-            self.print_error()
+            self.print_error(error_string_prefix)
 
-    def print_error(self):
+    def print_error(self, error_string_prefix):
         """
-        Method to print error from `self.err`.
-        Should be overridden by base class
+        Method to print error from `self.err`
         """
-        self.logger.error("Unknown error occurred")
+        self.err.seek(0)  # rewind to start of file
+        error = self.err.read().decode()
+        ns_name = TopologyMap.get_namespace(self.ns_id)["name"]
+        self.logger.error("%s at %s. %s", error_string_prefix, ns_name, error)
 
     def get_meta_item(self):
         """
