@@ -13,7 +13,7 @@ from .ip_link import *
 from .ip_mpls_route import *
 from .ip_netns import *
 from .ip_route import *
-from .iperf import *
+from .iperf3 import *
 from .ping import *
 from .setns import *
 from .sysctl import *

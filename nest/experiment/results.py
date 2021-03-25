@@ -157,6 +157,43 @@ class NetperfResults:
 
 
 # Shared variables to aggregate results
+iperf3_results_q = Manager().Queue()
+iperf3_results_q.put({})
+
+
+class Iperf3Results:
+    """This class aggregates the iperf3 stats from the entire experiment environment"""
+
+    @staticmethod
+    def add_result(ns_id, result):
+        """Adds the iperf3 stats parsed from a process to the shared `iperf3_results`
+
+        Parameters
+        ----------
+        ns_id : string
+            namespace id (internal name)
+        result : dict
+            parsed netperf stats
+        """
+        Results.add_result(iperf3_results_q, ns_id, result)
+
+    @staticmethod
+    def remove_all_results():
+        """Remove all results obtained from the experiment"""
+        Results.remove_all_results(iperf3_results_q)
+
+    @staticmethod
+    def get_results():
+        """Get results obtained in the experiment so far"""
+        return Results.get_results(iperf3_results_q)
+
+    @staticmethod
+    def output_to_file():
+        """Outputs the aggregated netperf stats to file"""
+        Results.output_to_file(iperf3_results_q, "iperf3")
+
+
+# Shared variables to aggregate results
 tc_results_q = Manager().Queue()
 tc_results_q.put({})
 

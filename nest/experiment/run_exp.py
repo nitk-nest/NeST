@@ -11,13 +11,15 @@ from nest.logging_helper import DuplicateFilter
 from nest import config
 from ..topology_map import TopologyMap
 from ..clean_up import kill_processes
+from ..engine.util import is_dependency_installed
 
 # Import results
-from .results import SsResults, NetperfResults, TcResults, PingResults
+from .results import SsResults, NetperfResults, Iperf3Results, TcResults, PingResults
 
 # Import parsers
 from .parser.ss import SsRunner
 from .parser.netperf import NetperfRunner
+from .parser.iperf3 import Iperf3Runner
 from .parser.tc import TcRunner
 from .parser.ping import PingRunner
 
@@ -26,10 +28,7 @@ from .plotter.ss import plot_ss
 from .plotter.netperf import plot_netperf
 from .plotter.tc import plot_tc
 from .plotter.ping import plot_ping
-from ..experiment.parser.iperf import IperfRunner
-from ..engine.util import is_dependency_installed
 
-logger = logging.getLogger(__name__)
 logger = logging.getLogger(__name__)
 if not any(isinstance(filter, DuplicateFilter) for filter in logger.filters):
     # Duplicate filter is added to avoid logging of same error
@@ -53,7 +52,7 @@ def run_experiment(exp):
         netperf=[], ss=[], tc=[], iperf3=[], ping=[]
     )  # Runner objects
 
-    # Keep track of all destination nodes [to ensure netperf and iperf
+    # Keep track of all destination nodes [to ensure netperf and iperf3
     # server is run at most once]
     destination_nodes = {"netperf": set(), "iperf3": set()}
 
@@ -189,13 +188,14 @@ def dump_json_ouputs():
     """
     SsResults.output_to_file()
     NetperfResults.output_to_file()
+    Iperf3Results.output_to_file()
     TcResults.output_to_file()
     PingResults.output_to_file()
 
 
 def setup_flow_workers(exp_runners):
     """
-    Setup flow generation and stats collection processes(netperf, ss, tc, iperf...)
+    Setup flow generation and stats collection processes(netperf, ss, tc, iperf3...)
 
     Parameters
     ----------
@@ -236,6 +236,9 @@ def setup_parser_workers(exp_runners):
 
     for netperf_runner in exp_runners.netperf:
         parsers.append(Process(target=netperf_runner.parse))
+
+    for iperf3_runner in exp_runners.iperf3:
+        parsers.append(Process(target=iperf3_runner.parse))
 
     for tc_runner in exp_runners.tc:
         parsers.append(Process(target=tc_runner.parse))
@@ -380,7 +383,7 @@ def setup_udp_flows(dependency, flow, ss_schedules, destination_nodes):
 
         # Run iperf3 server if not already run before on given dst_node
         if dst_ns not in destination_nodes:
-            IperfRunner.run_server(dst_ns)
+            Iperf3Runner.run_server(dst_ns)
 
         src_name = TopologyMap.get_namespace(src_ns)["name"]
         f_flow = "flow" if n_flows == 1 else "flows"
@@ -388,7 +391,7 @@ def setup_udp_flows(dependency, flow, ss_schedules, destination_nodes):
             "Running %s udp %s from %s to %s...", n_flows, f_flow, src_name, dst_addr
         )
 
-        runner_obj = IperfRunner(
+        runner_obj = Iperf3Runner(
             src_ns, dst_addr, options["target_bw"], n_flows, start_t, stop_t - start_t
         )
         iperf3_runners.append(runner_obj)

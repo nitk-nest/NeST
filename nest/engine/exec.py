@@ -78,10 +78,11 @@ def exec_exp_commands(
 
     Returns
     -------
-
-
+    int
+        Return code recieved after executing the command
     """
     proc = subprocess.Popen(shlex.split(cmd), stdout=stdout, stderr=stderr)
+    logger.trace(cmd)
     try:
         proc.communicate(timeout=timeout)
     except subprocess.TimeoutExpired:

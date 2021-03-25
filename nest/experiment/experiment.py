@@ -149,8 +149,9 @@ class Experiment:
         ----------
         flow : Flow
             Flow to be added to experiment
-        target_bw :
+        target_bandwidth :
             UDP bandwidth (in Mbits) (Default value = '1mbit')
+            This bandwidth limit is for each UDP stream in the flow
         """
         if len(target_bandwidth) < 4 or target_bandwidth[-4:] != "mbit":
             raise Exception(

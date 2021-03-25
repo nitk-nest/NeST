@@ -8,12 +8,15 @@ and collect throughput data
 
 import re
 import copy
+import logging
 from time import sleep
 from functools import partial
 from ..results import NetperfResults
 from .runnerbase import Runner
 from ...topology_map import TopologyMap
 from ...engine.netperf import run_netperf, run_netserver
+
+logger = logging.getLogger(__name__)
 
 
 class NetperfRunner(Runner):
@@ -104,7 +107,7 @@ class NetperfRunner(Runner):
         return_code = run_netserver(ns_id)
         if return_code != 0:
             ns_name = TopologyMap.get_namespace(ns_id)["name"]
-            print("Error running netserver at {}.".format(ns_name))
+            logger.error("Error running netserver at %s.", ns_name)
 
     def run(self):
         """
