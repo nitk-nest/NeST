@@ -54,7 +54,7 @@ class NetperfRunner(Runner):
         "testname": "-t TCP_STREAM",        # Test type (NOTE: TCP_STREAM only for now)
         "fill_file": "-F /dev/urandom",     # File to transmit (NOTE: Inspired from flent)
         "testlen": "-l 10",                 # Length of test (NOTE: Default 10s)
-        "intervel": "-D -0.2",              # Generated interim results every INTERVAL secs
+        "interval": "-D -0.2",              # Generated interim results every INTERVAL secs
         "debug": "-d",                      # Enable debug mode
     }
 
@@ -183,7 +183,9 @@ class NetperfRunner(Runner):
         # First item as "meta" item with user given information
         stats_list = [self.get_meta_item()]
 
-        for i in range(len(throughputs)):
+        # Trim last result, since netperf typically gives unrealisticly high throughput
+        # towards the end
+        for i in range(len(throughputs) - 1):
             stats_list.append(
                 {
                     "timestamp": timestamps[i],
