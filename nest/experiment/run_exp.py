@@ -26,6 +26,7 @@ from .parser.ping import PingRunner
 # Import plotters
 from .plotter.ss import plot_ss
 from .plotter.netperf import plot_netperf
+from .plotter.iperf3 import plot_iperf3
 from .plotter.tc import plot_tc
 from .plotter.ping import plot_ping
 
@@ -176,6 +177,7 @@ def setup_plotter_workers():
 
     plotters.append(Process(target=plot_ss, args=(SsResults.get_results(),)))
     plotters.append(Process(target=plot_netperf, args=(NetperfResults.get_results(),)))
+    plotters.append(Process(target=plot_iperf3, args=(Iperf3Results.get_results(),)))
     plotters.append(Process(target=plot_tc, args=(TcResults.get_results(),)))
     plotters.append(Process(target=plot_ping, args=(PingResults.get_results(),)))
 
