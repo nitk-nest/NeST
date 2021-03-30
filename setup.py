@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
-from setuptools import setup, find_packages
 import pathlib
+import sys
+from setuptools import setup, find_packages
 
 here = pathlib.Path(__file__).parent.resolve()
 
@@ -13,6 +14,11 @@ with open("nest/version.py") as fp:
 
 # Get the long description from the README file
 long_description = (here / "README.md").read_text(encoding="utf-8")
+
+# Check for pip versions below 9.0.0
+
+if sys.version_info < (3, 6) or sys.version_info >= (4, 0):
+    raise RuntimeError("This package requires Python version >=3.6 and <4")
 
 setup(
     name="nitk-nest",
