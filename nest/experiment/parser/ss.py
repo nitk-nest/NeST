@@ -74,7 +74,15 @@ class SsRunner(Runner):
                 SsRunner.iterator,
                 self.destination_address.get_addr(with_subnet=False),
                 self.run_time,
-                '"dport != 12865 and sport != 12865"',
+                # The below argument is an ss filter. This comment explains what
+                # this filter is doing:
+                # * Ignore netperf and iperf3 tcp control connections respectively
+                # * Destination port of netperf control connection is 12865
+                # * Destination port of iperf3  control connection is 5201
+                # * We also have "sport" (source port) in the below condition since
+                #   there can be another flow in the reverse direction whose control
+                #   connection also we must ignore.
+                '"sport != 12865 and dport != 12865 and sport != 5201 and dport != 5201"',
                 self.start_time,
                 self.destination_address.is_ipv6(),
             ),

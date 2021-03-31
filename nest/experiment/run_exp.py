@@ -103,7 +103,7 @@ def run_experiment(exp):
 
         elif options["protocol"] == "UDP":
             udp_runners = setup_udp_flows(
-                dependencies["iperf3"], flow, ss_schedules, destination_nodes["iperf3"]
+                dependencies["iperf3"], flow, destination_nodes["iperf3"]
             )
 
             exp_runners.iperf3.extend(udp_runners)
@@ -344,7 +344,7 @@ def setup_tcp_flows(dependency, flow, ss_schedules, destination_nodes):
     return netperf_runners, ss_schedules
 
 
-def setup_udp_flows(dependency, flow, ss_schedules, destination_nodes):
+def setup_udp_flows(dependency, flow, destination_nodes):
     """
     Setup iperf3 to run udp flows
 
@@ -354,8 +354,6 @@ def setup_udp_flows(dependency, flow, ss_schedules, destination_nodes):
         whether iperf3 is installed
     flow: Flow
         Flow parameters
-    ss_schedules:
-        ss_schedules so far
     destination_nodes:
         Destination nodes so far already running iperf3 server
 
@@ -397,11 +395,6 @@ def setup_udp_flows(dependency, flow, ss_schedules, destination_nodes):
             src_ns, dst_addr, options["target_bw"], n_flows, start_t, stop_t - start_t
         )
         iperf3_runners.append(runner_obj)
-
-        # Find the start time and stop time to run ss command in `src_ns` to a `dst_addr`
-        ss_schedules = _get_start_stop_time_for_ss(
-            src_ns, dst_addr, start_t, stop_t, ss_schedules
-        )
 
     return iperf3_runners
 
