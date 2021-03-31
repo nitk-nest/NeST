@@ -23,6 +23,11 @@ from .logging_helper import add_logging_level, get_trace_filehandler
 from .user import User
 from . import config
 
+# Set high logging level so that logs aren't printed
+# if user is not running as root
+nest_logger = logging.getLogger(__name__)
+nest_logger.setLevel(logging.CRITICAL)
+
 if os.geteuid() != 0:
     print("nest: python package requires root access", file=sys.stderr)
     sys.exit(1)
@@ -44,7 +49,6 @@ log_level = config.get_value("log_level")
 # Logging level TRACE is used to output all the commands executed by engine to a file
 add_logging_level("TRACE", logging.DEBUG - 1, "trace")
 
-nest_logger = logging.getLogger(__name__)
 nest_logger.setLevel(log_level)
 ch = logging.StreamHandler()  # Logger output will be output to stderr
 ch.setLevel(log_level)

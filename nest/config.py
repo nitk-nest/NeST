@@ -106,7 +106,7 @@ def get_value(parameter):
 
     # If it belonged to none of them
     logger.error("The given parameter %s does not exist", parameter)
-    return "The given parameter %s does not exist"
+    return None
 
 
 def import_custom_config(path):
