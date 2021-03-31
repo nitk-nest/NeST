@@ -43,6 +43,7 @@ using **NeST**.
 
    user/install
    user/tutorial
+   user/config
 
 .. toctree::
    :caption: Developer Guide
