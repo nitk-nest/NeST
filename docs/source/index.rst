@@ -45,6 +45,13 @@ using **NeST**.
    user/tutorial
 
 .. toctree::
+   :caption: Developer Guide
+   :maxdepth: 2
+
+   developer/introduction
+   developer/architecture
+
+.. toctree::
    :caption: API Guide
    :maxdepth: 2
 
