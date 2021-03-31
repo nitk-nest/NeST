@@ -32,6 +32,7 @@ def import_default_config():
 
     __DEFAULT_VALUE = data
 
+
 def set_value(parameter, value):
     """
     Changes the default values only for that program
@@ -130,3 +131,17 @@ def import_custom_config(path):
                 __DEFAULT_VALUE[parameter] = data[parameter]
         else:
             logger.error("The given parameter %s does not exist", parameter)
+
+
+def search_config_files():
+    """
+    Searches a few predifined locations for a config files
+    """
+
+    # The ones called later, might overwrite the previous calls
+    if os.path.isfile(os.path.abspath("/etc/nest-config.json")):
+        import_custom_config(os.path.abspath("/etc/nest-config.json"))
+    if os.path.isfile(os.path.abspath("~/.nest-config.json")):
+        import_custom_config(os.path.abspath("~/.nest-config.json"))
+    if os.path.isfile(os.path.abspath(os.getcwd() + "/nest-config.json")):
+        import_custom_config(os.path.abspath(os.getcwd() + "/nest-config.json"))
