@@ -11,6 +11,8 @@ NeST was accepted at [ANRW'20](https://irtf.org/anrw/2020/).
 
 `NeST` source code repository is maintained at [GitLab](https://gitlab.com/nitk-nest/nest).
 
+**NOTE**: NeST is currently in beta stage.
+
 ## Installation
 
 Instructions to install `NeST` can be found in
