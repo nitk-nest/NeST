@@ -26,7 +26,7 @@ if os.geteuid() != 0:
     sys.exit(1)
 
 # Load default config values
-config.default_value = config.import_default_config()
+config.import_default_config()
 
 # Store user information for later use
 if all(key in os.environ for key in ("SUDO_UID", "SUDO_GID")):
