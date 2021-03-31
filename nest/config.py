@@ -6,6 +6,7 @@
 import os
 import json
 import logging
+from nest.logging_helper import update_nest_logger
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +57,26 @@ def set_value(parameter, value):
         __DEFAULT_VALUE[parameter] = value
     else:
         logger.error("The given parameter %s does not exist", parameter)
+        return
+
+    _post_set_value(parameter, value)
+
+
+def _post_set_value(parameter, value):
+    """
+    Called after setting a config value. Used for executing
+    parameter specific code.
+
+    Attributes
+    ----------
+    parameter: str
+        The parameter's value which has to be changed
+    value: str
+        The value to which the parameter has to be changed to
+    """
+
+    if parameter == "log_level":
+        update_nest_logger(value)
 
 
 def get_value(parameter):

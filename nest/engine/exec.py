@@ -7,16 +7,8 @@ import logging
 import shlex
 import subprocess
 
-from nest import config
 
 logger = logging.getLogger(__name__)
-# pylint: disable=no-member
-if config.get_value("log_level") == "TRACE":
-    fh = logging.FileHandler("commands.sh", "w")
-    fh.setLevel(logging.TRACE)
-    formatter = logging.Formatter("%(message)s")
-    fh.setFormatter(formatter)
-    logger.addHandler(fh)
 
 # pylint: disable=inconsistent-return-statements
 def exec_subprocess(cmd, shell=False, output=False):

@@ -19,7 +19,7 @@ import sys
 import signal
 
 from nest import clean_up
-from .logging_helper import add_logging_level
+from .logging_helper import add_logging_level, get_trace_filehandler
 from .user import User
 from . import config
 
@@ -44,16 +44,21 @@ log_level = config.get_value("log_level")
 # Logging level TRACE is used to output all the commands executed by engine to a file
 add_logging_level("TRACE", logging.DEBUG - 1, "trace")
 
-logger = logging.getLogger(__name__)
-logger.setLevel(log_level)
+nest_logger = logging.getLogger(__name__)
+nest_logger.setLevel(log_level)
 ch = logging.StreamHandler()  # Logger output will be output to stderr
-if log_level == "TRACE":
-    ch.setLevel(logging.DEBUG)  # To avoid engine commands to be printed on stdout
-else:
-    ch.setLevel(log_level)
-logger.addHandler(ch)
+ch.setLevel(log_level)
 formatter = logging.Formatter("[%(levelname)s] : %(message)s")
 ch.setFormatter(formatter)
+
+# pylint: disable=no-member
+ch.addFilter(
+    lambda record: record.levelno != logging.TRACE
+)  # To avoid engine commands to be printed to stdout
+nest_logger.addHandler(ch)
+
+if log_level == "TRACE":
+    nest_logger.addHandler(get_trace_filehandler())
 
 # On recieving Termination signal, execute the given function
 signal.signal(signal.SIGTERM, clean_up.delete_namespaces)

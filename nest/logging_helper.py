@@ -55,6 +55,44 @@ def add_logging_level(level_name, level_num, method_name=None):
     setattr(logging, method_name, log_to_root)
 
 
+def get_trace_filehandler():
+    """
+    Creates and returns a file handler for logging engine commands
+    """
+    filehandler = logging.FileHandler("commands.sh", "w")
+    # pylint: disable=no-member
+    filehandler.setLevel(logging.TRACE)
+    formatter = logging.Formatter("%(message)s")
+    filehandler.setFormatter(formatter)
+    filehandler.addFilter(lambda record: record.levelno == logging.TRACE)
+
+    return filehandler
+
+
+def update_nest_logger(level):
+    """
+    Update top logger when log level is updated via config
+
+    Parameters
+    ----------
+    level: str
+        log level from config
+    """
+    nest_logger = logging.getLogger(
+        __name__.split(".")[0]
+    )  # get the root's child logger
+    nest_logger.setLevel(level)  # Update logger level
+    # Update handler level
+    nest_handler = nest_logger.handlers[0]
+    nest_handler.setLevel(level)
+    # pylint: disable=no-member
+    if level == "TRACE" and not any(
+        handler.level == logging.TRACE and handler is logging.FileHandler
+        for handler in nest_logger.handlers
+    ):  # Avoid adding multiple trace filehandlers
+        nest_logger.addHandler(get_trace_filehandler())
+
+
 # pylint: disable=too-few-public-methods
 class DuplicateFilter(logging.Filter):
     """
