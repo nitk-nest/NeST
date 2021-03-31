@@ -46,7 +46,8 @@ Next, let's create the two nodes, ``n1`` and ``n2``::
 ``Node`` is a class defined in NeST which emulates a node internally.  Note that
 ``Node`` takes a string parameter, representing the node name.  This will be
 needed later while using the experiment module.  (Internally, ``Node`` uses
-network namespaces for emulation).
+network namespaces for emulation. Refer :ref:`Introduction to Developer Docs`
+to know more).
 
 Now that two nodes are created, let's connect them using "virtual ethernet
 cables" (veth pairs)::
