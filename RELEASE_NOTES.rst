@@ -3,6 +3,38 @@ NeST RELEASE NOTES
 
 This file contains NeST release notes (most recent release first).
 
+Release 0.3 (April 1, 2021)
+===========================
+
+If available, the numbers below mark the issue numbers on GitLab (prefixed by '#'),
+or GitLab merge request number (prefixed by '!').
+
+New user-visible features
+-------------------------
+- !49: Added FRR routing suite option
+- !59, !64, !86: Added IPv6 support
+- !60: Added MPLS support with static routing
+- !78: Added support for Ldp dynamic routing protocol using frrouting
+- !65: Added packet corruption and packet loss features
+- !61: Added support for running command "inside" a node
+- !79: Added support for quagga and frr logs in nest
+- !63: Added User and Developer Guide in Documentation.
+- !93: Completed support for UDP (Iperf3 flows are parsed and plotted)
+- !96: Added support for config files
+
+Bugs fixed
+----------
+- !44, !48: Loopback set up
+- !47: Importing multiple config for multiple modules through a file made possible
+- !51: Errors messages added for long interface names
+- !92: Fixed logging error in config
+- !94: Check python version in old pip version
+- !100: Added log level "TRACE" to trace the iproute2 commands run.
+- !91: Cleanup executed on exit from python IDE.
+- !88: Fixed incorrect implementation of start and stop time of netperf flows.
+- !82: Fixed bug in isis config file creation.
+
+
 Release 0.2.1 (Dec 13, 2020)
 ============================
 
