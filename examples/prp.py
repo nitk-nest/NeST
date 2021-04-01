@@ -55,7 +55,7 @@ exp = Experiment("tcp+udp")
 # One of the flows added is udp and the other is
 # tcp and an optional arguement of target bandwidth
 # is given to the udp flow
-exp.add_udp_flow(flow_udp, target_bandwidth="100mbit")
+exp.add_udp_flow(flow_udp, target_bandwidth="2mbit")
 exp.add_tcp_flow(flow)
 exp.require_qdisc_stats(r_n2)
 exp.run()
