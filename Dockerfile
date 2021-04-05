@@ -1,6 +1,6 @@
 # Dockerfile to build image with dependecies required for testing nest on CI.
 
-FROM ubuntu:20.04
+FROM ubuntu:20.04@sha256:5403064f94b617f7975a19ba4d1a1299fd584397f6ee4393d0e16744ed11aab1
 
 # Use bash by default instead of sh
 SHELL ["/bin/bash", "-c"]
