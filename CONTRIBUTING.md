@@ -46,8 +46,8 @@ To contribute to NeST,
 * Make sure the code follows the  [Styleguides](#styleguides)
 * Run all the [tests](./README.md#unit-tests) and add unit tests if necessary
 * Push the commits to the relevant branch
-* Ensure that the code passes the pipeline
 * Make a [merge request](https://gitlab.com/nitk-nest/nest/-/merge_requests/new)
+* Ensure that the code passes the pipeline (See note below)
 
 #### NOTE on Merge Request Pipelines
 
@@ -151,8 +151,9 @@ plotter: Fix typo in ss.py
 
 <Description>
 
-Signed-off-by: name <email>
+Signed-off-by: Random J Developer <random@developer.example.org>
 ```
 
 The "Signed-off-by" line is added automatically by using the signoff flag while commiting:
-`git commit --signoff` or `git commit -s`.
+`git commit --signoff` or `git commit -s`. Note that a real name is used in the above
+Signed-off-by line. We request you to do the same.
