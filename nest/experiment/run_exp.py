@@ -146,8 +146,10 @@ def run_experiment(exp):
         logger.info("Plotting complete!")
 
     if config.get_value("readme_in_stats_folder"):
-        content = get_readme_content()
-        Pack.dump_file("README.txt", content)
+        # Copying README.txt to stats folder
+        relative_path = os.path.join("info", "README.txt")
+        readme_path = os.path.join(os.path.dirname(__file__), relative_path)
+        Pack.copy_files(readme_path)
 
     cleanup()
 
@@ -541,15 +543,3 @@ def _get_start_stop_time_for_ss(src_ns, dst_addr, start_t, stop_t, ss_schedules)
         )
 
     return ss_schedules
-
-
-def get_readme_content():
-    """
-    Return the content present in data/info.txt file
-    """
-
-    relative_path = os.path.join("info", "README.txt")
-    readme_path = os.path.join(os.path.dirname(__file__), relative_path)
-    with open(readme_path, "r") as file:
-        content = file.read()
-    return content
