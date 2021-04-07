@@ -32,12 +32,9 @@ emulating real-world networks. Here is a small *peak* into the APIs NeST provide
 
 NeST is officially supported for Python 3.6+.
 
-------------------------------------------------------------------------
-
-This below section contains step-by-step information to get started with
-using **NeST**.
 
 .. toctree::
+   :hidden:
    :caption: User Guide
    :maxdepth: 2
 
@@ -46,6 +43,7 @@ using **NeST**.
    user/config
 
 .. toctree::
+   :hidden:
    :caption: Developer Guide
    :maxdepth: 2
 
@@ -53,6 +51,7 @@ using **NeST**.
    developer/architecture
 
 .. toctree::
+   :hidden:
    :caption: API Guide
    :maxdepth: 2
 
