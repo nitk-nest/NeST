@@ -65,15 +65,20 @@ run unit tests:
       - quagga-logs*/
       - frr-logs*/
 
-test docs:
+pages:
   image: $CONTAINER_TEST_IMAGE
   stage: test
   script:
+    - pip install .
     - pip install -r docs/doc_requirements.txt
-    - make -C docs html
+    - make -C docs multiversion
+    - cp -r docs/build/html public
   rules:
     - changes:
         - docs/*
+  artifacts:
+    paths:
+      - public
 
 upload to PyPI:
   image: $CONTAINER_TEST_IMAGE

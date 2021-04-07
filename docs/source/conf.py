@@ -54,6 +54,9 @@ html_sidebars = {
 }
 
 # Options for sphinx multiversion
+# Check https://holzhaus.github.io/sphinx-multiversion/master/configuration.html#
+# to know more about the below options
 
 smv_tag_whitelist = r"^.*$"
+smv_remote_whitelist = r"^(origin)$"
 smv_branch_whitelist = r"$^"  # No branch should be added
