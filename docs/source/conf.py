@@ -1,11 +1,10 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2020 NITK Surathkal
+# Copyright (c) 2019-2021 NITK Surathkal
 
 # Path setup
 
 import os
 import sys
-import sphinx_rtd_theme
 
 sys.path.insert(0, os.path.abspath("../"))
 
@@ -27,12 +26,34 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosectionlabel",
     "sphinx.ext.napoleon",
-    "sphinx_rtd_theme",
+    "sphinx_multiversion",
 ]
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # Options for HTML output
 
-html_theme = "sphinx_rtd_theme"
+html_theme = "furo"
+
 html_static_path = ["_static"]
+
+html_css_files = [
+    "css/versions.css",
+]
+
+html_sidebars = {
+    "**": [
+        "sidebar/brand.html",
+        "sidebar/search.html",
+        "sidebar/scroll-start.html",
+        "sidebar/navigation.html",
+        "sidebar/ethical-ads.html",
+        "sidebar/scroll-end.html",
+        "sidebar/versions.html",
+    ]
+}
+
+# Options for sphinx multiversion
+
+smv_tag_whitelist = r"^.*$"
+smv_branch_whitelist = r"$^"  # No branch should be added
