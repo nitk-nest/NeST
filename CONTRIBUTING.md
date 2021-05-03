@@ -30,7 +30,7 @@ To report a bug in NeST, do the following
 
 ### Suggesting Enhancements
 
-To suggest an enhancement, you can do the following
+To suggest an enhancement (i.e., new feature), you can do the following
 
 * Check if the enhancement is already suggested
 [here](https://gitlab.com/nitk-nest/nest/-/issues?scope=all&utf8=%E2%9C%93&state=opened&label_name[]=enhancement)
@@ -38,6 +38,28 @@ To suggest an enhancement, you can do the following
 * Add the label 'enhancement'
 
 ### Code Contribution
+
+Code contributions can be in the form of resolving bugs or implementing new
+features.
+
+Before contributing code, go over the [issues](https://gitlab.com/nitk-nest/nest/-/issues)
+on GitLab. If there is already an open issue that is similar to your idea, then
+you can leave a comment in the issue mentioning your interest in resolving it.
+One of the Developers will reply back to you in the issue, informing you
+of all the necessary details. Feel free to ask any specific doubts you might have
+in the issue.
+
+If no issue is present on GitLab for your idea, then we recommend you to create
+an issue for the same and then mention that you would like to work on resolving
+it. This is to ensure that no one else works on the same issue, leading to
+unnecessary conflicts. A less favored approach would be to directly create an MR
+with your code changes. This is fine only if your code changes are very minor (for eg.,
+fixing a typo, changing couple of lines in a file, etc).
+
+We recommend new contributors to go over issues with label "good first issue"
+([link](https://gitlab.com/nitk-nest/nest/-/issues?label_name%5B%5D=good+first+issue)).
+These are relatively easy issues that can help a new contributor to get started with
+contributing to NeST.
 
 To contribute to NeST,
 
@@ -51,7 +73,7 @@ To contribute to NeST,
 
 #### NOTE on Merge Request Pipelines
 
-For new contributors, most likely the Pipelines won't get succesfully triggered.
+For new contributors, most likely the Pipelines won't get successfully triggered.
 You will observe that the pipeline is "stuck" and it won't run any checks on your MR.
 
 This is intentional. The pipelines run on private VMs owned by us, and we
@@ -70,7 +92,7 @@ when merging the MR.
 
 ## Styleguides
 
-We highly recommened installing the following tools and setting up git
+We highly recommend installing the following tools and setting up git
 hooks as shown below (the below commands should be run inside NeST repo):
 
 ```sh
@@ -82,7 +104,7 @@ $ gitlint install-hook
 This will help in catching simple violations in code standards early and
 lead to smoother code reviews.
 
-Below, we specifiy in detail about certain standards we maintain in the repo:
+Below, we specify in detail about certain standards we maintain in the repo:
 
 ### Code Style
 
@@ -94,7 +116,7 @@ using the ```# fmt: on\off``` (as mentioned in black's documentation) comment in
 
 In addition, we use [pylint](https://www.pylint.org/) for
 checking for some trivial syntax errors, common mistakes and compliance with
-[PEP-8 coding sytle](https://www.python.org/dev/peps/pep-0008/) (with some exceptions).
+[PEP-8 coding style](https://www.python.org/dev/peps/pep-0008/) (with some exceptions).
 The exceptions are commented inline in code as:
 
 ```python
@@ -113,7 +135,7 @@ The CI pipeline will fail if the code doesn't confirm to black formatting
 or get a score of 10/10 in pylint.
 
 **NOTE**: If you have installed the pre-commit hook, then there is no need to
-run black and pylint seperately. It will automatically be run just before you commit
+run black and pylint separately. It will automatically be run just before you commit
 your changes.
 
 ### Documentation Style
@@ -143,7 +165,7 @@ just as [git](https://git-scm.com/docs/SubmittingPatches#describe-changes) follo
 The commit title (1st line) is maintained to lesser than 50 characters
 long and the commit body (rest of it) can be upto 72 characters long per line
 with a newline between the commit title and body.
-Often, this path is shortened for brewity. An example commit message for fixing
+Often, this path is shortened for brevity. An example commit message for fixing
 a typo in `nest/experiment/plotter/ss.py` would be:
 
 ```git
@@ -154,6 +176,6 @@ plotter: Fix typo in ss.py
 Signed-off-by: Random J Developer <random@developer.example.org>
 ```
 
-The "Signed-off-by" line is added automatically by using the signoff flag while commiting:
+The "Signed-off-by" line is added automatically by using the sign-off flag while committing:
 `git commit --signoff` or `git commit -s`. Note that a real name is used in the above
 Signed-off-by line. We request you to do the same.
