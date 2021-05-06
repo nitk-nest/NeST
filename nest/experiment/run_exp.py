@@ -68,6 +68,9 @@ def run_experiment(exp):
 
     dependencies = get_dependency_status(tools)
 
+    ss_required = False
+    ss_filters = set()
+
     # Traffic generation
     for flow in exp.flows:
         # Get flow attributes
@@ -91,6 +94,13 @@ def run_experiment(exp):
 
         # Setup TCP/UDP flows
         if options["protocol"] == "TCP":
+            # * Ignore netperf tcp control connections
+            # * Destination port of netperf control connection is 12865
+            # * We also have "sport" (source port) in the below condition since
+            #   there can be another flow in the reverse direction whose control
+            #   connection also we must ignore.
+            ss_filters.add("sport != 12865 and dport != 12865")
+            ss_required = True
             (tcp_runners, ss_schedules,) = setup_tcp_flows(
                 dependencies["netperf"],
                 flow,
@@ -104,6 +114,12 @@ def run_experiment(exp):
             destination_nodes["netperf"].add(dst_ns)
 
         elif options["protocol"] == "UDP":
+            # * Ignore iperf3 tcp control connections
+            # * Destination port of iperf3  control connection is 5201
+            # * We also have "sport" (source port) in the below condition since
+            #   there can be another flow in the reverse direction whose control
+            #   connection also we must ignore.
+            ss_filters.add("sport != 5201 and dport != 5201")
             udp_runners = setup_udp_flows(
                 dependencies["iperf3"], flow, destination_nodes["iperf3"]
             )
@@ -113,12 +129,13 @@ def run_experiment(exp):
             # Update destination nodes
             destination_nodes["iperf3"].add(dst_ns)
 
-    if dependencies["netperf"]:
-        ss_runners = setup_ss_runners(dependencies["ss"], ss_schedules)
+    if ss_required:
+        ss_filter = " and ".join(ss_filters)
+        ss_runners = setup_ss_runners(dependencies["ss"], ss_schedules, ss_filter)
         exp_runners.ss.extend(ss_runners)
 
-        tc_runners = setup_tc_runners(dependencies["tc"], exp.qdisc_stats, exp_end_t)
-        exp_runners.tc.extend(tc_runners)
+    tc_runners = setup_tc_runners(dependencies["tc"], exp.qdisc_stats, exp_end_t)
+    exp_runners.tc.extend(tc_runners)
 
     ping_runners = setup_ping_runners(dependencies["ping"], ping_schedules)
     exp_runners.ping.extend(ping_runners)
@@ -407,7 +424,7 @@ def setup_udp_flows(dependency, flow, destination_nodes):
     return iperf3_runners
 
 
-def setup_ss_runners(dependency, ss_schedules):
+def setup_ss_runners(dependency, ss_schedules, ss_filter):
     """
     setup SsRunners for collecting tcp socket statistics
 
@@ -429,7 +446,11 @@ def setup_ss_runners(dependency, ss_schedules):
         logger.info("Running ss on nodes...")
         for ns_id, timings in ss_schedules.items():
             ss_runner = SsRunner(
-                ns_id[0], ns_id[1], timings[0], timings[1] - timings[0]
+                ns_id[0],
+                ns_id[1],
+                timings[0],
+                timings[1] - timings[0],
+                ss_filter=ss_filter,
             )
             runners.append(ss_runner)
     else:

@@ -45,7 +45,8 @@ class SsRunner(Runner):
         "pacing_rate",
     ]
 
-    def __init__(self, ns_id, destination_ip, start_time, run_time):
+    # pylint: disable=too-many-arguments
+    def __init__(self, ns_id, destination_ip, start_time, run_time, ss_filter=""):
         """
         Constructor to initialize ss runner
 
@@ -59,7 +60,10 @@ class SsRunner(Runner):
             time at which ss is to be run
         run_time : num
             total time to run ss for
+        ss_filter : str
+            to filter output from specific connections.
         """
+        self.filter = ss_filter
         super().__init__(ns_id, start_time, run_time, destination_ip)
 
     def run(self):
@@ -74,15 +78,7 @@ class SsRunner(Runner):
                 SsRunner.iterator,
                 self.destination_address.get_addr(with_subnet=False),
                 self.run_time,
-                # The below argument is an ss filter. This comment explains what
-                # this filter is doing:
-                # * Ignore netperf and iperf3 tcp control connections respectively
-                # * Destination port of netperf control connection is 12865
-                # * Destination port of iperf3  control connection is 5201
-                # * We also have "sport" (source port) in the below condition since
-                #   there can be another flow in the reverse direction whose control
-                #   connection also we must ignore.
-                '"sport != 12865 and dport != 12865 and sport != 5201 and dport != 5201"',
+                f'"{self.filter}"',
                 self.start_time,
                 self.destination_address.is_ipv6(),
             ),
