@@ -179,3 +179,10 @@ Signed-off-by: Random J Developer <random@developer.example.org>
 The "Signed-off-by" line is added automatically by using the sign-off flag while committing:
 `git commit --signoff` or `git commit -s`. Note that a real name is used in the above
 Signed-off-by line. We request you to do the same.
+
+**NOTE**: To setup your name and email in git, run:
+```
+$ git config --global user.name <your-name>
+$ git config --global user.email <your-email>
+```
+The above given name and email will be used in the signoff line.

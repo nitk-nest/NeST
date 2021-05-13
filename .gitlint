@@ -1,5 +1,6 @@
 [general]
 ignore=title-trailing-punctuation, body-min-length, body-is-missing, body-trailing-whitespace
+contrib=contrib-body-requires-signed-off-by
 
 [title-max-length]
 line-length=50
