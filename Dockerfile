@@ -17,9 +17,8 @@ RUN apt -y install iputils-ping
 
 # Install python
 RUN apt install -y python3 python3-pip python3-venv
-# Sym links for python and pip
-RUN ln -s /usr/bin/python3 /usr/bin/python && \
-    ln -s /usr/bin/pip3 /usr/bin/pip
+# Sym link for python
+RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # Setup python virtual env
 RUN python -m venv venv
