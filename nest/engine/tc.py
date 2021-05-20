@@ -32,20 +32,20 @@ def add_traffic_control(host_name, dev_name, rate, latency):
 
 def add_qdisc(ns_name, dev_name, qdisc, parent="", handle="", **kwargs):
     """
-    Add a qdisc on an interface
+    Add a qdisc on an device
 
     Parameters
     ----------
     ns_name : str
         name of the namespace
     qdisc : str
-        qdisc used on the interface
+        qdisc used on the device
     parent : str
         id of the parent class in major:minor form(optional) (Default value = '')
     handle : str
         id of the qdisc in major:0 form (Default value = '')
     dev_name : str
-        name of the interface
+        name of the device
     """
     if parent and parent != "root":
         parent = "parent " + parent
@@ -65,20 +65,20 @@ def add_qdisc(ns_name, dev_name, qdisc, parent="", handle="", **kwargs):
 
 def change_qdisc(ns_name, dev_name, qdisc, parent="", handle="", **kwargs):
     """
-    Change a qdisc that is already present on an interface
+    Change a qdisc that is already present on an device
 
     Parameters
     ----------
     ns_name : str
         name of the namespace
     qdisc : str
-        qdisc used on the interface
+        qdisc used on the device
     parent : str
         id of the parent class in major:minor form(optional) (Default value = '')
     handle : str
         id of the qdisc in major:0 form (Default value = '')
     dev_name : str
-        name of the interface
+        name of the device
     """
     if parent and parent != "root":
         parent = "parent " + parent
@@ -98,20 +98,20 @@ def change_qdisc(ns_name, dev_name, qdisc, parent="", handle="", **kwargs):
 
 def replace_qdisc(ns_name, dev_name, qdisc, parent="", handle="", **kwargs):
     """
-    Replace a qdisc that is already present on an interface
+    Replace a qdisc that is already present on an device
 
     Parameters
     ----------
     ns_name : str
         name of the namespace
     qdisc : str
-        qdisc used on the interface
+        qdisc used on the device
     parent : str
         id of the parent class in major:minor form(optional) (Default value = '')
     handle : str
         id of the qdisc in major:0 form (Default value = '')
     dev_name : str
-        name of the interface
+        name of the device
     """
     if parent and parent != "root":
         parent = "parent " + parent
@@ -129,22 +129,22 @@ def replace_qdisc(ns_name, dev_name, qdisc, parent="", handle="", **kwargs):
     )
 
 
-def delete_qdisc(ns_name, dev_name, parent="", handle=""):
+def delete_qdisc(ns_name, dev_name, parent, handle):
     """
-    Add a qdisc on an interface
+    Delete a qdisc on an device
 
     Parameters
     ----------
     ns_name : str
         name of the namespace
     qdisc : str
-        qdisc used on the interface
+        qdisc used on the device
     parent : str
         id of the parent class in major:minor form(optional) (Default value = '')
     handle : str
         id of the qdisc in major:0 form (Default value = '')
     dev_name : str
-        name of the interface
+        name of the device
     """
     if parent and parent != "root":
         parent = "parent " + parent
@@ -166,11 +166,11 @@ def add_class(ns_name, dev_name, parent, qdisc, classid="", **kwargs):
     parent : str
         id of the parent class in major:minor form(optional)
     qdisc : str
-        qdisc used on the interface
+        qdisc used on the device
     classid : str
         id of the class in major:minor form (Default value = '')
     dev_name : str
-        name of the interface
+        name of the device
     """
     if classid:
         classid = "classid " + classid
@@ -187,7 +187,7 @@ def add_class(ns_name, dev_name, parent, qdisc, classid="", **kwargs):
 
 def change_class(ns_name, dev_name, parent, qdisc, classid="", **kwargs):
     """
-    Change a class that is already present on an interface
+    Change a class that is already present on an device
 
     Parameters
     ----------
@@ -196,11 +196,11 @@ def change_class(ns_name, dev_name, parent, qdisc, classid="", **kwargs):
     parent : str
         id of the parent class in major:minor form(optional)
     qdisc : str
-        qdisc used on the interface
+        qdisc used on the device
     classid : str
         id of the class in major:minor form (Default value = '')
     dev_name : str
-        name of the interface
+        name of the device
     """
 
     if classid:
@@ -213,6 +213,29 @@ def change_class(ns_name, dev_name, parent, qdisc, classid="", **kwargs):
     exec_subprocess(
         f"tc -n {ns_name} class change dev {dev_name} parent {parent}"
         f" {classid} {qdisc} {qdisc_params}"
+    )
+
+
+def delete_class(ns_name, dev_name, parent, classid):
+    """
+    Delete a class added to a qdisc
+    Parameters
+    ----------
+    ns_name : str
+        name of the namespace
+    dev_name : str
+        name of the device
+    parent : str
+        id of the parent class in major:minor form(optional)
+    classid : str
+        id of the class in major:minor form (Default value = '')
+    """
+
+    if classid:
+        classid = "classid " + classid
+
+    exec_subprocess(
+        f"tc -n {ns_name} class delete dev {dev_name} parent {parent}" f" {classid}"
     )
 
 
@@ -238,9 +261,9 @@ def add_filter(
     handle : str
         id of the filter (Default value = '')
     qdisc : str
-        qdisc used on the interface
+        qdisc used on the device
     dev_name : str
-        name of the interface
+        name of the device
     """
 
     # TODO: Check if protocol can be removed from the arguments since it's always IP
@@ -260,6 +283,30 @@ def add_filter(
         f"tc -n {ns_name} filter add dev {dev_name} {parent} {handle}"
         f" protocol {protocol} prio {priority} {filtertype} {filter_params}"
     )
+
+
+def delete_filter(ns_name, dev_name, parent, handle):
+    """
+    Delete filter on a class
+
+    Parameters
+    ----------
+    ns_name : str
+        name of the namespace
+    dev_name : str
+        name of the device
+    parent : str
+        id of the parent class in major:minor form(optional) (Default value = '')
+    handle : str
+        id of the filter (Default value = '')
+    """
+    if parent and parent != "root":
+        parent = "parent " + parent
+
+    if handle:
+        handle = "handle " + handle
+
+    exec_subprocess(f"tc -n {ns_name} filter delete dev {dev_name} {parent} {handle}")
 
 
 def get_tc_version():

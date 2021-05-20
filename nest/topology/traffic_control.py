@@ -108,6 +108,30 @@ class TrafficControlHandler:
             Class(self.node_id, self.dev_id, qdisc, parent, classid, **kwargs)
         )
 
+    def delete_class(self, classid, parent):
+        """
+        Delete Class from this device
+
+        Parameters
+        ----------
+        classid : string
+            Class id of the class to be deleted
+        parent : string
+            id of the parent class in major:minor form(optional) (Default value = 'root')
+        """
+        counter = 0
+        for tc_class in self.class_list:  # tc_class since class is a keyword
+            if tc_class.classid == classid:
+                engine.delete_class(
+                    self.node_id,
+                    self.dev_id,
+                    parent,
+                    classid,
+                )
+                self.class_list.pop(counter)
+                break
+            counter += 1
+
     # pylint: disable=too-many-arguments
     def add_filter(
         self,
@@ -156,6 +180,28 @@ class TrafficControlHandler:
                 **kwargs
             )
         )
+
+    def delete_filter(self, handle, parent):
+        """
+        Delete filter from a Class or a Qdisc
+
+        Parameters
+        ----------
+        handle : string
+            Handle of the class to be deleted
+        """
+        counter = 0
+        for tc_filter in self.filter_list:  # tc_class since class is a keyword
+            if tc_filter.handle == handle:
+                engine.delete_filter(
+                    self.node_id,
+                    self.dev_id,
+                    parent,
+                    handle,
+                )
+                self.filter_list.pop(counter)
+                break
+            counter += 1
 
 
 class Qdisc:
