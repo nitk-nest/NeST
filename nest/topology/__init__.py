@@ -20,7 +20,7 @@ import uuid
 
 from . import id_generator
 from .node import Node
-from .interface import Interface, Veth, connect
+from .interface import Interface, connect
 from .address import Address, Subnet
 from .switch import Switch
 

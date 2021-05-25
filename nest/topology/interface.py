@@ -52,7 +52,7 @@ class Interface:
         *Note*: Unlike Node object, the creation of Interface object
         does not actually create an interface in the backend. This has
         to be done seperately by invoking engine.
-        [See `Veth` class for an example]
+        [See `create_veth_pair` method]
 
         Parameters
         ----------
@@ -691,28 +691,29 @@ class Interface:
         return f"{classname}({self.name!r})"
 
 
-class Veth:
-    """Handle creation of Veth pairs"""
+def create_veth_pair(interface1_name, interface2_name):
+    """
+    Handle creation of Veth pairs between
+    `interface1_name` and `interface2_name`
 
-    def __init__(self, interface1_name, interface2_name):
-        """
-        Constructor to create a veth pair between
-        `interface1_name` and `interface2_name`
-        """
+    Parameters
+    ----------
+    interface1_name : str
+            Name of one of the interfaces to be connected
+    interface2_name : str
+            Name of the other interface to be connected
+    """
 
-        self.interface1 = Interface(interface1_name)
-        self.interface2 = Interface(interface2_name)
+    interface1 = Interface(interface1_name)
+    interface2 = Interface(interface2_name)
 
-        self.interface1.pair = self.interface2
-        self.interface2.pair = self.interface1
+    interface1.pair = interface2
+    interface2.pair = interface1
 
-        # Create the veth
-        engine.create_veth(self.interface1.id, self.interface2.id)
+    # Create the veth
+    engine.create_veth(interface1.id, interface2.id)
 
-    def _get_interfaces(self):
-        """Get tuple of endpoint interfaces"""
-
-        return (self.interface1, self.interface2)
+    return (interface1, interface2)
 
 
 def connect(node1, node2, interface1_name="", interface2_name="", network=None):
@@ -758,8 +759,7 @@ def connect(node1, node2, interface1_name="", interface2_name="", network=None):
         interface2_name = _autogenerate_interface_name(node2, node1, connections)
 
     # Create 2 interfaces
-    veth = Veth(interface1_name, interface2_name)
-    (interface1, interface2) = veth._get_interfaces()
+    (interface1, interface2) = create_veth_pair(interface1_name, interface2_name)
 
     node1._add_interface(interface1)
     node2._add_interface(interface2)
