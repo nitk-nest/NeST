@@ -8,6 +8,63 @@ from .exec import exec_subprocess
 logger = logging.getLogger(__name__)
 
 
+def create_switch(ns_name, s_name):
+    """
+    Create switch if it doesn't already exist.
+    Switch is contained inside a namespace.
+
+    Parameters
+    ----------
+    s_name : str
+        switch name
+    ns_name : str
+        namespace name
+    """
+    exec_subprocess(f"ip netns exec {ns_name} ip link add {s_name} type bridge")
+
+
+def delete_switch(ns_name, s_name):
+    """
+    Delete switch inside a namespace, if it exists.
+
+    Parameters
+    ----------
+    s_name : str
+        switch name
+    ns_name : str
+        namespace name
+    """
+    exec_subprocess(f"ip netns exec {ns_name} ip link del {s_name}")
+
+
+def set_switch_mode(s_name, mode):
+    """
+    Set switch mode
+
+    Parameters
+    ----------
+    s_name : str
+        switch name
+    mode : str
+        'up' or 'down'
+    """
+    exec_subprocess(f"ip netns exec {s_name} ip link set dev {s_name} {mode}")
+
+
+def add_int_to_switch(s_name, dev_name):
+    """
+    Add interface to a switch
+
+    Parameters
+    ----------
+    s_name : str
+        switch name
+    dev_name : str
+        interface name
+    """
+    exec_subprocess(f"ip netns exec {s_name} ip link set {dev_name} master {s_name}")
+
+
 def create_veth(dev_name1, dev_name2):
     """
     Create a veth pair with endpoint interfaces `dev_name1`

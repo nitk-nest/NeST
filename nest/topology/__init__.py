@@ -22,6 +22,7 @@ from . import id_generator
 from .node import Node
 from .interface import Interface, Veth, connect
 from .address import Address, Subnet
+from .switch import Switch
 
 
 # Generate unique topology id for the *to be created* topology
