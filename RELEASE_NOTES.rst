@@ -9,6 +9,10 @@ Release 0.4-dev (Not yet available)
 If available, the numbers below mark the issue numbers on GitLab (prefixed by '#'),
 or GitLab merge request number (prefixed by '!').
 
+New user-visible features
+-------------------------
+- !121: Added option to enable/disable offloads on interfaces.
+
 Bugs fixed
 ----------
 - !119: Fix erroneous filtering of duplicate logs.

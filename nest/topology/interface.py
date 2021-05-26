@@ -89,6 +89,66 @@ class Interface:
         # mpls input
         self._is_mpls_enabled = False
 
+    def enable_offload(self, offload_name):
+        """
+        API for enabling offloads
+        Parameters
+        ----------
+        offload_name : str
+            The type of offload names that need to enable
+        """
+        if not isinstance(offload_name, list):
+            offload_name = [offload_name]
+        valid_offloads(offload_name)
+        namespace_id = self.node.id
+        interface_id = self.id
+        for offload_type in offload_name:
+            if engine.ethtool.enable_offloads(namespace_id, interface_id, offload_type):
+                logger.debug(
+                    "%s is enabled on interface %s of %s",
+                    offload_type,
+                    self.name,
+                    self.node.name,
+                )
+            else:
+                logger.error(
+                    "%s is not enabled on interface %s of %s",
+                    offload_type,
+                    self.name,
+                    self.node.name,
+                )
+
+    def disable_offload(self, offload_name):
+        """
+        API for disabling offloads
+        Parameters
+        ----------
+        offload_name : str
+            The type of offload names that need to disable
+        """
+        if not isinstance(offload_name, list):
+            offload_name = [offload_name]
+        valid_offloads(offload_name)
+        namespace_id = self.node.id
+        interface_id = self.id
+        for offload_type in offload_name:
+            if engine.ethtool.disable_offloads(
+                namespace_id, interface_id, offload_type
+            ):
+                logger.debug(
+                    "%s is disabled on interface %s of %s",
+                    offload_type,
+                    self.name,
+                    self.node.name,
+                )
+            else:
+                logger.error(
+                    "%s is not disabled on interface %s of %s",
+                    offload_type,
+                    self.name,
+                    self.node.name,
+                )
+
     @property
     def name(self):
         """Getter for name"""
@@ -747,3 +807,19 @@ def _number_of_connections(node1, node2):
             connections = connections + 1
 
     return connections
+
+
+def valid_offloads(offload_name):
+    """
+    Check valid offloads
+
+    Parameters
+    -----------
+    offload_name : str
+        The offload name
+    """
+    offloads_list = ["tso", "gso", "gro"]
+    for offload_type in offload_name:
+        if not offload_type in offloads_list:
+            logger.error("Invalid offload")
+            raise ValueError(f"{offload_type} is not a valid offload")

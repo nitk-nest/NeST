@@ -19,3 +19,4 @@ from .setns import *
 from .sysctl import *
 from .tc import *
 from .uname import *
+from .ethtool import *
