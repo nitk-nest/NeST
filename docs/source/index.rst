@@ -56,3 +56,10 @@ NeST is officially supported for Python 3.6+.
    :maxdepth: 2
 
    api/api
+
+.. toctree::
+   :hidden:
+   :caption: FAQ
+   :maxdepth: 2
+
+   faq/faq
