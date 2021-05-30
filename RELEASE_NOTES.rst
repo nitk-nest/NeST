@@ -3,6 +3,17 @@ NeST RELEASE NOTES
 
 This file contains NeST release notes (most recent release first).
 
+Release 0.4-dev (Not yet available)
+===================================
+
+If available, the numbers below mark the issue numbers on GitLab (prefixed by '#'),
+or GitLab merge request number (prefixed by '!').
+
+Bugs fixed
+----------
+- !119: Fix erroneous filtering of duplicate logs.
+
+
 Release 0.3 (April 1, 2021)
 ===========================
 

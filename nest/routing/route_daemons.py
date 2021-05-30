@@ -11,7 +11,7 @@ import logging
 import shutil
 from nest.engine.dynamic_routing import supports_dynamic_routing
 from nest import config
-from nest.logging_helper import DuplicateFilter
+from nest.logging_helper import DepedencyCheckFilter
 
 # pylint: disable=too-many-instance-attributes
 
@@ -59,19 +59,19 @@ class RoutingDaemonBase(ABC):
                 Directory to store log files. (`str`)
         """
         self.logger = logging.getLogger(__name__)
+        self.daemon = daemon
         if not any(
-            isinstance(filter, DuplicateFilter) for filter in self.logger.filters
+            isinstance(filter, DepedencyCheckFilter) for filter in self.logger.filters
         ):
             # Duplicate filter is added to avoid logging of same error
             # message incase any of the routing daemon is not installed
-            self.logger.addFilter(DuplicateFilter())
+            self.logger.addFilter(DepedencyCheckFilter())
 
         if not supports_dynamic_routing(daemon):
             self.handle_dependecy_error()
 
         self.conf = io.StringIO()
         self.router_ns_id = router_ns_id
-        self.daemon = daemon
         self.conf_file = f"{conf_dir}/{self.router_ns_id}_{daemon}.conf"
         self.pid_file = f"{conf_dir}/{self.router_ns_id}_{daemon}.pid"
         self.log_file = None

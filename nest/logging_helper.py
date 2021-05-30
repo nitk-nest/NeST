@@ -4,6 +4,7 @@
 """Helper function for logging"""
 
 import logging
+import re
 
 # See: https://stackoverflow.com/a/35804945
 def add_logging_level(level_name, level_num, method_name=None):
@@ -94,14 +95,17 @@ def update_nest_logger(level):
 
 
 # pylint: disable=too-few-public-methods
-class DuplicateFilter(logging.Filter):
+class DepedencyCheckFilter(logging.Filter):
     """
-    Filters duplicate log messages.
+    Filters duplicate depedency missing logs.
     """
 
     def __init__(self):
         super().__init__()
         self.messages = set()
+
+        # Assuming the depedency error is of the form "{depedency} not found".
+        self.filter_pat = r"(\w|\d|-|_)+ not found\."
 
     def filter(self, record):
         """
@@ -114,5 +118,6 @@ class DuplicateFilter(logging.Filter):
         if log_message in self.messages:
             return 0
 
-        self.messages.add(log_message)
+        if re.match(self.filter_pat, log_message) is not None:
+            self.messages.add(log_message)
         return 1

@@ -8,7 +8,7 @@ from collections import namedtuple, defaultdict
 import logging
 import os
 
-from nest.logging_helper import DuplicateFilter
+from nest.logging_helper import DepedencyCheckFilter
 from nest import config
 from nest.topology_map import TopologyMap
 from nest.clean_up import kill_processes
@@ -33,10 +33,10 @@ from .plotter.ping import plot_ping
 from ..engine.util import is_dependency_installed
 
 logger = logging.getLogger(__name__)
-if not any(isinstance(filter, DuplicateFilter) for filter in logger.filters):
+if not any(isinstance(filter, DepedencyCheckFilter) for filter in logger.filters):
     # Duplicate filter is added to avoid logging of same error
     # messages incase any of the tools is not installed
-    logger.addFilter(DuplicateFilter())
+    logger.addFilter(DepedencyCheckFilter())
 
 # pylint: disable=too-many-locals
 def run_experiment(exp):
@@ -514,7 +514,7 @@ def setup_ping_runners(dependency, ping_schedules):
             )
             runners.append(ping_runner)
     else:
-        logger.warning("ping not found")
+        logger.warning("ping not found.")
     return runners
 
 
