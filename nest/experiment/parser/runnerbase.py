@@ -36,6 +36,7 @@ class Runner:
         destination_ip : str
             ip address of the destination namespace
         """
+        # pylint: disable=consider-using-with
         self.out = tempfile.TemporaryFile()
         self.err = tempfile.TemporaryFile()
 

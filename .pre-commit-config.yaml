@@ -1,19 +1,19 @@
 default_stages: [commit]
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.4.0
+    rev: v4.0.1
     hooks:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
     -   id: check-yaml
     -   id: check-added-large-files
 -   repo: https://github.com/psf/black
-    rev: 20.8b1
+    rev: 21.5b2
     hooks:
     -   id: black
         name: Black code formatter
 -   repo: https://github.com/PyCQA/pylint
-    rev: pylint-2.6.0
+    rev: v2.8.3
     hooks:
     -   id: pylint
         name: Pylint code linter

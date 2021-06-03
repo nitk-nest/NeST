@@ -189,10 +189,11 @@ class TestTopology(unittest.TestCase):
         # Run ping from self.n0 to self.n1
         with self.n0:
             command = f"ping -c 1 {n1_n0.address.get_addr(with_subnet=False)}"
-            proc = subprocess.Popen(
+            with subprocess.Popen(
                 command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            )
-            (stdout, _) = proc.communicate()
+            ) as proc:
+
+                (stdout, _) = proc.communicate()
 
         self.assertEqual(stdout[:4], b"PING", "Invalid ping output")
 
