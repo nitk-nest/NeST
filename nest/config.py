@@ -11,6 +11,11 @@ from nest.logging_helper import update_nest_logger
 logger = logging.getLogger(__name__)
 
 __DEFAULT_VALUE = {"engine": {}, "experiment": {}, "routing": {}, "topology": {}}
+__DEFAULT_PATH = [
+    "/etc/nest-config.json",
+    os.path.expanduser("~") + "/.nest-config.json",
+    os.getcwd() + "/nest-config.json",
+]
 
 
 def import_default_config():
@@ -45,19 +50,16 @@ def set_value(parameter, value):
     value: str
         The value to which the parameter has to be changed to
     """
-    if parameter in __DEFAULT_VALUE["engine"]:
-        __DEFAULT_VALUE["engine"][parameter] = value
-    elif parameter in __DEFAULT_VALUE["experiment"]:
-        __DEFAULT_VALUE["experiment"][parameter] = value
-    elif parameter in __DEFAULT_VALUE["routing"]:
-        __DEFAULT_VALUE["routing"][parameter] = value
-    elif parameter in __DEFAULT_VALUE["topology"]:
-        __DEFAULT_VALUE["topology"][parameter] = value
-    elif parameter in __DEFAULT_VALUE:
-        __DEFAULT_VALUE[parameter] = value
-    else:
-        logger.error("The given parameter %s does not exist", parameter)
-        return
+    for i in __DEFAULT_VALUE:
+        if isinstance(__DEFAULT_VALUE[i], dict) and parameter in __DEFAULT_VALUE[i]:
+            __DEFAULT_VALUE[i][parameter] = value
+            break
+        if parameter in __DEFAULT_VALUE:
+            __DEFAULT_VALUE[parameter] = value
+            break
+        if i == list(__DEFAULT_VALUE)[-1]:
+            logger.error("The given parameter %s does not exist", parameter)
+            return
 
     _post_set_value(parameter, value)
 
@@ -93,17 +95,11 @@ def get_value(parameter):
     str
         The value of the parameter
     """
-    if parameter in __DEFAULT_VALUE["engine"]:
-        return __DEFAULT_VALUE["engine"][parameter]
-    if parameter in __DEFAULT_VALUE["experiment"]:
-        return __DEFAULT_VALUE["experiment"][parameter]
-    if parameter in __DEFAULT_VALUE["routing"]:
-        return __DEFAULT_VALUE["routing"][parameter]
-    if parameter in __DEFAULT_VALUE["topology"]:
-        return __DEFAULT_VALUE["topology"][parameter]
-    if parameter in __DEFAULT_VALUE:
-        return __DEFAULT_VALUE[parameter]
-
+    for i in __DEFAULT_VALUE:
+        if isinstance(__DEFAULT_VALUE[i], dict) and parameter in __DEFAULT_VALUE[i]:
+            return __DEFAULT_VALUE[i][parameter]
+        if parameter in __DEFAULT_VALUE:
+            return __DEFAULT_VALUE[parameter]
     # If it belonged to none of them
     logger.error("The given parameter %s does not exist", parameter)
     return None
@@ -122,34 +118,15 @@ def import_custom_config(path):
     # pylint: disable=too-many-branches
     with open(path, "r") as json_file:
         data = json.load(json_file)
-    if "engine" in data:
-        for parameter in data["engine"]:
-            if parameter in __DEFAULT_VALUE["engine"]:
-                __DEFAULT_VALUE["engine"][parameter] = data["engine"][parameter]
-            else:
-                logger.error("The given parameter %s does not exist", parameter)
-    if "experiment" in data:
-        for parameter in data["experiment"]:
-            if parameter in __DEFAULT_VALUE["experiment"]:
-                __DEFAULT_VALUE["experiment"][parameter] = data["experiment"][parameter]
-            else:
-                logger.error("The given parameter %s does not exist", parameter)
-    if "routing" in data:
-        for parameter in data["routing"]:
-            if parameter in __DEFAULT_VALUE["routing"]:
-                __DEFAULT_VALUE["routing"][parameter] = data["routing"][parameter]
-            else:
-                logger.error("The given parameter %s does not exist", parameter)
-    if "topology" in data:
-        for parameter in data["topology"]:
-            if parameter in __DEFAULT_VALUE["topology"]:
-                __DEFAULT_VALUE["topology"][parameter] = data["topology"][parameter]
-            else:
-                logger.error("The given parameter %s does not exist", parameter)
-    for parameter in data:
-        if parameter in __DEFAULT_VALUE.keys():
-            if not isinstance(__DEFAULT_VALUE[parameter], dict):
-                __DEFAULT_VALUE[parameter] = data[parameter]
+    for i in data:
+        if i in __DEFAULT_VALUE and isinstance(data[i], dict):
+            for parameter in data[i]:
+                if parameter in __DEFAULT_VALUE[i]:
+                    __DEFAULT_VALUE[i][parameter] = data[i][parameter]
+                else:
+                    logger.error("The given parameter %s does not exist", parameter)
+        elif i in __DEFAULT_VALUE and not isinstance(data[i], dict):
+            __DEFAULT_VALUE[i] = data[i]
         else:
             logger.error("The given parameter %s does not exist", parameter)
 
@@ -160,9 +137,6 @@ def search_config_files():
     """
 
     # The ones called later, might overwrite the previous calls
-    if os.path.isfile(os.path.abspath("/etc/nest-config.json")):
-        import_custom_config(os.path.abspath("/etc/nest-config.json"))
-    if os.path.isfile(os.path.abspath("~/.nest-config.json")):
-        import_custom_config(os.path.abspath("~/.nest-config.json"))
-    if os.path.isfile(os.path.abspath(os.getcwd() + "/nest-config.json")):
-        import_custom_config(os.path.abspath(os.getcwd() + "/nest-config.json"))
+    for i in __DEFAULT_PATH:
+        if os.path.isfile(os.path.abspath(i)):
+            import_custom_config(os.path.abspath(i))
