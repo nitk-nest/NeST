@@ -63,7 +63,7 @@ def add_qdisc(ns_name, dev_name, qdisc, parent="", handle="", **kwargs):
     )
 
 
-def change_qdisc(ns_name, dev_name, qdisc, parent="", handle="", **kwargs):
+def change_qdisc(ns_name, dev_name, qdisc, parent, handle, **kwargs):
     """
     Change a qdisc that is already present on an device
 
@@ -185,7 +185,7 @@ def add_class(ns_name, dev_name, parent, qdisc, classid="", **kwargs):
     )
 
 
-def change_class(ns_name, dev_name, parent, qdisc, classid="", **kwargs):
+def change_class(ns_name, dev_name, parent, qdisc, classid, **kwargs):
     """
     Change a class that is already present on an device
 

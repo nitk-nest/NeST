@@ -70,6 +70,33 @@ class TrafficControlHandler:
         # Add qdisc to TopologyMap
         TopologyMap.add_qdisc(self.node_id, self.dev_id, qdisc, handle, parent=parent)
 
+    def change_qdisc(self, handle, qdisc="", **kwargs):
+        """
+        Change a qdisc that is already present in the device
+
+        Parameters
+        ----------
+        handle : string
+            Hande of the qdisc to be changed
+        qdisc : string
+            The new qdisc to be added to the device
+        """
+
+        for qdisc_member in self.qdisc_list:
+            if qdisc_member.handle == handle:
+                if qdisc == "":
+                    qdisc = qdisc_member.qdisc
+                else:
+                    TopologyMap.change_qdisc(self.node_id, self.dev_id, qdisc, handle)
+                engine.change_qdisc(
+                    self.node_id,
+                    self.dev_id,
+                    qdisc,
+                    qdisc_member.parent,
+                    handle,
+                    **kwargs
+                )
+
     def delete_qdisc(self, handle):
         """
         Delete qdisc (Queueing Discipline) from this device
@@ -107,6 +134,25 @@ class TrafficControlHandler:
         self.class_list.append(
             Class(self.node_id, self.dev_id, qdisc, parent, classid, **kwargs)
         )
+
+    def change_class(self, qdisc, parent, classid, **kwargs):
+        """
+        Change a class that is already present in the device
+
+        Parameters
+        ----------
+        qdisc : string
+            The qdisc which needs to be added to the device
+        parent : string
+            id of the parent class in major:minor form(optional) (Default value = 'root')
+        classid : string
+            id of the class (Default value = '')
+        """
+        for tc_class in self.class_list:
+            if tc_class.classid == classid:
+                engine.change_class(
+                    self.node_id, self.dev_id, parent, qdisc, classid, **kwargs
+                )
 
     def delete_class(self, classid, parent):
         """

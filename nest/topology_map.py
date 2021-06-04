@@ -158,6 +158,37 @@ class TopologyMap:
         qdiscs.append({"kind": kind, "handle": handle, "parent": parent})
 
     @staticmethod
+    def change_qdisc(ns_id, int_id, kind, handle):
+        """
+        Add qdisc to topology_map
+
+        Parameters
+        ----------
+        ns_id : str
+            namepspace id
+        int_id : str
+            interface id
+        kind : str
+            qdisc kind
+        handle : str
+            qdisc handle
+        parent : str
+            qdisc parent (Default value = '')
+        """
+        if ns_id not in TopologyMap.namespaces_pointer:
+            raise ValueError(f"Namespace with id {ns_id} doesn't exist in TopologyMap")
+
+        if int_id not in TopologyMap.namespaces_pointer[ns_id]["interfaces_pointer"]:
+            raise ValueError(
+                f"Interface with id {int_id} doesn't exist in namespace {ns_id}"
+            )
+
+        qdiscs = TopologyMap.get_qdiscs(ns_id, int_id)
+        for qdisc in qdiscs:
+            if qdisc["handle"] == handle:
+                qdisc["kind"] = kind
+
+    @staticmethod
     def delete_qdisc(ns_id, int_id, handle):
         """
         Delete qdisc from topology_map
