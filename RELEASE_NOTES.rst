@@ -13,10 +13,11 @@ New user-visible features
 -------------------------
 - !121: Added option to enable/disable offloads on interfaces.
 - !123: Added support for Address Helper.
+- !114: Added support for Switch
 
 Bugs fixed
 ----------
-- !119: Fix erroneous filtering of duplicate logs.
+- !119: Fixed erroneous filtering of duplicate logs.
 
 
 Release 0.3 (April 1, 2021)

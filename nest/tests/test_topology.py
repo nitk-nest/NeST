@@ -6,7 +6,7 @@
 import unittest
 import subprocess
 
-from nest.topology import Node, connect
+from nest.topology import Node, connect, Switch
 from nest.clean_up import delete_namespaces
 from nest.topology_map import TopologyMap
 from nest.topology.interface import Interface
@@ -86,6 +86,67 @@ class TestTopology(unittest.TestCase):
         self.n1.add_route("DEFAULT", n1_r)
 
         status = self.n0.ping(n1_r.address, verbose=False)
+
+        self.assertTrue(status)
+
+    def test_simple_lan(self):
+        # pylint: disable=too-many-locals
+        n0 = Node("n0")
+        n1 = Node("n1")
+        n2 = Node("n2")
+        n3 = Node("n3")
+        s0 = Switch("s0")
+
+        (n0_s0, _) = connect(n0, s0)
+        (n1_s0, _) = connect(n1, s0)
+        (n2_s0, _) = connect(n2, s0)
+        (n3_s0, _) = connect(n3, s0)
+
+        nodes = [n0, n1, n2, n3]
+        interface = [n0_s0, n1_s0, n2_s0, n3_s0]
+
+        n0_s0.set_address("10.0.0.1/24")
+        n1_s0.set_address("10.0.0.2/24")
+        n2_s0.set_address("10.0.0.3/24")
+        n3_s0.set_address("10.0.0.4/24")
+
+        for x in nodes:
+            for y in interface:
+                status = x.ping(y.address, verbose=False)
+                if not status:
+                    break
+
+        self.assertTrue(status)
+
+    def test_dumbbell_lan(self):
+        # pylint: disable=too-many-locals
+        n0 = Node("n0")
+        n1 = Node("n1")
+        n2 = Node("n2")
+        n3 = Node("n3")
+        s0 = Switch("s0")
+        s1 = Switch("s1")
+
+        (n0_s0, _) = connect(n0, s0)
+        (n1_s0, _) = connect(n1, s0)
+        (n2_s1, _) = connect(n2, s1)
+        (n3_s1, _) = connect(n3, s1)
+
+        connect(s0, s1)
+
+        nodes = [n0, n1, n2, n3]
+        interface = [n0_s0, n1_s0, n2_s1, n3_s1]
+
+        n0_s0.set_address("10.0.0.1/24")
+        n1_s0.set_address("10.0.0.2/24")
+        n2_s1.set_address("10.0.0.3/24")
+        n3_s1.set_address("10.0.0.4/24")
+
+        for x in nodes:
+            for y in interface:
+                status = x.ping(y.address, verbose=False)
+                if not status:
+                    break
 
         self.assertTrue(status)
 
