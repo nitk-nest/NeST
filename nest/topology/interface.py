@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2020 NITK Surathkal
+# Copyright (c) 2019-2021 NITK Surathkal
 
 """API related to interfaces in topology"""
 
@@ -8,6 +8,7 @@ from nest import engine
 from nest.topology_map import TopologyMap
 import nest.global_variables as g_var
 import nest.config as config
+from nest.topology.network import Network
 from .address import Address
 from .id_generator import IdGen
 from . import traffic_control
@@ -714,7 +715,7 @@ class Veth:
         return (self.interface1, self.interface2)
 
 
-def connect(node1, node2, interface1_name="", interface2_name=""):
+def connect(node1, node2, interface1_name="", interface2_name="", network=None):
     """
     Connects two nodes `node1` and `node2`.
     Creates two paired Virtual Ethernet interfaces (veth) and returns
@@ -732,6 +733,8 @@ def connect(node1, node2, interface1_name="", interface2_name=""):
         Name of first veth interface
     interface2_name : str
         Name of second veth interface
+    network : Network
+        Object of the Network to add interfaces
 
     Returns
     -------
@@ -772,6 +775,14 @@ def connect(node1, node2, interface1_name="", interface2_name=""):
     if config.get_value("disable_dad") is True:
         interface1.disable_ip_dad()
         interface2.disable_ip_dad()
+
+    # The network parameter takes precedence over "global" network level
+    if network is None:
+        network = Network.current_network
+    # Add the interfaces to the network if mentioned
+    if network is not None:
+        network.add_interface(interface1)
+        network.add_interface(interface2)
 
     return (interface1, interface2)
 
