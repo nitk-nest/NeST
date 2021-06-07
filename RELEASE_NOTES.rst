@@ -12,6 +12,7 @@ or GitLab merge request number (prefixed by '!').
 New user-visible features
 -------------------------
 - !121: Added option to enable/disable offloads on interfaces.
+- !123: Added support for Address Helper.
 
 Bugs fixed
 ----------
