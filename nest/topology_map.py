@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2020 NITK Surathkal
+# Copyright (c) 2019-2021 NITK Surathkal
 
 """
 NeST internally uses auto-generated unique ids to name topologies.
@@ -28,7 +28,11 @@ class TopologyMap:
 
     # Pointer to topology_map['namespaces']
     # Used for efficiency
+    # orphan interfaces are those interfaces which do not belong to any network
+    # list of network is used to store all the existing network object
     namespaces_pointer = {}
+    list_of_network = []
+    orphan_interfaces = 0
 
     @staticmethod
     def add_namespace(ns_id, ns_name):
@@ -115,6 +119,8 @@ class TopologyMap:
         interfaces = TopologyMap.get_interfaces(ns_id)
 
         interfaces.append({"id": int_id, "name": int_name, "qdiscs": []})
+
+        TopologyMap.orphan_interfaces = TopologyMap.orphan_interfaces + 1
 
         TopologyMap.namespaces_pointer[ns_id]["interfaces_pointer"][int_id] = {
             "pos": len(interfaces) - 1
@@ -312,6 +318,8 @@ class TopologyMap:
         """
         TopologyMap.topology_map = {"namespaces": [], "hosts": [], "routers": []}
         TopologyMap.namespaces_pointer = {}
+        TopologyMap.list_of_network = []
+        TopologyMap.orphan_interfaces = 0
 
     @staticmethod
     def dump():
@@ -326,3 +334,23 @@ class TopologyMap:
         # print('Pointers')
         # print('--------')
         # print(json.dumps(TopologyMap.namespaces_pointer, indent = 4))
+
+    @staticmethod
+    def add_network(network):
+        """
+        Add network object reference to topology_map
+
+        Parameters
+        ----------
+        network : Network
+            Object reference of Network class
+        """
+        TopologyMap.list_of_network.append(network)
+
+    @staticmethod
+    def decrement_orphan_interfaces():
+        """
+        Reduce the orphan interface in the topology
+
+        """
+        TopologyMap.orphan_interfaces = TopologyMap.orphan_interfaces - 1
