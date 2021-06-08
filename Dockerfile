@@ -61,3 +61,6 @@ isisd=yes ' >> /etc/quagga/daemons
 RUN apt install -y frr
 RUN mkdir -p /run/frr
 RUN chown frr /run/frr
+
+# Install ethtool
+RUN apt install -y ethtool
