@@ -1,6 +1,7 @@
 # docs
 
-This is the source directory for sphinx documentation generation.
+This is the source directory for NeST documentation. The documentation is rendered
+into a html page using [Sphinx](https://www.sphinx-doc.org/en/master/).
 
 ## Documentation generation
 
@@ -23,7 +24,7 @@ $ git fetch --tags https://gitlab.com/nitk-nest/nest
 $ sudo make multiversion
 ```
 
-You can run `sudo make clean` to remove any previous build files
+You can run `sudo make clean` to remove any previous build files.
 
 **NOTE**: Root access it required because sphinx `autodoc` extension imports
 nest and nest requires root access.

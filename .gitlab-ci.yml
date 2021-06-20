@@ -14,23 +14,23 @@ default:
   image: docker:20.10.3
 
 stages:
-  - build_docker
+  - build
   - test
   - release
-  - push_docker
 
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:master
+  DOCKER_TLS_CERTDIR: "/certs"
 
 # https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#making-docker-in-docker-builds-faster-with-docker-layer-caching
 build docker:
   tags:
     - dind-runner
   services:
-    - docker:dind
-  stage: build_docker
+    - docker:20.10.3-dind
+  stage: build
   script:
     - docker login -u $CI_DEPLOY_USERNAME -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
     - docker pull $CONTAINER_RELEASE_IMAGE || true
@@ -46,7 +46,8 @@ run style check:
 
     - gitlint --version
     - git fetch
-    - gitlint --commits origin/master..HEAD
+    - gitlint --commits origin/$CI_DEFAULT_BRANCH..HEAD
+  needs: [build docker]
 
 run unit tests:
   image: $CONTAINER_TEST_IMAGE
@@ -64,21 +65,34 @@ run unit tests:
       - test-experiment*/
       - quagga-logs*/
       - frr-logs*/
+  needs: [build docker]
 
-pages:
+test docs:
   image: $CONTAINER_TEST_IMAGE
   stage: test
   script:
     - pip install .
     - pip install -r docs/doc_requirements.txt
-    - make -C docs multiversion
-    - cp -r docs/build/html public
+    - make -C docs html
   rules:
     - changes:
         - docs/*
   artifacts:
     paths:
-      - public
+      - docs/build
+  needs: [build docker]
+
+release docs:
+  stage: release
+  tags:
+    - nest-website
+  script:
+    - cp -rv docs/build/html/* /var/www/html/nest-docs/docs
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - docs/*
+  needs: [test docs]
 
 upload to PyPI:
   image: $CONTAINER_TEST_IMAGE
@@ -89,19 +103,21 @@ upload to PyPI:
     - twine upload dist/* --verbose
   rules:
     - if: $CI_COMMIT_TAG
+  needs: [run style check, run unit tests]
 
-push_docker:
+push docker:
   tags:
     - dind-runner
   services:
     - docker:dind
-  stage: push_docker
+  stage: release
   script:
    - docker login -u $CI_DEPLOY_USERNAME -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
    - docker pull $CONTAINER_TEST_IMAGE
    - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
    - docker push $CONTAINER_RELEASE_IMAGE
   rules:
-    - if: '$CI_COMMIT_BRANCH == "master"'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       changes:
         - "Dockerfile"
+  needs: [build docker]
