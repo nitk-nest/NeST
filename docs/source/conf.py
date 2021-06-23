@@ -53,6 +53,12 @@ html_sidebars = {
     ]
 }
 
+html_logo = "assets/NeST_Logo.png"
+
+html_theme_options = {
+    "sidebar_hide_name": True,
+}
+
 # Options for sphinx multiversion
 # Check https://holzhaus.github.io/sphinx-multiversion/master/configuration.html#
 # to know more about the below options

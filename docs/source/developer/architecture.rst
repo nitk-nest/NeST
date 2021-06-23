@@ -18,7 +18,7 @@ Additionally, we will also look into a small but important module called
 
 The below image shows the interaction among these modules:
 
-.. image:: ../assets/NeST_Architecture_Diagram.png
+.. image:: ../assets/NeST_Architecture_Diagram.jpg
     :alt: NeST Architecture Diagram
 
 Topology Module
