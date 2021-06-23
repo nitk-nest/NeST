@@ -21,7 +21,7 @@ Instructions to install `NeST` can be found in
 ## Documentation
 
 The documentation of NeST APIs can be read online at:
-[https://nitk-nest.github.io/docs/](https://nitk-nest.github.io/docs/)
+[https://nest.nitk.ac.in/docs/](https://nest.nitk.ac.in/docs/)
 
 Instructions for generating/building the API documentation can be found in
 [docs/README.md](https://gitlab.com/nitk-nest/nest/-/blob/master/docs/README.md) folder.
