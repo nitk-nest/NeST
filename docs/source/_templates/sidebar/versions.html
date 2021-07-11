@@ -13,7 +13,11 @@ Copyright (c) 2019-2021 NITK Surathkal
 
             {%- for item in versions | reverse %}
             <option value="{{ item.url }}" {% if current_version.name==item.name %} selected {% endif %}>
-                {{ item.name }}
+                {% if item.name=='master' %}
+                    latest
+                {% else %}
+                    {{ item.name }}
+                {% endif %}
             </option>
             {%- endfor %}
 

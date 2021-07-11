@@ -65,4 +65,5 @@ html_theme_options = {
 
 smv_tag_whitelist = r"^.*$"
 smv_remote_whitelist = r"^(origin)$"
-smv_branch_whitelist = r"$^"  # No branch should be added
+smv_branch_whitelist = "master"
+smv_released_pattern = r"^tags/.*$"
