@@ -71,12 +71,16 @@ test docs:
   image: $CONTAINER_TEST_IMAGE
   stage: test
   script:
+    - git fetch --tags
     - pip install .
     - pip install -r docs/doc_requirements.txt
-    - make -C docs html
+    - make -C docs multiversion
+    # Create index.html file pointing to latest release docs
+    - TAG=$(git tag | tail -1)
+    - echo "<meta http-equiv=\"refresh\" content=\"0; URL=./$TAG/index.html\">" > docs/build/html/index.html
   rules:
     - changes:
-        - docs/*
+        - docs/**/*
   artifacts:
     paths:
       - docs/build
@@ -91,7 +95,7 @@ release docs:
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       changes:
-        - docs/*
+        - docs/**/*
   needs: [test docs]
 
 upload to PyPI:

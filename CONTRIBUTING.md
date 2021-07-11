@@ -102,7 +102,12 @@ $ gitlint install-hook
 ```
 
 This will help in catching simple violations in code standards early and
-lead to smoother code reviews.
+lead to smoother code reviews. These violations (if any) will be shown
+when you are making a git commit.
+
+Note that after installing the above git hooks, the first git commit
+will take some time to install all the required dependencies (for eg.,
+pylint, black, etc).
 
 Below, we specify in detail about certain standards we maintain in the repo:
 
