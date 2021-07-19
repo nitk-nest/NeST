@@ -11,12 +11,14 @@ from nest.routing.routing_helper import RoutingHelper
 from nest.clean_up import delete_namespaces
 
 # pylint: disable=missing-docstring
-@unittest.skipUnless(isfile("/usr/lib/frr/zebra"), "Frrouting is not installed")
 class TestFrr(unittest.TestCase):
 
     # pylint: disable=invalid-name
     # pylint: disable=too-many-instance-attributes
     def setUp(self):
+
+        self.assertTrue(isfile("/usr/lib/frr/zebra"), "Frrouting is not installed")
+
         self.n0 = Node("n0")
         self.n1 = Node("n1")
         self.r0 = Node("r0")

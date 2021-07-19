@@ -3,7 +3,7 @@
 
 """Test APIs from mpls static routing"""
 
-from os import path, system
+import subprocess
 import unittest
 from nest.topology import Node, connect
 from nest.clean_up import delete_namespaces
@@ -11,13 +11,15 @@ from nest.clean_up import delete_namespaces
 # pylint: disable=missing-docstring
 
 
-@unittest.skipUnless(
-    path.isdir("/proc/sys/net/mpls") or system("modprobe mpls_iptunnel") == 0,
-    "Couldn't load mpls",
-)
 class TestStaticMPLS(unittest.TestCase):
     # pylint: disable=invalid-name
     def setUp(self):
+
+        self.assertTrue(
+            "mpls_iptunnel" in subprocess.check_output("lsmod").decode(),
+            "Couldn't load mpls",
+        )
+
         self.n0 = Node("n0")
         self.n1 = Node("n1")
         self.r0 = Node("r0")
