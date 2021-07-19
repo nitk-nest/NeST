@@ -64,3 +64,9 @@ RUN chown frr /run/frr
 
 # Install ethtool
 RUN apt install -y ethtool
+
+# Install iperf3
+RUN apt install -y iperf3
+
+# Installs lsmod and other kernel module utilites
+RUN apt install -y kmod
