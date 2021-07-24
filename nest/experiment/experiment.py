@@ -124,7 +124,12 @@ class Experiment:
 
     def add_tcp_flow(self, flow, congestion_algorithm="cubic"):
         """
-        Add TCP flow to experiment
+        Add TCP flow to experiment. If no congestion control algorithm
+        is specified, then by default cubic is used.
+
+        Note: The congestion control algorithm specified in this API
+        overrides the congestion control algorithm specified in
+        `topology.Node.configure_tcp_param()` API.
 
         Parameters
         ----------
