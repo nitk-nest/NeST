@@ -81,6 +81,7 @@ test docs:
   rules:
     - changes:
         - docs/**/*
+        - nest/**/*
   artifacts:
     paths:
       - docs/build
@@ -96,6 +97,7 @@ release docs:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       changes:
         - docs/**/*
+        - nest/**/*
   needs: [test docs]
 
 upload to PyPI:
