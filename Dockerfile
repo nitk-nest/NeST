@@ -1,6 +1,9 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Copyright (c) 2019-2021 NITK Surathkal
+
 # Dockerfile to build image with dependecies required for testing nest on CI.
 
-FROM ubuntu:20.04@sha256:5403064f94b617f7975a19ba4d1a1299fd584397f6ee4393d0e16744ed11aab1
+FROM ubuntu:20.04@sha256:5403064f94b617f7975a19ba4d1a1299fd584397f6ee4393d0e16744ed11aab1 as test
 
 # Use bash by default instead of sh
 SHELL ["/bin/bash", "-c"]
@@ -70,3 +73,10 @@ RUN apt install -y iperf3
 
 # Installs lsmod and other kernel module utilites
 RUN apt install -y kmod
+
+FROM test as dev
+
+WORKDIR /home
+RUN git clone https://gitlab.com/nitk-nest/nest.git/
+WORKDIR /home/nest/
+RUN pip install .

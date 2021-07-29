@@ -15,6 +15,7 @@ New user-visible features
 - !123: Added support for Address Helper.
 - !114: Added support for Switch.
 - !135: Added experiment progress bar.
+- !133: Upload nest docker image to docker hub
 
 Bugs fixed
 ----------
