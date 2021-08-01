@@ -34,14 +34,14 @@ class Interface:
 
     Attributes
     ----------
-    name: str
+    name : str
         User given name for the interface
-    id: str
+    id : str
         This value is used by `engine` to create emulated interface
         entity
-    node: Node
+    node : Node
         `Node` which contains this `Interface`
-    address: str/Address
+    address : str/Address
         IP address assigned to this interface
     """
 
@@ -501,6 +501,8 @@ class Interface:
 
         # TODO: Standardize this; seems like arbitrary handle values
         # were chosen.
+        # HTB class is added since, to use a filter and redirect traffic,
+        # a classid is needed and htb gives it that, since it's a class
         self.ifb.add_qdisc("htb", "root", "1:", **default_route)
         self.ifb.add_class("htb", "1:", "1:1", **default_bandwidth)
         self.ifb.add_qdisc("pfifo", "1:1", "11:")
@@ -513,6 +515,9 @@ class Interface:
         }
 
         # NOTE: Use Filter API
+        # Action mirred, redicting traffic, etc is needed since netem and
+        # the user giver qdisc are both classless and cannot be added to
+        # the same device
         engine.add_filter(
             self.node.id, self.id, "all", "1", "u32", parent="1:", **action_redirect
         )
@@ -527,6 +532,8 @@ class Interface:
 
         default_route = {"default": "1"}
 
+        # HTB is added since netem is a classless qdisc. So, htb class,
+        # With netem as child is added
         self.add_qdisc("htb", "root", "1:", **default_route)
 
         # TODO: find how to set a good bandwidth
