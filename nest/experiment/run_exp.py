@@ -7,6 +7,8 @@ from multiprocessing import Process
 from collections import namedtuple, defaultdict
 import logging
 import os
+from time import sleep
+from tqdm import tqdm
 
 from nest.logging_helper import DepedencyCheckFilter
 from nest import config
@@ -64,6 +66,7 @@ def run_experiment(exp):
     ss_schedules = defaultdict(lambda: (float("inf"), float("-inf")))
     ping_schedules = defaultdict(lambda: (float("inf"), float("-inf")))
 
+    # Overall experiment stop time considering all flows
     exp_end_t = float("-inf")
 
     dependencies = get_dependency_status(tools)
@@ -141,7 +144,7 @@ def run_experiment(exp):
     exp_runners.ping.extend(ping_runners)
 
     # Start traffic generation
-    run_workers(setup_flow_workers(exp_runners))
+    run_workers(setup_flow_workers(exp_runners, exp_end_t))
 
     logger.info("Experiment complete!")
     logger.info("Parsing statistics...")
@@ -220,24 +223,33 @@ def dump_json_ouputs():
     PingResults.output_to_file()
 
 
-def setup_flow_workers(exp_runners):
+def setup_flow_workers(exp_runners, exp_stop_time):
     """
-    Setup flow generation and stats collection processes(netperf, ss, tc, iperf3...)
+    Setup flow generation and stats collection processes(netperf, ss, tc, iperf3...).
+
+    Also add a progress bar process for showing experiment progress.
 
     Parameters
     ----------
     exp_runners: collections.NamedTuple
         all(netperf, ping, ss, tc..) the runners
+    exp_stop_time: int
+        Time when experiment stops (in seconds)
 
     Returns
     -------
     List[multiprocessing.Process]
         flow generation and stats collection processes
+        + progress bar process
     """
     workers = []
 
     for runners in exp_runners:
         workers.extend([Process(target=runner.run) for runner in runners])
+
+    # Add progress bar process
+    if config.get_value("show_progress_bar"):
+        workers.extend([Process(target=progress_bar, args=(exp_stop_time,))])
 
     return workers
 
@@ -516,6 +528,27 @@ def setup_ping_runners(dependency, ping_schedules):
     else:
         logger.warning("ping not found.")
     return runners
+
+
+def progress_bar(stop_time, precision=1):
+    """
+    Show a progress bar from from 0 `units` to `stop_time`
+
+    The time unit is decided by `precision` in seconds. It is
+    1s by default.
+
+    Parameters
+    -----------
+    stop_time : int
+        The time needed 100% completion
+    precision : int
+        Time unit for updating progress bar. 1 second be default
+    """
+
+    print()
+    for _ in tqdm(range(0, stop_time, precision), desc="Experiment Progress"):
+        sleep(precision)
+    print()
 
 
 def cleanup():

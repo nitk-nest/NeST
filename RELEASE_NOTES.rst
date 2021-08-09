@@ -13,7 +13,8 @@ New user-visible features
 -------------------------
 - !121: Added option to enable/disable offloads on interfaces.
 - !123: Added support for Address Helper.
-- !114: Added support for Switch
+- !114: Added support for Switch.
+- !135: Added experiment progress bar.
 
 Bugs fixed
 ----------

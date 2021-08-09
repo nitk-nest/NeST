@@ -29,6 +29,9 @@ Now, let's take a look at all the parametes that can be configured
 | **readme_in_stats_folder (true)** - When set to True, a readme file is added in the results folder, with information about how the results are stored
 | ``true, false``
 
+| **show_progress_bar (true)** - When set to True, a progress bar indicating experiment progress is shown.
+| ``true, false``
+
 | **routing_suite ("quagga")** - A string, which tells which suite is to be used for dynamic routing
 | ``"quagga", "frr"``
 

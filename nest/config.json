@@ -2,7 +2,8 @@
     "engine" : {},
     "experiment" : {
         "plot_results": true,
-        "readme_in_stats_folder": true
+        "readme_in_stats_folder": true,
+        "show_progress_bar": true
     },
     "routing" : {
         "routing_suite": "quagga",
