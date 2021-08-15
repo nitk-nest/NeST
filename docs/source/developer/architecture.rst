@@ -1,5 +1,5 @@
 .. SPDX-License-Identifier: GPL-2.0-only
-   Copyright (c) 2019-2021 NITK Surathkal
+    Copyright (c) 2019-2021 NITK Surathkal
 
 Architecture
 ============
@@ -9,9 +9,9 @@ the first modules to be added to NeST, and any new modules that are added and
 might be added in the future mostly extend these core modules. These modules
 are::
 
-   1. Topology Module
-   2. Experiment Module
-   3. Engine Module
+    1. Topology Module
+    2. Experiment Module
+    3. Engine Module
 
 Additionally, we will also look into a small but important module called
 ``Topology Map``.
@@ -19,7 +19,7 @@ Additionally, we will also look into a small but important module called
 The below image shows the interaction among these modules:
 
 .. image:: ../assets/NeST_Architecture_Diagram.jpg
-    :alt: NeST Architecture Diagram
+     :alt: NeST Architecture Diagram
 
 Topology Module
 ---------------
@@ -72,7 +72,7 @@ example, below is the command to create a network namespace in linux:
 
 .. code-block:: console
 
-   $ ip netns add node
+    $ ip netns add node
 
 In engine, we have a function called ``create_ns``, which internally calls the
 above command. The ``create_ns`` API is used by topology module, in the

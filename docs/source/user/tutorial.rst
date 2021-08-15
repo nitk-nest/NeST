@@ -1,5 +1,5 @@
 .. SPDX-License-Identifier: GPL-2.0-only
-   Copyright (c) 2019-2021 NITK Surathkal
+    Copyright (c) 2019-2021 NITK Surathkal
 
 Tutorial
 ========
@@ -17,7 +17,7 @@ Below is the ASCII representation of the topology:
 
 .. code-block:: sh
 
-   n1 ---- n2
+    n1 ---- n2
 
 Above, we have two **nodes**, ``n1`` and ``n2`` connected via an ethernet cable.
 Let's build this topology using NeST!
@@ -31,8 +31,8 @@ into the editor one by one. The entire source code will be given at the end.
 
 The very first step is to import NeST::
 
-   from nest.experiment import *
-   from nest.topology import *
+    from nest.experiment import *
+    from nest.topology import *
 
 The ``topology`` submodule in NeST provides APIs to build emulated network
 topologies, and the ``experiment`` submodule provides APIs to run network
@@ -40,11 +40,11 @@ experiments in the emulated topologies.
 
 Next, let's create the two nodes, ``n1`` and ``n2``::
 
-   n1 = Node("n1")
-   n2 = Node("n2")
+    n1 = Node("n1")
+    n2 = Node("n2")
 
 ``Node`` is a class defined in NeST which emulates a node internally.  Note that
-``Node`` takes a string parameter, representing the node name.  This will be
+``Node`` takes a string parameter, representing the node name.   This will be
 needed later while using the experiment module.  (Internally, ``Node`` uses
 network namespaces for emulation. Refer :ref:`Introduction to Developer Docs`
 to know more).
@@ -52,7 +52,7 @@ to know more).
 Now that two nodes are created, let's connect them using "virtual ethernet
 cables" (veth pairs)::
 
-   (n1_n2, n2_n1) = connect(n1, n2)
+    (n1_n2, n2_n1) = connect(n1, n2)
 
 The ``connect`` API firstly creates a ``veth`` pair, which are two network
 interfaces connected to each other. Next, it assigns one of the interfaces to
@@ -64,8 +64,8 @@ connected to each other!
 We are just one step away from sending packets between ``n1`` and ``n2``. We
 will need to assign addresses to each of the interfaces first::
 
-   n1_n2.set_address("10.0.0.1/24")
-   n2_n1.set_address("10.0.0.2/24")
+    n1_n2.set_address("10.0.0.1/24")
+    n2_n1.set_address("10.0.0.2/24")
 
 We have assigned address ``10.0.0.1`` to ``n1_n2`` and ``10.0.0.2`` to
 ``n2_n1``. The ``/24`` in the address specifies the subnet and we want
@@ -77,8 +77,8 @@ and run the below command in the same directory as the ``p2p.py`` file:
 
 .. code-block:: console
 
-   $ sudo python3 p2p.py
-   [INFO] : Cleaned up environment!
+    $ sudo python3 p2p.py
+    [INFO] : Cleaned up environment!
 
 If you get output shown above, then the program ran successfully for you!
 If not, then there is likely an error in the way NeST was installed. Please
@@ -93,16 +93,16 @@ parameters in the traffic as plots.
 
 The ``p2p.py`` upto this point should contain the following::
 
-   from nest.experiment import *
-   from nest.topology import *
+    from nest.experiment import *
+    from nest.topology import *
 
-   n1 = Node("n1:)
-   n2 = Node("n2")
+    n1 = Node("n1:)
+    n2 = Node("n2")
 
-   (n1_n2, n2_n1) = connect(n1, n2)
+    (n1_n2, n2_n1) = connect(n1, n2)
 
-   n1_n2.set_address("10.0.0.1/24")
-   n2_n1.set_address("10.0.0.2/24")
+    n1_n2.set_address("10.0.0.1/24")
+    n2_n1.set_address("10.0.0.2/24")
 
 ii) Running network experiment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -110,8 +110,8 @@ ii) Running network experiment
 Firstly, let's set some delay and bandwidth to the link between ``n1`` and
 ``n2``::
 
-   n1_n2.set_attributes("5mbit", "5ms")
-   n2_n1.set_attributes("10mbit", "100ms")
+    n1_n2.set_attributes("5mbit", "5ms")
+    n2_n1.set_attributes("10mbit", "100ms")
 
 The first API call, ``n1_n2.set_attributes("5mbit", "5ms")`` sets the bandwith
 to be ``5 mbit`` and delay to be ``5 ms`` in the link, in the direction of
@@ -125,7 +125,7 @@ higher than upload bandwidth.
 Next, let's define a ``Flow`` object, representing the network traffic to be
 generated in the topology::
 
-   flow = Flow(n1, n2, n2_n1.address, 0, 60, 2)
+    flow = Flow(n1, n2, n2_n1.address, 0, 60, 2)
 
 The above API defines a flow between the two nodes ``n1`` and ``n2``.  The
 parameters of ``Flow`` are: `source_node`, `destination_node`,
@@ -139,10 +139,10 @@ scenrios where we have mutiple flows with different start and stop times.
 Note that we just defined a ``Flow`` object above, it doesn't actually
 create the network traffic. We shall do that below::
 
-   exp = Experiment('tcp_2up')
-   exp.add_tcp_flow(flow)
+    exp = Experiment('tcp_2up')
+    exp.add_tcp_flow(flow)
 
-   exp.run()
+    exp.run()
 
 First we create an ``Experiment`` object. Note that it takes in string parameter
 for experiment name. We have named it as 'tcp_2up' since we are generating a
@@ -158,42 +158,42 @@ the output we get!
 
 The ``p2p.py`` at this point should be::
 
-   from nest.experiment import *
-   from nest.topology import *
+    from nest.experiment import *
+    from nest.topology import *
 
-   n1 = Node('n1')
-   n2 = Node('n2')
+    n1 = Node('n1')
+    n2 = Node('n2')
 
-   (n1_n2, n2_n1) = connect(n1, n2)
+    (n1_n2, n2_n1) = connect(n1, n2)
 
-   n1_n2.set_address('10.0.0.1/24')
-   n2_n1.set_address('10.0.0.2/24')
+    n1_n2.set_address('10.0.0.1/24')
+    n2_n1.set_address('10.0.0.2/24')
 
-   n1_n2.set_attributes('5mbit', '5ms')
-   n2_n1.set_attributes('10mbit', '100ms')
+    n1_n2.set_attributes('5mbit', '5ms')
+    n2_n1.set_attributes('10mbit', '100ms')
 
-   flow = Flow(n1, n2, n2_n1.address, 0, 60, 2)
+    flow = Flow(n1, n2, n2_n1.address, 0, 60, 2)
 
-   exp = Experiment('tcp_2up')
-   exp.add_tcp_flow(flow)
+    exp = Experiment('tcp_2up')
+    exp.add_tcp_flow(flow)
 
-   exp.run()
+    exp.run()
 
 Save the ``p2p.py`` file and run the below command in your terminal:
 
 .. code-block:: console
 
-   $ sudo python3 p2p.py
+    $ sudo python3 p2p.py
 
-   [INFO] : Running experiment tcp_2up
-   [INFO] : Running 2 netperf flows from n1 to 10.0.0.2...
-   [INFO] : Running ss on nodes...
-   [INFO] : Experiment complete!
-   [INFO] : Parsing statistics...
-   [INFO] : Output results as JSON dump
-   [INFO] : Plotting results...
-   [INFO] : Plotting complete!
-   [INFO] : Cleaned up environment!
+    [INFO] : Running experiment tcp_2up
+    [INFO] : Running 2 netperf flows from n1 to 10.0.0.2...
+    [INFO] : Running ss on nodes...
+    [INFO] : Experiment complete!
+    [INFO] : Parsing statistics...
+    [INFO] : Output results as JSON dump
+    [INFO] : Plotting results...
+    [INFO] : Plotting complete!
+    [INFO] : Cleaned up environment!
 
 We have run a network experiment on our topology! You will find a folder
 generated by NeST whose name looks similar to: ``tcp_2up(12-01-2021-12:29:34)_dump``.
@@ -204,15 +204,15 @@ of the folder should be as follows:
 
 .. code-block:: console
 
-   $ ls -1 tcp_2up(12-01-2021-12.29.34)_dump
-   netperf/
-   netperf.json
-   ping/
-   ping.json
-   README.txt
-   ss/
-   ss.json
-   README.txt
+    $ ls -1 tcp_2up(12-01-2021-12.29.34)_dump
+    netperf/
+    netperf.json
+    ping/
+    ping.json
+    README.txt
+    ss/
+    ss.json
+    README.txt
 
 That's a handful of files! Among all those files, we see a file called
 ``README.txt``. This file describes in detail the contents of the files

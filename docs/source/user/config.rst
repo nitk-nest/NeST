@@ -1,5 +1,5 @@
 .. SPDX-License-Identifier: GPL-2.0-only
-   Copyright (c) 2019-2021 NITK Surathkal
+    Copyright (c) 2019-2021 NITK Surathkal
 
 Config Usage
 ============
@@ -19,9 +19,9 @@ the higher priority is chosen)
 Now, let's take a look at all the parametes that can be configured
 
 .. note::
-   | To be read as
-   | **<Parameter> (Default_value)** - Description
-   | Possible values
+    | To be read as
+    | **<Parameter> (Default_value)** - Description
+    | Possible values
 
 | **plot_results (true)** - When set to True, the results are plotted
 | ``true, false``
