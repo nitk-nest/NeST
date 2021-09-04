@@ -90,6 +90,14 @@ master to get the latest changes. **Do not create a merge commit**.
 An exception to the above *rule* is if you intend to squash your commits
 when merging the MR.
 
+### Pushing changes to a Merge Request
+
+During the review of an MR by a developer, you may be required to make some changes
+to it. Please ensure that you add the requested changes to the same MR and **do not**
+create a new MR. The requested changes may or may not need a new commit. Incase the
+requested changes don't require a separate commit, please make the changes to one of the
+existing commits(using `git rebase`) and force push to the same MR.
+
 ## Styleguides
 
 We highly recommend installing the following tools and setting up git
