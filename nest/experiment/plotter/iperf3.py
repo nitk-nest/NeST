@@ -83,11 +83,11 @@ def _plot_iperf3_flow(flow, node, dest_ip, local_port):
     (timestamp, sending_rate) = values
 
     fig = simple_plot(
-        "Iperf3",
+        "",
         timestamp,
         sending_rate,
-        "Time (s)",
-        "Sending rate",
+        "Time (Seconds)",
+        "Sending Rate (Mbps)",
         legend_string=f"{node} from port {local_port} to {dest_ip}",
     )
 

@@ -56,11 +56,11 @@ def _plot_ping_flow(flow, node, dest):
         timestamp.append(relative_time)
 
     fig = simple_plot(
-        "Ping",
+        "",
         timestamp,
         rtt,
-        "Time (s)",
-        "RTT (ms)",
+        "Time (Seconds)",
+        "Ping Latency (ms)",
         legend_string=f"{node} to {dest}",
     )
     filename = "{node}_{dest}_ping.png".format(node=node, dest=dest)

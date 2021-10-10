@@ -24,10 +24,10 @@ def _get_ss_params_units():
     Obtain the units of each ss parameters
     """
     units = {
-        "cwnd": None,
+        "cwnd": "Packets",
         "rtt": "ms",
         "dev_rtt": "ms",
-        "ssthresh": None,
+        "ssthresh": "Packets",
         "rto": "ms",
         "delivery_rate": "Mbps",
         "pacing_rate": "Mbps",
@@ -42,13 +42,13 @@ def _get_nicer_param_names():
     'delivery_rate' -> 'Delivery rate'
     """
     nice_names = {
-        "cwnd": "CWND",
+        "cwnd": "Congestion Window",
         "rtt": "RTT",
-        "dev_rtt": "DevRTT",
-        "ssthresh": "ssthresh",
-        "rto": "RTO",
-        "delivery_rate": "Delivery rate",
-        "pacing_rate": "Pacing rate",
+        "dev_rtt": "Deviation in RTT",
+        "ssthresh": "Slow Start Threshold",
+        "rto": "TCP Retransmission Timeout",
+        "delivery_rate": "Delivery Rate",
+        "pacing_rate": "Pacing Rate",
     }
     return nice_names
 
@@ -159,10 +159,10 @@ def _plot_ss_flow(flow, node, dest_ip, dest_port):
 
     for param in flow_params:
         fig = simple_plot(
-            "Socket Stats (ss)",
+            "Socket Statistics",
             timestamp,
             flow_params[param],
-            "Time (s)",
+            "Time (Seconds)",
             _get_ylabel(param),
             legend_string=f"{node} to {dest_ip}:{dest_port}",
         )
@@ -229,7 +229,10 @@ def plot_ss(parsed_data):
                             )
 
                         fig = mix_plot(
-                            "Socket Stats (ss)", data, "Time (s)", _get_ylabel(param)
+                            "Socket Statistics",
+                            data,
+                            "Time (Seconds)",
+                            _get_ylabel(param),
                         )
                         filename = f"{node}_{dest_ip}_{param}.png"
                         Pack.dump_plot("ss", filename, fig)

@@ -91,7 +91,7 @@ def mix_plot(title, data, x_label, y_label, with_sum=False):
             y = np.interp(x, x_list, y_list, left=0, right=0)
             total += y
 
-        ax.plot(x, total, label="sum", alpha=0.5)
+        ax.plot(x, total, label="Aggregate", alpha=0.5)
 
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)

@@ -73,10 +73,10 @@ def _plot_tc_stats(stats, node, interface):
 
     for param in stats_params:
         fig = simple_plot(
-            "Traffic Control (tc)",
+            "Traffic Control (tc) Statistics",
             timestamp,
             stats_params[param],
-            "Time (s)",
+            "Time (Seconds)",
             param,
             legend_string=f"Interface {interface} in {node}",
         )

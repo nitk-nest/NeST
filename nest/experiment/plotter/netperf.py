@@ -57,11 +57,11 @@ def _plot_netperf_flow(flow, node, dest):
 
     # TODO: Check if sending_rate is always in Mbps
     fig = simple_plot(
-        "Netperf",
+        "",
         timestamp,
         sending_rate,
-        "Time (s)",
-        "Sending rate (Mbps)",
+        "Time (Seconds)",
+        "Sending Rate (Mbps)",
         legend_string=f"{node} to {dest}",
     )
 
@@ -98,10 +98,10 @@ def plot_netperf(parsed_data):
 
         if len(all_flow_data) > 1:
             fig = mix_plot(
-                "Netperf",
+                "",
                 all_flow_data,
-                "Time (s)",
-                "Sending rate (Mbps)",
+                "Time (Seconds)",
+                "Sending Rate (Mbps)",
                 with_sum=True,
             )
             filename = f"{node}_sending_rate.png"
