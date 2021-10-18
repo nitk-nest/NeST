@@ -16,7 +16,7 @@ working directory as "`nest-config.json`" with increasing priority (if
 the same parameter has different values in different files, the one with
 the higher priority is chosen)
 
-Now, let's take a look at all the parametes that can be configured
+Now, let's take a look at all the parameters that can be configured
 
 .. note::
     | To be read as

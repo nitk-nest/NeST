@@ -14,12 +14,12 @@ top of your NeST program::
 
     config.set_value("delete_namespaces_on_termination", False)
 
-Since by default NeST assigns "randomly" generated names to each namespace, you
+Since, by default, NeST assigns "randomly" generated names to each namespace, you
 might also want to add the below line in your code to disable it::
 
     config.set_value("assign_random_names", False)
 
-Note that if the above line is addded, then Node names must be atmost 3
+Note that if the above line is added, then Node names must be at most 3
 characters long. This is due to the limitation of naming interfaces in `ip link`
 command.
 

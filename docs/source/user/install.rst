@@ -53,7 +53,7 @@ latest source code with unreleased features.
 2. Install via pip
 
     If you are developing or contributing to NeST development, then it is better
-    to install NeST in editable mode.  In editable mode, your code changes are
+    to install NeST in editable mode. In editable mode, your code changes are
     instantly propagated to the library code without reinstalling::
 
         $ python3 -m pip install -e .
@@ -72,7 +72,7 @@ of them. The dependencies you install will depend on your use case and how you
 would like to use NeST.
 
 **Core dependencies** will be marked as bold and *Optional dependencies*
-will be maked in italics.
+will be marked in italics.
 
 1. Ensure **iproute2** suite is installed with your kernel
 
