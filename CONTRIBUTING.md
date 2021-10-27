@@ -104,7 +104,7 @@ We highly recommend installing the following tools and setting up git
 hooks as shown below (the below commands should be run inside NeST repo):
 
 ```sh
-$ pip install pre-commit gitlint
+$ python3 -m pip install pre-commit gitlint
 $ pre-commit install
 $ gitlint install-hook
 ```
