@@ -14,5 +14,7 @@ __pycache__
 # logs
 *.log
 
-# Output on nest install
-nitk_nest.egg-info
+# Output on nest build
+nest.egg-info/
+nitk_nest.egg-info/
+dist/

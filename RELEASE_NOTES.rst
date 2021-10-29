@@ -3,8 +3,8 @@ NeST RELEASE NOTES
 
 This file contains NeST release notes (most recent release first).
 
-Release 0.4-dev (Not yet available)
-===================================
+Release 0.4 (Feb 15, 2022)
+==========================
 
 If available, the numbers below mark the issue numbers on GitLab (prefixed by '#'),
 or GitLab merge request number (prefixed by '!').
@@ -32,8 +32,8 @@ Bugs fixed
 - !182: Empty files are not created in experiment dump.
 - !184: Fixed API breakage in LDP routing.
 
-Release 0.3 (April 1, 2021)
-===========================
+Release 0.3 (Apr 1, 2021)
+=========================
 
 If available, the numbers below mark the issue numbers on GitLab (prefixed by '#'),
 or GitLab merge request number (prefixed by '!').
@@ -84,6 +84,7 @@ Bugs fixed
 Other issues addressed
 ----------------------
 - !26: Add an unit test for experiment module. This improves test coverage from 55% to 71%.
+
 
 Release 0.2 (Nov 03, 2020)
 ==========================

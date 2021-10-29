@@ -16,19 +16,18 @@ with open("nest/version.py") as fp:
 long_description = (here / "README.md").read_text(encoding="utf-8")
 
 # Check for pip versions below 9.0.0
-
 if sys.version_info < (3, 6) or sys.version_info >= (4, 0):
     raise RuntimeError("This package requires Python version >=3.6 and <4")
 
 setup(
-    name="nitk-nest",
+    name="nest",
     version=version["__version__"],
     description="NeST: Network Stack Tester",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://nitk-nest.github.io/",
+    url="https://nest.nitk.ac.in/",
     author="NITK",
-    author_email="nest.nitk@gmail.com",
+    author_email="nest@nitk.edu.in",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
