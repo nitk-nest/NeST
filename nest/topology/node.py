@@ -228,9 +228,8 @@ class Node:
             `Interface` to be added to `Node`
         """
         self._interfaces.append(interface)
-        interface.node = self
+        interface.node_id = self.id
         engine.add_int_to_ns(self.id, interface.id)
-        TopologyMap.add_interface(self.id, interface.id, interface.name)
 
     def configure_tcp_param(self, param, value):
         """

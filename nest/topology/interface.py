@@ -4,14 +4,10 @@
 """API related to interfaces in topology"""
 
 import logging
+from nest.topology.veth_end import VethEnd
+from nest.topology.ifb import Ifb
 from nest import engine
-from nest.topology_map import TopologyMap
-import nest.global_variables as g_var
 import nest.config as config
-from nest.topology.network import Network
-from .address import Address
-from .id_generator import IdGen
-from . import traffic_control
 
 # Max length of interface when Topology Map is disabled
 # i.e. 'assign_random_names' is set to False in config
@@ -60,35 +56,11 @@ class Interface:
             Name of the interface
         """
 
-        if config.get_value("assign_random_names") is False:
-            if len(interface_name) > MAX_CUSTOM_NAME_LEN:
-                raise ValueError(
-                    f"Interface name {interface_name} is too long. Interface names "
-                    f"should not exceed 15 characters"
-                )
-
         # TODO: name and address should be the only public members
-        self._name = interface_name
-        self._id = IdGen.get_id(interface_name)
-
-        self._address = None
-        self._node = None
-        self._pair = None
-        # Normally this is the default mtu value.
-        self._mtu = 1500
-
+        self._veth_end = VethEnd(interface_name, None, None)
+        self._current_structure = {"bandwidth": False, "delay": False, "qdisc": False}
+        self._ifb = None
         self.set_structure = False
-        self.ifb = None
-
-        # TODO: These are not rightly updated
-        # set_delay and set_bandwidth invoke the
-        # engine function directly
-        self.qdisc_list = []
-        self.class_list = []
-        self.filter_list = []
-
-        # mpls input
-        self._is_mpls_enabled = False
 
     def enable_offload(self, offload_name):
         """
@@ -153,19 +125,19 @@ class Interface:
     @property
     def name(self):
         """Getter for name"""
-        return self._name
+        return self._veth_end.name
 
     @property
     def id(self):
         """Getter for id"""
-        return self._id
+        return self._veth_end.id
 
     @property
     def pair(self):
         """
         Get other pair for this interface (assuming veth)
         """
-        return self._pair
+        return self._veth_end.pair
 
     @pair.setter
     def pair(self, interface):
@@ -177,18 +149,18 @@ class Interface:
         interface : Interface
             The interface to which this interface is connected to
         """
-        self._pair = interface
+        self._veth_end.pair = interface
 
     @property
-    def node(self):
+    def node_id(self):
         """
         Getter for the `Node` associated
         with the interface
         """
-        return self._node
+        return self._veth_end.node_id
 
-    @node.setter
-    def node(self, node):
+    @node_id.setter
+    def node_id(self, node_id):
         """
         Setter for the `Node` associated
         with the interface
@@ -198,12 +170,12 @@ class Interface:
         node : Node
             The node where the interface is to be installed
         """
-        self._node = node
+        self._veth_end.node_id = node_id
 
     @property
     def subnet(self):
         """Getter for the subnet to which the address belongs to"""
-        return self.address.get_subnet()
+        return self._veth_end.address.get_subnet()
 
     @property
     def address(self):
@@ -211,7 +183,7 @@ class Interface:
         Getter for the address associated
         with the interface
         """
-        return self._address
+        return self._veth_end.address
 
     @address.setter
     def address(self, address):
@@ -223,21 +195,14 @@ class Interface:
         address : Address or str
             IP address to be assigned to the interface
         """
-        if isinstance(address, str):
-            address = Address(address)
+        self._veth_end.address = address
 
-        if self.node is not None:
-            engine.assign_ip(self.node.id, self.id, address.get_addr())
-            self._address = address
-        else:
-            # TODO: Create our own error class
-            raise NotImplementedError(
-                "You should assign the interface to node or router before assigning address to it."
-            )
-
-        # Global variable to check if address is ipv6 or not for DAD check
-        if address.is_ipv6() is True:
-            g_var.IS_IPV6 = True
+    @property
+    def ifb(self):
+        """
+        Getter for the ifb attached to this interface
+        """
+        return self._ifb
 
     def enable_mpls(self):
         """
@@ -246,32 +211,20 @@ class Interface:
 
         Run ``sudo modprobe mpls_iptunnel`` to load mpls modules.
         """
-        if self.node is None:
-            raise NotImplementedError(
-                "You should assign the interface to node or router before enabling mpls"
-            )
-        if self.node.mpls_max_label == 0:
-            # property setter.
-            # Alters: net.mpls.platform_labels=100000
-            engine.set_mpls_max_label_node(self.id, int(100000))
-
-        if self._is_mpls_enabled is False:
-            engine.enable_mpls_interface(self.node.id, self.id)
-            self._is_mpls_enabled = True
-            self.mtu = 1504
+        self._veth_end.enable_mpls()
 
     def is_mpls_enabled(self):
         """
         Check if the interface has mpls enabled
         """
-        return self._is_mpls_enabled
+        return self._veth_end.is_mpls_enabled()
 
     @property
     def mtu(self):
         """
         Get the maximum transmit unit value for the interface
         """
-        return self._mtu
+        return self._veth_end.mtu
 
     @mtu.setter
     def mtu(self, mtu_value):
@@ -279,10 +232,7 @@ class Interface:
         Set the maximum transmit unit value for the interface
         Default is 1500 bytes.
         """
-        if self._mtu != mtu_value:
-            engine.set_mtu_interface(self.node.id, self.id, int(mtu_value))
-            self._mtu = mtu_value
-            logger.debug("MTU of interface %s set to %s", self.name, str(self.mtu))
+        self._veth_end.mtu = mtu_value
 
     def get_address(self):
         """
@@ -291,7 +241,7 @@ class Interface:
 
         *NOTE*: Maintained since mentioned in NeST paper.
         """
-        return self.address
+        return self._veth_end.address
 
     def set_address(self, address):
         """
@@ -304,13 +254,13 @@ class Interface:
 
         *NOTE*: Maintained since mentioned in NeST paper.
         """
-        self.address = address
+        self._veth_end.address = address
 
     def disable_ip_dad(self):
         """
         Disables Duplicate addresses Detection (DAD) for an interface.
         """
-        engine.disable_dad(self._node.id, self._id)
+        self._veth_end.disable_ip_dad()
 
     def set_mode(self, mode):
         """
@@ -321,26 +271,15 @@ class Interface:
         mode : string
             interface mode to be set
         """
-        if mode in ("UP", "DOWN"):
-            if self.node is not None:
-                engine.set_interface_mode(self.node.id, self.id, mode.lower())
-            else:
-                # TODO: Create our own error class
-                raise NotImplementedError(
-                    "You should assign the interface to node or router before setting it's mode"
-                )
-        else:
-            raise ValueError(
-                f'{mode} is not a valid mode (it has to be either "UP" or "DOWN")'
-            )
+        self._veth_end.set_mode(mode)
 
     def get_qdisc(self):
         """
         Note that this is the qdisc set inside
         the IFB.
         """
-        if self.ifb is not None:
-            for qdisc in self.ifb.qdisc_list:
+        if self._ifb is not None:
+            for qdisc in self._ifb.qdisc_list:
                 if qdisc.parent == "1:1" and qdisc.handle == "11:":
                     return qdisc
         return None
@@ -360,16 +299,7 @@ class Interface:
         handle : string
             id of the filter (Default value = '')
         """
-        self.qdisc_list.append(
-            traffic_control.Qdisc(
-                self.node.id, self.id, qdisc, parent, handle, **kwargs
-            )
-        )
-
-        # Add qdisc to TopologyMap
-        TopologyMap.add_qdisc(self.node.id, self.id, qdisc, handle, parent=parent)
-
-        return self.qdisc_list[-1]
+        self._veth_end.add_qdisc(qdisc, parent, handle, **kwargs)
 
     def delete_qdisc(self, handle):
         """
@@ -380,17 +310,7 @@ class Interface:
         handle : string
             Handle of the qdisc to be deleted
         """
-        # TODO: Handle this better by using the destructor in traffic-control
-        counter = 0
-        for qdisc in self.qdisc_list:
-            if qdisc.handle == handle:
-                engine.delete_qdisc(
-                    qdisc.namespace_id, qdisc.dev_id, qdisc.parent, qdisc.handle
-                )
-                TopologyMap.delete_qdisc(self.node.id, self.id, handle)
-                self.qdisc_list.pop(counter)
-                break
-            counter += 1
+        self._veth_end.delete_qdisc(handle)
 
     def add_class(self, qdisc, parent="root", classid="", **kwargs):
         """
@@ -405,13 +325,7 @@ class Interface:
         classid : string
             id of the class (Default value = '')
         """
-        self.class_list.append(
-            traffic_control.Class(
-                self.node.id, self.id, qdisc, parent, classid, **kwargs
-            )
-        )
-
-        return self.class_list[-1]
+        self._veth_end.add_class(qdisc, parent, classid, **kwargs)
 
     # pylint: disable=too-many-arguments
     def add_filter(
@@ -448,23 +362,11 @@ class Interface:
         # TODO: Verify type of parameters
         # TODO: Reduce arguments to the engine functions by finding parent and handle automatically
 
-        self.filter_list.append(
-            traffic_control.Filter(
-                self.node.id,
-                self.id,
-                protocol,
-                priority,
-                filtertype,
-                flowid,
-                parent,
-                handle,
-                **kwargs,
-            )
+        self._veth_end.add_filter(
+            priority, filtertype, flowid, protocol, parent, handle, **kwargs
         )
 
-        return self.filter_list[-1]
-
-    def _create_and_mirred_to_ifb(self, dev_name):
+    def _create_and_mirred_to_ifb(self):
         """
         Creates a IFB for the interface so that a Qdisc can be
         installed on it
@@ -474,53 +376,10 @@ class Interface:
 
         Parameters
         ----------
-        dev_name : string
-            The interface to which the ifb was added
         """
-        ifb_name = "ifb-" + dev_name
-        if config.get_value("assign_random_names") is False:
-            if len(ifb_name) > MAX_CUSTOM_NAME_LEN:
-                raise ValueError(
-                    f"Auto-generated IFB interface name {ifb_name} is too long. "
-                    f"The length of name should not exceed 15 characters."
-                )
 
-        self.ifb = Interface(ifb_name)
-        engine.create_ifb(self.ifb.id)
-
-        # Add ifb to namespace
-        self.node._add_interface(self.ifb)
-
-        # Set interface up
-        self.ifb.set_mode("UP")
-
-        default_route = {"default": "1"}
-
-        # TODO: find how to set a good bandwidth
-        default_bandwidth = {"rate": config.get_value("default_bandwidth")}
-
-        # TODO: Standardize this; seems like arbitrary handle values
-        # were chosen.
-        # HTB class is added since, to use a filter and redirect traffic,
-        # a classid is needed and htb gives it that, since it's a class
-        self.ifb.add_qdisc("htb", "root", "1:", **default_route)
-        self.ifb.add_class("htb", "1:", "1:1", **default_bandwidth)
-        self.ifb.add_qdisc("pfifo", "1:1", "11:")
-
-        action_redirect = {
-            "match": "u32 0 0",  # from man page examples
-            "action": "mirred",
-            "egress": "redirect",
-            "dev": self.ifb.id,
-        }
-
-        # NOTE: Use Filter API
-        # Action mirred, redicting traffic, etc is needed since netem and
-        # the user giver qdisc are both classless and cannot be added to
-        # the same device
-        engine.add_filter(
-            self.node.id, self.id, "all", "1", "u32", parent="1:", **action_redirect
-        )
+        ifb_name = "ifb-" + self.name
+        self._ifb = Ifb(ifb_name, self.node_id, self.id)
 
     def _set_structure(self):
         """
@@ -558,15 +417,19 @@ class Interface:
         # TODO: Check if this is a redundant condition
         # TODO: Let user set the unit
 
-        if self.set_structure is False:
-            self._set_structure()
+        self._set_structure()
+        self._create_and_mirred_to_ifb()
+        # Set the same bandwidth in the IFB too
+        self._ifb.set_bandwidth(min_rate)
+
+        self._current_structure["bandwitdh"] = True
 
         min_bandwidth_parameter = {"rate": min_rate}
 
         # TODO: Check the created API
         # TODO: This should be handled by self.change_class
         engine.change_class(
-            self.node.id, self.id, "1:", "htb", "1:1", **min_bandwidth_parameter
+            self.node_id, self.id, "1:", "htb", "1:1", **min_bandwidth_parameter
         )
 
     def set_delay(self, delay):
@@ -589,11 +452,7 @@ class Interface:
 
         delay_parameter = {"delay": delay}
 
-        # TODO: This should be handled by self.change_qdisc
-        # It could lead to a potential bug!
-        engine.change_qdisc(
-            self.node.id, self.id, "netem", "1:1", "11:", **delay_parameter
-        )
+        self._veth_end.change_qdisc("11:", "netem", **delay_parameter)
 
     def set_packet_corruption(self, corrupt_rate, correlation_rate=""):
         """
@@ -604,18 +463,16 @@ class Interface:
         Parameters
         ----------
         corrupt_rate : str
-        rate of the packets to be corrupted
+            rate of the packets to be corrupted
         correlation_rate : str
-        correlation between the corrupted packets
+            correlation between the corrupted packets
         """
         if self.set_structure is False:
             self._set_structure()
 
         corrupt_parameter = {"corrupt": corrupt_rate, "": correlation_rate}
 
-        engine.change_qdisc(
-            self.node.id, self.id, "netem", "1:1", "11:", **corrupt_parameter
-        )
+        self._veth_end.change_qdisc("11:", "netem", **corrupt_parameter)
 
     def set_packet_loss(self, loss_rate, correlation_rate=""):
         """
@@ -636,9 +493,7 @@ class Interface:
 
         loss_parameter = {"loss": loss_rate, "": correlation_rate}
 
-        engine.change_qdisc(
-            self.node.id, self.id, "netem", "1:1", "11:", **loss_parameter
-        )
+        self._veth_end.change_qdisc("11:", "netem", **loss_parameter)
 
     def set_qdisc(self, qdisc, bandwidth, **kwargs):
         """
@@ -660,17 +515,15 @@ class Interface:
         if self.set_structure is False:
             self._set_structure()
 
-        if self.ifb is None:
-            self._create_and_mirred_to_ifb(self.name)
+        if self._ifb is None:
+            self._create_and_mirred_to_ifb()
 
         min_bandwidth_parameter = {"rate": bandwidth}
 
-        engine.change_class(
-            self.node.id, self.ifb.id, "1:", "htb", "1:1", **min_bandwidth_parameter
-        )
+        self._ifb.change_class("htb", "1:", "1:1", **min_bandwidth_parameter)
 
-        self.ifb.delete_qdisc("11:")
-        self.ifb.add_qdisc(qdisc, "1:1", "11:", **kwargs)
+        self._ifb.delete_qdisc("11:")
+        self._ifb.add_qdisc(qdisc, "1:1", "11:", **kwargs)
 
     def set_attributes(self, bandwidth, delay, qdisc=None, **kwargs):
         """
@@ -821,7 +674,7 @@ def _number_of_connections(node1, node2):
         node1, node2 = node2, node1
 
     for interface in node1.interfaces:
-        if interface.pair.node == node2:
+        if interface.pair.node_id == node2.id:
             connections = connections + 1
 
     return connections
