@@ -56,8 +56,6 @@ class Node:
         self._name = name
         self._id = IdGen.get_id(name)
         self._interfaces = []
-        # mpls max platform label kernel parameter
-        self._mpls_max_label = 0
         # Global variable disables when any new node is created
         # to ensure DAD check (if applicable)
         g_var.IS_DAD_CHECKED = False
@@ -376,22 +374,6 @@ class Node:
         for i in range(len(self._interfaces)):
             interface_name = self._interfaces[i]
             interface_name.disable_ip_dad()
-
-    @property
-    def mpls_max_label(self):
-        """
-        Return the maximum mpls label set in the kernel for the current namespace
-        """
-        return self._mpls_max_label
-
-    @mpls_max_label.setter
-    def mpls_max_label(self, max_label=100000):
-        """
-        Sets the maximum mpls label in kernel for the current namespace
-        Default = 100000
-        """
-        engine.set_mpls_max_label_node(self.id, int(max_label))
-        self._mpls_max_label = int(max_label)
 
     @property
     def id(self):

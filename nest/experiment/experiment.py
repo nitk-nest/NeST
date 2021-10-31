@@ -192,7 +192,7 @@ class Experiment:
 
         self.qdisc_stats.append(
             {
-                "ns_id": interface.node.id,
+                "ns_id": interface.node_id,
                 "int_id": interface.ifb.id,
                 "qdisc": interface.get_qdisc().qdisc,
                 "stats": stats,

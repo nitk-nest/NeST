@@ -253,7 +253,7 @@ class Interface:
         if self.node.mpls_max_label == 0:
             # property setter.
             # Alters: net.mpls.platform_labels=100000
-            self.node.mpls_max_label = 100000
+            engine.set_mpls_max_label_node(self.id, int(100000))
 
         if self._is_mpls_enabled is False:
             engine.enable_mpls_interface(self.node.id, self.id)
