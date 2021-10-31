@@ -4,7 +4,8 @@
 """
 Helper class for routing
 """
-
+import os
+import pwd
 import time
 import logging
 import importlib
@@ -125,6 +126,7 @@ class RoutingHelper:
         self.ldp_routers = ldp_routers if ldp_routers is not None else []
         self.conf_dir = None
         self.log_dir = None
+        self.socket_dir = None
         module_str, class_str = RoutingHelper._module_map[self.protocol]
         module = importlib.import_module(module_str)
         self.protocol_class = getattr(module, class_str)
@@ -143,7 +145,11 @@ class RoutingHelper:
         if self.protocol == "static":
             static_routing = StaticRouting()
             static_routing.run_static_routing()
-
+        elif config.get_value("routing_suite") == "bird":
+            try:
+                self._run_dyn_routing_bird()
+            except RequiredDependencyNotFound:
+                return
         else:
             try:
                 # Warning for using ISIS daemons along with other daemons
@@ -170,8 +176,14 @@ class RoutingHelper:
         dir_path: path of the directory to be created
 
         """
-        mkdir(dir_path)
-        chown(dir_path, user=config.get_value("routing_suite"))
+        if path.exists(dir_path):
+            logger.warning("{dir_path} already exists")
+        else:
+            mkdir(dir_path)
+            if config.get_value("routing_suite") == "bird":
+                chown(dir_path, user=pwd.getpwuid(os.getuid())[0])
+            else:
+                chown(dir_path, user=config.get_value("routing_suite"))
 
     def _create_conf_directory(self):
         """
@@ -207,14 +219,39 @@ class RoutingHelper:
         """
         Setup default routes in hosts
         """
-        for host in self.hosts:
-            host.add_route(
-                "DEFAULT",
-                host.interfaces[0],
-                host.interfaces[0].pair.get_address(
-                    not self.ipv6_routing, self.ipv6_routing, True
-                )[0],
-            )
+        if config.get_value("routing_suite") == "bird":
+            for host in self.hosts:
+                host.add_route("DEFAULT", host.interfaces[0])
+            router_interfaces = set()
+            for router in self.routers:
+                for interface in router.interfaces:
+                    router_interfaces.add(interface)
+            for router in self.routers:
+                for interface in router.interfaces:
+                    if interface.pair not in router_interfaces:
+                        router.add_route(interface.pair.get_address(), interface)
+        else:
+            for host in self.hosts:
+                host.add_route(
+                    "DEFAULT",
+                    host.interfaces[0],
+                    host.interfaces[0].pair.get_address(
+                        not self.ipv6_routing, self.ipv6_routing, True
+                    )[0],
+                )
+
+    def _run_dyn_routing_bird(self):
+        """
+        to create config dir and run bird
+        """
+        logger.info("Running bird on routers")
+        self.socket_dir = ""
+        self.conf_dir = self._create_conf_directory()
+        if config.get_value("routing_logs"):
+            self.log_dir = self._create_log_directory()
+        for router in self.routers:
+            self._run_routing_protocol(router)
+        self._check_for_convergence()
 
     def _run_dyn_routing(self):
         """
@@ -254,13 +291,23 @@ class RoutingHelper:
         """
         Create required config file and run `self.protocol`
         """
-        protocol = self.protocol_class(
-            router.id,
-            self.ipv6_routing,
-            router.interfaces,
-            self.conf_dir,
-            log_dir=self.log_dir,
-        )
+        if config.get_value("routing_suite") == "bird":
+            protocol = self.protocol_class(
+                router.id,
+                self.ipv6_routing,
+                router.interfaces,
+                self.conf_dir,
+                log_dir=self.log_dir,
+                socket_dir=self.socket_dir,
+            )
+        else:
+            protocol = self.protocol_class(
+                router.id,
+                self.ipv6_routing,
+                router.interfaces,
+                self.conf_dir,
+                log_dir=self.log_dir,
+            )
         protocol.create_basic_config()
         protocol.run()
         self.protocol_list.append(protocol)
@@ -366,8 +413,8 @@ class RoutingHelper:
                         pass
 
         # Delete config directory
-        if self.conf_dir is not None and path.isdir(self.conf_dir):
-            rmtree(self.conf_dir)
+        if path.isdir(self.conf_dir):
+            rmtree(self.conf_dir, ignore_errors=True)
 
         # Change ownership of log files to current user
         if self.log_dir is not None and path.isdir(self.log_dir):

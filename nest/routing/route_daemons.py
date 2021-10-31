@@ -4,10 +4,11 @@
 """
 Base class for Routing daemons.
 """
-
+import os
 from abc import ABC, abstractmethod
 import io
 import logging
+import pwd
 import shutil
 from nest.engine.dynamic_routing import supports_dynamic_routing
 from nest import config
@@ -86,6 +87,9 @@ class RoutingDaemonBase(ABC):
         self.router_ns_id = router_ns_id
         self.conf_file = f"{conf_dir}/{self.router_ns_id}_{daemon}.conf"
         self.pid_file = f"{conf_dir}/{self.router_ns_id}_{daemon}.pid"
+        self.socket_file = None
+        if config.get_value("routing_suite") == "bird":
+            self.socket_file = f"{conf_dir}/{self.router_ns_id}_{daemon}.ctl"
         self.log_file = None
         if kwargs["log_dir"] is not None:
             self.logger.info(
@@ -127,7 +131,10 @@ class RoutingDaemonBase(ABC):
         Creates config file on disk from `self.conf`
         """
         with open(self.conf_file, "w") as conf:
-            shutil.chown(self.conf_file, user=config.get_value("routing_suite"))
+            if config.get_value("routing_suite") == "bird":
+                shutil.chown(self.conf_file, user=pwd.getpwuid(os.getuid())[0])
+            else:
+                shutil.chown(self.conf_file, user=config.get_value("routing_suite"))
             self.conf.seek(0)
             shutil.copyfileobj(self.conf, conf)
 

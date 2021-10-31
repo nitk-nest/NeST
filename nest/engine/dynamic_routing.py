@@ -7,7 +7,6 @@ from nest.engine.util import is_dependency_installed
 from .. import config
 from .exec import exec_subprocess
 
-
 # Path to routing_suite daemon binaries
 FRR_DAEMONPATH = "/usr/lib/frr/"
 
@@ -34,7 +33,7 @@ def run_zebra(ns_id, conf_file, pid_file):
     exec_subprocess(cmd)
 
 
-def run_ripd(ns_id, conf_file, pid_file, ipv6):
+def run_ripd(ns_id, conf_file, pid_file, ipv6, **kwargs):
     """
     Runs the ripd daemon
 
@@ -47,6 +46,7 @@ def run_ripd(ns_id, conf_file, pid_file, ipv6):
     pid_file : str
         path to pid file
     """
+
     if config.get_value("routing_suite") == "frr":
         if ipv6:
             cmd = f"ip netns exec {ns_id} {FRR_DAEMONPATH}ripngd --config_file {conf_file} \
@@ -54,6 +54,13 @@ def run_ripd(ns_id, conf_file, pid_file, ipv6):
         else:
             cmd = f"ip netns exec {ns_id} {FRR_DAEMONPATH}ripd --config_file {conf_file} \
                     --pid_file {pid_file} --daemon -N {ns_id}"
+    elif config.get_value("routing_suite") == "bird":
+        if config.get_value("routing_logs"):
+            cmd = f"ip netns exec {ns_id} bird -c {conf_file} -P {pid_file} \
+                     -s {kwargs['socket_file']} -D {kwargs['log_file']}"
+        else:
+            cmd = f"ip netns exec {ns_id} bird -c {conf_file} -P {pid_file} \
+                    -s {kwargs['socket_file']}"
     else:
         if ipv6:
             cmd = f"ip netns exec {ns_id} ripngd --config_file {conf_file} \
@@ -64,7 +71,7 @@ def run_ripd(ns_id, conf_file, pid_file, ipv6):
     exec_subprocess(cmd)
 
 
-def run_ospfd(ns_id, conf_file, pid_file, ipv6):
+def run_ospfd(ns_id, conf_file, pid_file, ipv6, **kwargs):
     """
     Runs the ospfd daemon
 
@@ -84,6 +91,13 @@ def run_ospfd(ns_id, conf_file, pid_file, ipv6):
         else:
             cmd = f"ip netns exec {ns_id} {FRR_DAEMONPATH}ospfd --config_file {conf_file} \
                 --pid_file {pid_file} --daemon -N {ns_id}"
+    elif config.get_value("routing_suite") == "bird":
+        if config.get_value("routing_logs"):
+            cmd = f"ip netns exec {ns_id} bird -c {conf_file} -P {pid_file} \
+                -s {kwargs['socket_file']} -D {kwargs['log_file']}"
+        else:
+            cmd = f"ip netns exec {ns_id} bird -c {conf_file} -P {pid_file} \
+                -s {kwargs['socket_file']}"
     else:
         if ipv6:
             cmd = f"ip netns exec {ns_id} ospf6d --config_file {conf_file} \
@@ -140,7 +154,7 @@ def run_ldpd(ns_id, conf_file, pid_file):
 
 def supports_dynamic_routing(daemon):
     """
-    Checks whether frr/quagga is installed
+    Checks whether frr/quagga/bird is installed
 
     Parameters
     ----------
@@ -150,10 +164,13 @@ def supports_dynamic_routing(daemon):
     Returns
     -------
     bool
-        true if frr/quagga is installed
+        true if frr/quagga/bird is installed
     """
 
-    if config.get_value("routing_suite") == "quagga":
+    if (
+        config.get_value("routing_suite") == "quagga"
+        or config.get_value("routing_suite") == "bird"
+    ):
         return is_dependency_installed(daemon)
 
     if config.get_value("routing_suite") == "frr":

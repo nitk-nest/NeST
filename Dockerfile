@@ -83,6 +83,16 @@ RUN apt install -y tcpdump
 # Install tshark
 RUN DEBIAN_FRONTEND=noninteractive apt install -y tshark
 
+# Install bird
+RUN git clone --depth 1 --branch 2.0.10 https://gitlab.nic.cz/labs/bird.git
+WORKDIR /bird
+RUN apt install -y autoconf flex bison
+RUN autoreconf
+RUN ./configure
+RUN make
+RUN make install
+WORKDIR /
+
 FROM test as dev
 
 WORKDIR /home
