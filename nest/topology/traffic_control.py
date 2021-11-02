@@ -84,17 +84,19 @@ class TrafficControlHandler:
 
         for qdisc_member in self.qdisc_list:
             if qdisc_member.handle == handle:
+                # In case you want to just change kwargs
                 if qdisc == "":
                     qdisc = qdisc_member.qdisc
                 else:
                     TopologyMap.change_qdisc(self.node_id, self.dev_id, qdisc, handle)
+                    qdisc_member.qdisc = qdisc
                 engine.change_qdisc(
                     self.node_id,
                     self.dev_id,
                     qdisc,
                     qdisc_member.parent,
                     handle,
-                    **kwargs
+                    **kwargs,
                 )
 
     def delete_qdisc(self, handle):
@@ -114,7 +116,7 @@ class TrafficControlHandler:
                     qdisc.node_id, qdisc.dev_id, qdisc.parent, qdisc.handle
                 )
                 TopologyMap.delete_qdisc(self.node_id, self.dev_id, handle)
-                self.qdisc_list.pop(counter)
+                del self.qdisc_list[counter]
                 break
             counter += 1
 
@@ -150,6 +152,8 @@ class TrafficControlHandler:
         """
         for tc_class in self.class_list:
             if tc_class.classid == classid:
+                tc_class.qdisc = qdisc
+                tc_class.parent = parent
                 engine.change_class(
                     self.node_id, self.dev_id, parent, qdisc, classid, **kwargs
                 )
@@ -174,7 +178,7 @@ class TrafficControlHandler:
                     parent,
                     classid,
                 )
-                self.class_list.pop(counter)
+                del self.class_list[counter]
                 break
             counter += 1
 
@@ -187,7 +191,7 @@ class TrafficControlHandler:
         protocol="ip",
         parent="root",
         handle="",
-        **kwargs
+        **kwargs,
     ):
         """
         Design a Filter to assign to a Class or Qdisc
@@ -223,7 +227,7 @@ class TrafficControlHandler:
                 flowid,
                 parent,
                 handle,
-                **kwargs
+                **kwargs,
             )
         )
 
@@ -245,9 +249,13 @@ class TrafficControlHandler:
                     parent,
                     handle,
                 )
-                self.filter_list.pop(counter)
+                del self.filter_list[counter]
                 break
             counter += 1
+
+    def __repr__(self):
+        classname = self.__class__.__name__
+        return f"{classname}(node_id = {self.node_id!r}, dev_id = {self.dev_id!r})"
 
 
 class Qdisc:
@@ -327,7 +335,7 @@ class Filter:
         flowid,
         parent="root",
         handle="",
-        **kwargs
+        **kwargs,
     ):
         """
         Constructor to design a Filter to assign to a Class or Qdisc

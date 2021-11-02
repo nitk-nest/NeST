@@ -10,10 +10,6 @@ from nest.topology.device import Device
 
 logger = logging.getLogger(__name__)
 
-# Max length of interface when Topology Map is disabled
-# i.e. 'assign_random_names' is set to False in config
-MAX_CUSTOM_NAME_LEN = 15
-
 # pylint: disable=too-many-instance-attributes
 
 
@@ -29,7 +25,7 @@ class Ifb(Device):
         entity
     node_id : str
         id of the Node to  which this IFB belongs
-    interface_id : str
+    veth_end_id : str
         The id of the interface that the IFB is attached to
     bandwidth : str
         The bandwidth set to the device
@@ -37,7 +33,7 @@ class Ifb(Device):
         The qdisc assigned to the interface
     """
 
-    def __init__(self, name, node_id, interface_id):
+    def __init__(self, name, node_id, veth_end_id):
         """
         Constructor for an IFB
 
@@ -50,25 +46,19 @@ class Ifb(Device):
             User given name for the interface
         node_id : str
             This is the id of the node that the device belongs to
+        veth_end_id : str
+            This is the id of the veth that the IFB is attached to
         """
 
-        self.qdisc = None
-        if config.get_value("assign_random_names") is False:
-            if len(name) > MAX_CUSTOM_NAME_LEN:
-                raise ValueError(
-                    f"Interface name {name} is too long. Interface names "
-                    f"should not exceed 15 characters"
-                )
-
         super().__init__(name, node_id)
-        self.interface_id = interface_id
+        self.veth_end_id = veth_end_id
         engine.create_ifb(self._id)
         self.set_mode("UP")
 
         self.current_bandwidth = config.get_value("default_bandwidth")
-        self._set_default_bandwidth()
+        self._add_default_qdisc_and_mirror_packets()
 
-    def _set_default_bandwidth(self):
+    def _add_default_qdisc_and_mirror_packets(self):
         """
         Sets default bandwidth to the IFB
         """
@@ -98,8 +88,8 @@ class Ifb(Device):
         # the user giver qdisc are both classless and cannot be added to
         # the same device
         engine.add_filter(
-            self._node_id,
-            self.interface_id,
+            self.node_id,
+            self.veth_end_id,
             "all",
             "1",
             "u32",
@@ -133,16 +123,11 @@ class Ifb(Device):
         bandwidth :
             Link bandwidth
         """
-        # TODO: Don't use this API directly. If it used,
-        # then the bandwidth should be same as link bandwidth
-        # (A temporary bug fix is causing this issue. Look for
-        # a permanent solution)
-        # TODO: Check if this is a redundant condition
 
         current_bandwidth_parameter = {"rate": self.current_bandwidth}
 
         engine.change_class(
-            self._node_id, self.id, "1:", "htb", "1:1", **current_bandwidth_parameter
+            self.node_id, self.id, "1:", "htb", "1:1", **current_bandwidth_parameter
         )
 
         self.delete_qdisc("11:")

@@ -4,12 +4,17 @@
 """API related to device creation in topology"""
 
 import logging
+import nest.config as config
 from nest.topology_map import TopologyMap
 from nest.topology.id_generator import IdGen
 from nest.topology.traffic_control import TrafficControlHandler
 from nest import engine
 
 logger = logging.getLogger(__name__)
+
+# Max length of device when Topology Map is disabled
+# i.e. 'assign_random_names' is set to False in config
+MAX_CUSTOM_NAME_LEN = 15
 
 
 class Device:
@@ -20,9 +25,9 @@ class Device:
     ----------
 
     name : str
-        User given name for the interface
+        User given name for the device
     id : str
-        This value is used by `engine` to create emulated interface
+        This value is used by `engine` to create emulated device
         entity
     node_id : str
         This is id of the node that the device belongs to
@@ -30,7 +35,6 @@ class Device:
         Takes care of traffic control for the device
     """
 
-    # TODO:N figure out adding device to node list without using node object
     def __init__(self, name, node_id):
         """
         Constructore for a device
@@ -38,18 +42,23 @@ class Device:
         Parameters
         ----------
         name : str
-            User given name for the interface
+            User given name for the device
         node_id : str
             This is the id of the node that the device belongs to
         """
 
+        if config.get_value("assign_random_names") is False:
+            if len(name) > MAX_CUSTOM_NAME_LEN:
+                raise ValueError(
+                    f"Device name {name} is too long. Device names "
+                    f"should not exceed 15 characters"
+                )
+
         self._name = name
         self._id = IdGen.get_id(name)
-        self._node_id = node_id
+        self._traffic_control_handler = TrafficControlHandler(node_id, self._id)
         if node_id is not None:
-            TopologyMap.add_interface(self._node_id, self._id, self._name)
-        self._traffic_control_handler = TrafficControlHandler(self._node_id, self._id)
-        self._qdisc_list = self._traffic_control_handler.qdisc_list
+            TopologyMap.add_interface(self.node_id, self._id, self._name)
 
     @property
     def name(self):
@@ -72,42 +81,41 @@ class Device:
     def node_id(self):
         """
         Getter for the `Node` associated
-        with the interface
+        with the device
         """
-        return self._node_id
+        return self._traffic_control_handler.node_id
 
     @node_id.setter
     def node_id(self, node_id):
         """
         Setter for the `Node` associated
-        with the interface
+        with the device
 
         Parameters
         ----------
         node : str
-            The id of the node where the interface is to be installed
+            The id of the node where the device is to be installed
         """
-        self._node_id = node_id
         self._traffic_control_handler.node_id = node_id
         if node_id is not None:
-            TopologyMap.add_interface(self._node_id, self._id, self._name)
+            TopologyMap.add_interface(self.node_id, self._id, self._name)
 
     def set_mode(self, mode):
         """
-        Changes the mode of the interface
+        Changes the mode of the device
 
         Parameters
         ----------
         mode : string
-            interface mode to be set
+            device mode to be set
         """
         if mode in ("UP", "DOWN"):
-            if self._node_id is not None:
-                engine.set_interface_mode(self._node_id, self.id, mode.lower())
+            if self.node_id is not None:
+                engine.set_interface_mode(self.node_id, self.id, mode.lower())
             else:
                 # TODO: Create our own error class
                 raise NotImplementedError(
-                    "You should assign the interface to node or router before setting it's mode"
+                    "You should assign the device to node or router before setting it's mode"
                 )
         else:
             raise ValueError(
@@ -251,3 +259,7 @@ class Device:
         """
 
         self._traffic_control_handler.delete_filter(handle, parent)
+
+    def __repr__(self):
+        classname = self.__class__.__name__
+        return f"{classname}({self.name!r})"

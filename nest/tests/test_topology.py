@@ -168,7 +168,7 @@ class TestTopology(unittest.TestCase):
         err = cm.exception
         self.assertEqual(
             str(err),
-            "Interface name looonginvalidname is too long. Interface names "
+            "Device name looonginvalidname is too long. Device names "
             "should not exceed 15 characters",
         )
 
@@ -187,7 +187,7 @@ class TestTopology(unittest.TestCase):
         err = cm.exception
         self.assertEqual(
             str(err),
-            "Auto-generated veth interface name longname0-longname1-0 is "
+            "Auto-generated device name longname0-longname1-0 is "
             "too long. The length of name should not exceed 15 characters.",
         )
 
@@ -234,8 +234,8 @@ class TestTopology(unittest.TestCase):
         err = cm.exception
         self.assertEqual(
             str(err),
-            "Auto-generated IFB interface name ifb-node0-node1-0 is too "
-            "long. The length of name should not exceed 15 characters.",
+            "Device name ifb-node0-node1-0 is too "
+            "long. Device names should not exceed 15 characters",
         )
 
         # Enable topology map

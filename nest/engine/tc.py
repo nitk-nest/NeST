@@ -74,9 +74,9 @@ def change_qdisc(ns_name, dev_name, qdisc, parent, handle, **kwargs):
     qdisc : str
         qdisc used on the device
     parent : str
-        id of the parent class in major:minor form(optional) (Default value = '')
+        id of the parent class in major:minor form(optional)
     handle : str
-        id of the qdisc in major:0 form (Default value = '')
+        id of the qdisc in major:0 form
     dev_name : str
         name of the device
     """

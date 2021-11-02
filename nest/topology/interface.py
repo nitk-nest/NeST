@@ -6,6 +6,7 @@
 import logging
 from nest.topology.veth_end import VethEnd
 from nest.topology.ifb import Ifb
+from nest.topology.network import Network
 from nest import engine
 import nest.config as config
 
@@ -45,9 +46,8 @@ class Interface:
         """
         Constructor of Interface.
 
-        *Note*: Unlike Node object, the creation of Interface object
-        does not actually create an interface in the backend. This has
-        to be done seperately by invoking engine.
+        *Note*: The creation of Interface object does not
+        create any devices in the interface.
         [See `create_veth_pair` method]
 
         Parameters
@@ -56,71 +56,8 @@ class Interface:
             Name of the interface
         """
 
-        # TODO: name and address should be the only public members
-        self._veth_end = VethEnd(interface_name, None, None)
-        self._current_structure = {"bandwidth": False, "delay": False, "qdisc": False}
+        self._veth_end = VethEnd(interface_name, None)
         self._ifb = None
-        self.set_structure = False
-
-    def enable_offload(self, offload_name):
-        """
-        API for enabling offloads
-        Parameters
-        ----------
-        offload_name : str
-            The type of offload names that need to enable
-        """
-        if not isinstance(offload_name, list):
-            offload_name = [offload_name]
-        valid_offloads(offload_name)
-        namespace_id = self.node.id
-        interface_id = self.id
-        for offload_type in offload_name:
-            if engine.ethtool.enable_offloads(namespace_id, interface_id, offload_type):
-                logger.debug(
-                    "%s is enabled on interface %s of %s",
-                    offload_type,
-                    self.name,
-                    self.node.name,
-                )
-            else:
-                logger.error(
-                    "%s is not enabled on interface %s of %s",
-                    offload_type,
-                    self.name,
-                    self.node.name,
-                )
-
-    def disable_offload(self, offload_name):
-        """
-        API for disabling offloads
-        Parameters
-        ----------
-        offload_name : str
-            The type of offload names that need to disable
-        """
-        if not isinstance(offload_name, list):
-            offload_name = [offload_name]
-        valid_offloads(offload_name)
-        namespace_id = self.node.id
-        interface_id = self.id
-        for offload_type in offload_name:
-            if engine.ethtool.disable_offloads(
-                namespace_id, interface_id, offload_type
-            ):
-                logger.debug(
-                    "%s is disabled on interface %s of %s",
-                    offload_type,
-                    self.name,
-                    self.node.name,
-                )
-            else:
-                logger.error(
-                    "%s is not disabled on interface %s of %s",
-                    offload_type,
-                    self.name,
-                    self.node.name,
-                )
 
     @property
     def name(self):
@@ -137,7 +74,7 @@ class Interface:
         """
         Get other pair for this interface (assuming veth)
         """
-        return self._veth_end.pair
+        return self._pair
 
     @pair.setter
     def pair(self, interface):
@@ -149,7 +86,7 @@ class Interface:
         interface : Interface
             The interface to which this interface is connected to
         """
-        self._veth_end.pair = interface
+        self._pair = interface
 
     @property
     def node_id(self):
@@ -171,6 +108,14 @@ class Interface:
             The node where the interface is to be installed
         """
         self._veth_end.node_id = node_id
+
+    @property
+    def ifb_id(self):
+        """
+        Getter for the id of the ifb of
+        the interface
+        """
+        return self._ifb.id
 
     @property
     def subnet(self):
@@ -196,13 +141,6 @@ class Interface:
             IP address to be assigned to the interface
         """
         self._veth_end.address = address
-
-    @property
-    def ifb(self):
-        """
-        Getter for the ifb attached to this interface
-        """
-        return self._ifb
 
     def enable_mpls(self):
         """
@@ -284,88 +222,6 @@ class Interface:
                     return qdisc
         return None
 
-    def add_qdisc(self, qdisc, parent="root", handle="", **kwargs):
-        """
-        Add a qdisc (Queueing Discipline) to this interface
-
-        Parameters
-        ----------
-        qdisc : string
-            The qdisc which needs to be added to the interface
-        dev : Interface class
-            The interface to which the qdisc is to be added
-        parent : string
-            id of the parent class in major:minor form(optional) (Default value = 'root')
-        handle : string
-            id of the filter (Default value = '')
-        """
-        self._veth_end.add_qdisc(qdisc, parent, handle, **kwargs)
-
-    def delete_qdisc(self, handle):
-        """
-        Delete qdisc (Queueing Discipline) from this interface
-
-        Parameters
-        ----------
-        handle : string
-            Handle of the qdisc to be deleted
-        """
-        self._veth_end.delete_qdisc(handle)
-
-    def add_class(self, qdisc, parent="root", classid="", **kwargs):
-        """
-        Create an object that represents a class
-
-        Parameters
-        ----------
-        qdisc : string
-            The qdisc which needs to be added to the interface
-        parent : string
-            id of the parent class in major:minor form(optional) (Default value = 'root')
-        classid : string
-            id of the class (Default value = '')
-        """
-        self._veth_end.add_class(qdisc, parent, classid, **kwargs)
-
-    # pylint: disable=too-many-arguments
-    def add_filter(
-        self,
-        priority,
-        filtertype,
-        flowid,
-        protocol="ip",
-        parent="root",
-        handle="",
-        **kwargs,
-    ):
-        """
-        Design a Filter to assign to a Class or Qdisc
-
-        Parameters
-        ----------
-        protocol : string
-            protocol used (Default value = 'ip')
-        priority : int
-            priority of the filter
-        filtertype : string
-            one of the available filters
-        flowid : Class
-            classid of the class where the traffic is enqueued
-            if the traffic passes the filter
-        parent : string
-            id of the parent class in major:minor form(optional) (Default value = 'root')
-        handle : string
-            id of the filter (Default value = '')
-        filter : dictionary
-            filter parameters
-        """
-        # TODO: Verify type of parameters
-        # TODO: Reduce arguments to the engine functions by finding parent and handle automatically
-
-        self._veth_end.add_filter(
-            priority, filtertype, flowid, protocol, parent, handle, **kwargs
-        )
-
     def _create_and_mirred_to_ifb(self):
         """
         Creates a IFB for the interface so that a Qdisc can be
@@ -381,56 +237,25 @@ class Interface:
         ifb_name = "ifb-" + self.name
         self._ifb = Ifb(ifb_name, self.node_id, self.id)
 
-    def _set_structure(self):
-        """
-        Sets a proper structure to the interface by creating HTB class
-        with default bandwidth and a netem qdisc as a child.
-        (default bandwidth = 1024mbit)
-        """
-        self.set_structure = True
-
-        default_route = {"default": "1"}
-
-        # HTB is added since netem is a classless qdisc. So, htb class,
-        # With netem as child is added
-        self.add_qdisc("htb", "root", "1:", **default_route)
-
-        # TODO: find how to set a good bandwidth
-        default_bandwidth = {"rate": config.get_value("default_bandwidth")}
-
-        self.add_class("htb", "1:", "1:1", **default_bandwidth)
-
-        self.add_qdisc("netem", "1:1", "11:")
-
-    def set_bandwidth(self, min_rate):
+    def set_bandwidth(self, bandwidth):
         """
         Sets a minimum bandwidth for the interface
         It is done by adding a HTB qdisc and a rate parameter to the class
 
         Parameters
         ----------
-        min_rate : string
+        bandwidth : string
             The minimum rate that has to be set in kbit
         """
-        # TODO: Check if there exists a delay and if exists, make sure it is handled in the right
-        # way
-        # TODO: Check if this is a redundant condition
-        # TODO: Let user set the unit
 
-        self._set_structure()
-        self._create_and_mirred_to_ifb()
-        # Set the same bandwidth in the IFB too
-        self._ifb.set_bandwidth(min_rate)
+        self._veth_end.set_structure()
+        if self._ifb is not None:
+            # Set the same bandwidth in the IFB too
+            self._ifb.set_bandwidth(bandwidth)
 
-        self._current_structure["bandwitdh"] = True
+        bandwidth_parameter = {"rate": bandwidth}
 
-        min_bandwidth_parameter = {"rate": min_rate}
-
-        # TODO: Check the created API
-        # TODO: This should be handled by self.change_class
-        engine.change_class(
-            self.node_id, self.id, "1:", "htb", "1:1", **min_bandwidth_parameter
-        )
+        self._veth_end.change_class("htb", "1:", "1:1", **bandwidth_parameter)
 
     def set_delay(self, delay):
         """
@@ -444,11 +269,8 @@ class Interface:
         """
         # TODO: It is not intuitive to add delay to an interface
         # TODO: Make adding delay possible without bandwidth being set
-        # TODO: Check if this is a redundant condition
-        # TODO: Let user set the unit
 
-        if self.set_structure is False:
-            self._set_structure()
+        self._veth_end.set_structure()
 
         delay_parameter = {"delay": delay}
 
@@ -467,8 +289,8 @@ class Interface:
         correlation_rate : str
             correlation between the corrupted packets
         """
-        if self.set_structure is False:
-            self._set_structure()
+
+        self._veth_end.set_structure()
 
         corrupt_parameter = {"corrupt": corrupt_rate, "": correlation_rate}
 
@@ -488,14 +310,13 @@ class Interface:
             correlation between the lost packets
         """
 
-        if self.set_structure is False:
-            self._set_structure()
+        self._veth_end.set_structure()
 
         loss_parameter = {"loss": loss_rate, "": correlation_rate}
 
         self._veth_end.change_qdisc("11:", "netem", **loss_parameter)
 
-    def set_qdisc(self, qdisc, bandwidth, **kwargs):
+    def set_qdisc(self, qdisc, **kwargs):
         """
         Adds the Queueing algorithm to the interface
 
@@ -506,21 +327,12 @@ class Interface:
         bandwidth :
             Link bandwidth
         """
-        # TODO: Don't use this API directly. If it used,
-        # then the bandwidth should be same as link bandwidth
-        # (A temporary bug fix is causing this issue. Look for
-        # a permanent solution)
         # TODO: Check if this is a redundant condition
 
-        if self.set_structure is False:
-            self._set_structure()
+        self._veth_end.set_structure()
 
         if self._ifb is None:
             self._create_and_mirred_to_ifb()
-
-        min_bandwidth_parameter = {"rate": bandwidth}
-
-        self._ifb.change_class("htb", "1:", "1:1", **min_bandwidth_parameter)
 
         self._ifb.delete_qdisc("11:")
         self._ifb.add_qdisc(qdisc, "1:1", "11:", **kwargs)
@@ -544,7 +356,29 @@ class Interface:
         self.set_delay(delay)
 
         if qdisc is not None:
-            self.set_qdisc(qdisc, bandwidth, **kwargs)
+            self.set_qdisc(qdisc, **kwargs)
+
+    def enable_offload(self, offload_name):
+        """
+        API for enabling offloads
+        Parameters
+        ----------
+        offload_name : str
+            The type of offload names that need to enable
+        """
+
+        self._veth_end.enable_offload(offload_name)
+
+    def disable_offload(self, offload_name):
+        """
+        API for disabling offloads
+        Parameters
+        ----------
+        offload_name : str
+            The type of offload names that need to disable
+        """
+
+        self._veth_end.disable_offload(offload_name)
 
     def __repr__(self):
         classname = self.__class__.__name__
@@ -624,10 +458,6 @@ def connect(node1, node2, interface1_name="", interface2_name="", network=None):
     node1._add_interface(interface1)
     node2._add_interface(interface2)
 
-    # Set the proper structure for the veth
-    interface1._set_structure()
-    interface2._set_structure()
-
     interface1.set_mode("UP")
     interface2.set_mode("UP")
 
@@ -657,7 +487,7 @@ def _autogenerate_interface_name(node1, node2, connections):
     if config.get_value("assign_random_names") is False:
         if len(interface_name) > MAX_CUSTOM_NAME_LEN:
             raise ValueError(
-                f"Auto-generated veth interface name {interface_name} is too long. "
+                f"Auto-generated device name {interface_name} is too long. "
                 f"The length of name should not exceed 15 characters."
             )
 
@@ -678,19 +508,3 @@ def _number_of_connections(node1, node2):
             connections = connections + 1
 
     return connections
-
-
-def valid_offloads(offload_name):
-    """
-    Check valid offloads
-
-    Parameters
-    -----------
-    offload_name : str
-        The offload name
-    """
-    offloads_list = ["tso", "gso", "gro"]
-    for offload_type in offload_name:
-        if not offload_type in offloads_list:
-            logger.error("Invalid offload")
-            raise ValueError(f"{offload_type} is not a valid offload")

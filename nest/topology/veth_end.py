@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2021 NITK Surathkal
 
-"""API related to creation of physical interfaces in topology"""
+"""API related to creation of virtual ethernet devices in topology"""
 
 import logging
 import nest.config as config
@@ -11,10 +11,6 @@ from nest.topology.device import Device
 from .address import Address
 
 logger = logging.getLogger(__name__)
-
-# Max length of interface when Topology Map is disabled
-# i.e. 'assign_random_names' is set to False in config
-MAX_CUSTOM_NAME_LEN = 15
 
 # pylint: disable=too-many-instance-attributes
 
@@ -32,15 +28,13 @@ class VethEnd(Device):
         id of the Node to  which this Interface belongs
     address : str/Address
         IP address assigned to this interface
-    pair : Veth_end
-        The other end of the veth pair
     bandwidth : str
         The bandwidth set to the device
     delay : str
         The delay set to the device
     """
 
-    def __init__(self, name, node_id, pair):
+    def __init__(self, name, node_id):
         """
         Constructor of VethEnd
 
@@ -50,44 +44,16 @@ class VethEnd(Device):
             Name of the interface
         node_id : str
             Id of the node that the interface belongs to
-        pair : VethEnd
-            The other end of this veth pair
         """
-
-        if config.get_value("assign_random_names") is False:
-            if len(name) > MAX_CUSTOM_NAME_LEN:
-                raise ValueError(
-                    f"Interface name {name} is too long. Interface names "
-                    f"should not exceed 15 characters"
-                )
 
         super().__init__(name, node_id)
         self._address = None
-        self._pair = pair
         self.bandwidth = None
         self.delay = None
+        self._set_structure = False
 
         self._mtu = 1500
         self._is_mpls_enabled = False
-
-    @property
-    def pair(self):
-        """
-        Get other pair for this interface (assuming veth)
-        """
-        return self._pair
-
-    @pair.setter
-    def pair(self, interface):
-        """
-        Setter for the other end of the interface that it is connected to
-
-        Parameters
-        ----------
-        interface : Interface
-            The interface to which this interface is connected to
-        """
-        self._pair = interface
 
     @property
     def subnet(self):
@@ -115,8 +81,8 @@ class VethEnd(Device):
         if isinstance(address, str):
             address = Address(address)
 
-        if self._node_id is not None:
-            engine.assign_ip(self._node_id, self.id, address.get_addr())
+        if self.node_id is not None:
+            engine.assign_ip(self.node_id, self.id, address.get_addr())
             self._address = address
         else:
             # TODO: Create our own error class
@@ -128,33 +94,11 @@ class VethEnd(Device):
         if address.is_ipv6() is True:
             g_var.IS_IPV6 = True
 
-    def get_address(self):
-        """
-        Getter for the address associated
-        with the interface
-
-        *NOTE*: Maintained since mentioned in NeST paper.
-        """
-        return self.address
-
-    def set_address(self, address):
-        """
-        Assigns IP address to an interface
-
-        Parameters
-        ----------
-        address : Address or str
-            IP address to be assigned to the interface
-
-        *NOTE*: Maintained since mentioned in NeST paper.
-        """
-        self.address = address
-
     def disable_ip_dad(self):
         """
         Disables Duplicate addresses Detection (DAD) for an interface.
         """
-        engine.disable_dad(self._node_id, self._id)
+        engine.disable_dad(self.node_id, self._id)
 
     def enable_mpls(self):
         """
@@ -163,7 +107,7 @@ class VethEnd(Device):
 
         Run ``sudo modprobe mpls_iptunnel`` to load mpls modules.
         """
-        if self._node_id is None:
+        if self.node_id is None:
             raise NotImplementedError(
                 "You should assign the interface to node or router before enabling mpls"
             )
@@ -171,7 +115,7 @@ class VethEnd(Device):
         engine.set_mpls_max_label_node(self.node_id, int(100000))
 
         if self._is_mpls_enabled is False:
-            engine.enable_mpls_interface(self._node_id, self.id)
+            engine.enable_mpls_interface(self.node_id, self.id)
             self._is_mpls_enabled = True
             self.mtu = 1504
 
@@ -195,6 +139,105 @@ class VethEnd(Device):
         Default is 1500 bytes.
         """
         if self._mtu != mtu_value:
-            engine.set_mtu_interface(self._node_id, self.id, int(mtu_value))
+            engine.set_mtu_interface(self.node_id, self.id, int(mtu_value))
             self._mtu = mtu_value
             logger.debug("MTU of interface %s set to %s", self.name, str(self.mtu))
+
+    def set_structure(self):
+        """
+        Sets a proper structure to the interface by creating HTB class
+        with default bandwidth and a netem qdisc as a child.
+        HTB is used for setting bandwidth and netem is used for setting
+        delay, packet corruption etc
+        (default bandwidth = 1024mbit)
+        """
+
+        if self._set_structure is True:
+            return
+
+        self._set_structure = True
+
+        default_route = {"default": "1"}
+
+        # HTB is added since netem is a classless qdisc. So, htb class,
+        # With netem as child is added
+        self.add_qdisc("htb", "root", "1:", **default_route)
+
+        # TODO: find how to set a good bandwidth
+        default_bandwidth = {"rate": config.get_value("default_bandwidth")}
+
+        self.add_class("htb", "1:", "1:1", **default_bandwidth)
+
+        self.add_qdisc("netem", "1:1", "11:")
+
+    def enable_offload(self, offload_name):
+        """
+        API for enabling offloads
+        Parameters
+        ----------
+        offload_name : str
+            The type of offload names that need to enable
+        """
+        if not isinstance(offload_name, list):
+            offload_name = [offload_name]
+        valid_offloads(offload_name)
+        namespace_id = self.node_id
+        interface_id = self.id
+        for offload_type in offload_name:
+            if engine.ethtool.enable_offloads(namespace_id, interface_id, offload_type):
+                logger.debug(
+                    "%s is enabled on interface %s",
+                    offload_type,
+                    self.name,
+                )
+            else:
+                logger.error(
+                    "%s is not enabled on interface %s",
+                    offload_type,
+                    self.name,
+                )
+
+    def disable_offload(self, offload_name):
+        """
+        API for disabling offloads
+        Parameters
+        ----------
+        offload_name : str
+            The type of offload names that need to disable
+        """
+        if not isinstance(offload_name, list):
+            offload_name = [offload_name]
+        valid_offloads(offload_name)
+        namespace_id = self.node_id
+        interface_id = self.id
+        for offload_type in offload_name:
+            if engine.ethtool.disable_offloads(
+                namespace_id, interface_id, offload_type
+            ):
+                logger.debug(
+                    "%s is disabled on interface %s",
+                    offload_type,
+                    self.name,
+                )
+            else:
+                logger.error(
+                    "%s is not disabled on interface %s",
+                    offload_type,
+                    self.name,
+                )
+
+
+def valid_offloads(offload_name):
+    """
+    Check valid offloads
+
+    Parameters
+    -----------
+    offload_name : str
+        The offload name
+    """
+    offloads_list = ["tso", "gso", "gro"]
+    for offload_type in offload_name:
+        if not offload_type in offloads_list:
+            logger.error("Invalid offload")
+            raise ValueError(f"{offload_type} is not a valid offload")
