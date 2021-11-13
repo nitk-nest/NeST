@@ -128,11 +128,6 @@ class Interface:
         return self._ifb.id
 
     @property
-    def subnet(self):
-        """Getter for the subnet to which the address belongs to"""
-        return self._veth_end.address.get_subnet()
-
-    @property
     def address(self):
         """
         Getter for the address associated
@@ -152,6 +147,28 @@ class Interface:
             IP address to be assigned to the interface
         """
         self._veth_end.address = address
+
+    def add_address(self, address):
+        """
+        Adds IP addresses to an interface
+
+        Parameters
+        ----------
+        address : Address or str or list of Address and/or str
+            IP address to be added to the interface
+        """
+        self._veth_end.add_address(address)
+
+    def del_address(self, address):
+        """
+        Delete IP address(es) from the interface
+
+        Parameters
+        ----------
+        address : str or list
+            IP address to be deleted from the interface
+        """
+        self._veth_end.del_address(address)
 
     def enable_mpls(self):
         """
@@ -183,23 +200,31 @@ class Interface:
         """
         self._veth_end.mtu = mtu_value
 
-    def get_address(self):
+    def get_address(self, ipv4=True, ipv6=True, as_list=False):
         """
         Getter for the address associated
         with the interface
 
+        Parameters
+        ----------
+        ipv4 : If set to true, the IPv4 address of the interface is returned (defaults to True)
+        ipv6 : If set to true, the IPv6 address of the interface is returned (defaults to True)
+        If both are True, both the addresses are returned
+        Either ipv4 or ipv6 must be True
+        as_list : Returns the address as a list if set to True and only one address is returned
+
         *NOTE*: Maintained since mentioned in NeST paper.
         """
-        return self._veth_end.address
+        return self._veth_end.get_address(ipv4, ipv6, as_list)
 
     @input_validator
     def set_address(self, address: Address):
         """
-        Assigns IP address to an interface
+        Assigns IP address/addresses to an interface
 
         Parameters
         ----------
-        address : Address or str
+        address : Address or str or List of Address and/or str
             IP address to be assigned to the interface
 
         *NOTE*: Maintained since mentioned in NeST paper.

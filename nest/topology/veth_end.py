@@ -13,6 +13,7 @@ from .address import Address
 logger = logging.getLogger(__name__)
 
 # pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-branches
 
 
 class VethEnd(Device):
@@ -47,7 +48,8 @@ class VethEnd(Device):
         """
 
         super().__init__(name, node_id)
-        self._address = None
+        self._ipv4_address = None
+        self._ipv6_address = None
         self.bandwidth = None
         self.delay = None
         self._set_structure = False
@@ -56,45 +58,197 @@ class VethEnd(Device):
         self._is_mpls_enabled = False
 
     @property
-    def subnet(self):
-        """Getter for the subnet to which the address belongs to"""
-        return self.address.get_subnet()
-
-    @property
     def address(self):
         """
         Getter for the address associated
         with the interface
         """
-        return self._address
+        return self.get_address()
 
     @address.setter
     def address(self, address):
         """
-        Assigns IP address to an interface
+        Assigns IP address/addresses to an interface
 
         Parameters
         ----------
-        address : Address or str
+        address : Address or str or List of Address and/or str
             IP address to be assigned to the interface
         """
         # TODO: The below check is redundant since
         # input_validator check is run in Interface
         if isinstance(address, str):
-            address = Address(address)
-
-        if self.node_id is not None:
-            engine.assign_ip(self.node_id, self.id, address.get_addr())
-            self._address = address
+            address = [Address(address)]
+        elif isinstance(address, list):
+            for i in range(len(address)):
+                if isinstance(address[i], str):
+                    address[i] = Address(address[i])
         else:
+            address = [address]
+
+        if self.node_id is None:
             # TODO: Create our own error class
             raise NotImplementedError(
                 "You should assign the interface to node or router before assigning address to it."
             )
 
+        if isinstance(self._ipv4_address, list):
+            for addr in self._ipv4_address:
+                engine.delete_ip(self.node_id, self.id, addr.get_addr())
+            self._ipv4_address = None
+        if isinstance(self._ipv6_address, list):
+            for addr in self._ipv6_address:
+                engine.delete_ip(self.node_id, self.id, addr.get_addr())
+            self._ipv6_address = None
+        for addr in address:
+            engine.assign_ip(self.node_id, self.id, addr.get_addr())
+            if addr.is_ipv6() is True:
+                if self._ipv6_address is None:
+                    self._ipv6_address = [addr]
+                else:
+                    self._ipv6_address.append(addr)
+            else:
+                if self._ipv4_address is None:
+                    self._ipv4_address = [addr]
+                else:
+                    self._ipv4_address.append(addr)
+
         # Global variable to check if address is ipv6 or not for DAD check
-        if address.is_ipv6() is True:
+        if self._ipv6_address is not None:
             g_var.IS_IPV6 = True
+
+    def add_address(self, address):
+        """
+        Adds IP address to an interface
+
+        Parameters
+        ----------
+        address : Address or str or list of Address and/or str
+            IP address to be added to the interface
+        """
+        if isinstance(address, str):
+            address = Address(address)
+        elif isinstance(address, list):
+            for i in range(len(address)):
+                if isinstance(address[i], str):
+                    address[i] = Address(address[i])
+
+        if self.node_id is None:
+            raise NotImplementedError(
+                "You should assign the interface to node or router before assigning address to it."
+            )
+
+        if isinstance(address, list):
+            for addr in address:
+                engine.assign_ip(self.node_id, self.id, addr.get_addr())
+                if addr.is_ipv6() is True:
+                    if self._ipv6_address is None:
+                        self._ipv6_address = [addr]
+                    else:
+                        self._ipv6_address.append(addr)
+                else:
+                    if self._ipv4_address is None:
+                        self._ipv4_address = [addr]
+                    else:
+                        self._ipv4_address.append(addr)
+        else:
+            engine.assign_ip(self.node_id, self.id, address.get_addr())
+            if address.is_ipv6() is True:
+                if self._ipv6_address is None:
+                    self._ipv6_address = [address]
+                else:
+                    self._ipv6_address.append(address)
+            else:
+                if self._ipv4_address is None:
+                    self._ipv4_address = [address]
+                else:
+                    self._ipv4_address.append(address)
+
+    def get_address(self, ipv4=True, ipv6=True, as_list=False):
+        """
+        Gets the required IP addresses for the interface
+
+        Parameters
+        ----------
+        ipv4 : If set to true, the IPv4 address of the interface is returned (defaults to True)
+        ipv6 : If set to true, the IPv6 address of the interface is returned (defaults to True)
+        If both are True, both the addresses are returned
+        Either ipv4 or ipv6 must be True
+        as_list : Returns the address as a list if set to True and only one address is returned
+        """
+
+        if not (ipv4 or ipv6):
+            raise ValueError("Either ipv4 or ipv6 argument must be True")
+        ipv4_address, ipv6_address = self._ipv4_address, self._ipv6_address
+        if not ipv4_address:
+            ipv4_address = None
+        if not ipv6_address:
+            ipv6_address = None
+
+        if not as_list:
+            if ipv4 and ipv4_address and len(ipv4_address) == 1:
+                ipv4_address = ipv4_address[0]
+            if ipv6 and ipv6_address and len(ipv6_address) == 1:
+                ipv6_address = ipv6_address[0]
+        if not ipv6 or ipv6_address is None:
+            return ipv4_address
+        if not ipv4 or ipv4_address is None:
+            return ipv6_address
+        return (ipv4_address, ipv6_address)
+
+    def del_address(self, address):
+        """
+        Delete IP address(es) from the interface
+
+        Parameters
+        ----------
+        address : str or list
+            IP address to be deleted from the interface
+        """
+        if isinstance(address, str):
+            address = [Address(address)]
+        elif isinstance(address, list):
+            for i in range(len(address)):
+                if isinstance(address[i], str):
+                    address[i] = Address(address[i])
+        else:
+            address = [address]
+
+        if self.node_id is None:
+            raise NotImplementedError(
+                "You should assign the interface to node or router before assigning address to it."
+            )
+        for addr in address:
+            if addr.is_ipv6():
+                found = -1
+                for i in range(len(self._ipv6_address)):
+                    if self._ipv6_address[i].get_addr() == addr.get_addr():
+                        found = i
+                        break
+                if found > -1:
+                    engine.delete_ip(self.node_id, self.id, addr.get_addr())
+                    self._ipv6_address.pop(found)
+                else:
+                    raise NotImplementedError(
+                        "Cannot delete an address that is not assigned."
+                    )
+            else:
+                found = -1
+                for i in range(len(self._ipv4_address)):
+                    if self._ipv4_address[i].get_addr() == addr.get_addr():
+                        found = i
+                        break
+                if found > -1:
+                    engine.delete_ip(self.node_id, self.id, addr.get_addr())
+                    self._ipv4_address.pop(found)
+                else:
+                    raise NotImplementedError(
+                        "Cannot delete an address that is not assigned."
+                    )
+        if not self._ipv4_address:
+            self._ipv4_address = None
+        if not self._ipv6_address:
+            self._ipv6_address = None
 
     def disable_ip_dad(self):
         """
