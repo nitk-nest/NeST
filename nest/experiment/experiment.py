@@ -95,6 +95,81 @@ class Flow:
         )
 
 
+class CoapFlow(Flow):
+    """Defines a CoAP flow in the topology"""
+
+    # pylint: disable=too-many-arguments
+    @input_validator
+    def __init__(
+        self,
+        source_node: Node,
+        destination_node: Node,
+        destination_address: Address,
+        n_con_msgs: int,
+        n_non_msgs: int,
+        user_options=None,
+    ):
+        """
+        Flow object representing CoAP flows in the topology.
+        Inherited from the `Flow` class.
+
+        Parameters
+        ----------
+        source_node : Node
+            Source node of flow
+        destination_node : Node
+            Destination node of flow
+        destination_address : Address/str
+            Destination address of flow
+        n_con_msgs : int
+            Number of confimable messages to be sent in the flow
+        n_non_msgs : int
+            Number of non-confimable messages to be sent in the flow
+        user_options : dict, optional
+            User specified options for particular tools
+        """
+        self.source_node = source_node
+        self.destination_node = destination_node
+        self.destination_address = destination_address
+        self.n_con_msgs = n_con_msgs
+        self.n_non_msgs = n_non_msgs
+
+        # Options for users to set
+        self.user_options = user_options
+
+        # Since start time, stop time and number of streams are needed for
+        # initializing the parent class, we need to provide dummy values
+        # for these members.
+        super().__init__(source_node, destination_node, destination_address, 0, 0, 0)
+
+    # Destination address getter and setter are implemented
+    # in the Flow class which is the superclass of CoapFlow class
+
+    def _get_props(self):
+        """
+        Get flow properties.
+
+        NOTE: To be used internally
+        """
+
+        return [
+            self.source_node.id,
+            self.destination_node.id,
+            self.destination_address.get_addr(with_subnet=False),
+            self.n_con_msgs,
+            self.n_non_msgs,
+            self.user_options,
+        ]
+
+    def __repr__(self):
+        classname = self.__class__.__name__
+        return (
+            f"{classname}({self.source_node!r}, {self.destination_node!r},"
+            f" {self.destination_address!r}),"
+            f" {self.n_con_msgs!r}, {self.n_non_msgs!r}, {self.user_options!r})"
+        )
+
+
 class Experiment:
     """Handles experiment to be run on topology"""
 
@@ -110,6 +185,7 @@ class Experiment:
         """
         self.name = name
         self.flows = []
+        self.coap_flows = []
         self.node_stats = []
         self.qdisc_stats = []
 
@@ -170,6 +246,18 @@ class Experiment:
 
         flow._options = options  # pylint: disable=protected-access
         self.add_flow(flow)
+
+    @input_validator
+    def add_coap_flow(self, coap_flow: CoapFlow):
+        """
+        Add a CoAP flow to experiment
+
+        Parameters
+        ----------
+        coap_flow : CoapFlow
+            The coap flow to be added to experiment
+        """
+        self.coap_flows.append(copy.deepcopy(coap_flow))
 
     @input_validator
     def require_qdisc_stats(self, interface: Interface, stats=""):
