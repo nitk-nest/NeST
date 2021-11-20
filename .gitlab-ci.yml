@@ -40,7 +40,7 @@ validate mr:
     - if: $CI_MERGE_REQUEST_IID
 
 # https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#making-docker-in-docker-builds-faster-with-docker-layer-caching
-build docker:
+build docker image:
   rules:
     - if: $CI_MERGE_REQUEST_IID
       variables:
@@ -72,7 +72,6 @@ run style check:
     - gitlint --version
     - git fetch
     - gitlint --commits origin/$CI_DEFAULT_BRANCH..HEAD
-  needs: [build docker]
 
 run unit tests:
   image: $CONTAINER_TEST_CI_IMAGE
@@ -90,7 +89,14 @@ run unit tests:
       - test-experiment*/
       - quagga-logs*/
       - frr-logs*/
-  needs: [build docker]
+
+run examples:
+  image: $CONTAINER_TEST_CI_IMAGE
+  stage: test
+  script:
+    - python utils/run_examples.py
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
 
 test docs:
   image: $CONTAINER_TEST_CI_IMAGE
@@ -110,7 +116,6 @@ test docs:
   artifacts:
     paths:
       - docs/build
-  needs: [build docker]
 
 release docs:
   stage: release
@@ -123,7 +128,6 @@ release docs:
       changes:
         - docs/**/*
         - nest/**/*
-  needs: [test docs]
 
 upload to PyPI:
   image: $CONTAINER_TEST_CI_IMAGE
