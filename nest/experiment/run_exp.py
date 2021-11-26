@@ -17,7 +17,14 @@ from nest.clean_up import kill_processes
 from .pack import Pack
 
 # Import results
-from .results import SsResults, NetperfResults, Iperf3Results, TcResults, PingResults
+from .results import (
+    SsResults,
+    NetperfResults,
+    Iperf3Results,
+    TcResults,
+    PingResults,
+    CoAPResults,
+)
 
 # Import parsers
 from .parser.ss import SsRunner
@@ -25,6 +32,7 @@ from .parser.netperf import NetperfRunner
 from .parser.iperf3 import Iperf3Runner
 from .parser.tc import TcRunner
 from .parser.ping import PingRunner
+from .parser.coap import CoAPRunner
 
 # Import plotters
 from .plotter.ss import plot_ss
@@ -32,7 +40,7 @@ from .plotter.netperf import plot_netperf
 from .plotter.iperf3 import plot_iperf3
 from .plotter.tc import plot_tc
 from .plotter.ping import plot_ping
-from ..engine.util import is_dependency_installed
+from ..engine.util import is_dependency_installed, is_package_installed
 
 logger = logging.getLogger(__name__)
 if not any(isinstance(filter, DepedencyCheckFilter) for filter in logger.filters):
@@ -52,15 +60,15 @@ def run_experiment(exp):
         The experiment attributes
     """
 
-    tools = ["netperf", "ss", "tc", "iperf3", "ping"]
+    tools = ["netperf", "ss", "tc", "iperf3", "ping", "coap"]
     Runners = namedtuple("runners", tools)
     exp_runners = Runners(
-        netperf=[], ss=[], tc=[], iperf3=[], ping=[]
+        netperf=[], ss=[], tc=[], iperf3=[], ping=[], coap=[]
     )  # Runner objects
 
-    # Keep track of all destination nodes [to ensure netperf and iperf3
-    # server is run at most once]
-    destination_nodes = {"netperf": set(), "iperf3": set()}
+    # Keep track of all destination nodes [to ensure netperf, iperf3 and
+    # coap server is run at most once]
+    destination_nodes = {"netperf": set(), "iperf3": set(), "coap": set()}
 
     # Contains start time and end time to run respective command
     # from a source netns to destination address (in destination netns)
@@ -132,6 +140,25 @@ def run_experiment(exp):
 
             # Update destination nodes
             destination_nodes["iperf3"].add(dst_ns)
+
+    for coap_flow in exp.coap_flows:
+        [
+            src_ns,
+            dst_ns,
+            dst_addr,
+            _,
+            _,
+            _,
+        ] = coap_flow._get_props()  # pylint: disable=protected-access
+
+        config.set_value("show_progress_bar", False)
+
+        # Setup runners for emulating CoAP traffic
+        coap_runners = setup_coap_runners(
+            dependencies["coap"], coap_flow, destination_nodes["coap"]
+        )
+        exp_runners.coap.extend(coap_runners)
+        destination_nodes["coap"].add(dst_ns)
 
     if ss_required:
         ss_filter = " and ".join(ss_filters)
@@ -231,6 +258,7 @@ def dump_json_ouputs():
     Iperf3Results.output_to_file()
     TcResults.output_to_file()
     PingResults.output_to_file()
+    CoAPResults.output_to_file()
 
 
 def setup_flow_workers(exp_runners, exp_stop_time):
@@ -295,6 +323,9 @@ def setup_parser_workers(exp_runners):
     for ping_runner in exp_runners.ping:
         parsers.append(Process(target=ping_runner.parse))
 
+    for coap_runner in exp_runners.coap:
+        parsers.append(Process(target=coap_runner.parse))
+
     return parsers
 
 
@@ -314,6 +345,10 @@ def get_dependency_status(tools):
     """
     dependencies = {}
     for dependency in tools:
+        # Check for the availability of aiocoap for CoAP emulation
+        if dependency == "coap":
+            dependencies[dependency] = is_package_installed("aiocoap")
+            continue
         dependencies[dependency] = is_dependency_installed(dependency)
     return dependencies
 
@@ -553,6 +588,70 @@ def setup_ping_runners(dependency, ping_schedules):
     return runners
 
 
+def setup_coap_runners(dependency, flow, destination_nodes):
+    """
+    Setup CoAPRunner objects for generating CoAP traffic
+
+    Parameters
+    ----------
+    dependency : int
+        Whether aiocoap is installed
+    flow : CoapFlow
+        The CoapFlow object
+    destination_nodes:
+        Destination nodes so far already running CoAP server
+
+    Returns
+    -------
+    runners : List[CoAPRunner]
+        List of CoAPRunner objects for the current flow object
+    """
+    runners = []
+
+    # If aiocoap is installed
+    if dependency:
+        # Get flow attributes
+        [
+            src_ns,
+            dst_ns,
+            dst_addr,
+            n_con_msgs,
+            n_non_msgs,
+            user_options,
+        ] = flow._get_props()  # pylint: disable=protected-access
+
+        # Run CoAP server if not already run before on given dst_node
+        if dst_ns not in destination_nodes:
+
+            # If user has not supplied the user options
+            if user_options is not None:
+                # Creating the options string for running the CoAP server
+                if (
+                    "coap_server_content" in user_options.keys()
+                    and user_options["coap_server_content"] != ""
+                ):
+                    server_content = '"' + user_options["coap_server_content"] + '"'
+                    server_options = f"-c {server_content}"
+                else:
+                    server_options = None
+            else:
+                server_options = None
+
+            # Running the server
+            CoAPRunner.run_server(dst_ns, server_options)
+
+        # Create the CoAPRunner object
+        coap_runner = CoAPRunner(src_ns, dst_addr, user_options, n_con_msgs, n_non_msgs)
+        runners.append(coap_runner)
+
+    # If aiocoap is not installed
+    else:
+        logger.warning("aiocoap not found for CoAP emulation.")
+
+    # Return the list of runners
+    return runners
+
+
 def progress_bar(stop_time, precision=1):
     """
     Show a progress bar from from 0 `units` to `stop_time`
@@ -589,6 +688,7 @@ def cleanup():
     NetperfResults.remove_all_results()
     TcResults.remove_all_results()
     PingResults.remove_all_results()
+    CoAPResults.remove_all_results()
 
     kill_processes()
 
