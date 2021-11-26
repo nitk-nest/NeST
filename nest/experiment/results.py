@@ -266,3 +266,39 @@ class PingResults:
     def output_to_file():
         """Outputs the aggregated ping stats to file"""
         Results.output_to_file(ping_results_q, "ping")
+
+
+coap_results_q = Manager().Queue()
+coap_results_q.put({})
+
+
+class CoAPResults:
+    """This class aggregates the CoAP stats from the entire experiment environment"""
+
+    @staticmethod
+    def add_result(ns_id, result):
+        """Adds the CoAP stats parse from a process to the shared `coap_results`
+
+        Parameters
+        ----------
+        ns_id : string
+            namespace id (internal name)
+        result : dict
+            parsed CoAP stats
+        """
+        Results.add_result(coap_results_q, ns_id, result)
+
+    @staticmethod
+    def remove_all_results():
+        """Remove all results obtained from the experiment"""
+        Results.remove_all_results(coap_results_q)
+
+    @staticmethod
+    def get_results():
+        """Get results obtained in the experiment so far"""
+        Results.get_results(coap_results_q)
+
+    @staticmethod
+    def output_to_file():
+        """Outputs the aggregated CoAP stats to file"""
+        Results.output_to_file(coap_results_q, "coap")
