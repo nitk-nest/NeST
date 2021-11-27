@@ -6,7 +6,7 @@
 import unittest
 import subprocess
 
-from nest.topology import Node, connect, Switch, Router
+from nest.topology import Node, connect, Switch, Router, Address
 from nest.clean_up import delete_namespaces
 from nest.topology_map import TopologyMap
 from nest.topology.interface import Interface
@@ -88,6 +88,148 @@ class TestTopology(unittest.TestCase):
         status = self.n0.ping(n1_r.address)
 
         self.assertTrue(status)
+
+    def test_p2p_multiple_set_address(self):
+        (n0_n1, n1_n0) = connect(self.n0, self.n1)
+
+        self.n0.disable_ip_dad()
+        self.n1.disable_ip_dad()
+
+        n0_n1.set_address(["10.1.1.1/24", "2001:1:1:1443::411/122"])
+        n1_n0.set_address(["10.1.1.2/24", "10.1.1.3/24", "2001:1:1:1443::412/122"])
+
+        status_1 = self.n0.ping(n1_n0.get_address(ipv4=True, ipv6=False)[0])
+        status_2 = self.n0.ping(n1_n0.get_address(ipv4=True, ipv6=False)[1])
+        status_3 = self.n0.ping(n1_n0.get_address(ipv4=False, ipv6=True))
+
+        self.assertTrue(status_1)
+        self.assertTrue(status_2)
+        self.assertTrue(status_3)
+
+    def test_add_addr(self):
+        (n0_n1, n1_n0) = connect(self.n0, self.n1)
+
+        self.n0.disable_ip_dad()
+        self.n1.disable_ip_dad()
+
+        n0_n1.set_address(["10.1.1.1/24", "2001:1:1:1443::411/122"])
+        n1_n0.set_address(["10.1.1.2/24", "2001:1:1:1443::412/122"])
+
+        n1_n0.add_address(["10.1.1.3/24", "2001:1:1:1443::413/122"])
+
+        status_1 = self.n0.ping(n1_n0.get_address(ipv4=True, ipv6=False)[0])
+        status_2 = self.n0.ping(n1_n0.get_address(ipv4=True, ipv6=False)[1])
+        status_3 = self.n0.ping(n1_n0.get_address(ipv4=False, ipv6=True)[0])
+        status_4 = self.n0.ping(n1_n0.get_address(ipv4=False, ipv6=True)[1])
+
+        self.assertTrue(status_1)
+        self.assertTrue(status_2)
+        self.assertTrue(status_3)
+        self.assertTrue(status_4)
+
+    def test_get_addr(self):
+        (n0_n1, n1_n0) = connect(self.n0, self.n1)
+
+        self.n0.disable_ip_dad()
+        self.n1.disable_ip_dad()
+
+        n0_n1.set_address(["10.0.0.1/24", "2001:1:1:1443::411/122"])
+        n1_n0.set_address(["10.0.0.2/24", "2001:1:1:1443::412/122"])
+
+        addr = n0_n1.get_address()
+        self.assertEqual(
+            (addr[0].get_addr(), addr[1].get_addr()),
+            (
+                Address("10.0.0.1/24").get_addr(),
+                Address("2001:1:1:1443::411/122").get_addr(),
+            ),
+            "n0_n1 interface has unexpected addresses",
+        )
+
+        addr = n1_n0.get_address()
+        self.assertEqual(
+            (addr[0].get_addr(), addr[1].get_addr()),
+            (
+                Address("10.0.0.2/24").get_addr(),
+                Address("2001:1:1:1443::412/122").get_addr(),
+            ),
+            "n1_n0 interface has unexpected address list",
+        )
+
+        addr = n0_n1.get_address(True, False, False)
+        self.assertEqual(
+            addr.get_addr(),
+            Address("10.0.0.1/24").get_addr(),
+            "n0_n1 interface has unexpected ipv4 address",
+        )
+
+        addr = n0_n1.get_address(False, True, False)
+        self.assertEqual(
+            addr.get_addr(),
+            Address("2001:1:1:1443::411/122").get_addr(),
+            "n0_n1 interface has unexpected ipv6 address",
+        )
+
+        addr = n0_n1.get_address(True, False, True)
+        self.assertEqual(
+            [addr[0].get_addr()],
+            [Address("10.0.0.1/24").get_addr()],
+            "n0_n1 interface has unexpected ipv4 address list",
+        )
+
+        addr = n0_n1.get_address(False, True, True)
+        self.assertEqual(
+            [addr[0].get_addr()],
+            [Address("2001:1:1:1443::411/122").get_addr()],
+            "n0_n1 interface has unexpected ipv6 address list",
+        )
+
+        addr = n0_n1.get_address(True, True, True)
+        self.assertEqual(
+            ([x.get_addr() for x in addr[0]], [x.get_addr() for x in addr[1]]),
+            (
+                [Address("10.0.0.1/24").get_addr()],
+                [Address("2001:1:1:1443::411/122").get_addr()],
+            ),
+            "n0_n1 interface has unexpected address lists",
+        )
+
+        with self.assertRaises(ValueError) as err:
+            addr = n0_n1.get_address(False, False, False)
+        self.assertEqual(
+            str(err.exception), "Either ipv4 or ipv6 argument must be True"
+        )
+
+    def test_del_addr(self):
+        (n0_n1, n1_n0) = connect(self.n0, self.n1)
+
+        n0_n1.set_address(["10.1.1.1/24", "2001:1:1:1443::411/122"])
+        n1_n0.set_address(["10.1.1.2/24", "10.1.1.3/24", "2001:1:1:1443::412/122"])
+
+        # Test 1
+        status_1 = self.n0.ping(Address("10.1.1.2/24"))
+
+        self.assertTrue(status_1, "Ping failed")
+
+        n1_n0.del_address("10.1.1.2/24")
+
+        status_2 = self.n0.ping(Address("10.1.1.2/24"))
+
+        self.assertFalse(status_2, "Address not deleted")
+
+        addr = n1_n0.get_address(True, False, False)
+        self.assertEqual(
+            (Address("10.1.1.3/24").get_addr()),
+            addr.get_addr(),
+            "Failed to update address list",
+        )
+
+        # Test 2
+        with self.assertRaises(NotImplementedError) as err:
+            n1_n0.del_address("10.0.0.1/24")
+        self.assertEqual(
+            str(err.exception), "Cannot delete an address that is not assigned."
+        )        
 
     def test_simple_lan(self):
         # pylint: disable=too-many-locals
@@ -253,7 +395,6 @@ class TestTopology(unittest.TestCase):
             with subprocess.Popen(
                 command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE
             ) as proc:
-
                 (stdout, _) = proc.communicate()
 
         self.assertEqual(stdout[:4], b"PING", "Invalid ping output")
