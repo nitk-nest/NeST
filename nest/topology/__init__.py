@@ -20,6 +20,7 @@ import uuid
 
 from . import id_generator
 from .node import Node
+from .router import Router
 from .interface import Interface, connect
 from .address import Address, Subnet
 from .switch import Switch

@@ -6,7 +6,7 @@
 import unittest
 import subprocess
 
-from nest.topology import Node, connect, Switch
+from nest.topology import Node, connect, Switch, Router
 from nest.clean_up import delete_namespaces
 from nest.topology_map import TopologyMap
 from nest.topology.interface import Interface
@@ -257,6 +257,25 @@ class TestTopology(unittest.TestCase):
                 (stdout, _) = proc.communicate()
 
         self.assertEqual(stdout[:4], b"PING", "Invalid ping output")
+
+    def test_prp_router_api(self):
+        # pylint: disable=invalid-name
+        r = Router("r")
+
+        (n0_r, r_n0) = connect(self.n0, r)
+        (r_n1, n1_r) = connect(r, self.n1)
+
+        n0_r.set_address("10.1.1.1/24")
+        r_n0.set_address("10.1.1.2/24")
+        r_n1.set_address("10.1.2.2/24")
+        n1_r.set_address("10.1.2.1/24")
+
+        self.n0.add_route("DEFAULT", n0_r)
+        self.n1.add_route("DEFAULT", n1_r)
+
+        status = self.n0.ping("10.1.2.1", verbose=False)
+
+        self.assertTrue(status)
 
 
 if __name__ == "__main__":
