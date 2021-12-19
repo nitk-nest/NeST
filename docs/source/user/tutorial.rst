@@ -4,217 +4,125 @@
 Tutorial
 ========
 
-In this section, we shall emulate some simple topologies and run network
-experiments on them using **NeST**. In doing so, we shall cover some of the most
-commonly used APIs in **NeST**.
+This section provides an in-depth explanation of the example programs available
+in the examples/tutorial/basic-examples directory. These examples cover some
+of the most commonly used APIs in **NeST**.
 
-Let's begin by building a simple topology with just 2 nodes.
+Let's begin by building a simple topology with two hosts.
 
-1. Peer-to-Peer topology (p2p)
-------------------------------
+1. point-to-point-1.py
+----------------------
 
-Below is the ASCII representation of the topology:
+This program (examples/tutorial/basic-examples/point-to-point-1.py) emulates a
+point to point network between two hosts ``h1`` and ``h2``. The main aim of
+this example is to demonstrate the usage of basic APIs of NeST to create a
+network topology, configure link attributes, assign IPv4 addresses and test
+the connectivity between two hosts by sending one ping packet from ``h1`` to
+``h2``. The program outputs whether the transmission of the ping packet
+succeeded or failed. The network topology is as shown below:
 
 .. code-block:: sh
 
-    n1 ---- n2
+ #################################
+ #       Network Topology        #
+ #                               #
+ #          5mbit, 5ms -->       #
+ #   h1 ------------------- h2   #
+ #       <-- 10mbit, 100ms       #
+ #                               #
+ #################################
 
-Above, we have two **nodes**, ``n1`` and ``n2`` connected via an ethernet cable.
 Let's build this topology using NeST!
 
 i) Building topology
 ^^^^^^^^^^^^^^^^^^^^
+The first step is to import NeST::
 
-Open a blank file in your favorite editor. You may name this file as ``p2p.py``.
-In the tutorial, we shall give small snippets of code which you can copy-paste
-into the editor one by one. The entire source code will be given at the end.
-
-The very first step is to import NeST::
-
-    from nest.experiment import *
     from nest.topology import *
 
 The ``topology`` submodule in NeST provides APIs to build emulated network
-topologies, and the ``experiment`` submodule provides APIs to run network
-experiments in the emulated topologies.
+topologies.
 
-Next, let's create the two nodes, ``n1`` and ``n2``::
+Next, let's create the two hosts, ``h1`` and ``h2``::
 
-    n1 = Node("n1")
-    n2 = Node("n2")
+    h1 = Node("h1")
+    h2 = Node("h2")
 
-``Node`` is a class defined in NeST which emulates a node internally.  Note that
-``Node`` takes a string parameter, representing the node name. This will be
-needed later while using the experiment module. (Internally, ``Node`` uses
-network namespaces for emulation. Refer :ref:`Introduction to Developer Docs`
-to know more).
+``Node`` is a class defined in NeST which emulates a node internally. Note
+that ``Node`` takes a string parameter, representing the node name. Internally,
+``Node`` uses network namespaces for emulation. Refer :ref:`Introduction to
+Developer Docs` to know more about the internal architecture of NeST.
 
-Now that two nodes are created, let's connect them using "virtual ethernet
-cables" (veth pairs)::
+Now that two hosts are created, let's connect them using "virtual ethernet
+devices" (veth pairs)::
 
-    (n1_n2, n2_n1) = connect(n1, n2)
+    (eth1, eth2) = connect(h1, h2)
 
-The ``connect`` API firstly creates a ``veth`` pair, which are two network
+The ``connect`` API first creates a ``veth`` pair, which are the two network
 interfaces connected to each other. Next, it assigns one of the interfaces to
-``n1`` and the other interface to ``n2``. So, ``n1_n2`` interface is present in
-``n1`` and ``n2_n1`` interface is in ``n2``. And since ``n1_n2`` and ``n2_n1``
-are two endpoints of a virtual ethernet cable, ``n1`` and ``n2`` are now
-connected to each other!
+``h1`` and the other interface to ``h2``. So, ``eth1`` interface is assigned to
+``h1`` and ``eth2`` interface is assigned to ``h2``. Since ``eth1`` and
+``eth2`` are two endpoints, ``h1`` and ``h2`` are now connected to each other!
 
-We are just one step away from sending packets between ``n1`` and ``n2``. We
-will need to assign addresses to each of the interfaces first::
+The next step is to assign an IPv4 address to every interface in the network.
+In this example, we assume that the IPv4 address of the network is
+192.168.1.0/24, and hence, we assign the IPv4 addresses to ``eth1`` and
+``eth2`` as follows::
 
-    n1_n2.set_address("10.0.0.1/24")
-    n2_n1.set_address("10.0.0.2/24")
+    eth1.set_address("192.168.1.1/24")
+    eth2.set_address("192.168.1.2/24")
 
-We have assigned address ``10.0.0.1`` to ``n1_n2`` and ``10.0.0.2`` to
-``n2_n1``. The ``/24`` in the address specifies the subnet and we want
-both interfaces to be in the same subnet.
+We have assigned the address ``192.168.1.1`` to ``eth1`` and ``192.168.1.2`` to
+``eth2``. The ``/24`` in the address specifies the subnet and we want both
+the interfaces to be in the same subnet. The ``set_address`` API takes the
+address as a string. Note that it is important to mention the subnet.
 
-And congrats, you have successfully built the topology! Let's run the
-python program to verify. Save the ``p2p.py`` file, fire up your terminal
-and run the below command in the same directory as the ``p2p.py`` file:
+Although we have the network topology ready now, we have not configured the
+characteristics of the links (such as maximum bandwidth, propagation delay)
+between ``h1`` and ``h2``. So the next step in the program is to configure
+the link characteristics. The following piece of code does that::
 
-.. code-block:: console
+    eth1.set_attributes("5mbit", "5ms")
+    eth2.set_attributes("10mbit", "100ms")
 
-    $ sudo python3 p2p.py
-    [INFO] : Cleaned up environment!
+The attributes for the link from ``h1`` to ``h2`` are set at interface ``eth1``
+(and vice versa). The first API call, ``eth1.set_attributes("5mbit", "5ms")``
+sets the bandwidth to ``5 mbit`` and propagation delay to ``5 ms`` for the link
+in the direction of ``h1`` to ``h2``.
 
-If you get output shown above, then the program ran successfully for you!
-If not, then there is likely an error in the way NeST was installed. Please
-refer :ref:`Installation` and ensure that you have run all the required
-steps.
+The second API call sets the bandwidth and propagation delay for the link in
+the direction of ``h2`` to ``h1``. Note that the bandwidth and propagation
+delay can be asymmetric. In the real deployments, upload and download bandwidth
+is not the same, and even propagation delays can vary because the forward and
+reverse paths can be different.
 
-When the above program was run, the required topology was created by
-NeST. On exit, as the output of the program indicates, this topology is
-deleted. But just creating a topology is not useful, let's
-generate network traffic in this topology and visualize the various
-parameters in the traffic as plots.
+Lastly, let's configure a ``ping`` packet to be sent from ``h1`` to ``h2``.
+The ``ping`` API, by default, sends one ping packet from ``h1`` to ``h2``
+and reports whether it succeeded or failed. It takes the IP address of the
+destination host, as shown below::
 
-The ``p2p.py`` upto this point should contain the following::
+    h1.ping(eth2.address)
 
-    from nest.experiment import *
-    from nest.topology import *
-
-    n1 = Node("n1:)
-    n2 = Node("n2")
-
-    (n1_n2, n2_n1) = connect(n1, n2)
-
-    n1_n2.set_address("10.0.0.1/24")
-    n2_n1.set_address("10.0.0.2/24")
+We have now successfully built and configured the network topology! Let's run
+the program and analyze the output.
 
 ii) Running network experiment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Firstly, let's set some delay and bandwidth to the link between ``n1`` and
-``n2``::
-
-    n1_n2.set_attributes("5mbit", "5ms")
-    n2_n1.set_attributes("10mbit", "100ms")
-
-The first API call, ``n1_n2.set_attributes("5mbit", "5ms")`` sets the bandwidth
-to be ``5 mbit`` and delay to be ``5 ms`` in the link, in the direction of
-``n1`` to ``n2``.
-
-The second API call sets the bandwidth and delay in the link, in the direction
-of ``n2`` to ``n1``. Note that the bandwidth and delay need not be the same in
-both directions, as in real-life scenario where download bandwidth are typically
-higher than upload bandwidth.
-
-Next, let's define a ``Flow`` object, representing the network traffic to be
-generated in the topology::
-
-    flow = Flow(n1, n2, n2_n1.address, 0, 60, 2)
-
-The above API defines a flow between the two nodes ``n1`` and ``n2``.  The
-parameters of ``Flow`` are: `source_node`, `destination_node`,
-`destination_address`, `start_time`, `stop_time` and `number_of_streams`.
-
-Hence, we have defined a flow from ``n0`` to ``n1`` for a duration of 60
-seconds, starting at 0s and with 2 streams. The start time and stop time may
-seem irrelevant for specifying the duration of flow, but they are useful for
-scenarios where we have multiple flows with different start and stop times.
-
-Note that we just defined a ``Flow`` object above, it doesn't actually
-create the network traffic. We shall do that below::
-
-    exp = Experiment('tcp_2up')
-    exp.add_tcp_flow(flow)
-
-    exp.run()
-
-First we create an ``Experiment`` object. Note that it takes in string parameter
-for experiment name. We have named it as 'tcp_2up' since we are generating a
-flow with 2 streams from ``n1`` to ``n2``.
-
-Next, we add the previously defined ``flow`` object in the experiment ``exp``
-using the ``add_tcp_flow`` API. Note that the default TCP congestion algorithm
-used is cubic.
-
-Finally, we run the experiment with ``exp.run()``. Now the defined flow
-will run on the emulated topology. Let's run the program and check
-the output we get!
-
-The ``p2p.py`` at this point should be::
-
-    from nest.experiment import *
-    from nest.topology import *
-
-    n1 = Node('n1')
-    n2 = Node('n2')
-
-    (n1_n2, n2_n1) = connect(n1, n2)
-
-    n1_n2.set_address('10.0.0.1/24')
-    n2_n1.set_address('10.0.0.2/24')
-
-    n1_n2.set_attributes('5mbit', '5ms')
-    n2_n1.set_attributes('10mbit', '100ms')
-
-    flow = Flow(n1, n2, n2_n1.address, 0, 60, 2)
-
-    exp = Experiment('tcp_2up')
-    exp.add_tcp_flow(flow)
-
-    exp.run()
-
-Save the ``p2p.py`` file and run the below command in your terminal:
+The command to run this program and a sample output are shown below:
 
 .. code-block:: console
 
-    $ sudo python3 p2p.py
-
-    [INFO] : Running experiment tcp_2up
-    [INFO] : Running 2 netperf flows from n1 to 10.0.0.2...
-    [INFO] : Running ss on nodes...
-    [INFO] : Experiment complete!
-    [INFO] : Parsing statistics...
-    [INFO] : Output results as JSON dump
-    [INFO] : Plotting results...
-    [INFO] : Plotting complete!
+    $ sudo python3 point-to-point-1.py
+    SUCCESS: ping from h1 to 192.168.1.2
     [INFO] : Cleaned up environment!
 
-We have run a network experiment on our topology! You will find a folder
-generated by NeST whose name looks similar to: ``tcp_2up(12-01-2021-12:29:34)_dump``.
-The name will vary slightly based on the time you ran the NeST program.
+If you get the output shown above, then the program ran successfully for you!
+If not, then there is likely an error in the way NeST was installed. Please
+refer :ref:`Installation` and ensure that you completed all the required
+steps.
 
-Inside this folder, you will find the stats collected by NeST. The contents
-of the folder should be as follows:
-
-.. code-block:: console
-
-    $ ls -1 tcp_2up(12-01-2021-12.29.34)_dump
-    netperf/
-    netperf.json
-    ping/
-    ping.json
-    README.txt
-    ss/
-    ss.json
-    README.txt
-
-That's a handful of files! Among all those files, we see a file called
-``README.txt``. This file describes in detail the contents of the files
-in the folder. We highly urge you to read this file to get a better idea
-of the stats obtained by NeST.
+When the above program is run, the required topology is created by NeST.
+On exit, as the output of the program indicates, this topology is
+deleted. NeST provides a ``config`` option using which the users can choose
+to retain the topology, instead of deleting it, during termination. The
+``config`` options supported in NeST are discussed here :ref:`Config Usage`.
