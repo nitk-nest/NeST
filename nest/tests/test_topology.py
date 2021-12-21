@@ -95,16 +95,24 @@ class TestTopology(unittest.TestCase):
         self.n0.disable_ip_dad()
         self.n1.disable_ip_dad()
 
+        status_1 = self.n0.ping(Address("10.1.1.2/24"))
+        status_2 = self.n0.ping(Address("10.1.1.3/24"))
+        status_3 = self.n0.ping(Address("2001:1:1:1443::412/122"))
+
+        self.assertFalse(status_1)
+        self.assertFalse(status_2)
+        self.assertFalse(status_3)
+
         n0_n1.set_address(["10.1.1.1/24", "2001:1:1:1443::411/122"])
         n1_n0.set_address(["10.1.1.2/24", "10.1.1.3/24", "2001:1:1:1443::412/122"])
 
-        status_1 = self.n0.ping(n1_n0.get_address(ipv4=True, ipv6=False)[0])
-        status_2 = self.n0.ping(n1_n0.get_address(ipv4=True, ipv6=False)[1])
-        status_3 = self.n0.ping(n1_n0.get_address(ipv4=False, ipv6=True))
+        status_4 = self.n0.ping(n1_n0.get_address(ipv4=True, ipv6=False)[0])
+        status_5 = self.n0.ping(n1_n0.get_address(ipv4=True, ipv6=False)[1])
+        status_6 = self.n0.ping(n1_n0.get_address(ipv4=False, ipv6=True))
 
-        self.assertTrue(status_1)
-        self.assertTrue(status_2)
-        self.assertTrue(status_3)
+        self.assertTrue(status_4)
+        self.assertTrue(status_5)
+        self.assertTrue(status_6)
 
     def test_add_addr(self):
         (n0_n1, n1_n0) = connect(self.n0, self.n1)
@@ -186,10 +194,10 @@ class TestTopology(unittest.TestCase):
 
         addr = n0_n1.get_address(True, True, True)
         self.assertEqual(
-            ([x.get_addr() for x in addr[0]], [x.get_addr() for x in addr[1]]),
+            (addr[0].get_addr(), addr[1].get_addr()),
             (
-                [Address("10.0.0.1/24").get_addr()],
-                [Address("2001:1:1:1443::411/122").get_addr()],
+                Address("10.0.0.1/24").get_addr(),
+                Address("2001:1:1:1443::411/122").get_addr(),
             ),
             "n0_n1 interface has unexpected address lists",
         )
@@ -225,11 +233,23 @@ class TestTopology(unittest.TestCase):
         )
 
         # Test 2
-        with self.assertRaises(NotImplementedError) as err:
+        with self.assertLogs("nest.topology.device", level="WARNING") as log:
             n1_n0.del_address("10.0.0.1/24")
         self.assertEqual(
-            str(err.exception), "Cannot delete an address that is not assigned."
-        )        
+            log.output,
+            [
+                "WARNING:nest.topology.device:Cannot delete an address that is not assigned. (10.0.0.1/24)"
+            ],
+        )
+
+        # Test 3
+        n1_n0.del_address(["10.1.1.3/24", "2001:1:1:1443::412/122"])
+        addr = n1_n0.get_address(True, True, True)
+        self.assertEqual(
+            [],
+            addr,
+            "Failed to update address list",
+        )
 
     def test_simple_lan(self):
         # pylint: disable=too-many-locals

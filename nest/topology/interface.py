@@ -8,7 +8,6 @@ from nest.input_validator import input_validator
 from nest.input_validator.metric import Bandwidth, Delay, Percentage
 from nest.topology.veth_end import VethEnd
 from nest.topology.ifb import Ifb
-from nest.topology import Address
 from nest.topology.network import Network
 from nest import engine
 import nest.config as config
@@ -130,23 +129,39 @@ class Interface:
     @property
     def address(self):
         """
+        NOTE: This method is deprecated and will be removed in future versions.
+              Use get_address method instead.
+
         Getter for the address associated
         with the interface
         """
-        return self._veth_end.address
+        return self._veth_end.get_address()
 
     @address.setter
-    @input_validator
-    def address(self, address: Address):
+    def address(self, address):
         """
+        NOTE: This method is deprecated and will be removed in future versions.
+              Use set_address method instead.
+
         Assigns IP address to an interface
 
         Parameters
         ----------
-        address : Address or str
+        address : Address/str or List[Address/str]
             IP address to be assigned to the interface
         """
-        self._veth_end.address = address
+        self._veth_end.set_address(address)
+
+    def set_address(self, address):
+        """
+        Assigns IP addresses to an interface
+
+        Parameters
+        ----------
+        address : Address/str or List[Address/str]
+            IP address to be assigns to the interface
+        """
+        self._veth_end.set_address(address)
 
     def add_address(self, address):
         """
@@ -154,7 +169,7 @@ class Interface:
 
         Parameters
         ----------
-        address : Address or str or list of Address and/or str
+        address : Address/str or List[Address/str]
             IP address to be added to the interface
         """
         self._veth_end.add_address(address)
@@ -200,10 +215,11 @@ class Interface:
         """
         self._veth_end.mtu = mtu_value
 
-    def get_address(self, ipv4=True, ipv6=True, as_list=False):
+    @input_validator
+    def get_address(self, ipv4: bool = True, ipv6: bool = True, as_list: bool = False):
         """
-        Getter for the address associated
-        with the interface
+        Gets the required IP addresses for the interface
+        Returns a list or an Address object
 
         Parameters
         ----------
@@ -211,25 +227,23 @@ class Interface:
         ipv6 : If set to true, the IPv6 address of the interface is returned (defaults to True)
         If both are True, both the addresses are returned
         Either ipv4 or ipv6 must be True
-        as_list : Returns the address as a list if set to True and only one address is returned
-
-        *NOTE*: Maintained since mentioned in NeST paper.
+        as_list : Only applicable when a single address is set (Applicable individually for
+                  ipv4 and ipv6).
+        Returns Address object when false, else returns a single Address object in list
+        (defaults to False).
         """
         return self._veth_end.get_address(ipv4, ipv6, as_list)
 
-    @input_validator
-    def set_address(self, address: Address):
+    def set_address(self, address):
         """
         Assigns IP address/addresses to an interface
 
         Parameters
         ----------
-        address : Address or str or List of Address and/or str
+        address : Address/str or List[Address/str]
             IP address to be assigned to the interface
-
-        *NOTE*: Maintained since mentioned in NeST paper.
         """
-        self._veth_end.address = address
+        self._veth_end.set_address(address)
 
     def disable_ip_dad(self):
         """
