@@ -2,6 +2,7 @@
 workflow:
   rules:
     - if: $CI_MERGE_REQUEST_IID
+    - if: $FORK_PIPELINE_RUN == "true"
     - if: $CI_PROJECT_URL != "https://gitlab.com/nitk-nest/nest"
       when: never
     - if: $CI_COMMIT_TAG
@@ -26,6 +27,7 @@ variables:
   CONTAINER_DEV_IMAGE: $CI_REGISTRY_IMAGE:dev  # Image to be uploaded to docker hub
   DOCKERHUB_REPO: nestnitk/nest-docker
   DOCKER_TLS_CERTDIR: "/certs"
+  FORK_PIPELINE_RUN: "false"  # If pipeline runs should be allowed in fork repos
 
 validate mr:
   stage: validate
@@ -42,7 +44,7 @@ validate mr:
 # https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#making-docker-in-docker-builds-faster-with-docker-layer-caching
 build docker image:
   rules:
-    - if: $CI_MERGE_REQUEST_IID
+    - if: $CI_MERGE_REQUEST_IID || $FORK_PIPELINE_RUN == "true"
       variables:
         DOCKER_SERVICES: "test"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
