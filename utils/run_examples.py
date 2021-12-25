@@ -7,7 +7,7 @@ from pathlib import Path
 import subprocess
 import json
 
-UTILS_DIR = Path(__file__).parent
+UTILS_DIR = Path(os.path.abspath(__file__)).parent
 ROOT_DIR = UTILS_DIR.parent
 EXAMPLES_DIR = ROOT_DIR / "examples"
 
