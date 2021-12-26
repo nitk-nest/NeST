@@ -3,7 +3,7 @@
 
 # Dockerfile to build image with dependecies required for testing nest on CI.
 
-FROM ubuntu:20.04@sha256:5403064f94b617f7975a19ba4d1a1299fd584397f6ee4393d0e16744ed11aab1 as test
+FROM ubuntu:20.04@sha256:7cc0576c7c0ec2384de5cbf245f41567e922aab1b075f3e8ad565f508032df17 as test
 
 # Use bash by default instead of sh
 SHELL ["/bin/bash", "-c"]
@@ -28,10 +28,11 @@ RUN python -m venv venv
 RUN source venv/bin/activate
 
 # Install python dependencies
-RUN pip install pylint
 RUN pip install coverage
-RUN pip install pre-commit
 RUN pip install gitlint
+RUN pip install pre-commit
+RUN pip install pylint
+RUN pip install pytest
 
 # Install netperf
 RUN apt -y install netperf

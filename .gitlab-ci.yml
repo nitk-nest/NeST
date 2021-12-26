@@ -64,7 +64,7 @@ build docker image:
     - docker push $CONTAINER_TEST_CI_IMAGE
     - if [ "$DOCKER_SERVICES" == "test dev" ]; then docker push $CONTAINER_DEV_IMAGE; fi
 
-run style check:
+run style checks:
   image: $CONTAINER_TEST_CI_IMAGE
   stage: test
   script:
@@ -81,24 +81,42 @@ run unit tests:
   script:
     - pip install .
     - coverage --version
-    - coverage run --source nest -m unittest -v
+    - coverage run --source nest -m pytest -v --junitxml=junit_report.xml -o junit_logging=all
     - coverage report
     - coverage xml
   artifacts:
     reports:
       cobertura: coverage.xml
+      junit: junit_report.xml
     paths:
       - test-experiment*/
       - quagga-logs*/
       - frr-logs*/
+      - coverage.xml
+      - junit_report.xml
 
 run examples:
   image: $CONTAINER_TEST_CI_IMAGE
   stage: test
   script:
-    - python utils/run_examples.py
+    - pip install .
+    - >
+        coverage run --source nest -m pytest -v
+        -o python_files="utils/run_examples.py"
+        -o junit_logging=all
+        --junitxml=junit_report.xml
+    - coverage report
+    - coverage xml
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
+  artifacts:
+    reports:
+      cobertura: coverage.xml
+      junit: junit_report.xml
+    paths:
+      - examples_dump/
+      - coverage.xml
+      - junit_report.xml
 
 test docs:
   image: $CONTAINER_TEST_CI_IMAGE
@@ -141,7 +159,7 @@ upload to PyPI:
   rules:
     - if: $CI_COMMIT_TAG
 
-push gitlab registry:
+push to gitlab registry:
   tags:
     - dind-runner
   services:
@@ -157,7 +175,7 @@ push gitlab registry:
       changes:
         - "Dockerfile"
 
-push docker hub:
+push to docker hub:
   rules:
     - if: $CI_COMMIT_TAG
       variables:
