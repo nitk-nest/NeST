@@ -1,4 +1,4 @@
-# Examples to understand the support of IPv6 addressing in NeST
+# Examples to demonstrate the usage of Address Helpers in NeST
 
 This directory contains the following examples to understand how address
 helpers can be used in `NeST` to automatically assign IPv4/IPv6 addresses.
