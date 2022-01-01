@@ -40,8 +40,38 @@ https://pypi.org/project/nitk-nest/ (Python Package Index)::
 
     $ python3 -m pip install nitk-nest
 
-ii) From source
+ii) From docker
 ^^^^^^^^^^^^^^^
+You may use docker to quickly get started with NeST. The docker image has all the necessary dependencies installed
+
+1. Install the docker engine.
+
+    Docker engine is required to pull and run docker images. You can find the
+    the installation instructions for docker for Linux distros .. _here(https://docs.docker.com/engine/install/#server).
+
+2. Pull the docker image::
+
+    $ docker pull nestnitk/nest-docker:<tag>
+
+    Here `<tag>` can be one of:
+    1. `latest` if you want to get the docker image with the version of NeST
+        that corresponds to the changes on the master branch.
+    2. A specific release version of NeST(for example, v0.4).
+        You can find the list of NeST versions [here](https://gitlab.com/nitk-nest/nest/-/tags).
+        Note that there are no docker images for version below v0.4.
+
+3. Run the docker image::
+
+    $ docker run --privileged -it nestnitk/nest-docker
+
+    This command will launch a shell into the NeST container and
+    you will be inside the NeST directory by default. You can use this
+    shell to run any commands/programs as you would on a normal terminal.
+    This container already has NeST installed along with all the dependencies for you
+    which can be verified by running one of the NeST scripts under the `examples` folder.
+
+iii) From source
+^^^^^^^^^^^^^^^^
 
 Follow this approach if you want to contribute to NeST development or want the
 latest source code with unreleased features.
