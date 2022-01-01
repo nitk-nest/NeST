@@ -52,7 +52,11 @@ class Ifb(Device):
 
         super().__init__(name, node_id)
         self.veth_end_id = veth_end_id
+
+        # Create Ifb and add to namespace
         engine.create_ifb(self._id)
+        engine.add_int_to_ns(node_id, self._id)
+
         self.set_mode("UP")
 
         self.current_bandwidth = config.get_value("default_bandwidth")
