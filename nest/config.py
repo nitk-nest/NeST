@@ -123,10 +123,12 @@ def import_custom_config(path):
             for parameter in data[i]:
                 if parameter in __DEFAULT_VALUE[i]:
                     __DEFAULT_VALUE[i][parameter] = data[i][parameter]
+                    _post_set_value(parameter, data[i][parameter])
                 else:
                     logger.error("The given parameter %s does not exist", parameter)
         elif i in __DEFAULT_VALUE and not isinstance(data[i], dict):
             __DEFAULT_VALUE[i] = data[i]
+            _post_set_value(i, data[i])
         else:
             logger.error("The given parameter %s does not exist", parameter)
 
