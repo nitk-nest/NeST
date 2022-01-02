@@ -7,6 +7,7 @@
 from nest.experiment import *
 from nest.topology import *
 from nest import config
+import os
 
 # Imports config from the mentioned file and overwrites
 # the default config values only for the ones provided
@@ -14,7 +15,10 @@ from nest import config
 # If the file is named `nest-config.json` and placed in
 # current directory, /etc or ~/ then, the config
 # is automatically read without invoking the below function
-config.import_custom_config("custom-config.json")
+
+# Note - os.path.dirname(__file__) is a python API to get
+# the path of the file which is currently running
+config.import_custom_config(os.path.dirname(__file__) + "/custom-config.json")
 
 
 ##############################

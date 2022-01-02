@@ -1,4 +1,8 @@
 {
-    "plot_results": false,
-    "default_bandwidth": "512mbit"
+    "experiment" : {
+        "plot_results": false
+    },
+    "topology" : {
+        "default_bandwidth": "512mbit"
+    }
 }
