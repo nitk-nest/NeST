@@ -1,0 +1,61 @@
+# Examples to demonstrate the usage of config options in NeST
+
+This directory contains the following examples to understand how config
+options can be used in `NeST`. These options provide flexibility to the NeST
+users to customize the parameters used in the experiment. We recommend that
+you walk through these examples in the same order as they are presented.
+
+## 1. config-1-point-to-point-1.py
+This program emulates a point to point network between two hosts `h1` and
+`h2`. One ping packet is sent from `h1` to `h2`, and the success/failure
+of ping is reported. It is similar to the `point-to-point-1.py` example in
+`examples/tutorial/basic-examples`. This program shows two `config` options
+in NeST for ease of experimentation. For this purpose, a new package called
+`config` is imported in this program.
+
+By default, NeST deletes all the nodes (or network namespaces) at the end of
+the experiment. One of the `config` options in NeST allows the user to
+customize this behavior, if needed, and retain the namespaces. Another `config`
+option in NeST is to avoid giving random names to the namespaces. Since NeST
+allows multiple programs to run in parallel on the same machine, it internally
+assigns random names to the namespaces by default. However, when random names
+are disabled, node names cannot be longer than three characters. We use names
+`h1` and `h2` in this example.
+
+### Important note:
+Do not forget to delete the namespaces manually before re-running this program.
+You can delete namespaces one-by-one by using `sudo ip netns del h1` command
+(similarly for `h2`) or delete all namespaces at once by using
+`sudo ip --all netns del`. Be careful if you choose to delete all namespaces
+because this command will delete all the namespaces in your system (even the
+ones that were not created by NeST).
+
+## 2. config-2-point-to-point-1.py
+This program emulates a point to point network between two hosts `h1` and
+`h2`. One ping packet is sent from `h1` to `h2`, and the success/failure
+of ping is reported. It is similar to the `point-to-point-1.py` example in
+`examples/tutorial/basic-examples`. This program shows a `config` option
+in NeST for the purpose of logging. Note: we have imported a new package
+called `config` in this program.
+
+NeST supports different levels of logging by using Python's logging levels.
+By default, the logging is enabled at `INFO` level. Other levels supported are:
+`NOTSET`, `TRACE`, `DEBUG`, `WARNING`, `ERROR` and `CRITICAL`.
+
+## 3. config-3-point-to-point-1.py
+This program emulates a point to point network between two hosts `h1` and
+`h2`. One ping packet is sent from `h1` to `h2`, and the success/failure
+of ping is reported. It is similar to the `point-to-point-1.py` example in
+`examples/tutorial/basic-examples`. This program shows a `config` option in
+NeST to import custom configuration from a JSON file. This option overwrites
+the default values in NeST for the parameters that are specified in the JSON
+file. The default values of other parameters are not overwritten. Note: we
+have imported a new package called `config` in this program.
+
+This program uses the `config` option to read the configuration from the file
+named `custom-config.json` which is placed in the current directory. If the
+JSON file is named as `nest-config.json` and placed in the same directory as
+this program, or in /etc or ~/, then this program does not need to use the
+`config` option. It directly reads the configuration from `nest-config.json`.
+
+The details of all `config` options supported in NeST are available [here](http://nest.nitk.ac.in/docs/master/user/config.html).
