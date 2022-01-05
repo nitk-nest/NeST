@@ -51,6 +51,40 @@ def exec_subprocess(cmd, shell=False, output=False):
         return proc.returncode
 
 
+def exec_subprocess_with_live_output(cmd):
+    """
+    Executes command and prints live output to stdout.
+
+    For eg., if ping command is used, then the output for each
+    packet is printed live to stdout.
+
+    Parameters
+    ----------
+    cmd : str
+        Command to be executed
+
+    Returns
+    -------
+    int
+        Return code recieved after executing the command
+    """
+    # Inspired from:
+    # https://fabianlee.org/2019/09/15/python-getting-live-output-from-subprocess-using-poll/
+
+    with Popen(cmd.split(), stdout=PIPE) as process:
+        while True:
+            output = process.stdout.readline()
+            if process.poll() is not None:
+                break
+            if output:
+                print(output.decode(), end="")
+
+        # Print an extra newline at the end
+        print()
+        logger.trace(cmd)
+        return process.poll()
+
+
 def exec_exp_commands(cmd, stdout=PIPE, stderr=PIPE, timeout=None):
     """
     executes experiment related commands like ss, tc and netperf

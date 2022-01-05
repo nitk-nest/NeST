@@ -310,7 +310,7 @@ class Node:
         return engine.read_kernel_param(self.id, "net.ipv4.udp_", param)
 
     @ipv6_dad_check
-    def ping(self, destination_address, packets=1, verbose=True):
+    def ping(self, destination_address, packets=5, verbose=True):
         """
         Ping from current `Node` to destination address
         if there is a route.
@@ -320,9 +320,9 @@ class Node:
         destination_address: Address/str
             IP address to ping to
         packets: int
-            Number of ping packets sent (default: 1)
+            Number of ping packets sent
         verbose: bool
-            If `True`, print extensive ping success/failure details
+            If `True`, output ping packet details
 
         Returns
         -------
@@ -333,13 +333,21 @@ class Node:
         if isinstance(destination_address, str):
             destination_address = Address(destination_address)
 
+        if verbose:
+            print(
+                f"=== PING from {self.name} to "
+                f"{destination_address.get_addr(with_subnet=False)} ==="
+            )
+            print()
+
         status = engine.ping(
             self.id,
             destination_address.get_addr(with_subnet=False),
             packets,
             destination_address.is_ipv6(),
+            live_output=verbose,
         )
-        if verbose:
+        if verbose is False:
             if status:
                 print(
                     f"SUCCESS: ping from {self.name} to "
