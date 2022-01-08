@@ -29,7 +29,7 @@ After installing pip, make sure you also upgrade it::
 
     $ python3 -m pip install -U pip
 
-Below are the two approaches to install NeST python package:
+Below are the three approaches to install NeST python package:
 
 i) From PyPi
 ^^^^^^^^^^^^
@@ -47,7 +47,7 @@ You may use docker to quickly get started with NeST. The docker image has all th
 1. Install the docker engine.
 
     Docker engine is required to pull and run docker images. You can find the
-    the installation instructions for docker for Linux distros .. _here(https://docs.docker.com/engine/install/#server).
+    the installation instructions for docker for Linux distros `here <https://docs.docker.com/engine/install/#server>`__
 
 2. Pull the docker image::
 
@@ -57,8 +57,8 @@ You may use docker to quickly get started with NeST. The docker image has all th
     1. `latest` if you want to get the docker image with the version of NeST
         that corresponds to the changes on the master branch.
     2. A specific release version of NeST(for example, v0.4).
-        You can find the list of NeST versions [here](https://gitlab.com/nitk-nest/nest/-/tags).
-        Note that there are no docker images for version below v0.4.
+       You can find the list of NeST versions here: https://gitlab.com/nitk-nest/nest/-/tags.
+       Note that there are no docker images for version below v0.4.
 
 3. Run the docker image::
 
@@ -103,6 +103,8 @@ would like to use NeST.
 
 **Core dependencies** will be marked as bold and *Optional dependencies*
 will be marked in italics.
+
+You can skip all the following steps if you are using the docker image of NeST.
 
 1. Ensure **iproute2** suite is installed with your kernel
 
@@ -171,7 +173,7 @@ will be marked in italics.
             $ sudo apt install quagga quagga-doc
 
         Edit `/etc/quagga/daemons` with an editor using sudo and turn on zebra,
-        ripd and ospf by changing the following lines:
+        ripd, ospfd and isisd by changing the following lines:
 
         .. code-block:: bash
 
