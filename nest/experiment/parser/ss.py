@@ -46,7 +46,9 @@ class SsRunner(Runner):
     ]
 
     # pylint: disable=too-many-arguments
-    def __init__(self, ns_id, destination_ip, start_time, run_time, ss_filter=""):
+    def __init__(
+        self, ns_id, destination_ip, start_time, run_time, dst_ns, ss_filter=""
+    ):
         """
         Constructor to initialize ss runner
 
@@ -60,11 +62,13 @@ class SsRunner(Runner):
             time at which ss is to be run
         run_time : num
             total time to run ss for
+        dst_ns : str
+            destination network namespace of ss
         ss_filter : str
             to filter output from specific connections.
         """
         self.filter = ss_filter
-        super().__init__(ns_id, start_time, run_time, destination_ip)
+        super().__init__(ns_id, start_time, run_time, destination_ip, dst_ns)
 
     def run(self):
         """

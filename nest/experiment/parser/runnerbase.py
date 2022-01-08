@@ -11,6 +11,7 @@ from nest.topology import Address
 from nest.topology_map import TopologyMap
 
 
+# pylint: disable=too-many-instance-attributes
 class Runner:
     """
     Base class for other runners
@@ -29,12 +30,18 @@ class Runner:
         Address of the destination node for the runner
     """
 
-    def __init__(self, ns_id, start_time, run_time, destination_ip="::1"):
+    # pylint: disable=too-many-arguments
+    def __init__(self, ns_id, start_time, run_time, destination_ip="::1", dst_ns=None):
         """
         Parameters
         ----------
-        destination_ip : str
+        ns_id: str
+            Namespace where the utility is run
+        destination_ip: str
             ip address of the destination namespace
+        dst_ns: str
+            Optional. The namespace where the utility either sends traffic to,
+            or monitors traffic that is going from `ns_id` to `dst_ns`
         """
         # pylint: disable=consider-using-with
         self.out = tempfile.TemporaryFile()
@@ -43,6 +50,7 @@ class Runner:
         self.logger = logging.getLogger(__name__)
 
         self.ns_id = ns_id
+        self.dst_ns = dst_ns
         self.start_time = start_time
         self.run_time = run_time
         self.destination_address = Address(destination_ip)
@@ -79,6 +87,12 @@ class Runner:
             "start_time": str(self.start_time),
             "stop_time": str(self.start_time + self.run_time),
         }
+
+        if self.dst_ns is not None:
+            meta_item["destination_node"] = TopologyMap.get_namespace(self.dst_ns)[
+                "name"
+            ]
+
         return meta_item
 
     def __del__(self):

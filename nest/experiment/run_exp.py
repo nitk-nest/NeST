@@ -62,7 +62,7 @@ def run_experiment(exp):
     destination_nodes = {"netperf": set(), "iperf3": set()}
 
     # Contains start time and end time to run respective command
-    # from a source netns to destination address
+    # from a source netns to destination address (in destination netns)
     ss_schedules = defaultdict(lambda: (float("inf"), float("-inf")))
     ping_schedules = defaultdict(lambda: (float("inf"), float("-inf")))
 
@@ -89,8 +89,8 @@ def run_experiment(exp):
 
         exp_end_t = max(exp_end_t, stop_t)
 
-        (min_start, max_stop) = ping_schedules[(src_ns, dst_addr)]
-        ping_schedules[(src_ns, dst_addr)] = (
+        (min_start, max_stop) = ping_schedules[(src_ns, dst_ns, dst_addr)]
+        ping_schedules[(src_ns, dst_ns, dst_addr)] = (
             min(min_start, start_t),
             max(max_stop, stop_t),
         )
@@ -369,13 +369,13 @@ def setup_tcp_flows(dependency, flow, ss_schedules, destination_nodes):
         # Create new processes to be run simultaneously
         for _ in range(n_flows):
             runner_obj = NetperfRunner(
-                src_ns, dst_addr, start_t, stop_t - start_t, **netperf_options
+                src_ns, dst_addr, start_t, stop_t - start_t, dst_ns, **netperf_options
             )
             netperf_runners.append(runner_obj)
 
         # Find the start time and stop time to run ss command in `src_ns` to a `dst_addr`
         ss_schedules = _get_start_stop_time_for_ss(
-            src_ns, dst_addr, start_t, stop_t, ss_schedules
+            src_ns, dst_ns, dst_addr, start_t, stop_t, ss_schedules
         )
 
     return netperf_runners, ss_schedules
@@ -429,7 +429,13 @@ def setup_udp_flows(dependency, flow, destination_nodes):
         )
 
         runner_obj = Iperf3Runner(
-            src_ns, dst_addr, options["target_bw"], n_flows, start_t, stop_t - start_t
+            src_ns,
+            dst_addr,
+            options["target_bw"],
+            n_flows,
+            start_t,
+            stop_t - start_t,
+            dst_ns,
         )
         iperf3_runners.append(runner_obj)
 
@@ -456,12 +462,16 @@ def setup_ss_runners(dependency, ss_schedules, ss_filter):
     runners = []
     if dependency:
         logger.info("Running ss on nodes...")
-        for ns_id, timings in ss_schedules.items():
+        for key, timings in ss_schedules.items():
+            src_ns = key[0]
+            dst_ns = key[1]
+            dst_addr = key[2]
             ss_runner = SsRunner(
-                ns_id[0],
-                ns_id[1],
+                src_ns,
+                dst_addr,
                 timings[0],
                 timings[1] - timings[0],
+                dst_ns,
                 ss_filter=ss_filter,
             )
             runners.append(ss_runner)
@@ -516,13 +526,16 @@ def setup_ping_runners(dependency, ping_schedules):
     -------
     workers: List[multiprocessing.Process]
         Processes to run ss at nodes
-    runners: List[SsRunners]
+    runners: List[PingRunner]
     """
     runners = []
     if dependency:
-        for ns_id, timings in ping_schedules.items():
+        for key, timings in ping_schedules.items():
+            src_ns = key[0]
+            dst_ns = key[1]
+            dst_addr = key[2]
             ping_runner = PingRunner(
-                ns_id[0], ns_id[1], timings[0], timings[1] - timings[0]
+                src_ns, dst_addr, timings[0], timings[1] - timings[0], dst_ns
             )
             runners.append(ping_runner)
     else:
@@ -565,16 +578,21 @@ def cleanup():
 
 
 # Helper methods
-def _get_start_stop_time_for_ss(src_ns, dst_addr, start_t, stop_t, ss_schedules):
+# pylint: disable=too-many-arguments
+def _get_start_stop_time_for_ss(
+    src_ns, dst_ns, dst_addr, start_t, stop_t, ss_schedules
+):
     """
     Find the start time and stop time to run ss command in node `src_ns`
     to a `dst_addr`
 
     Parameters
     ----------
-    src_ns: Node
+    src_ns: str
         ss run from `src_ns`
-    dst_addr: Address
+    dst_ns: str
+        destination network namespace for ss
+    dst_addr: str
         Destination address
     start_t: int
         Start time of ss command
@@ -587,11 +605,11 @@ def _get_start_stop_time_for_ss(src_ns, dst_addr, start_t, stop_t, ss_schedules)
     -------
     List: Updated ss_schedules
     """
-    if (src_ns, dst_addr) not in ss_schedules:
-        ss_schedules[(src_ns, dst_addr)] = (start_t, stop_t)
+    if (src_ns, dst_ns, dst_addr) not in ss_schedules:
+        ss_schedules[(src_ns, dst_ns, dst_addr)] = (start_t, stop_t)
     else:
-        (min_start, max_stop) = ss_schedules[(src_ns, dst_addr)]
-        ss_schedules[(src_ns, dst_addr)] = (
+        (min_start, max_stop) = ss_schedules[(src_ns, dst_ns, dst_addr)]
+        ss_schedules[(src_ns, dst_ns, dst_addr)] = (
             min(min_start, start_t),
             max(max_stop, stop_t),
         )

@@ -42,14 +42,16 @@ class Iperf3Runner(Runner):
     # fmt: on
 
     # pylint: disable=too-many-arguments
-    def __init__(self, ns_id, destination_ip, bandwidth, n_flows, start_time, run_time):
+    def __init__(
+        self, ns_id, destination_ip, bandwidth, n_flows, start_time, run_time, dst_ns
+    ):
         """
         Constructor to initialize the runner
 
         Parameters
         ----------
         ns_id : str
-            network namespace to run iperf from
+            network namespace to run iperf3 from
         destination : str
             the ip of server to which it has to connect
         bandwidth : int
@@ -60,10 +62,12 @@ class Iperf3Runner(Runner):
             start time of the flow
         run_time : num
             test duration
+        dst_ns: str
+            network namespace to run iperf3 server from
         """
         self.bandwidth = bandwidth
         self.n_flows = n_flows
-        super().__init__(ns_id, start_time, run_time, destination_ip)
+        super().__init__(ns_id, start_time, run_time, destination_ip, dst_ns)
 
     # Should this be placed somewhere else?
     @staticmethod
