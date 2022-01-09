@@ -68,7 +68,8 @@ class Results:
     @staticmethod
     def output_to_file(results_q, toolname):
         """
-        Outputs the aggregated ss stats to file
+        Outputs the aggregated results into a file.
+        If results are empty, then it is not output to file.
 
         Parameters
         ----------
@@ -78,8 +79,9 @@ class Results:
             Like ss, tc, netperf
         """
         results = Results.get_results(results_q)
-        json_stats = json.dumps(results, indent=4)
-        Pack.dump_file("{}.json".format(toolname), json_stats)
+        if results:
+            json_stats = json.dumps(results, indent=4)
+            Pack.dump_file("{}.json".format(toolname), json_stats)
 
 
 # Shared variables to aggregate results
