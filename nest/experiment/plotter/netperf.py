@@ -43,6 +43,7 @@ def _plot_netperf_flow(flow, node, dest):
 
     # First item is the "meta" item with user given information
     user_given_start_time = float(flow[0]["start_time"])
+    destination_node = flow[0]["destination_node"]
 
     # "Bias" actual start_time in experiment with user given start time
     start_time = float(flow[1]["timestamp"]) - user_given_start_time
@@ -55,6 +56,8 @@ def _plot_netperf_flow(flow, node, dest):
         relative_time = float(data["timestamp"]) - start_time
         timestamp.append(relative_time)
 
+    legend_string = f"{node} to {destination_node} ({dest})"
+
     # TODO: Check if sending_rate is always in Mbps
     fig = simple_plot(
         "",
@@ -62,14 +65,14 @@ def _plot_netperf_flow(flow, node, dest):
         sending_rate,
         "Time (Seconds)",
         "Sending Rate (Mbps)",
-        legend_string=f"{node} to {dest}",
+        legend_string=legend_string,
     )
 
-    filename = "{node}_{dest}_sending_rate.png".format(node=node, dest=dest)
+    filename = f"sending_rate_{node}_to_{destination_node}({dest}).png"
     Pack.dump_plot("netperf", filename, fig)
     plt.close(fig)
 
-    return (timestamp, sending_rate)
+    return {"label": legend_string, "values": (timestamp, sending_rate)}
 
 
 def plot_netperf(parsed_data):
@@ -90,11 +93,9 @@ def plot_netperf(parsed_data):
         for connection in node_data:
             for dest in connection:
                 flow = connection[dest]
-                values = _plot_netperf_flow(flow, node, dest)
-                if values is not None:
-                    all_flow_data.append(
-                        {"label": f"{node} to {dest}", "values": values}
-                    )
+                plotted_data = _plot_netperf_flow(flow, node, dest)
+                if plotted_data is not None:
+                    all_flow_data.append(plotted_data)
 
         if len(all_flow_data) > 1:
             fig = mix_plot(
@@ -104,6 +105,6 @@ def plot_netperf(parsed_data):
                 "Sending Rate (Mbps)",
                 with_sum=True,
             )
-            filename = f"{node}_sending_rate.png"
+            filename = f"sending_rate_{node}.png"
             Pack.dump_plot("netperf", filename, fig)
             plt.close(fig)

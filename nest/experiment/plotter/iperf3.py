@@ -45,6 +45,7 @@ def _extract_from_iperf3_flow(flow, node, dest_ip, local_port):
 
     # First item is the "meta" item with user given information
     user_given_start_time = float(flow[0]["start_time"])
+    destination_node = flow[0]["destination_node"]
 
     # "Bias" actual start_time in experiment with user given start time
     start_time = float(flow[1]["timestamp"]) - user_given_start_time
@@ -57,7 +58,7 @@ def _extract_from_iperf3_flow(flow, node, dest_ip, local_port):
         relative_time = float(data["timestamp"]) - start_time
         timestamp.append(relative_time)
 
-    return (timestamp, sending_rate)
+    return {"destination_node": destination_node, "values": (timestamp, sending_rate)}
 
 
 def _plot_iperf3_flow(flow, node, dest_ip, local_port):
@@ -77,7 +78,10 @@ def _plot_iperf3_flow(flow, node, dest_ip, local_port):
     local_port : str
         Local port of the flow
     """
-    values = _extract_from_iperf3_flow(flow, node, dest_ip, local_port)
+    data = _extract_from_iperf3_flow(flow, node, dest_ip, local_port)
+    destination_node = data["destination_node"]
+    values = data["values"]
+
     if values is None:
         return
     (timestamp, sending_rate) = values
@@ -88,10 +92,10 @@ def _plot_iperf3_flow(flow, node, dest_ip, local_port):
         sending_rate,
         "Time (Seconds)",
         "Sending Rate (Mbps)",
-        legend_string=f"{node} from port {local_port} to {dest_ip}",
+        legend_string=f"{node} from port {local_port} to {destination_node} ({dest_ip})",
     )
 
-    filename = f"{node}_{dest_ip}_{local_port}_sending_rate.png"
+    filename = f"sending_rate_{node}_to_{destination_node}({dest_ip}).png"
     Pack.dump_plot("iperf3", filename, fig)
     plt.close(fig)
 

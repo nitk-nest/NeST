@@ -113,6 +113,7 @@ def _extract_from_ss_flow(flow, node, dest_ip, dest_port):
 
     # First item is the "meta" item with user given information
     user_given_start_time = float(flow[0]["start_time"])
+    destination_node = flow[0]["destination_node"]
 
     # "Bias" actual start_time in experiment with user given start time
     start_time = float(flow[1]["timestamp"]) - user_given_start_time
@@ -132,7 +133,7 @@ def _extract_from_ss_flow(flow, node, dest_ip, dest_port):
         relative_time = float(data["timestamp"]) - start_time
         timestamp.append(relative_time)
 
-    return (timestamp, flow_params)
+    return {"destination_node": destination_node, "values": (timestamp, flow_params)}
 
 
 def _plot_ss_flow(flow, node, dest_ip, dest_port):
@@ -152,11 +153,15 @@ def _plot_ss_flow(flow, node, dest_ip, dest_port):
     dest_port : string
         Destination port of the flow
     """
-    values = _extract_from_ss_flow(flow, node, dest_ip, dest_port)
+    data = _extract_from_ss_flow(flow, node, dest_ip, dest_port)
+    destination_node = data["destination_node"]
+    values = data["values"]
+
     if values is None:
         return None
     (timestamp, flow_params) = values
 
+    legend_string = f"{node} to {destination_node} ({dest_ip}:{dest_port})"
     for param in flow_params:
         fig = simple_plot(
             "Socket Statistics",
@@ -164,14 +169,18 @@ def _plot_ss_flow(flow, node, dest_ip, dest_port):
             flow_params[param],
             "Time (Seconds)",
             _get_ylabel(param),
-            legend_string=f"{node} to {dest_ip}:{dest_port}",
+            legend_string=legend_string,
         )
 
-        filename = f"{node}_{dest_ip}:{dest_port}_{param}.png"
+        filename = f"{param}_{node}_to_{destination_node}({dest_ip}:{dest_port}).png"
         Pack.dump_plot("ss", filename, fig)
         plt.close(fig)
 
-    return (timestamp, flow_params)
+    return {
+        "label": legend_string,
+        "destination_node": destination_node,
+        "values": (timestamp, flow_params),
+    }
 
 
 # pylint: disable=too-many-locals
@@ -194,18 +203,27 @@ def plot_ss(parsed_data):
             for dest_ip in connection:
 
                 all_flow_data = []
+                destination_node = None
 
                 flow_data = connection[dest_ip]
                 for dest_port in flow_data:
                     flow = flow_data[dest_port]
-                    values = _plot_ss_flow(flow, node, dest_ip, dest_port)
-                    if values is not None:
+                    plotted_data = _plot_ss_flow(flow, node, dest_ip, dest_port)
+                    if plotted_data is not None:
                         all_flow_data.append(
                             {
-                                "values": values,
-                                "label": f"{node} to {dest_ip}:{dest_port}",
+                                "label": plotted_data["label"],
+                                "values": plotted_data["values"],
                             }
                         )
+
+                        if destination_node is None:
+                            destination_node = plotted_data["destination_node"]
+                        elif destination_node != plotted_data["destination_node"]:
+                            raise Exception(
+                                "Error in plotting ss stats. Unexpected "
+                                "destination node in ss.json"
+                            )
 
                 if len(all_flow_data) > 1:
 
@@ -234,6 +252,8 @@ def plot_ss(parsed_data):
                             "Time (Seconds)",
                             _get_ylabel(param),
                         )
-                        filename = f"{node}_{dest_ip}_{param}.png"
+                        filename = (
+                            f"{param}_{node}_to_{destination_node}({dest_ip}).png"
+                        )
                         Pack.dump_plot("ss", filename, fig)
                         plt.close(fig)

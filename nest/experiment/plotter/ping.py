@@ -43,6 +43,7 @@ def _plot_ping_flow(flow, node, dest):
 
     # First item is the "meta" item with user given information
     user_given_start_time = float(flow[0]["start_time"])
+    destination_node = flow[0]["destination_node"]
 
     # "Bias" actual start_time in experiment with user given start time
     start_time = float(flow[1]["timestamp"]) - user_given_start_time
@@ -61,9 +62,9 @@ def _plot_ping_flow(flow, node, dest):
         rtt,
         "Time (Seconds)",
         "Ping Latency (ms)",
-        legend_string=f"{node} to {dest}",
+        legend_string=f"{node} to {destination_node} ({dest})",
     )
-    filename = "{node}_{dest}_ping.png".format(node=node, dest=dest)
+    filename = f"ping_{node}_to_{destination_node}({dest}).png"
     Pack.dump_plot("ping", filename, fig)
     plt.close(fig)
 
