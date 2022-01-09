@@ -199,7 +199,7 @@ class RoutingHelper:
                 mpls_interfaces.append(interface)
         if len(mpls_interfaces) == 0:
             raise Exception("MPLS isn't enabled in any interface!")
-        ldp = Ldp(router.id, mpls_interfaces, self.conf_dir)
+        ldp = Ldp(router.id, mpls_interfaces, self.conf_dir, log_dir=self.log_dir)
         ldp.create_basic_config()
         ldp.run()
         self.ldp_list.append(ldp)

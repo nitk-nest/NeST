@@ -3,6 +3,7 @@
 
 """Class to handles Ldp related functionalities"""
 
+from functools import partial
 from nest.engine.dynamic_routing import run_ldpd
 from nest.routing.route_daemons import RoutingDaemonBase
 
@@ -12,8 +13,8 @@ class Ldp(RoutingDaemonBase):
     Handles Ldp related functionalities for frr.
     """
 
-    def __init__(self, router_ns_id, interfaces, conf_dir):
-        super().__init__(router_ns_id, interfaces, "ldpd", conf_dir)
+    def __init__(self, router_ns_id, interfaces, conf_dir, **kwargs):
+        super().__init__(router_ns_id, interfaces, "ldpd", conf_dir, **kwargs)
 
     def create_basic_config(self):
         """
@@ -32,10 +33,17 @@ class Ldp(RoutingDaemonBase):
         for interface in self.interfaces:
             self.add_to_config(f"  interface {interface.id}")
 
+        if self.log_file is not None:
+            self.add_to_config(f"log file {self.log_file}")
+
         self.create_config()
 
     def run(self):
         """
         Runs the ldpd command
         """
-        run_ldpd(self.router_ns_id, self.conf_file, self.pid_file)
+        super().run(
+            engine_func=partial(
+                run_ldpd, self.router_ns_id, self.conf_file, self.pid_file
+            )
+        )
