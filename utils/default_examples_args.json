@@ -1,5 +1,4 @@
 {
     "examples/dumbbell.py": ["5", "5"],
-    "examples/address_helper/dumbbell.py": ["5", "5"],
     "examples/lan/simple-lan.py": ["5"]
 }

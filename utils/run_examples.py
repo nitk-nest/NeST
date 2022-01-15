@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2021 NITK Surathkal
 
+import json
 import os
 from pathlib import Path
 import pytest
-import subprocess
-import json
+from subprocess import Popen, PIPE
+import sys
 
 UTILS_DIR = Path(os.path.abspath(__file__)).parent
 ROOT_DIR = UTILS_DIR.parent
@@ -21,16 +22,18 @@ os.chdir(EXAMPLES_DUMP_DIR)
 with open(UTILS_DIR / "default_examples_args.json") as json_file:
     ARGS = json.load(json_file)
 
-# Helper methods
-
 
 def run_example(path):
     """
     Run example from the given `path`
     """
-    cmd = ["python3", path] + get_args(path)
-    return_code = subprocess.call(cmd)
-    return return_code
+    cmd = ["coverage", "run", "--rcfile", UTILS_DIR / ".coveragerc", path] + get_args(
+        path
+    )
+    process = Popen(cmd, stdout=PIPE, stderr=PIPE)
+    stdout, stderr = process.communicate()
+    return_code = process.returncode
+    return {"stdout": stdout, "stderr": stderr, "return_code": return_code}
 
 
 def get_args(path):
@@ -57,10 +60,38 @@ for root, subdirs, files in os.walk(EXAMPLES_DIR):
             abs_example_paths.append(path)
             rel_example_paths.append(os.path.relpath(path, EXAMPLES_DIR))
 
+
 # Main test method. The below command calls this function
 # $ pytest -o python_files="utils/run_examples.py"
 # (Note, the above command should be run in root folder of repo)
 @pytest.mark.parametrize("example_path", abs_example_paths, ids=rel_example_paths)
 def test_example(example_path):
-    status_code = run_example(example_path)
-    assert status_code == 0, f"{example_path} failed!"
+    # Run example
+    result = run_example(example_path)
+    stdout = result["stdout"].decode()
+    stderr = result["stderr"].decode()
+    return_code = result["return_code"]
+
+    # Print stdout, stderr
+    print(stdout, file=sys.stdout)
+    print(stderr, file=sys.stderr)
+
+    # Fail test if example exited with non-zero status
+    assert return_code == 0, (
+        f"{example_path} exited with non-zero status code (return_code = {return_code}). "
+        f"Please check the example output in logs."
+    )
+
+    # Fail test if example output contained any error messages or failures
+    # NOTE: Add phrases in lower cases only
+    PHRASES_INDICATING_FAILURE = [
+        "error",
+        "fail",
+        "traceback",
+        "100% packet loss",  # Output when ping fails
+    ]
+
+    assert not any(
+        phrase in (stdout + "\n" + stderr).lower()
+        for phrase in PHRASES_INDICATING_FAILURE
+    ), f"{example_path} stdout/stderr indicate failure. Please check the example output in logs."
