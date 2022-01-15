@@ -1,7 +1,5 @@
 {
-    "topology" : {
-        "assign_random_names": false,
-        "delete_namespaces_on_termination": false
-    },
+    "assign_random_names": false,
+    "delete_namespaces_on_termination": false,
     "log_level": "ERROR"
 }
