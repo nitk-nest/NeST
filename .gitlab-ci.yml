@@ -81,9 +81,11 @@ run unit tests:
   script:
     - pip install .
     - coverage --version
-    - coverage run --source nest -m pytest -v --junitxml=junit_report.xml -o junit_logging=all
+    - coverage run
+    - coverage combine
     - coverage report
     - coverage xml
+    - coverage html
   artifacts:
     reports:
       cobertura: coverage.xml
@@ -94,21 +96,32 @@ run unit tests:
       - frr-logs*/
       - coverage.xml
       - junit_report.xml
+      - htmlcov/
+      - .coverage
+    when: always
 
 run examples:
   image: $CONTAINER_TEST_CI_IMAGE
   stage: test
   script:
-    - pip install .
+    - pip install -e .
     - >
-        coverage run --source nest -m pytest -v
-        -o python_files="utils/run_examples.py"
+        pytest -v -o python_files="utils/run_examples.py"
         -o junit_logging=all
-        --junitxml=junit_report.xml
+        --junitxml=junit_report.xml || exit_code=$?
+    - mv examples_dump/.coverage* .
+    - coverage combine
     - coverage report
     - coverage xml
+    - coverage html
+    - >
+        if [ $exit_code -ne 0 ];
+        then echo "Some example runs failed. Please check pytest logs";
+        exit 1;
+        fi;
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_COMMIT_TAG
   artifacts:
     reports:
       cobertura: coverage.xml
@@ -117,6 +130,9 @@ run examples:
       - examples_dump/
       - coverage.xml
       - junit_report.xml
+      - htmlcov/
+      - .coverage
+    when: always
 
 test docs:
   image: $CONTAINER_TEST_CI_IMAGE
