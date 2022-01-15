@@ -10,7 +10,7 @@ from nest.logging_helper import update_nest_logger
 
 logger = logging.getLogger(__name__)
 
-__DEFAULT_VALUE = {"engine": {}, "experiment": {}, "routing": {}, "topology": {}}
+__DEFAULT_VALUE = {}
 __DEFAULT_PATH = [
     "/etc/nest-config.json",
     os.path.expanduser("~") + "/.nest-config.json",
@@ -50,16 +50,11 @@ def set_value(parameter, value):
     value: str
         The value to which the parameter has to be changed to
     """
-    for i in __DEFAULT_VALUE:
-        if isinstance(__DEFAULT_VALUE[i], dict) and parameter in __DEFAULT_VALUE[i]:
-            __DEFAULT_VALUE[i][parameter] = value
-            break
-        if parameter in __DEFAULT_VALUE:
-            __DEFAULT_VALUE[parameter] = value
-            break
-        if i == list(__DEFAULT_VALUE)[-1]:
-            logger.error("The given parameter %s does not exist", parameter)
-            return
+    if parameter in __DEFAULT_VALUE:
+        __DEFAULT_VALUE[parameter] = value
+    else:
+        logger.error("The given parameter %s does not exist", parameter)
+        return
 
     _post_set_value(parameter, value)
 
@@ -95,11 +90,8 @@ def get_value(parameter):
     str
         The value of the parameter
     """
-    for i in __DEFAULT_VALUE:
-        if isinstance(__DEFAULT_VALUE[i], dict) and parameter in __DEFAULT_VALUE[i]:
-            return __DEFAULT_VALUE[i][parameter]
-        if parameter in __DEFAULT_VALUE:
-            return __DEFAULT_VALUE[parameter]
+    if parameter in __DEFAULT_VALUE:
+        return __DEFAULT_VALUE[parameter]
     # If it belonged to none of them
     logger.error("The given parameter %s does not exist", parameter)
     return None
@@ -118,17 +110,10 @@ def import_custom_config(path):
     # pylint: disable=too-many-branches
     with open(path, "r") as json_file:
         data = json.load(json_file)
-    for i in data:
-        if i in __DEFAULT_VALUE and isinstance(data[i], dict):
-            for parameter in data[i]:
-                if parameter in __DEFAULT_VALUE[i]:
-                    __DEFAULT_VALUE[i][parameter] = data[i][parameter]
-                    _post_set_value(parameter, data[i][parameter])
-                else:
-                    logger.error("The given parameter %s does not exist", parameter)
-        elif i in __DEFAULT_VALUE and not isinstance(data[i], dict):
-            __DEFAULT_VALUE[i] = data[i]
-            _post_set_value(i, data[i])
+    for parameter in data:
+        if parameter in __DEFAULT_VALUE:
+            __DEFAULT_VALUE[parameter] = data[parameter]
+            _post_set_value(parameter, data[parameter])
         else:
             logger.error("The given parameter %s does not exist", parameter)
 
