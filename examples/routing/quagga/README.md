@@ -1,7 +1,7 @@
 # Examples to demonstrate the usage of Quagga Routing Suite in NeST
 
-This directory contains the examples to demonstrate how dynamic routing
-protocols can be used to form routes in `NeST`.
+This directory contains the examples to demonstrate how Quagga Routing Suite
+can be used for emulating dynamic routing in `NeST`.
 
 `IMPORTANT`: Quagga module is not installed by default in Linux. Hence, before
 running this program, install the Quagga module as explained below (ignore if
