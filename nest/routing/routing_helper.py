@@ -56,7 +56,9 @@ class RoutingHelper:
 
     def __init__(self, protocol="static", hosts=None, routers=None, ldp_routers=None):
         """
-        Constructor for RoutingHelper
+        Constructor for RoutingHelper.
+        The dynamic routing daemons will be run only on nodes with more than
+        one interface. Specify `hosts` & `routers` parameters to override this.
 
         Parameters
         ----------
@@ -77,8 +79,20 @@ class RoutingHelper:
                 "Static routing is yet to be implemented. Use rip or ospf"
             )
         self.protocol = protocol
-        self.routers = TopologyMap.get_routers() if routers is None else routers
-        self.hosts = TopologyMap.get_hosts() if hosts is None else hosts
+        self.hosts = []
+        self.routers = []
+        if routers is None and hosts is None:
+            all_nodes = TopologyMap.get_hosts() + TopologyMap.get_routers()
+            for node in all_nodes:
+                num_interfaces = len(node.interfaces)
+                if num_interfaces == 1:
+                    self.hosts.append(node)
+                elif num_interfaces > 1:
+                    self.routers.append(node)
+        else:
+            self.hosts = hosts
+            self.routers = routers
+
         self.ldp_routers = ldp_routers if ldp_routers is not None else []
         self.conf_dir = None
         self.log_dir = None
