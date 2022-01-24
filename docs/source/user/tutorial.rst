@@ -5,21 +5,21 @@ Tutorial
 ========
 
 This section provides an in-depth explanation of the example programs available
-in the examples/tutorial/basic-examples directory. These examples cover some
-of the most commonly used APIs in **NeST**.
+in the examples/basic-examples directory. These examples cover some of the most
+commonly used APIs in **NeST**.
 
 Let's begin by building a simple topology with two hosts.
 
 1. point-to-point-1.py
 ----------------------
 
-This program (examples/tutorial/basic-examples/point-to-point-1.py) emulates a
-point to point network between two hosts ``h1`` and ``h2``. The main aim of
-this example is to demonstrate the usage of basic APIs of NeST to create a
-network topology, configure link attributes, assign IPv4 addresses and test
-the connectivity between two hosts by sending one ping packet from ``h1`` to
-``h2``. The program outputs whether the transmission of the ping packet
-succeeded or failed. The network topology is as shown below:
+This program (examples/basic-examples/point-to-point-1.py) emulates a point to
+point network between two hosts ``h1`` and ``h2``. The main aim of this example
+is to demonstrate the usage of basic APIs of NeST to create a network topology,
+configure link attributes, assign IPv4 addresses and test the connectivity
+between two hosts by sending one ping packet from ``h1`` to ``h2``. The program
+outputs whether the transmission of the ping packet succeeded or failed. The
+network topology is as shown below:
 
 .. code-block:: sh
 

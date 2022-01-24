@@ -12,9 +12,8 @@ from nest.topology import *
 # Switches `s1` and `s2` are connected to each other. One ping packet is sent
 # from `h1` to `h4`, another from `h2` to `h5` and lastly, from `h3` to `h6`.
 # The success/failure of ping is reported. This program is identical to the
-# two-lans-connected-directly.py example available in
-# `examples/tutorial/basic-examples`, the only difference is that IPv6
-# addresses are used in this program.
+# two-lans-connected-directly.py example available in `examples/basic-examples`
+# the only difference is that IPv6 addresses are used in this program.
 
 #########################################################
 #                    Network Topology                   #

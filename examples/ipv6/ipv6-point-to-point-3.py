@@ -10,8 +10,8 @@ from nest.topology import *
 # and `h2` via two routers `r1` and `r2`. One ping packet is sent from `h1`
 # to `h2`, and the success/failure of ping is reported. This program is
 # identical to the point-to-point-3.py example available in
-# `examples/tutorial/basic-examples`, the only difference is that IPv6
-# addresses are used in this program.
+# `examples/basic-examples`, the only difference is that IPv6 addresses are
+# used in this program.
 
 ##############################################################################
 #                              Network Topology                              #

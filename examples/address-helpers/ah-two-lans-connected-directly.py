@@ -15,9 +15,9 @@ from nest.topology.address_helper import AddressHelper
 # from `h1` to `h4`, another from `h2` to `h5` and lastly, from `h3` to `h6`.
 # The success/failure of ping is reported. This program is similar to the
 # two-lans-directly-connected.py example available in
-# `examples/tutorial/basic-examples`, the only difference is that we use an
-# address helper in this program to assign IPv4 addresses to interfaces instead
-# of manually assigning them. Note that two packages: `Network` and
+# `examples/basic-examples`, the only difference is that we use an address
+# helper in this program to assign IPv4 addresses to interfaces instead of
+# manually assigning them. Note that two packages: `Network` and
 # `AddressHelper` are imported in this program (Lines 8-9 above).
 
 #########################################################

@@ -12,9 +12,9 @@ from nest.topology.address_helper import AddressHelper
 # are connected using a switch `s1`. One ping packet is sent from `h1` to `h2`
 # and another from `h3` to `h4`. The success/failure of ping is reported. This
 # program is similar to the simple-lan.py example available in
-# `examples/tutorial/basic-examples`, the only difference is that we use an
-# address helper in this program to assign IPv4 addresses to interfaces instead
-# of manually assigning them. Note that two packages: `Network` and
+# `examples/basic-examples`, the only difference is that we use an address
+# helper in this program to assign IPv4 addresses to interfaces instead of
+# manually assigning them. Note that two packages: `Network` and
 # `AddressHelper` are imported in this program (Lines 8-9 above).
 
 ######################################################################

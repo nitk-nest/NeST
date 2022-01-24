@@ -10,8 +10,8 @@ from nest import config
 # This program emulates a point to point network between two hosts `h1` and
 # `h2`. One ping packet is sent from `h1` to `h2`, and the success/failure
 # of ping is reported. It is similar to the point-to-point-1.py example in
-# `examples/tutorial/basic-examples`. This program shows two `config` options
-# in NeST for ease of experimentation. For this purpose, we have imported a new
+# `examples/basic-examples`. This program shows two `config` options in NeST
+# for ease of experimentation. For this purpose, we have imported a new
 # package called `config` in this program (Line 8 above).
 
 #################################

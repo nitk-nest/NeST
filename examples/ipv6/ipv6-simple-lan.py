@@ -10,8 +10,8 @@ from nest.topology import *
 # are connected using a switch `s1`. One ping packet is sent from `h1` to `h2`
 # and another from `h3` to `h4`. The success/failure of ping is reported. This
 # program is identical to the simple-lan.py example available in
-# `examples/tutorial/basic-examples`, the only difference is that IPv6
-# addresses are used in this program.
+# `examples/basic-examples`, the only difference is that IPv6 addresses are
+# used in this program.
 
 ######################################################################
 #                          Network Topology                          #

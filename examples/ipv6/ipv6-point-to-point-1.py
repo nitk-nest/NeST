@@ -9,8 +9,8 @@ from nest.topology import *
 # This program emulates a point to point network between two hosts `h1` and
 # `h2`. One ping packet is sent from `h1` to `h2`, and the success/failure
 # of ping is reported. This program is identical to the point-to-point-1.py
-# example available in `examples/tutorial/basic-examples`, the only difference
-# is that IPv6 addresses are used in this program.
+# example available in `examples/basic-examples`, the only difference is that
+# IPv6 addresses are used in this program.
 
 #################################
 #       Network Topology        #

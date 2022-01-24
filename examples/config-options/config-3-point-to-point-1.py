@@ -12,9 +12,9 @@ from pathlib import Path
 # This program emulates a point to point network between two hosts `h1` and
 # `h2`. One ping packet is sent from `h1` to `h2`, and the success/failure
 # of ping is reported. It is similar to the point-to-point-1.py example in
-# `examples/tutorial/basic-examples`. This program shows a `config` option in
-# NeST to import custom configuration from a JSON file. This option overwrites
-# the default values in NeST for the parameters that are specified in the JSON
+# `examples/basic-examples`. This program shows a `config` option in NeST to
+# import custom configuration from a JSON file. This option overwrites the
+# default values in NeST for the parameters that are specified in the JSON
 # file. The default values of other parameters are not overwritten. Note: we
 # have imported a new package called `config` in this program (Line 8 above).
 
