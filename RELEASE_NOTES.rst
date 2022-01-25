@@ -15,13 +15,22 @@ New user-visible features
 - !123: Added support for Address Helper.
 - !114: Added support for Switch.
 - !135: Added experiment progress bar.
-- !133: Upload nest docker image to docker hub.
+- !133: Uploaded nest docker image to docker hub.
 - !144: Improved X and Y axis labels in the plots.
+- !163: Added Router API with IPv4 and IPv6 forwarding enabled by default.
+- !181: Added destination node name in plot labels and file names.
+- !190: Improved routing helper to consider nodes with one interface as hosts (by default).
+- !186: Removed hierarchy from config file, making it simpler to understand.
+- #143: Restructured the examples directory and respective documentation.
+- !177: Updated ping to output packet information in real-time.
+- !197: Added input validation for commonly used NeST APIs.
 
 Bugs fixed
 ----------
 - !119: Fixed erroneous filtering of duplicate logs.
-
+- !173: Fixed log_level property not being set from config file.
+- !182: Empty files are not created in experiment dump.
+- !184: Fixed API breakage in LDP routing.
 
 Release 0.3 (April 1, 2021)
 ===========================
