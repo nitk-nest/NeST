@@ -95,17 +95,15 @@ def update_nest_logger(level):
 
 
 # pylint: disable=too-few-public-methods
-class DepedencyCheckFilter(logging.Filter):
+class DuplicateFilter(logging.Filter):
     """
-    Filters duplicate depedency missing logs.
+    Super class for duplicate filter
     """
 
     def __init__(self):
         super().__init__()
         self.messages = set()
-
-        # Assuming the depedency error is of the form "{depedency} not found".
-        self.filter_pat = r"(\w|\d|-|_)+ not found\."
+        self.filter_pat = r".*"
 
     def filter(self, record):
         """
@@ -121,3 +119,32 @@ class DepedencyCheckFilter(logging.Filter):
         if re.match(self.filter_pat, log_message) is not None:
             self.messages.add(log_message)
         return 1
+
+
+# pylint: disable=too-few-public-methods
+class DepedencyCheckFilter(logging.Filter):
+    """
+    Filters duplicate depedency missing logs.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.messages = set()
+
+        # Assuming the depedency error is of the form "{depedency} not found".
+        self.filter_pat = r"(\w|\d|-|_)+ not found\."
+
+
+class DuplicateRoutingLogsFilter(DuplicateFilter):
+    """
+    Filters duplicate "quagga/frr logging enabled" logs
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.messages = set()
+
+        # Assuming the log is of the form
+        # "{frr/quagga} logging enabled. Log files can found in {dir} directory".
+        # pylint: disable=line-too-long
+        self.filter_pat = r"(quagga|frr) logging enabled\. Log files can found in (\w|\d|-|_)+ directory"
