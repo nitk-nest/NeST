@@ -147,4 +147,4 @@ class DuplicateRoutingLogsFilter(DuplicateFilter):
         # Assuming the log is of the form
         # "{frr/quagga} logging enabled. Log files can found in {dir} directory".
         # pylint: disable=line-too-long
-        self.filter_pat = r"(quagga|frr) logging enabled\. Log files can found in (\w|\d|-|_)+ directory"
+        self.filter_pat = r"(quagga|frr) logging enabled\. Log files can found in (\w|\d|-|_|:)+ directory"

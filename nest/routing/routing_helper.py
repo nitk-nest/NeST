@@ -156,7 +156,8 @@ class RoutingHelper:
         str:
             path of the created directory
         """
-        log_path = f"{config.get_value('routing_suite')}-logs_{IdGen.topology_id}"
+        timestamp = time.strftime("%d-%m-%Y-%H:%M:%S")
+        log_path = f"{config.get_value('routing_suite')}-logs_{timestamp}"
         self._create_directory(log_path)
         return log_path
 
