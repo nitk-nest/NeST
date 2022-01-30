@@ -9,13 +9,12 @@ from nest.topology.network import Network
 from nest.topology.address_helper import AddressHelper
 
 # This program emulates point to point networks that connect two hosts `h1` and
-# `h2` via two routers `r1` and `r2`. One ping packet is sent from `h1` to `h2`
-# and the success/failure of ping is reported. This program is similar to the
-# ipv6-point-to-point-3.py example available in `examples/ipv6`, the only
-# difference is that we use an address helper in this program to assign IPv6
-# addresses to interfaces instead of manually assigning them. Note that two
-# packages: `Network` and `AddressHelper` are imported in this program
-# (Lines 8-9 above).
+# `h2` via two routers `r1` and `r2`. Five ping packets are sent from `h1` to
+# `h2`, and the success/failure of these packets is reported. It is similar to
+# `ipv6-point-to-point-3.py` available in `examples/ipv6`, the only difference
+# is that we use an address helper in this program to assign IPv6 addresses to
+# interfaces instead of manually assigning them. Note that two packages:
+# `Network` and `AddressHelper` are imported in this program (Lines 8-9 above).
 
 ##############################################################################
 #                              Network Topology                              #
@@ -71,5 +70,5 @@ h2.add_route("DEFAULT", eth2)
 r1.add_route("DEFAULT", etr1b)
 r2.add_route("DEFAULT", etr2a)
 
-# Send a `ping` from `h1` to `h2`.
+# `Ping` from `h1` to `h2`.
 h1.ping(eth2.address)

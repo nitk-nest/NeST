@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2021 NITK Surathkal
+# Copyright (c) 2019-2022 NITK Surathkal
 
 ########################
 # SHOULD BE RUN AS ROOT
@@ -9,13 +9,13 @@ from nest.topology.network import Network
 from nest.topology.address_helper import AddressHelper
 
 # This program emulates a Local Area Network (LAN). Four hosts: `h1` to `h4`
-# are connected using a switch `s1`. One ping packet is sent from `h1` to `h2`
-# and another from `h3` to `h4`. The success/failure of ping is reported. This
-# program is similar to the ipv6-simple-lan.py example available in
-# `examples/ipv6`, the only difference is that we use an address helper in this
-# program to assign IPv6 addresses to interfaces instead of manually assigning
-# them. Note that two packages: `Network` and `AddressHelper` are imported in
-# this program (Lines 8-9 above).
+# are connected using a switch `s1`. Five ping packets are sent from `h1` to
+# `h2`, and another from `h3` to `h4`. The success/failure of these packets is
+# reported. It is similar to `ipv6-simple-lan.py` available in `examples/ipv6`,
+# the only difference is that we use an address helper in this program to
+# assign IPv6 addresses to interfaces instead of manually assigning them. Note
+# that two packages: `Network` and `AddressHelper` are imported in this program
+# (Lines 8-9 above).
 
 ######################################################################
 #                          Network Topology                          #
@@ -62,6 +62,6 @@ eth2.set_attributes("100mbit", "1ms")
 eth3.set_attributes("100mbit", "1ms")
 eth4.set_attributes("100mbit", "1ms")
 
-# Send a `ping` from `h1` to `h2`, and from `h3` to `h4`.
+# `Ping` from `h1` to `h2`, and `h3` to `h4`.
 h1.ping(eth2.address)
 h3.ping(eth4.address)

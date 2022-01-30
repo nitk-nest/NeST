@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2021 NITK Surathkal
+# Copyright (c) 2019-2022 NITK Surathkal
 
 ########################
 # SHOULD BE RUN AS ROOT
@@ -11,14 +11,14 @@ from nest.topology.address_helper import AddressHelper
 # This program emulates two Local Area Networks (LANs) connected directly to
 # each other. LAN-1 consists three hosts `h1` to `h3` connected to switch `s1`,
 # and LAN-2 consists three hosts `h4` to `h6` connected to switch `s2`.
-# Switches `s1` and `s2` are connected to each other. One ping packet is sent
-# from `h1` to `h4`, another from `h2` to `h5` and lastly, from `h3` to `h6`.
-# The success/failure of ping is reported. This program is similar to the
-# ipv6-two-lans-connected-directly.py example available in `examples/ipv6`, the
-# only difference is that we use an address helper in this program to assign
-# IPv6 addresses to interfaces instead of manually assigning them. Note that
-# two packages: `Network` and `AddressHelper` are imported in this program
-# (Lines 8-9 above).
+# Switches `s1` and `s2` are connected to each other. Five ping packets are
+# sent from `h1` to `h4`, five from `h2` to `h5`, and lastly, five from `h3` to
+# `h6`. The success/failure of these packets is reported. It is similar to
+# `ipv6-two-lans-connected-directly.py` available in `examples/ipv6`, the only
+# difference is that we use an address helper in this program to assign IPv6
+# addresses to interfaces instead of manually assigning them. Note that two
+# packages: `Network` and `AddressHelper` are imported in this program (Lines
+# 8-9 above).
 
 #########################################################
 #                    Network Topology                   #
@@ -84,7 +84,7 @@ eth4.set_attributes("100mbit", "1ms")
 eth5.set_attributes("100mbit", "1ms")
 eth6.set_attributes("100mbit", "1ms")
 
-# Send a `ping` from `h1` to `h4`, from `h2` to `h5`, and from `h3` to `h6`.
+# `Ping` from `h1` to `h4`, `h2` to `h5`, and `h3` to `h6`.
 h1.ping(eth4.address)
 h2.ping(eth5.address)
 h3.ping(eth6.address)
