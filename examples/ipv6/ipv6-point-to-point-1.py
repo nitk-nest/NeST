@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2021 NITK Surathkal
+# Copyright (c) 2019-2022 NITK Surathkal
 
 ########################
 # SHOULD BE RUN AS ROOT
@@ -7,10 +7,10 @@
 from nest.topology import *
 
 # This program emulates a point to point network between two hosts `h1` and
-# `h2`. One ping packet is sent from `h1` to `h2`, and the success/failure
-# of ping is reported. This program is identical to the point-to-point-1.py
-# example available in `examples/basic-examples`, the only difference is that
-# IPv6 addresses are used in this program.
+# `h2`. Five ping packets are sent from `h1` to `h2`, and the success/failure
+# of these packets is reported. It is similar to `point-to-point-1.py`
+# available in `examples/basic-examples`, the only difference is that IPv6
+# addresses are used in this program.
 
 #################################
 #       Network Topology        #
@@ -37,5 +37,5 @@ eth2.set_address("2001::1:2/122")
 eth1.set_attributes("5mbit", "5ms")
 eth2.set_attributes("10mbit", "100ms")
 
-# Send a `ping` from `h1` to `h2`.
+# `Ping` from `h1` to `h2`.
 h1.ping(eth2.address)
