@@ -18,7 +18,7 @@ point network between two hosts ``h1`` and ``h2``. The main aim of this example
 is to demonstrate the usage of basic APIs of NeST to create a network topology,
 configure link attributes, assign IPv4 addresses and test the connectivity
 between two hosts by sending one ping packet from ``h1`` to ``h2``. The program
-outputs whether the transmission of the ping packet succeeded or failed. The
+outputs whether the transmission of the ping packets succeeded or failed. The
 network topology is as shown below:
 
 .. code-block:: sh
@@ -97,8 +97,8 @@ is not the same, and even propagation delays can vary because the forward and
 reverse paths can be different.
 
 Lastly, let's configure a ``ping`` packet to be sent from ``h1`` to ``h2``.
-The ``ping`` API, by default, sends one ping packet from ``h1`` to ``h2``
-and reports whether it succeeded or failed. It takes the IP address of the
+The ``ping`` API, by default, sends five ping packets from ``h1`` to ``h2``
+and reports whether they succeeded or failed. It takes the IP address of the
 destination host, as shown below::
 
     h1.ping(eth2.address)
@@ -113,10 +113,25 @@ The command to run this program and a sample output are shown below:
 .. code-block:: console
 
     $ sudo python3 point-to-point-1.py
-    SUCCESS: ping from h1 to 192.168.1.2
+
+    === PING from h1 to 192.168.1.2 ===
+
+    PING 192.168.1.2 (192.168.1.2) 56(84) bytes of data.
+    64 bytes from 192.168.1.2: icmp_seq=1 ttl=64 time=210 ms
+    64 bytes from 192.168.1.2: icmp_seq=2 ttl=64 time=105 ms
+    64 bytes from 192.168.1.2: icmp_seq=3 ttl=64 time=105 ms
+    64 bytes from 192.168.1.2: icmp_seq=4 ttl=64 time=105 ms
+    64 bytes from 192.168.1.2: icmp_seq=5 ttl=64 time=105 ms
+
+    --- 192.168.1.2 ping statistics ---
+    5 packets transmitted, 5 received, 0% packet loss, time 4004ms
+    rtt min/avg/max/mdev = 105.133/126.169/210.260/42.047 ms
+
     [INFO] : Cleaned up environment!
 
-If you get the output shown above, then the program ran successfully for you!
+If you get the output similar to the one shown above, then the program ran
+successfully for you!
+
 If not, then there is likely an error in the way NeST was installed. Please
 refer :ref:`Installation` and ensure that you completed all the required
 steps.
