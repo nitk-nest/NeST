@@ -12,9 +12,9 @@ from nest.topology.address_helper import AddressHelper
 # customer edge (ce) routers `ce1` and `ce2` via two provider edge (pe) routers
 # `pe1` and `pe2`. All routers are MPLS enabled. The labels are assigned
 # manually and Penultimate Hop Popping (PHP) is used in this program. Address
-# helper is used to assign the IPv4 addresses to the interfaces. One ping
-# packet is sent from `ce1` to `ce2`, and the success/failure of ping is
-# reported.
+# helper is used to assign the IPv4 addresses to the interfaces. Five ping
+# packets are sent from `ce1` to `ce2`, and the success/failure of these
+# packets is reported.
 
 ##################################################################################
 #                                Network Topology                                #
@@ -83,5 +83,5 @@ etce2.set_attributes("50mbit", "5ms")  # from `ce2` to `pe2`
 etpe2a.set_attributes("10mbit", "10ms")  # from `pe2` to `pe1`
 etpe1a.set_attributes("50mbit", "5ms")  # from `pe1` to `ce1`
 
-# Send a `ping` from `ce1` to `ce2`.
+# `Ping` from `ce1` to `ce2`.
 ce1.ping(etce2.address)

@@ -32,9 +32,9 @@ This program demonstrates how to set up a MPLS network that connects two
 customer edge (ce) routers `ce1` and `ce2` via two provider edge (pe) routers
 `pe1` and `pe2`. All routers are MPLS enabled. The labels are assigned
 manually and Penultimate Hop Popping (PHP) is used in this program. Address
-helper is used to assign the IPv4 addresses to the interfaces. One ping
-packet is sent from `ce1` to `ce2`, and the success/failure of ping is
-reported.
+helper is used to assign the IPv4 addresses to the interfaces. Five ping
+packets are sent from `ce1` to `ce2`, and the success/failure of these packets
+is reported.
 
 ## 2. mpls-ce-pe-p-routers.py
 This program demonstrates how to set up a MPLS network that connects two
@@ -43,8 +43,8 @@ customer edge (ce) routers `ce1` and `ce2` via two provider edge (pe) routers
 `pe` and `p` routers are MPLS enabled. `ce` routers do not use MPLS. The
 labels are assigned manually and Penultimate Hop Popping (PHP) is used in
 this program. Address helper is used to assign the IPv4 addresses to the
-interfaces. One ping packet is sent from `ce1` to `ce2`, and the
-success/failure of ping is reported.
+interfaces. Five ping packets are sent from `ce1` to `ce2`, and the
+success/failure of these packets is reported.
 
 ## 3. mpls-ldp-ce-pe-p-routers.py
 This program demonstrates how to set up a MPLS network that connects two
@@ -56,8 +56,8 @@ This program uses LDP from Free Range Routing (FRR) suite. LDP requires an IP
 based dynamic routing protocol to be already in place for it to find out the
 IP addresses. In this program, we use Open Shortest Path First (OSPF) routing
 protocol. Penultimate Hop Popping (PHP) is used in this program. Address helper
-is used to assign the IPv4 addresses to the interfaces. One ping packet is sent
-from `ce1` to `ce2`, and the success/failure of ping is reported.
+is used to assign the IPv4 addresses to the interfaces. Five ping packets are
+sent from `ce1` to `ce2`, and the success/failure of these packets is reported.
 
 Once these programs are understood, and if MPLS modules are no longer needed,
 they can be disabled using:
