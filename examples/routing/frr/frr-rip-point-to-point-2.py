@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2021 NITK Surathkal
+# Copyright (c) 2019-2022 NITK Surathkal
 
 ########################
 # SHOULD BE RUN AS ROOT
@@ -11,14 +11,13 @@ from nest.topology.address_helper import AddressHelper
 from nest.routing.routing_helper import RoutingHelper
 
 # This program emulates point to point networks that connect two hosts `h1`
-# and `h2` via a router `r1`. One ping packet is sent from `h1` to `h2`, and
-# the success/failure of ping is reported. This program is similar to the
-# ah-point-to-point-2.py example available in `examples/address-helpers`,
-# the only difference is that we use Routing Information Protocol (RIP), a
-# dynamic routing protocol, instead of manually configuring the routes.
-# This program uses RIP from Free Range Routing (FRR) suite for dynamic
-# routing. A new package called `RoutingHelper` is imported in this program
-# (Line 11 above).
+# and `h2` via a router `r1`. Five ping packets are sent from `h1` to `h2`, and
+# the success/failure of these packets is reported. It is similar to
+# `ah-point-to-point-2.py` available in `examples/address-helpers`, the only
+# difference is that we use Routing Information Protocol (RIP), a dynamic
+# routing protocol, instead of manually configuring the routes. This program
+# uses RIP from Free Range Routing (FRR) suite for dynamic routing. A new
+# package called `RoutingHelper` is imported in this program (Line 11 above).
 #
 # IMPORTANT: FRR module is not installed by default in Linux. Hence, before
 # running this program, install the FRR module as explained in the README
@@ -67,8 +66,8 @@ etr1b.set_attributes("5mbit", "5ms")  # from `r1` to `h2`
 eth2.set_attributes("10mbit", "100ms")  # from `h2` to `r1`
 etr1a.set_attributes("10mbit", "100ms")  # from `r1` to `h1`
 
-# Use RIP to form routes
+# Use RIP to form routes.
 RoutingHelper(protocol="rip").populate_routing_tables()
 
-# Send a `ping` from `h1` to `h2`.
+# `Ping` from `h1` to `h2`.
 h1.ping(eth2.address)

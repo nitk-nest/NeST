@@ -40,70 +40,69 @@ isisd=yes
 
 ## 1. frr-isis-point-to-point-2.py
 This program emulates point to point networks that connect two hosts `h1`
-and `h2` via a router `r1`. One ping packet is sent from `h1` to `h2`, and
-the success/failure of ping is reported. This program is similar to the
-`ah-point-to-point-2.py` example available in `examples/address-helpers`,
-the only difference is that we use Intermediate System to Intermediate System
-(ISIS), a dynamic routing protocol, instead of manually configuring the
-routes. This program uses ISIS from Free Range Routing (FRR) suite for
-dynamic routing. A new package called `RoutingHelper` is imported in this
-program. The routing logs are written to files in a dedicated `logs`
-directory.
+and `h2` via a router `r1`. Five ping packets are sent from `h1` to `h2`, and
+the success/failure of these packets is reported. This program is similar to
+`ah-point-to-point-2.py` available in `examples/address-helpers`, the only
+difference is that we use Intermediate System to Intermediate System (ISIS), a
+dynamic routing protocol, instead of manually configuring the routes. This
+program uses ISIS from Free Range Routing (FRR) suite for dynamic routing. A
+new package called `RoutingHelper` is imported in this program. The routing
+logs are written to files in a dedicated `logs` directory.
 
 ## 2. frr-isis-point-to-point-3.py
 This program emulates point to point networks that connect two hosts `h1` and
-`h2` via two routers `r1` and `r2`. One ping packet is sent from `h1` to `h2`
-and the success/failure of ping is reported. This program is similar to the
-`ah-point-to-point-3.py` example available in `examples/address-helpers`,
-the only difference is that we use Intermediate System to Intermediate System
-(ISIS), a dynamic routing protocol, instead of manually configuring the
-routes. This program uses ISIS from Free Range Routing (FRR) suite for
-dynamic routing. A new package called `RoutingHelper` is imported in this
-program. The routing logs are written to files in a dedicated `logs` directory.
+`h2` via two routers `r1` and `r2`. Five ping packets are sent from `h1` to
+`h2`, and the success/failure of these packets is reported. It is similar to
+`ah-point-to-point-3.py` available in `examples/address-helpers`, the only
+difference is that we use Intermediate System to Intermediate System (ISIS), a
+dynamic routing protocol, instead of manually configuring the routes. This
+program uses ISIS from Free Range Routing (FRR) suite for dynamic routing. A
+new package called `RoutingHelper` is imported in this program. The routing
+logs are written to files in a dedicated `logs` directory.
 
 ## 3. frr-ospf-point-to-point-2.py
 This program emulates point to point networks that connect two hosts `h1`
-and `h2` via a router `r1`. One ping packet is sent from `h1` to `h2`, and
-the success/failure of ping is reported. This program is similar to the
-`ah-point-to-point-2.py` example available in `examples/address-helpers`,
-the only difference is that we use Open Shortest Path First (OSPF), a
-dynamic routing protocol, instead of manually configuring the routes.
-This program uses OSPF from Free Range Routing (FRR) suite for dynamic
-routing. A new package called `RoutingHelper` is imported in this program.
-The routing logs are written to files in a dedicated `logs` directory.
+and `h2` via a router `r1`. Five ping packets are sent from `h1` to `h2`, and
+the success/failure of these packets is reported. It is similar to
+`ah-point-to-point-2.py` available in `examples/address-helpers`, the only
+difference is that we use Open Shortest Path First (OSPF), a dynamic routing
+protocol, instead of manually configuring the routes. This program uses OSPF
+from Free Range Routing (FRR) suite for dynamic routing. A new package called
+`RoutingHelper` is imported in this program. The routing logs are written to
+files in a dedicated `logs` directory.
 
 ## 4. frr-ospf-point-to-point-3.py
 This program emulates point to point networks that connect two hosts `h1` and
-`h2` via two routers `r1` and `r2`. One ping packet is sent from `h1` to `h2`
-and the success/failure of ping is reported. This program is similar to the
-`ah-point-to-point-3.py` example available in `examples/address-helpers`,
-the only difference is that we use Open Shortest Path First (OSPF), a
-dynamic routing protocol, instead of manually configuring the routes.
-This program uses OSPF from Free Range Routing (FRR) suite for dynamic
-routing. A new package called `RoutingHelper` is imported in this program.
-The routing logs are written to files in a dedicated `logs` directory.
+`h2` via two routers `r1` and `r2`. Five ping packets are sent from `h1` to
+`h2`, and the success/failure of these packets is reported. It is similar to
+`ah-point-to-point-3.py` available in `examples/address-helpers`, the only
+difference is that we use Open Shortest Path First (OSPF), a dynamic routing
+protocol, instead of manually configuring the routes. This program uses OSPF
+from Free Range Routing (FRR) suite for dynamic routing. A new package called
+`RoutingHelper` is imported in this program. The routing logs are written to
+files in a dedicated `logs` directory.
 
 ## 5. frr-rip-point-to-point-2.py
 This program emulates point to point networks that connect two hosts `h1`
-and `h2` via a router `r1`. One ping packet is sent from `h1` to `h2`, and
-the success/failure of ping is reported. This program is similar to the
-`ah-point-to-point-2.py` example available in `examples/address-helpers`,
-the only difference is that we use Routing Information Protocol (RIP), a
-dynamic routing protocol, instead of manually configuring the routes.
-This program uses RIP from Free Range Routing (FRR) suite for dynamic
-routing. A new package called `RoutingHelper` is imported in this program.
-The routing logs are written to files in a dedicated `logs` directory.
+and `h2` via a router `r1`. Five ping packets are sent from `h1` to `h2`, and
+the success/failure of these packets is reported. It is similar to
+`ah-point-to-point-2.py` available in `examples/address-helpers`, the only
+difference is that we use Routing Information Protocol (RIP), a dynamic routing
+protocol, instead of manually configuring the routes. This program uses RIP
+from Free Range Routing (FRR) suite for dynamic routing. A new package called
+`RoutingHelper` is imported in this program. The routing logs are written to
+files in a dedicated `logs` directory.
 
 ## 6. frr-rip-point-to-point-3.py
 This program emulates point to point networks that connect two hosts `h1` and
-`h2` via two routers `r1` and `r2`. One ping packet is sent from `h1` to `h2`
-and the success/failure of ping is reported. This program is similar to the
-`ah-point-to-point-3.py` example available in `examples/address-helpers`,
-the only difference is that we use Routing Information Protocol (RIP), a
-dynamic routing protocol, instead of manually configuring the routes.
-This program uses RIP from Free Range Routing (FRR) suite for dynamic
-routing. A new package called `RoutingHelper` is imported in this program. The routing logs
-are written to files in a dedicated `logs` directory.
+`h2` via two routers `r1` and `r2`. Five ping packets are sent from `h1` to
+`h2`, and the success/failure of these packets is reported. It is similar to
+`ah-point-to-point-3.py` available in `examples/address-helpers`, the only
+difference is that we use Routing Information Protocol (RIP), a dynamic routing
+protocol, instead of manually configuring the routes. This program uses RIP
+from Free Range Routing (FRR) suite for dynamic routing. A new package called
+`RoutingHelper` is imported in this program. The routing logs are written to
+files in a dedicated `logs` directory.
 
 `Note`: The above examples can be modified to work with IPv6 addressing by
 changing the IPv4 subnets to IPv6 subnets. Replace IPv4 subnets
