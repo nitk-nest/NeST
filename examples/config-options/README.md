@@ -7,8 +7,8 @@ you walk through these examples in the same order as they are presented.
 
 ## 1. config-1-point-to-point-1.py
 This program emulates a point to point network between two hosts `h1` and
-`h2`. One ping packet is sent from `h1` to `h2`, and the success/failure
-of ping is reported. It is similar to the `point-to-point-1.py` example in
+`h2`. Five ping packets are sent from `h1` to `h2`, and the success/failure
+of these packets is reported. It is similar to `point-to-point-1.py` in
 `examples/basic-examples`. This program shows two `config` options in NeST
 for ease of experimentation. For this purpose, a new package called `config`
 is imported in this program.
@@ -32,8 +32,8 @@ ones that were not created by NeST).
 
 ## 2. config-2-point-to-point-1.py
 This program emulates a point to point network between two hosts `h1` and
-`h2`. One ping packet is sent from `h1` to `h2`, and the success/failure
-of ping is reported. It is similar to the `point-to-point-1.py` example in
+`h2`. Five ping packets are sent from `h1` to `h2`, and the success/failure
+of these packets is reported. It is similar to `point-to-point-1.py` in
 `examples/basic-examples`. This program shows a `config` option in NeST for
 the purpose of logging. Note: we have imported a new package called `config`
 in this program.
@@ -44,8 +44,8 @@ By default, the logging is enabled at `INFO` level. Other levels supported are:
 
 ## 3. config-3-point-to-point-1.py
 This program emulates a point to point network between two hosts `h1` and
-`h2`. One ping packet is sent from `h1` to `h2`, and the success/failure
-of ping is reported. It is similar to the `point-to-point-1.py` example in
+`h2`. Five ping packets are sent from `h1` to `h2`, and the success/failure
+of these packets is reported. It is similar to `point-to-point-1.py` in
 `examples/basic-examples`. This program shows a `config` option in NeST to
 import custom configuration from a JSON file. This option overwrites the
 default values in NeST for the parameters that are specified in the JSON file.

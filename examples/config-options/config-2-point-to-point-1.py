@@ -8,8 +8,8 @@ from nest.topology import *
 from nest import config
 
 # This program emulates a point to point network between two hosts `h1` and
-# `h2`. One ping packet is sent from `h1` to `h2`, and the success/failure
-# of ping is reported. It is similar to the point-to-point-1.py example in
+# `h2`. Five ping packets are sent from `h1` to `h2`, and the success/failure
+# of these packets is reported. It is similar to `point-to-point-1.py` in
 # `examples/basic-examples`. This program shows a `config` option in NeST
 # for the purpose of logging. Note: we have imported a new package called
 # `config` in this program (Line 8 above).
@@ -48,5 +48,5 @@ eth2.set_address("192.168.1.2/24")
 eth1.set_attributes("5mbit", "5ms")
 eth2.set_attributes("10mbit", "100ms")
 
-# Send a `ping` from `h1` to `h2`.
+# `Ping` from `h1` to `h2`.
 h1.ping(eth2.address)
