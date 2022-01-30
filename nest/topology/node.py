@@ -334,6 +334,7 @@ class Node:
             destination_address = Address(destination_address)
 
         if verbose:
+            print()
             print(
                 f"=== PING from {self.name} to "
                 f"{destination_address.get_addr(with_subnet=False)} ==="
@@ -347,17 +348,7 @@ class Node:
             destination_address.is_ipv6(),
             live_output=verbose,
         )
-        if verbose is False:
-            if status:
-                print(
-                    f"SUCCESS: ping from {self.name} to "
-                    f"{destination_address.get_addr(with_subnet=False)}"
-                )
-            else:
-                print(
-                    f"FAILURE: ping from {self.name} to "
-                    f"{destination_address.get_addr(with_subnet=False)}"
-                )
+
         return status
 
     def enable_ip_forwarding(self, ipv4=True, ipv6=True):
