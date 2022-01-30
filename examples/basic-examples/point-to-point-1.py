@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2021 NITK Surathkal
+# Copyright (c) 2019-2022 NITK Surathkal
 
 ########################
 # SHOULD BE RUN AS ROOT
@@ -7,8 +7,8 @@
 from nest.topology import *
 
 # This program emulates a point to point network between two hosts `h1` and
-# `h2`. One ping packet is sent from `h1` to `h2`, and the success/failure
-# of ping is reported.
+# `h2`. Five ping packets are sent from `h1` to `h2`, and the success/failure
+# of these packets is reported.
 
 #################################
 #       Network Topology        #
@@ -50,7 +50,7 @@ eth2.set_address("192.168.1.2/24")
 eth1.set_attributes("5mbit", "5ms")
 eth2.set_attributes("10mbit", "100ms")
 
-# Configure a `ping` application from `h1` to `h2`.
-# The `ping` API, by default, sends one ping packet from `h1` to `h2`
-# and reports whether it succeeded or failed.
+# `Ping` from `h1` to `h2`.
+# The `ping` API, by default, sends five ping packets from `h1` to `h2`
+# and reports whether they succeeded or failed.
 h1.ping(eth2.address)
