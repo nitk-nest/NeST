@@ -3,6 +3,7 @@
 
 """Necessary checks before running utilities on experiment"""
 
+import functools
 from time import sleep
 import nest.config as config
 import nest.global_variables as g_var
@@ -15,6 +16,7 @@ def ipv6_dad_check(func):
     If DAD is enabled, verifies the state of interfaces
     """
 
+    @functools.wraps(func)
     def wrapper_dad_check(*args, **kwargs):
         """
         Wrapper function for DAD

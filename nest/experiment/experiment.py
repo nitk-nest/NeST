@@ -5,8 +5,10 @@
 
 import copy
 import logging
+from nest.input_validator.metric import Bandwidth
 from nest.network_utilities import ipv6_dad_check
-from ..topology import Address
+from nest.input_validator import input_validator
+from nest.topology import Node, Address, Interface
 from .run_exp import run_experiment
 from .pack import Pack
 
@@ -18,14 +20,15 @@ class Flow:
     """Defines a flow in the topology"""
 
     # pylint: disable=too-many-arguments
+    @input_validator
     def __init__(
         self,
-        source_node,
-        destination_node,
-        destination_address,
-        start_time,
-        stop_time,
-        number_of_streams,
+        source_node: Node,
+        destination_node: Node,
+        destination_address: Address,
+        start_time: int,
+        stop_time: int,
+        number_of_streams: int,
     ):
         """
         'Flow' object in the topology
@@ -95,7 +98,8 @@ class Flow:
 class Experiment:
     """Handles experiment to be run on topology"""
 
-    def __init__(self, name):
+    @input_validator
+    def __init__(self, name: str):
         """
         Create experiment
 
@@ -122,7 +126,8 @@ class Experiment:
         """
         self.flows.append(copy.deepcopy(flow))
 
-    def add_tcp_flow(self, flow, congestion_algorithm="cubic"):
+    @input_validator
+    def add_tcp_flow(self, flow: Flow, congestion_algorithm="cubic"):
         """
         Add TCP flow to experiment. If no congestion control algorithm
         is specified, then by default cubic is used.
@@ -146,7 +151,10 @@ class Experiment:
         flow._options = options  # pylint: disable=protected-access
         self.add_flow(flow)
 
-    def add_udp_flow(self, flow, target_bandwidth="1mbit"):
+    @input_validator
+    def add_udp_flow(
+        self, flow: Flow, target_bandwidth: Bandwidth = Bandwidth("1mbit")
+    ):
         """
         Add UDP flow to experiment
 
@@ -158,18 +166,13 @@ class Experiment:
             UDP bandwidth (in Mbits) (Default value = '1mbit')
             This bandwidth limit is for each UDP stream in the flow
         """
-        if len(target_bandwidth) < 4 or target_bandwidth[-4:] != "mbit":
-            raise Exception(
-                "Invalid bandwidth unit given to target_bandwidth parameter. "
-                "Expecting mbit."
-            )
-
-        options = {"protocol": "UDP", "target_bw": target_bandwidth}
+        options = {"protocol": "UDP", "target_bw": target_bandwidth.string_value}
 
         flow._options = options  # pylint: disable=protected-access
         self.add_flow(flow)
 
-    def require_qdisc_stats(self, interface, stats=""):
+    @input_validator
+    def require_qdisc_stats(self, interface: Interface, stats=""):
         """
         Stats to be obtained from qdisc in interface
 

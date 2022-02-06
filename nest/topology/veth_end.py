@@ -7,7 +7,7 @@ import logging
 import nest.config as config
 import nest.global_variables as g_var
 from nest import engine
-from nest.topology.device import Device
+from .device import Device
 from .address import Address
 
 logger = logging.getLogger(__name__)
@@ -78,6 +78,8 @@ class VethEnd(Device):
         address : Address or str
             IP address to be assigned to the interface
         """
+        # TODO: The below check is redundant since
+        # input_validator check is run in Interface
         if isinstance(address, str):
             address = Address(address)
 

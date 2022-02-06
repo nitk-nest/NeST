@@ -36,7 +36,8 @@ class AddressHelper:
             # which do not belong to any network
             if TopologyMap.orphan_interfaces != 0:
                 logger.warning(
-                    "Interfaces not part of some network. They should be manually added",
+                    "Interfaces not part of some network. The addresses to these orphaned "
+                    "interfaces should be manually added.",
                 )
         else:
             AddressHelper.__assign_addresses_to_network(network)

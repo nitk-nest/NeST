@@ -19,10 +19,10 @@ In topology creation,
 import uuid
 
 from . import id_generator
+from .address import Address, Subnet
 from .node import Node
 from .router import Router
 from .interface import Interface, connect
-from .address import Address, Subnet
 from .switch import Switch
 
 

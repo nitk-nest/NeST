@@ -4,11 +4,17 @@
 """API related to interfaces in topology"""
 
 import logging
+from nest.input_validator import input_validator
+from nest.input_validator.metric import Bandwidth, Delay, Percentage
 from nest.topology.veth_end import VethEnd
 from nest.topology.ifb import Ifb
+from nest.topology import Address
 from nest.topology.network import Network
 from nest import engine
 import nest.config as config
+
+# pylint: disable=cyclic-import
+from nest import topology
 
 # Max length of interface when Topology Map is disabled
 # i.e. 'assign_random_names' is set to False in config
@@ -42,7 +48,8 @@ class Interface:
         IP address assigned to this interface
     """
 
-    def __init__(self, interface_name):
+    @input_validator
+    def __init__(self, interface_name: str):
         """
         Constructor of Interface.
 
@@ -131,7 +138,8 @@ class Interface:
         return self._veth_end.address
 
     @address.setter
-    def address(self, address):
+    @input_validator
+    def address(self, address: Address):
         """
         Assigns IP address to an interface
 
@@ -181,7 +189,8 @@ class Interface:
         """
         return self._veth_end.address
 
-    def set_address(self, address):
+    @input_validator
+    def set_address(self, address: Address):
         """
         Assigns IP address to an interface
 
@@ -237,46 +246,50 @@ class Interface:
         ifb_name = "ifb-" + self.name
         self._ifb = Ifb(ifb_name, self.node_id, self.id)
 
-    def set_bandwidth(self, bandwidth):
+    @input_validator
+    def set_bandwidth(self, bandwidth: Bandwidth):
         """
         Sets a minimum bandwidth for the interface
         It is done by adding a HTB qdisc and a rate parameter to the class
 
         Parameters
         ----------
-        bandwidth : string
+        bandwidth : Bandwidth
             The minimum rate that has to be set in kbit
         """
 
         self._veth_end.set_structure()
         if self._ifb is not None:
             # Set the same bandwidth in the IFB too
-            self._ifb.set_bandwidth(bandwidth)
+            self._ifb.set_bandwidth(bandwidth.string_value)
 
-        bandwidth_parameter = {"rate": bandwidth}
+        bandwidth_parameter = {"rate": bandwidth.string_value}
 
         self._veth_end.change_class("htb", "1:", "1:1", **bandwidth_parameter)
 
-    def set_delay(self, delay):
+    @input_validator
+    def set_delay(self, delay: Delay):
         """
         Adds a delay to the link between two namespaces
         It is done by adding a delay in the interface
 
         Parameters
         ----------
-        delay : str
+        delay : Delay
             The delay to be added
         """
-        # TODO: It is not intuitive to add delay to an interface
         # TODO: Make adding delay possible without bandwidth being set
 
         self._veth_end.set_structure()
 
-        delay_parameter = {"delay": delay}
+        delay_parameter = {"delay": delay.string_value}
 
         self._veth_end.change_qdisc("11:", "netem", **delay_parameter)
 
-    def set_packet_corruption(self, corrupt_rate, correlation_rate=""):
+    @input_validator
+    def set_packet_corruption(
+        self, corrupt_rate: Percentage, correlation_rate: Percentage = None
+    ):
         """
         allows the emulation of random noise introducing an error in a
         random position for a chosen percent of packets.
@@ -289,14 +302,23 @@ class Interface:
         correlation_rate : str
             correlation between the corrupted packets
         """
+        parsed_correlation_rate = (
+            correlation_rate.string_value if correlation_rate else ""
+        )
 
         self._veth_end.set_structure()
 
-        corrupt_parameter = {"corrupt": corrupt_rate, "": correlation_rate}
+        corrupt_parameter = {
+            "corrupt": corrupt_rate.string_value,
+            "": parsed_correlation_rate,
+        }
 
         self._veth_end.change_qdisc("11:", "netem", **corrupt_parameter)
 
-    def set_packet_loss(self, loss_rate, correlation_rate=""):
+    @input_validator
+    def set_packet_loss(
+        self, loss_rate: Percentage, correlation_rate: Percentage = None
+    ):
         """
         adds an independent loss probability to the packets outgoing from
         the chosen network interface.
@@ -309,10 +331,13 @@ class Interface:
         correlation_rate : str
             correlation between the lost packets
         """
+        parsed_correlation_rate = (
+            correlation_rate.string_value if correlation_rate else ""
+        )
 
         self._veth_end.set_structure()
 
-        loss_parameter = {"loss": loss_rate, "": correlation_rate}
+        loss_parameter = {"loss": loss_rate.string_value, "": parsed_correlation_rate}
 
         self._veth_end.change_qdisc("11:", "netem", **loss_parameter)
 
@@ -337,15 +362,18 @@ class Interface:
         self._ifb.delete_qdisc("11:")
         self._ifb.add_qdisc(qdisc, "1:1", "11:", **kwargs)
 
-    def set_attributes(self, bandwidth, delay, qdisc=None, **kwargs):
+    @input_validator
+    def set_attributes(
+        self, bandwidth: Bandwidth, delay: Delay, qdisc: str = None, **kwargs
+    ):
         """
         Add attributes bandwidth, delay and qdisc to interface
 
         Parameters
         ----------
-        bandwidth :
+        bandwidth : str/Bandwidth
             Packet outgoing rate
-        delay : string
+        delay : str/Delay
             Delay before packet is sent out
         qdisc : string
             The Queueing algorithm to be added to interface
@@ -410,7 +438,14 @@ def create_veth_pair(interface1_name, interface2_name):
     return (interface1, interface2)
 
 
-def connect(node1, node2, interface1_name="", interface2_name="", network=None):
+@input_validator
+def connect(
+    node1: topology.Node,
+    node2: topology.Node,
+    interface1_name: str = "",
+    interface2_name: str = "",
+    network: Network = None,
+):
     """
     Connects two nodes `node1` and `node2`.
     Creates two paired Virtual Ethernet interfaces (veth) and returns

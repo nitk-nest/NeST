@@ -4,7 +4,9 @@
 """API related to Network"""
 
 import logging
+from nest.input_validator import input_validator
 from nest.topology_map import TopologyMap
+from .address import Address
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +24,8 @@ class Network:
 
     current_network = None
 
-    def __init__(self, network_address):
+    @input_validator
+    def __init__(self, network_address: Address):
         """
         Constructor of Network.
 
@@ -66,3 +69,7 @@ class Network:
         """
         self.interface.append(_interface)
         TopologyMap.decrement_orphan_interfaces()
+
+    def __repr__(self):
+        classname = self.__class__.__name__
+        return f"{classname}({self.net_address!r})"

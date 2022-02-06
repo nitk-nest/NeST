@@ -12,13 +12,16 @@ from os import mkdir, kill, path, listdir
 import atexit
 from shutil import rmtree, chown
 from signal import SIGTERM
+from typing import List
 from nest.exceptions import RequiredDependencyNotFound
+from nest.input_validator.input_validator import input_validator
 from nest.topology.id_generator import IdGen
 from nest.routing.zebra import Zebra
 from nest.routing.ldp import Ldp
 from nest.topology_map import TopologyMap
 from nest.user import User
 from nest import config
+from nest.topology import Node
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +57,14 @@ class RoutingHelper:
         "isis": ["nest.routing.isis", "Isis"],
     }
 
-    def __init__(self, protocol="static", hosts=None, routers=None, ldp_routers=None):
+    @input_validator
+    def __init__(
+        self,
+        protocol: str,
+        hosts: List[Node] = None,
+        routers: List[Node] = None,
+        ldp_routers: List[Node] = None,
+    ):
         """
         Constructor for RoutingHelper.
         The dynamic routing daemons will be run only on nodes with more than
@@ -76,9 +86,20 @@ class RoutingHelper:
         """
         if protocol == "static":
             raise NotImplementedError(
-                "Static routing is yet to be implemented. Use rip or ospf"
+                "Static routing is yet to be implemented. Use rip, ospf or isis"
+            )
+        if protocol not in ["rip", "ospf", "isis"]:
+            raise ValueError(
+                f"Supported routing protocols are rip, ospf and isis, "
+                f"but got protocol {protocol}"
             )
         self.protocol = protocol
+
+        # Validate hosts, routers and ldp_routers
+        self._is_node_list("hosts", hosts)
+        self._is_node_list("routers", routers)
+        self._is_node_list("ldp_routers", ldp_routers)
+
         self.hosts = []
         self.routers = []
         if routers is None and hosts is None:
@@ -242,6 +263,19 @@ class RoutingHelper:
                     break
 
         logger.info("Routing completed")
+
+    def _is_node_list(self, arg_name, node_list):
+        """
+        Checks if `node_list` is a list of Nodes.
+        """
+        if node_list is None:
+            return
+        for node in node_list:
+            if isinstance(node, Node) is False:
+                raise ValueError(
+                    f"Some items in argument '{arg_name}' of method '{self.__init__.__qualname__}' "
+                    f"are not derived from type '{Node.__name__}'"
+                )
 
     def _clean_up(self):
         """

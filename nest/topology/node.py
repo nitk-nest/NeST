@@ -5,11 +5,15 @@
 
 import logging
 
+# pylint: disable=unused-import
+# pylint: disable=cyclic-import
+from nest import topology
 from nest import engine
 from nest.topology_map import TopologyMap
 import nest.config as config
 from nest.network_utilities import ipv6_dad_check
 import nest.global_variables as g_var
+from nest.input_validator import input_validator
 from .address import Address
 from .id_generator import IdGen
 
@@ -26,7 +30,8 @@ class Node:
         User given name for the node.
     """
 
-    def __init__(self, name):
+    @input_validator
+    def __init__(self, name: str):
         """
         Create a node with given `name`.
 
@@ -81,7 +86,13 @@ class Node:
         # Switch back to default network namespace
         engine.set_ns(None)
 
-    def add_route(self, dest_addr, via_interface, next_hop_addr=""):
+    @input_validator
+    def add_route(
+        self,
+        dest_addr: Address,
+        via_interface: "topology.Interface",
+        next_hop_addr: Address = None,
+    ):
         """
         Add a route to the routing table of `Node`.
 
@@ -95,14 +106,7 @@ class Node:
         next_hop_addr: Address/str, optional
             IP address of next hop Node (or router), by default ''
         """
-        if isinstance(dest_addr, str):
-            dest_addr = Address(dest_addr)
-
-        if next_hop_addr != "":
-            if isinstance(next_hop_addr, str):
-                next_hop_addr = Address(next_hop_addr)
-        else:
-            # Assuming veth pair
+        if next_hop_addr is None:
             next_hop_addr = via_interface.pair.address
 
         dest_addr_str = ""
@@ -156,7 +160,10 @@ class Node:
 
         return None
 
-    def add_route_mpls_push(self, dest_addr, next_hop_addr, label):
+    @input_validator
+    def add_route_mpls_push(
+        self, dest_addr: Address, next_hop_addr: Address, label: int
+    ):
         """
         Add a route to the routing table of `Node`.
 
@@ -169,12 +176,6 @@ class Node:
             IP address of next hop Node (or router), by default ''
         label: the MPLS label pushed onto the packet
         """
-        if isinstance(dest_addr, str):
-            dest_addr = Address(dest_addr)
-
-        if isinstance(next_hop_addr, str):
-            next_hop_addr = Address(next_hop_addr)
-
         engine.add_mpls_route_push(
             self.id,
             dest_addr.get_addr(),
@@ -182,7 +183,10 @@ class Node:
             label,
         )
 
-    def add_route_mpls_switch(self, incoming_label, next_hop_addr, outgoing_label):
+    @input_validator
+    def add_route_mpls_switch(
+        self, incoming_label: int, next_hop_addr: Address, outgoing_label: int
+    ):
         """
 
         Parameters
@@ -192,9 +196,6 @@ class Node:
         outgoing_label: The label that is pushed onto the packet
 
         """
-        if isinstance(next_hop_addr, str):
-            next_hop_addr = Address(next_hop_addr)
-
         engine.add_mpls_route_switch(
             self.id,
             incoming_label,
@@ -202,7 +203,8 @@ class Node:
             outgoing_label,
         )
 
-    def add_route_mpls_pop(self, incoming_label, next_hop_addr):
+    @input_validator
+    def add_route_mpls_pop(self, incoming_label: int, next_hop_addr: Address):
         """
 
         Parameters
@@ -211,9 +213,6 @@ class Node:
         next_hop_addr: IP address of the next hop
 
         """
-        if isinstance(next_hop_addr, str):
-            next_hop_addr = Address(next_hop_addr)
-
         engine.add_mpls_route_pop(
             self.id, incoming_label, next_hop_addr.get_addr(with_subnet=False)
         )
@@ -310,7 +309,10 @@ class Node:
         return engine.read_kernel_param(self.id, "net.ipv4.udp_", param)
 
     @ipv6_dad_check
-    def ping(self, destination_address, packets=5, verbose=True):
+    @input_validator
+    def ping(
+        self, destination_address: Address, packets: int = 5, verbose: bool = True
+    ):
         """
         Ping from current `Node` to destination address
         if there is a route.

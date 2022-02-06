@@ -6,6 +6,8 @@
 import ipaddress
 from ipaddress import ip_address, IPv6Address, IPv4Address
 
+from nest.input_validator.input_validator import input_validator
+
 
 class Address:
     """
@@ -14,7 +16,8 @@ class Address:
 
     """
 
-    def __init__(self, addr_str):
+    @input_validator
+    def __init__(self, addr_str: str):
         """
         The constructor validates the entered IP address.
 
@@ -49,6 +52,13 @@ class Address:
 
         else:
             raise ValueError(addr_str + " is not a valid IP address")
+
+    @staticmethod
+    def allowed_type_cast():
+        """
+        Indicate str can be typecasted into Address type
+        """
+        return [str]
 
     def get_addr(self, with_subnet=True):
         """Getter for ip_addr
@@ -240,11 +250,10 @@ class Subnet:
 
     """
 
-    def __init__(self, addr_str):
-        address = Address(addr_str)
-
+    @input_validator
+    def __init__(self, address: Address):
         if address.is_subnet():
-            self._net_addr = ipaddress.ip_network(addr_str)
+            self._net_addr = ipaddress.ip_network(address.get_addr())
         else:
             raise ValueError("Parameter is not a subnet/network address")
 
