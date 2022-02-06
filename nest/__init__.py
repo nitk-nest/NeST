@@ -34,8 +34,6 @@ if os.geteuid() != 0:
 
 # Load default config values
 config.import_default_config()
-# Load custom config values
-config.search_config_files()
 
 # Store user information for later use
 if all(key in os.environ for key in ("SUDO_UID", "SUDO_GID")):
@@ -66,3 +64,6 @@ if log_level == "TRACE":
 
 # On recieving Termination signal, execute the given function
 signal.signal(signal.SIGTERM, clean_up.delete_namespaces)
+
+# Load custom config values
+config.search_config_files()

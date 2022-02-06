@@ -7,6 +7,8 @@ import os
 import json
 import logging
 from nest.logging_helper import update_nest_logger
+from nest.input_validator import input_validator
+from nest.exception import NestBaseException
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +41,8 @@ def import_default_config():
     __DEFAULT_VALUE = data
 
 
-def set_value(parameter, value):
+@input_validator
+def set_value(parameter: str, value):
     """
     Changes the default values only for that program
 
@@ -51,10 +54,16 @@ def set_value(parameter, value):
         The value to which the parameter has to be changed to
     """
     if parameter in __DEFAULT_VALUE:
-        __DEFAULT_VALUE[parameter] = value
+        if isinstance(value, type(__DEFAULT_VALUE[parameter])):
+            __DEFAULT_VALUE[parameter] = value
+        else:
+            raise ValueError(
+                f"The value of config '{parameter}' should be of type "
+                f"{type(__DEFAULT_VALUE[parameter])}, but got value "
+                f"'{value}' of type {type(value)}"
+            )
     else:
-        logger.error("The given parameter %s does not exist", parameter)
-        return
+        raise ValueError(f"The given config parameter {parameter} does not exist")
 
     _post_set_value(parameter, value)
 
@@ -97,7 +106,7 @@ def get_value(parameter):
     return None
 
 
-def import_custom_config(path):
+def import_custom_config(path: str):
     """
     Overwrites the current value of config parameters with the values
     from the JSON in the given path
@@ -107,15 +116,10 @@ def import_custom_config(path):
     path: str
         The path in which the json file
     """
-    # pylint: disable=too-many-branches
     with open(path, "r") as json_file:
         data = json.load(json_file)
     for parameter in data:
-        if parameter in __DEFAULT_VALUE:
-            __DEFAULT_VALUE[parameter] = data[parameter]
-            _post_set_value(parameter, data[parameter])
-        else:
-            logger.error("The given parameter %s does not exist", parameter)
+        set_value(parameter, data[parameter])
 
 
 def search_config_files():
@@ -124,6 +128,19 @@ def search_config_files():
     """
 
     # The ones called later, might overwrite the previous calls
-    for i in __DEFAULT_PATH:
-        if os.path.isfile(os.path.abspath(i)):
-            import_custom_config(os.path.abspath(i))
+    for config_path in __DEFAULT_PATH:
+        try:
+            if os.path.isfile(os.path.abspath(config_path)):
+                import_custom_config(os.path.abspath(config_path))
+        except ValueError as error:
+            raise NestConfigInitializationError(
+                f"An error occurred when initializing NeST config from {config_path}. "
+                f"Please see the previous exception for more details about the error."
+            ) from error
+
+
+class NestConfigInitializationError(NestBaseException):
+    """
+    Exception related to error in Initializaton of NeST
+    config from config file.
+    """
