@@ -75,6 +75,9 @@ RUN apt install -y iperf3
 # Installs lsmod and other kernel module utilites
 RUN apt install -y kmod
 
+# Install tcpdump
+RUN apt install -y tcpdump
+
 FROM test as dev
 
 WORKDIR /home
