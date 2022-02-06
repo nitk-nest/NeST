@@ -85,6 +85,23 @@ class TestQuagga(unittest.TestCase):
 
         config.set_value("routing_logs", False)
 
+    def test_custom_node_routers(self):
+        RoutingHelper(
+            "rip", [self.n0, self.n1], [self.r0, self.r1]
+        ).populate_routing_tables()
+
+        status = self.n0.ping("10.0.3.4", verbose=False)
+        self.assertTrue(status)
+
+        status = self.n1.ping("10.0.1.1", verbose=False)
+        self.assertTrue(status)
+
+        with self.assertRaises(TypeError):
+            RoutingHelper("rip", self.n1, self.r1).populate_routing_tables()
+
+        with self.assertRaises(ValueError):
+            RoutingHelper("rip", ["n1"], ["r1"]).populate_routing_tables()
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -29,7 +29,7 @@ class TestTopology(unittest.TestCase):
         n0_n1.set_address("10.0.0.1/24")
         n1_n0.set_address("10.0.0.2/24")
 
-        status = self.n0.ping("10.0.0.2", verbose=False)
+        status = self.n0.ping("10.0.0.2")
 
         self.assertTrue(status)
 
@@ -42,7 +42,7 @@ class TestTopology(unittest.TestCase):
         n0_n1.set_address("2001:1:1:1443::411/122")
         n1_n0.set_address("2001:1:1:1443::412/122")
 
-        status = self.n0.ping(n1_n0.address, verbose=False)
+        status = self.n0.ping(n1_n0.address)
 
         self.assertTrue(status)
 
@@ -62,7 +62,7 @@ class TestTopology(unittest.TestCase):
         self.n0.add_route("DEFAULT", n0_r)
         self.n1.add_route("DEFAULT", n1_r)
 
-        status = self.n0.ping("10.1.2.1", verbose=False)
+        status = self.n0.ping("10.1.2.1")
 
         self.assertTrue(status)
 
@@ -85,7 +85,7 @@ class TestTopology(unittest.TestCase):
         self.n0.add_route("DEFAULT", n0_r)
         self.n1.add_route("DEFAULT", n1_r)
 
-        status = self.n0.ping(n1_r.address, verbose=False)
+        status = self.n0.ping(n1_r.address)
 
         self.assertTrue(status)
 
@@ -112,7 +112,7 @@ class TestTopology(unittest.TestCase):
 
         for x in nodes:
             for y in interface:
-                status = x.ping(y.address, verbose=False)
+                status = x.ping(y.address, packets=1)
                 if not status:
                     break
 
@@ -144,7 +144,7 @@ class TestTopology(unittest.TestCase):
 
         for x in nodes:
             for y in interface:
-                status = x.ping(y.address, verbose=False)
+                status = x.ping(y.address, packets=1)
                 if not status:
                     break
 
@@ -273,7 +273,7 @@ class TestTopology(unittest.TestCase):
         self.n0.add_route("DEFAULT", n0_r)
         self.n1.add_route("DEFAULT", n1_r)
 
-        status = self.n0.ping("10.1.2.1", verbose=False)
+        status = self.n0.ping("10.1.2.1")
 
         self.assertTrue(status)
 
