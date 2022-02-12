@@ -70,7 +70,6 @@ run style checks:
   script:
     - pre-commit --version
     - pre-commit run --all-files
-
     - gitlint --version
     - git fetch
     - gitlint --commits origin/$CI_DEFAULT_BRANCH..HEAD
@@ -79,25 +78,20 @@ run unit tests:
   image: $CONTAINER_TEST_CI_IMAGE
   stage: test
   script:
-    - pip install .
+    - pip install -e .
     - coverage --version
+    - pytest --version
     - coverage run
-    - coverage combine
-    - coverage report
-    - coverage xml
-    - coverage html
+    - tar -cvf coverage_dump_${CI_JOB_NAME// /_}.tar .coverage_dump*
   artifacts:
     reports:
-      cobertura: coverage.xml
       junit: junit_report.xml
     paths:
       - test-experiment*/
       - quagga-logs*/
       - frr-logs*/
-      - coverage.xml
       - junit_report.xml
-      - htmlcov/
-      - .coverage
+      - coverage_dump_*.tar
     when: always
 
 run examples:
@@ -105,15 +99,14 @@ run examples:
   stage: test
   script:
     - pip install -e .
+    - coverage --version
+    - pytest --version
     - >
         pytest -v -o python_files="utils/run_examples.py"
         -o junit_logging=all
         --junitxml=junit_report.xml || exit_code=$?
-    - mv examples_dump/.coverage* .
-    - coverage combine
-    - coverage report
-    - coverage xml
-    - coverage html
+    - mv examples_dump/.coverage_dump* .
+    - tar -cvf coverage_dump_${CI_JOB_NAME// /_}.tar .coverage_dump*
     - >
         if [ $exit_code -ne 0 ];
         then echo "Some example runs failed. Please check pytest logs";
@@ -124,12 +117,44 @@ run examples:
     - if: $CI_COMMIT_TAG
   artifacts:
     reports:
-      cobertura: coverage.xml
       junit: junit_report.xml
     paths:
       - examples_dump/
-      - coverage.xml
       - junit_report.xml
+      - coverage_dump_*.tar
+    when: always
+
+run examples (manual):
+  extends: run examples
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+      when: manual
+      allow_failure: true
+
+generate coverage report:
+  image: $CONTAINER_TEST_CI_IMAGE
+  stage: test
+  script:
+    - pip install -e .
+    - coverage --version
+    - cat coverage_dump_*.tar | tar xvf - -i
+    - coverage combine
+    - coverage report
+    - coverage xml
+    - coverage html
+    - coverage json
+  needs:
+    - job: run unit tests
+      artifacts: true
+    - job: run examples
+      optional: true
+      artifacts: true
+  artifacts:
+    reports:
+      cobertura: coverage.xml
+    paths:
+      - coverage.json
+      - coverage.xml
       - htmlcov/
       - .coverage
     when: always

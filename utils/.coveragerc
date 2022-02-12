@@ -3,3 +3,4 @@ concurrency = multiprocessing
 parallel = True
 source = nest
 branch = True
+data_file = .coverage_dump

@@ -4,6 +4,8 @@ concurrency = multiprocessing
 parallel = True
 source = nest
 branch = True
+data_file = .coverage_dump
 
 [report]
 omit = nest/tests/*
+precision = 2
