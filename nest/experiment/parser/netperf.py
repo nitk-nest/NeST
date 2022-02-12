@@ -127,7 +127,7 @@ class NetperfRunner(Runner):
 
         if netperf_options["testname"] == "-t TCP_STREAM":
             test_options = copy.copy(NetperfRunner.netperf_tcp_options)
-            test_options["cong_alg"] = f"-K {self.options['cong_algo']}"
+            test_options["cong_algo"] = f"-K {self.options['cong_algo']}"
 
         elif netperf_options["testname"] == "-t UDP_STREAM":
             test_options = copy.copy(NetperfRunner.netperf_udp_options)
