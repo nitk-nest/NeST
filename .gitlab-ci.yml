@@ -142,6 +142,7 @@ generate coverage report:
     - coverage xml
     - coverage html
     - coverage json
+  coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
   needs:
     - job: run unit tests
       artifacts: true

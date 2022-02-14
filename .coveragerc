@@ -8,4 +8,6 @@ data_file = .coverage_dump
 
 [report]
 omit = nest/tests/*
+       nest/version.py
+
 precision = 2

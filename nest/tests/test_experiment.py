@@ -13,7 +13,7 @@ import nest.config as config
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
 class TestExperiment(unittest.TestCase):
-    def test_experiment(self):
+    def test_experiment(self, qdisc=None):
         n0 = Node("n0")
         n1 = Node("n1")
         r = Node("r")
@@ -33,12 +33,15 @@ class TestExperiment(unittest.TestCase):
         n0_r.set_attributes("100mbit", "5ms")
         r_n0.set_attributes("100mbit", "5ms")
 
-        r_n1.set_attributes("10mbit", "40ms", "pie")
+        r_n1.set_attributes("10mbit", "40ms", qdisc)
         n1_r.set_attributes("10mbit", "40ms")
 
         exp = Experiment("test-experiment")
         flow = Flow(n0, n1, n1_r.address, 0, 5, 2)
         exp.add_tcp_flow(flow)
+
+        if qdisc:
+            exp.require_qdisc_stats(r_n1)
 
         exp.run()
 
@@ -135,6 +138,21 @@ class TestExperiment(unittest.TestCase):
 
         # Resetting disable_dad in config
         config.set_value("disable_dad", True)
+
+    def test_experiment_qdisc_codel(self):
+        self.test_experiment("codel")
+
+    def test_experiment_qdisc_fq_codel(self):
+        self.test_experiment("fq_codel")
+
+    def test_experiment_qdisc_pfifo(self):
+        self.test_experiment("pfifo")
+
+    def test_experiment_qdisc_pie(self):
+        self.test_experiment("pie")
+
+    def test_experiment_qdisc_fq_pie(self):
+        self.test_experiment("fq_pie")
 
     def tearDown(self):
         delete_namespaces()

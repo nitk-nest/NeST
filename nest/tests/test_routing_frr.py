@@ -3,6 +3,7 @@
 
 """Test APIs from routing sub-package"""
 import unittest
+from glob import glob
 from os.path import isfile
 from nest import config
 from nest.topology_map import TopologyMap
@@ -44,13 +45,19 @@ class TestFrr(unittest.TestCase):
 
         config.set_value("routing_suite", "frr")  # Use frr
 
+        self.routing_helper = None
+
     def tearDown(self):
         delete_namespaces()
         TopologyMap.delete_all_mapping()
+        if self.routing_helper:
+            # pylint: disable=protected-access
+            self.routing_helper._clean_up()
 
     def test_routing_helper(self):
 
-        RoutingHelper("rip").populate_routing_tables()
+        self.routing_helper = RoutingHelper("rip")
+        self.routing_helper.populate_routing_tables()
 
         status = self.n0.ping("10.0.3.4", verbose=False)
         self.assertTrue(status)
@@ -59,13 +66,53 @@ class TestFrr(unittest.TestCase):
         self.assertTrue(status)
 
     def test_ospf(self):
-        RoutingHelper("ospf").populate_routing_tables()
+        self.routing_helper = RoutingHelper("ospf")
+        self.routing_helper.populate_routing_tables()
 
         status = self.n0.ping("10.0.3.4", verbose=False)
         self.assertTrue(status)
 
         status = self.n1.ping("10.0.1.1", verbose=False)
         self.assertTrue(status)
+
+    def test_isis(self):
+        self.routing_helper = RoutingHelper("isis")
+        self.routing_helper.populate_routing_tables()
+
+        status = self.n0.ping("10.0.3.4", verbose=False)
+        self.assertTrue(status)
+
+        status = self.n1.ping("10.0.1.1", verbose=False)
+        self.assertTrue(status)
+
+    def test_babel(self):
+        with self.assertRaises(ValueError) as ex:
+            RoutingHelper("babel").populate_routing_tables()
+
+        self.assertEqual(
+            str(ex.exception),
+            "Supported routing protocols are rip, ospf and isis, "
+            "but got protocol babel",
+        )
+
+    def test_static(self):
+        with self.assertRaises(NotImplementedError) as ex:
+            RoutingHelper("static").populate_routing_tables()
+
+        self.assertEqual(
+            str(ex.exception),
+            "Static routing is yet to be implemented. Use rip, ospf or isis",
+        )
+
+    def test_logs(self):
+        config.set_value("routing_logs", True)
+
+        self.routing_helper = RoutingHelper("rip")
+        self.routing_helper.populate_routing_tables()
+
+        self.assertTrue(len(glob(f"{config.get_value('routing_suite')}-logs_*")) > 0)
+
+        config.set_value("routing_logs", False)
 
 
 if __name__ == "__main__":

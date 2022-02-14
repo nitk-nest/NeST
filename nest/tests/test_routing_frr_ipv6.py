@@ -44,14 +44,19 @@ class TestFrr(unittest.TestCase):
         eth_p2r2.set_address("10::3:4/122")
 
         config.set_value("routing_suite", "frr")  # Use frr
+        self.routing_helper = None
 
     def tearDown(self):
         delete_namespaces()
         TopologyMap.delete_all_mapping()
+        if self.routing_helper:
+            # pylint: disable=protected-access
+            self.routing_helper._clean_up()
 
     def test_rip_ipv6(self):
 
-        RoutingHelper("rip").populate_routing_tables()
+        self.routing_helper = RoutingHelper("rip")
+        self.routing_helper.populate_routing_tables()
 
         status = self.n0.ping("10::3:4", verbose=False)
         self.assertTrue(status)
@@ -61,7 +66,18 @@ class TestFrr(unittest.TestCase):
 
     def test_ospf_ipv6(self):
 
-        RoutingHelper("ospf").populate_routing_tables()
+        self.routing_helper = RoutingHelper("ospf")
+        self.routing_helper.populate_routing_tables()
+
+        status = self.n0.ping("10::3:4", verbose=False)
+        self.assertTrue(status)
+
+        status = self.n1.ping("10::1:1", verbose=False)
+        self.assertTrue(status)
+
+    def test_isis_ipv6(self):
+        self.routing_helper = RoutingHelper("isis")
+        self.routing_helper.populate_routing_tables()
 
         status = self.n0.ping("10::3:4", verbose=False)
         self.assertTrue(status)
