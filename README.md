@@ -18,6 +18,11 @@ NeST was accepted at [ANRW'20](https://irtf.org/anrw/2020/).
 Instructions to install `NeST` can be found in
 [install.rst](https://gitlab.com/nitk-nest/nest/-/blob/master/docs/source/user/install.rst).
 
+## Examples
+
+Several examples, that explain the basic APIs and features of NeST, are
+available in the [examples directory](https://gitlab.com/nitk-nest/nest/-/tree/master/examples).
+
 ## Documentation
 
 The documentation of NeST APIs can be read online at:
