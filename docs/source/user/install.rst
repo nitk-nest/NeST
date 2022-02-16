@@ -38,7 +38,7 @@ This is the recommended way to install for most users of NeST.
 The below command will install NeST from
 https://pypi.org/project/nitk-nest/ (Python Package Index)::
 
-    $ python3 -m pip install nitk-nest
+    $ python3 -m pip install nest
 
 ii) From docker
 ^^^^^^^^^^^^^^^
