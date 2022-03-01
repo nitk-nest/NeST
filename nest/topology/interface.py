@@ -66,6 +66,9 @@ class Interface:
         self._veth_end = VethEnd(interface_name, None)
         self._ifb = None
 
+        # Track bandwidth
+        self._bandwidth = None
+
     @property
     def name(self):
         """Getter for name"""
@@ -259,9 +262,7 @@ class Interface:
         """
 
         self._veth_end.set_structure()
-        if self._ifb is not None:
-            # Set the same bandwidth in the IFB too
-            self._ifb.set_bandwidth(bandwidth.string_value)
+        self._bandwidth = bandwidth.string_value
 
         bandwidth_parameter = {"rate": bandwidth.string_value}
 
@@ -352,12 +353,14 @@ class Interface:
         bandwidth :
             Link bandwidth
         """
-        # TODO: Check if this is a redundant condition
 
         self._veth_end.set_structure()
 
         if self._ifb is None:
             self._create_and_mirred_to_ifb()
+
+        if self._bandwidth is not None:
+            self._ifb.set_bandwidth(self._bandwidth)
 
         self._ifb.delete_qdisc("11:")
         self._ifb.add_qdisc(qdisc, "1:1", "11:", **kwargs)
