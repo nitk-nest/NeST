@@ -9,6 +9,7 @@ its output
 import os
 import re
 from functools import partial
+from nest.experiment.interrupts import handle_keyboard_interrupt
 from ..results import SsResults
 from .runnerbase import Runner
 from ...engine.iterators import run_ss
@@ -90,6 +91,7 @@ class SsRunner(Runner):
         )
 
     # pylint: disable=too-many-locals
+    @handle_keyboard_interrupt
     def parse(self):
         """
         parses the required data from `self.out`

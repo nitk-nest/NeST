@@ -61,7 +61,7 @@ def input_validator(func):
                 casted_arg_value = validate_input_and_cast(
                     func.__qualname__, arg_name, arg_value, annotations[arg_name]
                 )
-            else:
+            elif arg_name != "self":
                 logger.debug(
                     "Parameter %s of function %s does not have a type hint",
                     arg_name,

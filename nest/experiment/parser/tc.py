@@ -11,6 +11,7 @@ import json
 import os
 from functools import partial
 from time import strptime, strftime
+from nest.experiment.interrupts import handle_keyboard_interrupt
 from .runnerbase import Runner
 from ..results import TcResults
 from ...topology_map import TopologyMap
@@ -334,6 +335,7 @@ class TcRunner(Runner):
         cur_tc_version = "20" + cur_tc_version.split(" ")[-1][-7:].strip()
         return strptime(cur_tc_version, "%Y%m%d")
 
+    @handle_keyboard_interrupt
     def parse(self):
         """
         Parses the required data from tc-qdisc output

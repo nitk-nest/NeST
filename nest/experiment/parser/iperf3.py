@@ -9,6 +9,7 @@ import copy
 import json
 import logging
 
+from nest.experiment.interrupts import handle_keyboard_interrupt
 from nest.topology_map import TopologyMap
 from ..results import Iperf3Results
 from .runnerbase import Runner
@@ -118,6 +119,7 @@ class Iperf3Runner(Runner):
             error_string_prefix="Running iperf3",
         )
 
+    @handle_keyboard_interrupt
     def parse(self):
         """
         Parse iperf3 output from self.out

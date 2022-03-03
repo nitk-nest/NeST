@@ -5,7 +5,7 @@
 
 import logging
 import matplotlib.pyplot as plt
-
+from nest.experiment.interrupts import handle_keyboard_interrupt
 from ..pack import Pack
 from .common import simple_plot
 
@@ -71,6 +71,7 @@ def _plot_ping_flow(flow, node, dest):
     return (timestamp, rtt)
 
 
+@handle_keyboard_interrupt
 def plot_ping(parsed_data):
     """
     Plot statistics obtained from ping

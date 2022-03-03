@@ -41,6 +41,7 @@ if not any(isinstance(filter, DepedencyCheckFilter) for filter in logger.filters
     logger.addFilter(DepedencyCheckFilter())
 
 # pylint: disable=too-many-locals
+# pylint: disable=too-many-statements
 def run_experiment(exp):
     """
     Run experiment
@@ -143,35 +144,44 @@ def run_experiment(exp):
     ping_runners = setup_ping_runners(dependencies["ping"], ping_schedules)
     exp_runners.ping.extend(ping_runners)
 
-    # Start traffic generation
-    run_workers(setup_flow_workers(exp_runners, exp_end_t))
+    try:
+        # Start traffic generation
+        run_workers(setup_flow_workers(exp_runners, exp_end_t))
 
-    logger.info("Experiment complete!")
-    logger.info("Parsing statistics...")
+        logger.info("Parsing statistics...")
 
-    # Parse the stored statistics
-    run_workers(setup_parser_workers(exp_runners))
+        # Parse the stored statistics
+        run_workers(setup_parser_workers(exp_runners))
 
-    logger.info("Output results as JSON dump")
+        logger.info("Parsing statistics complete!")
+        logger.info("Output results as JSON dump...")
 
-    # Output results as JSON dumps
-    dump_json_ouputs()
+        # Output results as JSON dumps
+        dump_json_ouputs()
 
-    if config.get_value("plot_results"):
-        logger.info("Plotting results...")
+        if config.get_value("readme_in_stats_folder"):
+            # Copying README.txt to stats folder
+            relative_path = os.path.join("info", "README.txt")
+            readme_path = os.path.join(os.path.dirname(__file__), relative_path)
+            Pack.copy_files(readme_path)
 
-        # Plot results and dump them as images
-        run_workers(setup_plotter_workers())
+        if config.get_value("plot_results"):
+            logger.info("Plotting results...")
 
-        logger.info("Plotting complete!")
+            # Plot results and dump them as images
+            run_workers(setup_plotter_workers())
 
-    if config.get_value("readme_in_stats_folder"):
-        # Copying README.txt to stats folder
-        relative_path = os.path.join("info", "README.txt")
-        readme_path = os.path.join(os.path.dirname(__file__), relative_path)
-        Pack.copy_files(readme_path)
+            logger.info("Plotting complete!")
 
-    cleanup()
+        logger.info("Experiment %s complete!", exp.name)
+
+    except KeyboardInterrupt:
+        logger.warning(
+            "Experiment %s forcefully stopped. The results obtained maybe incomplete!",
+            exp.name,
+        )
+    finally:
+        cleanup()
 
 
 def run_workers(workers):
@@ -557,11 +567,17 @@ def progress_bar(stop_time, precision=1):
     precision : int
         Time unit for updating progress bar. 1 second be default
     """
+    try:
+        print()
+        for _ in tqdm(range(0, stop_time, precision), desc="Experiment Progress"):
+            sleep(precision)
+        print()
+    except KeyboardInterrupt:
+        logger.debug(
+            "ProgressBar process received KeyboardInterrupt. Stopping it gracefully."
+        )
 
-    print()
-    for _ in tqdm(range(0, stop_time, precision), desc="Experiment Progress"):
-        sleep(precision)
-    print()
+    logger.info("Cleaning up all the spawned child processes...")
 
 
 def cleanup():

@@ -11,6 +11,7 @@ import copy
 import logging
 from time import sleep
 from functools import partial
+from nest.experiment.interrupts import handle_keyboard_interrupt
 from ..results import NetperfResults
 from .runnerbase import Runner
 from ...topology_map import TopologyMap
@@ -152,6 +153,7 @@ class NetperfRunner(Runner):
             error_string_prefix="Running netperf",
         )
 
+    @handle_keyboard_interrupt
     def parse(self):
         """
         Parse netperf output from `self.out`

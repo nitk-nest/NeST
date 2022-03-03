@@ -64,9 +64,17 @@ class Runner:
         engine_func: Function
             engine function to be called
         """
-        return_code = engine_func(out=self.out, err=self.err)
-        if return_code != 0:
-            self.print_error(error_string_prefix)
+        try:
+            return_code = engine_func(out=self.out, err=self.err)
+            if return_code != 0:
+                self.print_error(error_string_prefix)
+        except KeyboardInterrupt:
+            ns_name = TopologyMap.get_namespace(self.ns_id)["name"]
+            self.logger.debug(
+                "%s at %s: Received KeyboardInterrupt, hence shutting down the process gracefully.",
+                error_string_prefix,
+                ns_name,
+            )
 
     def print_error(self, error_string_prefix):
         """

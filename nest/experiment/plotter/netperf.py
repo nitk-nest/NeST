@@ -5,7 +5,7 @@
 
 import logging
 import matplotlib.pyplot as plt
-
+from nest.experiment.interrupts import handle_keyboard_interrupt
 from ..pack import Pack
 from .common import simple_plot, mix_plot
 
@@ -75,6 +75,7 @@ def _plot_netperf_flow(flow, node, dest):
     return {"label": legend_string, "values": (timestamp, sending_rate)}
 
 
+@handle_keyboard_interrupt
 def plot_netperf(parsed_data):
     """
     Plot statistics obtained from netperf

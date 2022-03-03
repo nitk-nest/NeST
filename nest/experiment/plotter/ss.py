@@ -5,7 +5,7 @@
 
 import logging
 import matplotlib.pyplot as plt
-
+from nest.experiment.interrupts import handle_keyboard_interrupt
 from ..pack import Pack
 from .common import simple_plot, mix_plot
 
@@ -184,6 +184,7 @@ def _plot_ss_flow(flow, node, dest_ip, dest_port):
 
 
 # pylint: disable=too-many-locals
+@handle_keyboard_interrupt
 def plot_ss(parsed_data):
     """
     Plot statistics obtained from ss

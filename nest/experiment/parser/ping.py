@@ -6,6 +6,7 @@
 import re
 from time import sleep
 from functools import partial
+from nest.experiment.interrupts import handle_keyboard_interrupt
 from .runnerbase import Runner
 from ..results import PingResults
 from ...engine.ping import run_exp_ping
@@ -66,6 +67,7 @@ class PingRunner(Runner):
             error_string_prefix="Collecting latency",
         )
 
+    @handle_keyboard_interrupt
     def parse(self):
         """
         parses the RTT from `self.out`

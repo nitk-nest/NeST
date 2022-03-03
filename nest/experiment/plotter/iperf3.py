@@ -5,7 +5,7 @@
 
 import logging
 import matplotlib.pyplot as plt
-
+from nest.experiment.interrupts import handle_keyboard_interrupt
 from ..pack import Pack
 from .common import simple_plot
 
@@ -101,6 +101,7 @@ def _plot_iperf3_flow(flow, node, dest_ip, local_port):
 
 
 # pylint: disable=too-many-locals
+@handle_keyboard_interrupt
 def plot_iperf3(parsed_data):
     """
     Plot statistics obtained from iperf3
