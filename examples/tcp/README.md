@@ -60,7 +60,23 @@ which provides details about the sub-directories and files within this
 directory. See the plots in `netperf`, `ping` and `ss` sub-directories for
 this program.
 
-## 4. tcp-udp-point-to-point.py
+## 4. tcp-reno-point-to-point-3.py
+This program emulates point to point networks that connect two hosts `h1`
+and `h2` via two routers `r1` and `r2`. This program is similar to
+`udp-point-to-point-3.py` in `examples/udp`. Instead of UDP, one Reno flow
+is configured from `h1` to `h2`. The links between `h1` to `r1` and between
+`r2` to `h2` are edge links. The link between `r1` and `r2` is the bottleneck
+link with lesser bandwidth and higher propagation delays. `pfifo` queue
+discipline is enabled on the link from `r1` to `r2`, but not from `r2` to
+`r1` because data packets flow in one direction only (`h1` to `h2`) in this
+example. Address helper is used in this program to assign IPv4 addresses.
+
+This program runs for 200 seconds and creates a new directory called
+`tcp-reno-point-to-point-3(date-timestamp)_dump`. It contains a `README` that
+provides details about the sub-directories and files within this directory.
+See the plots in `netperf`, `ping` and `ss` sub-directories for this program.
+
+## 5. tcp-udp-point-to-point.py
 This program emulates point to point networks that connect four hosts: `h1`
 - `h4` via two routers `r1` and `r2`. One TCP flow is configured from `h1` to
 `h3` and one UDP flow is configured from `h2` to `h4`.
