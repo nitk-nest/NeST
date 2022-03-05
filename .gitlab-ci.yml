@@ -162,10 +162,12 @@ test docs:
   image: $CONTAINER_TEST_CI_IMAGE
   stage: test
   script:
-    - git fetch --tags
+    - git fetch --tags --force
+    - sh ./docs/source/_version/version.sh
     - pip install .
     - pip install -r docs/doc_requirements.txt
     - make -C docs multiversion
+    - git fetch --tags --force  # Undo tag changes made in previous commands
     # Create index.html file pointing to latest release docs
     - TAG=$(git tag | tail -1)
     - echo "<meta http-equiv=\"refresh\" content=\"0; URL=./$TAG/index.html\">" > docs/build/html/index.html

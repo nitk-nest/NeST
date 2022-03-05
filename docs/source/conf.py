@@ -59,10 +59,6 @@ html_theme_options = {
     "sidebar_hide_name": True,
 }
 
-# Run script for managing documentation version
-
-subprocess.call(["sh", "_version/version.sh"])
-
 # Options for sphinx multiversion
 # Check https://holzhaus.github.io/sphinx-multiversion/master/configuration.html#
 # to know more about the below options
