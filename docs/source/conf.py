@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2021 NITK Surathkal
 
-# Path setup
-
 import os
+import subprocess
 import sys
 
+# Path setup
 sys.path.insert(0, os.path.abspath("../"))
 
 # Get version
@@ -58,6 +58,10 @@ html_logo = "assets/NeST_Logo.png"
 html_theme_options = {
     "sidebar_hide_name": True,
 }
+
+# Run script for managing documentation version
+
+subprocess.call(["sh", "_version/version.sh"])
 
 # Options for sphinx multiversion
 # Check https://holzhaus.github.io/sphinx-multiversion/master/configuration.html#
