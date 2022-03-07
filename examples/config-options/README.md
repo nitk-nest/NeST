@@ -58,4 +58,22 @@ JSON file is named as `nest-config.json` and placed in the same directory as
 this program, or in /etc or ~/, then this program does not need to use the
 `config` option. It directly reads the configuration from `nest-config.json`.
 
+## 4. config-4-point-to-point-1.py
+This program emulates a point to point network between two hosts `h1` and
+`h2`. Five ping packets are sent from `h1` to `h2`, and the success/failure
+of these packets is reported. It is similar to `config-2-point-to-point-1.py`
+example. This program shows a `config` option for the purpose of tracing
+internal Linux commands (for example, those of iproute2) executed by NeST.
+Note: we have imported a new package called `config` in this program.
+
+NeST supports different levels of logging by using Python's logging levels.
+By default, the logging is enabled at INFO level. Other levels supported are:
+NOTSET, TRACE, DEBUG, WARNING, ERROR and CRITICAL. This program enables the
+TRACE level log, which creates a file called `commands.sh` with all the
+`iproute2` commands NeST internally executes. But by default, NeST assigns
+random names to the network namespaces. Hence, when TRACE level log is enabled,
+the names of network namespaces visible in `commands.sh` would be random, and
+not user-friendly. To make the names look user-friendly, random name assignment
+is disbaled in this program.
+
 The details of all `config` options supported in NeST are available [here](http://nest.nitk.ac.in/docs/master/user/config.html).
