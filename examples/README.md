@@ -15,7 +15,8 @@ to quickly learn and use NeST APIs and its features.
 5. packet-operations (optional)
 6. udp (optional)
 7. tcp (optional)
-8. routing (optional)
+8. qdiscs (optional)
+9. routing (optional)
 
 | Examples          | Basic APIs         | Address Helpers    | Routing Helpers    | Ping Application   | UDP Flows          | TCP Flows          |
 |-------------------|--------------------|--------------------|--------------------|--------------------|--------------------|--------------------|
@@ -26,4 +27,5 @@ to quickly learn and use NeST APIs and its features.
 | packet-operations | :white_check_mark: | :white_check_mark: | :x:                | :white_check_mark: | :x:                | :x:                |
 | udp               | :white_check_mark: | :white_check_mark: | :x:                | :x:                | :white_check_mark: | :x: |
 | tcp               | :white_check_mark: | :white_check_mark: | :x:                | :x:                | :white_check_mark: | :white_check_mark: |
+| qdiscs               | :white_check_mark: | :white_check_mark: | :x:                | :x:                | :white_check_mark: | :white_check_mark: |
 | routing           | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :x:                | :x:                |
