@@ -20,4 +20,5 @@ from .setns import *
 from .sysctl import *
 from .tcp_modules import *
 from .tc import *
+from .t_shark import *
 from .uname import *
