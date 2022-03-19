@@ -51,7 +51,7 @@ setup(
         "nest": ["config.json"],
     },
     python_requires=">=3.6, <4",
-    install_requires=["matplotlib", "numpy", "packaging", "tqdm"],
+    install_requires=["matplotlib", "numpy", "packaging", "tqdm", "aiocoap"],
     project_urls={
         "Source": "https://gitlab.com/nitk-nest/nest",
     },
