@@ -3,6 +3,16 @@ NeST RELEASE NOTES
 
 This file contains NeST release notes (most recent release first).
 
+Release 0.5-dev (Not yet available)
+============================
+
+If available, the numbers below mark the issue numbers on GitLab (prefixed by '#'),
+or GitLab merge request number (prefixed by '!').
+
+New user-visible features
+-------------------------
+- !153: Add support for CoAP simulation
+
 Release 0.4.1 (Mar 14, 2022)
 ============================
 
