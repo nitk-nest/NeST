@@ -4,8 +4,10 @@
 """Test APIs from topology sub-package"""
 
 import unittest
-from nest.topology import Node, connect
-from nest.experiment import Experiment, Flow
+from nest.topology import Node, Router, connect
+from nest.topology.network import Network
+from nest.topology.address_helper import AddressHelper
+from nest.experiment import Experiment, Flow, CoapFlow
 from nest.clean_up import delete_namespaces
 from nest.topology_map import TopologyMap
 import nest.config as config
@@ -72,6 +74,45 @@ class TestExperiment(unittest.TestCase):
         flow = Flow(n0, n1, n1_r.address, 0, 5, 2)
         exp.add_udp_flow(flow)
 
+        exp.run()
+
+    # Test `CoapFlow` API by generating GET and PUT CoAP traffic
+    def test_experiment_coap(self):
+        h1 = Node("h1")
+        h2 = Node("h2")
+        r = Router("r")
+
+        n1 = Network("192.168.1.0/24")
+        n2 = Network("192.168.3.0/24")
+
+        (eth1, etr1) = connect(h1, r, network=n1)
+        (etr2, eth2) = connect(r, h2, network=n2)
+
+        AddressHelper.assign_addresses()
+
+        eth1.set_attributes("1000mbit", "1ms")
+        etr1.set_attributes("1000mbit", "1ms")
+        etr2.set_attributes("1000mbit", "1ms")
+        eth2.set_attributes("1000mbit", "1ms")
+
+        h1.add_route("DEFAULT", eth1)
+        h2.add_route("DEFAULT", eth2)
+
+        exp = Experiment("test-experiment-coap")
+
+        # Number of CON and NON messages to send
+        n_con_msgs = 10
+        n_non_msgs = 10
+
+        # Configure a flow from `h1` to `h2`.
+        flow_get = CoapFlow(h1, h2, eth2.get_address(), n_con_msgs, n_non_msgs)
+        flow_put = CoapFlow(h1, h2, eth2.get_address(), n_con_msgs, n_non_msgs)
+
+        # Add the above flows as CoAP flows to the current experiment
+        exp.add_coap_flow(flow_get)
+        exp.add_coap_flow(flow_put)
+
+        # Run the experiment
         exp.run()
 
     def test_experiment_ipv6(self):
