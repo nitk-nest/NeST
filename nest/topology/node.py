@@ -311,7 +311,7 @@ class Node:
     @ipv6_dad_check
     @input_validator
     def ping(
-        self, destination_address: Address, packets: int = 5, verbose: bool = True
+        self, destination_address: Address, preload: int = 1,  packets: int = 5, verbose: bool = True
     ):
         """
         Ping from current `Node` to destination address
@@ -321,6 +321,9 @@ class Node:
         ----------
         destination_address: Address/str
             IP address to ping to
+        preload: int (Default is 1)
+            Number of packets send as fast as possible without 
+            waiting for reply.
         packets: int
             Number of ping packets sent
         verbose: bool
@@ -346,6 +349,7 @@ class Node:
         status = engine.ping(
             self.id,
             destination_address.get_addr(with_subnet=False),
+            preload,
             packets,
             destination_address.is_ipv6(),
             live_output=verbose,

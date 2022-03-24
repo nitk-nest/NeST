@@ -6,7 +6,7 @@
 from .exec import exec_exp_commands, exec_subprocess, exec_subprocess_with_live_output
 
 
-def ping(ns_name, dest_addr, packets=1, ipv6=False, live_output=True):
+def ping(ns_name, dest_addr, preload = 1, packets=1, ipv6=False, live_output=True):
     """
     Send a ping packet from ns_name to dest_addr
     if possible
@@ -17,6 +17,9 @@ def ping(ns_name, dest_addr, packets=1, ipv6=False, live_output=True):
         namespace name
     dest_addr : str
         address to ping to
+    preload: int (Default is 1)
+        Number of packets send as fast as possible without
+        waiting for reply. 
     packets : int
         Number of ping packets sent (default: 1)
     live_output : bool
@@ -30,20 +33,20 @@ def ping(ns_name, dest_addr, packets=1, ipv6=False, live_output=True):
     if live_output:
         if ipv6:
             status = exec_subprocess_with_live_output(
-                f"ip netns exec {ns_name} ping -6 -c {packets} {dest_addr}"
+                f"ip netns exec {ns_name} ping -6 -l {preload} -c {packets} {dest_addr}"
             )
         else:
             status = exec_subprocess_with_live_output(
-                f"ip netns exec {ns_name} ping -c {packets} {dest_addr}"
+                f"ip netns exec {ns_name} ping -l {preload} -c {packets} {dest_addr}"
             )
     else:
         if ipv6:
             status = exec_subprocess(
-                f"ip netns exec {ns_name} ping -6 -c {packets} {dest_addr}"
+                f"ip netns exec {ns_name} ping -6 -l {preload} -c {packets} {dest_addr}"
             )
         else:
             status = exec_subprocess(
-                f"ip netns exec {ns_name} ping -c {packets} {dest_addr}"
+                f"ip netns exec {ns_name} ping -l {preload} -c {packets} {dest_addr}"
             )
     return status == 0
 
