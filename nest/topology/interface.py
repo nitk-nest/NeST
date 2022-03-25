@@ -342,6 +342,25 @@ class Interface:
 
         self._veth_end.change_qdisc("11:", "netem", **loss_parameter)
 
+    @input_validator
+    def set_packet_duplication(self, duplicate_rate: Percentage):
+        """
+        Using this option the chosen percent of packets is duplicated
+        before queuing them.
+
+        Paramters
+        ----------
+        duplicate_rate: Percentage
+            rate of packets to get duplicated.
+
+        """
+
+        self._veth_end.set_structure()
+
+        duplicate_parameter = {"duplicate": duplicate_rate.string_value}
+
+        self._veth_end.change_qdisc("11:", "netem", **duplicate_parameter)
+
     def set_qdisc(self, qdisc, **kwargs):
         """
         Adds the Queueing algorithm to the interface
