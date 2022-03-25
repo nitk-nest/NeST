@@ -5,8 +5,8 @@
 
 from .exec import exec_exp_commands, exec_subprocess, exec_subprocess_with_live_output
 
-
-def ping(ns_name, dest_addr, preload = 1, packets=1, ipv6=False, live_output=True):
+# pylint: disable=too-many-arguments
+def ping(ns_name, dest_addr, preload=1, packets=1, ipv6=False, live_output=True):
     """
     Send a ping packet from ns_name to dest_addr
     if possible
@@ -18,8 +18,8 @@ def ping(ns_name, dest_addr, preload = 1, packets=1, ipv6=False, live_output=Tru
     dest_addr : str
         address to ping to
     preload: int (Default is 1)
-        Number of packets send as fast as possible without
-        waiting for reply. 
+        Number of packets sent as fast as possible without
+        waiting for reply.
     packets : int
         Number of ping packets sent (default: 1)
     live_output : bool
