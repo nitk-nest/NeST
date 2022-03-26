@@ -238,7 +238,8 @@ class TestTopology(unittest.TestCase):
         self.assertEqual(
             log.output,
             [
-                "WARNING:nest.topology.device:Cannot delete an address that is not assigned. (10.0.0.1/24)"
+                "WARNING:nest.topology.device:Cannot delete an address "
+                "that is not assigned. (10.0.0.1/24)"
             ],
         )
 

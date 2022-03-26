@@ -234,17 +234,6 @@ class Interface:
         """
         return self._veth_end.get_address(ipv4, ipv6, as_list)
 
-    def set_address(self, address):
-        """
-        Assigns IP address/addresses to an interface
-
-        Parameters
-        ----------
-        address : Address/str or List[Address/str]
-            IP address to be assigned to the interface
-        """
-        self._veth_end.set_address(address)
-
     def disable_ip_dad(self):
         """
         Disables Duplicate addresses Detection (DAD) for an interface.

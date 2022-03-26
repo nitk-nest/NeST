@@ -88,6 +88,7 @@ class RoutingHelper:
             raise NotImplementedError(
                 "Static routing is yet to be implemented. Use rip, ospf or isis"
             )
+
         if protocol not in ["rip", "ospf", "isis"]:
             raise ValueError(
                 f"Supported routing protocols are rip, ospf and isis, "
@@ -114,6 +115,8 @@ class RoutingHelper:
             self.hosts = hosts
             self.routers = routers
 
+        self._check_for_multiple_addresses_assigned()
+
         self.ldp_routers = ldp_routers if ldp_routers is not None else []
         self.conf_dir = None
         self.log_dir = None
@@ -125,6 +128,19 @@ class RoutingHelper:
         self.ldp_list = []
 
         atexit.register(self._clean_up)
+
+    def _check_for_multiple_addresses_assigned(self):
+        """
+        Check if any interface has multiple addresses assigned.
+        """
+        nodes = self.hosts + self.routers
+        for node in nodes:
+            for interface in node.interfaces:
+                if len(interface.get_address(True, True, True)) > 1:
+                    raise NotImplementedError(
+                        "RoutingHelper doesn't support multiple addresses "
+                        "being assigned to interfaces."
+                    )
 
     def populate_routing_tables(self):
         """

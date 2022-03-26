@@ -19,10 +19,11 @@ def assign_ip(host_name, dev_name, ip_address):
     ip_address : str
         ip address to be assigned to the interface
     """
-    
+
     exec_subprocess(
         f"ip netns exec {host_name} ip address add {ip_address} dev {dev_name}"
     )
+
 
 def delete_ip(host_name, dev_name, ip_address):
     """

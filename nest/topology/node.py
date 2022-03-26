@@ -107,7 +107,13 @@ class Node:
             IP address of next hop Node (or router), by default ''
         """
         if next_hop_addr is None:
-            next_hop_addr = via_interface.pair.address
+            via_interface_addresses = via_interface.pair.get_address(True, True, True)
+            if len(via_interface_addresses) > 1:
+                raise ValueError(
+                    "Please provide the next_hop_addr parameter, since the other"
+                    " end of the interface has multiple addresses assigned to it."
+                )
+            next_hop_addr = via_interface_addresses[0]
 
         dest_addr_str = ""
         if dest_addr.is_subnet():

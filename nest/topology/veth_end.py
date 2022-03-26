@@ -5,11 +5,8 @@
 
 import logging
 import nest.config as config
-from nest.exception import NestBaseException
-import nest.global_variables as g_var
 from nest import engine
 from .device import Device
-from .address import Address
 
 logger = logging.getLogger(__name__)
 
@@ -203,5 +200,3 @@ def valid_offloads(offload_name):
         if not offload_type in offloads_list:
             logger.error("Invalid offload")
             raise ValueError(f"{offload_type} is not a valid offload")
-
-

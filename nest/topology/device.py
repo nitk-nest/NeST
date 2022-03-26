@@ -10,8 +10,8 @@ from nest.topology.id_generator import IdGen
 from nest.topology.traffic_control import TrafficControlHandler
 from nest import engine
 import nest.global_variables as g_var
-from .address import Address
 from nest.exception import NestBaseException
+from .address import Address
 
 logger = logging.getLogger(__name__)
 
@@ -282,7 +282,7 @@ class Device:
             if deleted is None:
                 addrs = addr.get_addr()
                 logger.warning(
-                    "Cannot delete an address that is not assigned. ({})".format(addrs)
+                    "Cannot delete an address that is not assigned. (%s)", addrs
                 )
 
     def add_qdisc(self, qdisc, parent="root", handle="", **kwargs):
@@ -426,6 +426,7 @@ class Device:
     def __repr__(self):
         classname = self.__class__.__name__
         return f"{classname}({self.name!r})"
+
 
 class DeviceNotPartOfNodeError(NestBaseException):
     """
