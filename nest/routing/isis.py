@@ -14,8 +14,10 @@ class Isis(RoutingDaemonBase):
     Handles IS-IS related functionalities.
     """
 
-    def __init__(self, router_ns_id, interfaces, conf_dir, **kwargs):
-        super().__init__(router_ns_id, interfaces, "isisd", conf_dir, **kwargs)
+    def __init__(self, router_ns_id, ipv6_routing, interfaces, conf_dir, **kwargs):
+        super().__init__(
+            router_ns_id, ipv6_routing, interfaces, "isisd", conf_dir, **kwargs
+        )
 
     def create_basic_config(self):
         """
@@ -28,20 +30,21 @@ class Isis(RoutingDaemonBase):
             int(
                 hashlib.sha256(
                     self.interfaces[0]
-                    .address.get_addr(with_subnet=False)
+                    .get_address(not self.ipv6_routing, self.ipv6_routing, True)[0]
+                    .get_addr(with_subnet=False)
                     .encode("utf-8")
                 ).hexdigest(),
                 16,
             )
         )[:12]
-        system_id = ".".join(map("".join, zip(*[iter(system_id_hash)] * 4)))
 
+        system_id = ".".join(map("".join, zip(*[iter(system_id_hash)] * 4)))
         self.add_to_config(f"router isis {self.router_ns_id}")
         self.add_to_config("is-type level-1")
         self.add_to_config(f"net {area_id}.{system_id}.00")
         for interface in self.interfaces:
             self.add_to_config(f"interface {interface.id}")
-            if self.ipv6:
+            if self.ipv6_routing:
                 self.add_to_config(f" ipv6 router isis {self.router_ns_id}")
             else:
                 self.add_to_config(f" ip router isis {self.router_ns_id}")

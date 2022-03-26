@@ -9,21 +9,25 @@ from nest.engine.dynamic_routing import run_ospfd
 from nest.routing.route_daemons import RoutingDaemonBase
 from nest import config
 
+# pylint: disable=line-too-long
+
 
 class Ospf(RoutingDaemonBase):
     """
     Handles OSPF related functionalities.
     """
 
-    def __init__(self, router_ns_id, interfaces, conf_dir, **kwargs):
-        super().__init__(router_ns_id, interfaces, "ospfd", conf_dir, **kwargs)
+    def __init__(self, router_ns_id, ipv6_routing, interfaces, conf_dir, **kwargs):
+        super().__init__(
+            router_ns_id, ipv6_routing, interfaces, "ospfd", conf_dir, **kwargs
+        )
 
     def create_basic_config(self):
         """
         Creates a file with basic configuration for OSPF.
         Use base `add_to_config` directly for more complex configurations
         """
-        if self.ipv6:
+        if self.ipv6_routing:
             for interface in self.interfaces:
                 self.add_to_config(f"interface {interface.id}")
                 # send hello packets every 1 second for faster convergence
@@ -51,11 +55,11 @@ class Ospf(RoutingDaemonBase):
 
             self.add_to_config("router ospf")
             self.add_to_config(
-                f"ospf router-id {self.interfaces[0].address.get_addr(with_subnet=False)}"
+                f"ospf router-id {self.interfaces[0].get_address(not self.ipv6_routing, self.ipv6_routing, True)[0].get_addr(with_subnet=False)}"
             )
             for interface in self.interfaces:
                 self.add_to_config(
-                    f" network {interface.address.get_subnet()} area 0.0.0.0"
+                    f" network {interface.get_address(not self.ipv6_routing, self.ipv6_routing, True)[0].get_subnet()} area 0.0.0.0"
                 )
 
         if self.log_file is not None:
@@ -69,6 +73,10 @@ class Ospf(RoutingDaemonBase):
         """
         super().run(
             engine_func=partial(
-                run_ospfd, self.router_ns_id, self.conf_file, self.pid_file, self.ipv6
+                run_ospfd,
+                self.router_ns_id,
+                self.conf_file,
+                self.pid_file,
+                self.ipv6_routing,
             )
         )

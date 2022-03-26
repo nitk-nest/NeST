@@ -15,8 +15,10 @@ class Zebra(RoutingDaemonBase):
     Refer to `DaemonBase` for usage
     """
 
-    def __init__(self, router_ns_id, interfaces, conf_dir, **kwargs):
-        super().__init__(router_ns_id, interfaces, "zebra", conf_dir, **kwargs)
+    def __init__(self, router_ns_id, ipv6_routing, interfaces, conf_dir, **kwargs):
+        super().__init__(
+            router_ns_id, ipv6_routing, interfaces, "zebra", conf_dir, **kwargs
+        )
 
     def add_interface(self, interface):
         """
@@ -28,7 +30,7 @@ class Zebra(RoutingDaemonBase):
         """
         Add IP address command to config file
         """
-        if self.ipv6:
+        if self.ipv6_routing:
             self.add_to_config(f" ipv6 address {ip_address}")
         else:
             self.add_to_config(f" ip address {ip_address}")
@@ -44,7 +46,18 @@ class Zebra(RoutingDaemonBase):
         self.add_to_config(" no shutdown")
         for interface in self.interfaces:
             self.add_interface(interface.id)
-            self.add_ip_address(interface.address.get_addr())
+            for i in range(
+                len(
+                    interface.get_address(
+                        not self.ipv6_routing, self.ipv6_routing, True
+                    )
+                )
+            ):
+                self.add_ip_address(
+                    interface.get_address(
+                        not self.ipv6_routing, self.ipv6_routing, True
+                    )[i].get_addr()
+                )
         if self.log_file is not None:
             self.add_to_config(f"log file {self.log_file}")
 

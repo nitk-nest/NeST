@@ -14,14 +14,16 @@ class Rip(RoutingDaemonBase):
     Refer to `DaemonBase` for usage
     """
 
-    def __init__(self, router_ns_id, interfaces, conf_dir, **kwargs):
-        super().__init__(router_ns_id, interfaces, "ripd", conf_dir, **kwargs)
+    def __init__(self, router_ns_id, ipv6_routing, interfaces, conf_dir, **kwargs):
+        super().__init__(
+            router_ns_id, ipv6_routing, interfaces, "ripd", conf_dir, **kwargs
+        )
 
     def add_rip(self):
         """
         Add command to enable RIP on router to config file
         """
-        if self.ipv6:
+        if self.ipv6_routing:
             self.add_to_config("router ripng")
         else:
             self.add_to_config("router rip")
@@ -54,6 +56,10 @@ class Rip(RoutingDaemonBase):
         """
         super().run(
             engine_func=partial(
-                run_ripd, self.router_ns_id, self.conf_file, self.pid_file, self.ipv6
+                run_ripd,
+                self.router_ns_id,
+                self.conf_file,
+                self.pid_file,
+                self.ipv6_routing,
             )
         )

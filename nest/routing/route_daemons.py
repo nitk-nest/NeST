@@ -14,6 +14,7 @@ from nest import config
 from nest.logging_helper import DepedencyCheckFilter, DuplicateRoutingLogsFilter
 
 # pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-arguments
 
 
 class RoutingDaemonBase(ABC):
@@ -45,9 +46,14 @@ class RoutingDaemonBase(ABC):
         pid file path for the daemon process
     interfaces : List[Interface]
         interfaces present in the router
+    ipv6_routing: bool
+        True for routing IPv6 interfaces, False otherwise.
+        Default value is set to False.
     """
 
-    def __init__(self, router_ns_id, interfaces, daemon, conf_dir, **kwargs):
+    def __init__(
+        self, router_ns_id, ipv6_routing, interfaces, daemon, conf_dir, **kwargs
+    ):
         """
         Parameters
         ----------
@@ -89,7 +95,7 @@ class RoutingDaemonBase(ABC):
             )
             self.log_file = f"{kwargs['log_dir']}/{self.router_ns_id}_{daemon}.log"
         self.interfaces = interfaces
-        self.ipv6 = interfaces[0].address.is_ipv6()
+        self.ipv6_routing = ipv6_routing
 
     @abstractmethod
     def create_basic_config(self):

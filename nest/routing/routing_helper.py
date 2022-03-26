@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 
 # pylint:disable=too-few-public-methods
 # pylint:disable=too-many-instance-attributes
+# pylint:disable=too-many-arguments
 
 
 class RoutingHelper:
@@ -50,6 +51,9 @@ class RoutingHelper:
         path for config directory of daemons
     protocol_class : ABCMeta
         Protocol class which will later be instantiated
+    ipv6_routing: bool
+        True for routing IPv6 interfaces, False otherwise.
+        Default value is set to False.
     """
 
     _module_map = {
@@ -63,6 +67,7 @@ class RoutingHelper:
     def __init__(
         self,
         protocol: str,
+        ipv6_routing: bool = False,
         hosts: List[Node] = None,
         routers: List[Node] = None,
         ldp_routers: List[Node] = None,
@@ -76,6 +81,9 @@ class RoutingHelper:
         ----------
         protocol: str
             routing protocol to be run. One of [ospf, rip, isis]
+        ipv6_routing: bool
+            True for routing IPv6 interfaces, False otherwise.
+            Default value is set to False.
         hosts: List[Node]
             List of hosts in the network. If `None`, considers the entire topology.
             Use this if your topology has disjoint networks
@@ -99,6 +107,7 @@ class RoutingHelper:
         self._is_node_list("routers", routers)
         self._is_node_list("ldp_routers", ldp_routers)
 
+        self.ipv6_routing = ipv6_routing
         self.hosts = []
         self.routers = []
         if routers is None and hosts is None:
@@ -113,8 +122,6 @@ class RoutingHelper:
             self.hosts = hosts
             self.routers = routers
 
-        self._check_for_multiple_addresses_assigned()
-
         self.ldp_routers = ldp_routers if ldp_routers is not None else []
         self.conf_dir = None
         self.log_dir = None
@@ -126,19 +133,6 @@ class RoutingHelper:
         self.ldp_list = []
 
         atexit.register(self._clean_up)
-
-    def _check_for_multiple_addresses_assigned(self):
-        """
-        Check if any interface has multiple addresses assigned.
-        """
-        nodes = self.hosts + self.routers
-        for node in nodes:
-            for interface in node.interfaces:
-                if len(interface.get_address(True, True, True)) > 1:
-                    raise NotImplementedError(
-                        "RoutingHelper doesn't support multiple addresses "
-                        "being assigned to interfaces."
-                    )
 
     def populate_routing_tables(self):
         """
@@ -203,13 +197,22 @@ class RoutingHelper:
         Setup default routes in hosts
         """
         for host in self.hosts:
-            host.add_route("DEFAULT", host.interfaces[0])
+            host.add_route(
+                "DEFAULT",
+                host.interfaces[0],
+                host.interfaces[0].pair.get_address(
+                    not self.ipv6_routing, self.ipv6_routing, True
+                )[0],
+            )
 
     def _run_dyn_routing(self):
         """
         Run zebra and `self.protocol`
         """
-        logger.info("Running zebra and %s on routers", self.protocol)
+        if self.ipv6_routing:
+            logger.info("Running zebra and %s on routers (IPv6)", self.protocol)
+        else:
+            logger.info("Running zebra and %s on routers", self.protocol)
         self.conf_dir = self._create_conf_directory()
         if config.get_value("routing_logs"):
             self.log_dir = self._create_log_directory()
@@ -225,7 +228,13 @@ class RoutingHelper:
         """
         Create required config file and run zebra
         """
-        zebra = Zebra(router.id, router.interfaces, self.conf_dir, log_dir=self.log_dir)
+        zebra = Zebra(
+            router.id,
+            self.ipv6_routing,
+            router.interfaces,
+            self.conf_dir,
+            log_dir=self.log_dir,
+        )
         zebra.create_basic_config()
         zebra.run()
         self.zebra_list.append(zebra)
@@ -235,7 +244,11 @@ class RoutingHelper:
         Create required config file and run `self.protocol`
         """
         protocol = self.protocol_class(
-            router.id, router.interfaces, self.conf_dir, log_dir=self.log_dir
+            router.id,
+            self.ipv6_routing,
+            router.interfaces,
+            self.conf_dir,
+            log_dir=self.log_dir,
         )
         protocol.create_basic_config()
         protocol.run()
@@ -270,10 +283,15 @@ class RoutingHelper:
             converged = True
             for i in range(len(self.hosts)):
                 for j in range(i + 1, len(self.hosts)):
-                    if not self.hosts[i].ping(
-                        self.hosts[j].interfaces[0].address.get_addr(), verbose=0
+                    for k_addr in (
+                        self.hosts[j]
+                        .interfaces[0]
+                        .get_address(not self.ipv6_routing, self.ipv6_routing, True)
                     ):
-                        converged = False
+                        if not self.hosts[i].ping(k_addr.get_addr(), verbose=0):
+                            converged = False
+                            break
+                    if not converged:
                         break
                 if not converged:
                     break
