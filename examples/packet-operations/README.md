@@ -25,7 +25,14 @@ This program emulates point to point networks that connect two hosts `h1` and
 the emulation of random noise to introduce an error at a random position
 for a chosen percentage of packets.
 
-## 3. packet-loss-point-to-point-3.py
+## 3. packet-duplication-point-to-point-3.py
+This program emulates point to point networks that connect two hosts `h1` and
+`h2` via two routers `r1` and `r2`. 20 ping packets are sent from `h1` to
+`h2`, and the success/failure of these packets is reported. It is similar to
+`ah-point-to-point-3.py` in `examples/address-helpers`. This program shows
+the emulation of packet duplication for a chosen percentage of packets.
+
+## 4. packet-loss-point-to-point-3.py
 This program emulates point to point networks that connect two hosts `h1` and
 `h2` via two routers `r1` and `r2`. 20 ping packets are sent from `h1` to
 `h2`, and the success/failure of these packets is reported. It is similar to

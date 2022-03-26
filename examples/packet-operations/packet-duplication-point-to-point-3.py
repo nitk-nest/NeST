@@ -12,12 +12,12 @@ from nest.topology.address_helper import AddressHelper
 # `h2` via two routers `r1` and `r2`. 20 ping packets are sent from `h1` to
 # `h2`, and the success/failure of these packets is reported. It is similar to
 # `ah-point-to-point-3.py` in `examples/address-helpers`. This program shows
-# the emulation of packet duplicate for a chosen percentage of packets.
+# the emulation of packet duplication for a chosen percentage of packets.
 
 ##############################################################################
 #                              Network Topology                              #
 #                                                                            #
-#                           Duplicate rate: 20%                              #
+#                           Duplication rate: 20%                            #
 #                                                                            #
 #        5mbit, 5ms -->         5mbit, 5ms -->           5mbit, 5ms -->      #
 # h1 -------------------- r1 -------------------- r2 -------------------- h2 #
@@ -62,8 +62,7 @@ eth2.set_attributes("10mbit", "100ms")  # from `h2` to `r2`
 etr2a.set_attributes("10mbit", "100ms")  # from `r2` to `r1`
 etr1a.set_attributes("10mbit", "100ms")  # from `r1` to `h1`
 
-# Set a packet duplicate rate of 20%
-# on the link from `r1` to `r2`.
+# Set the packet duplication rate to 20% on the link from `r1` to `r2`.
 etr1b.set_packet_duplication("20%")
 
 # Set default routes in `h1` and `h2`. Additionally, set default routes in
@@ -75,7 +74,7 @@ r1.add_route("DEFAULT", etr1b)
 r2.add_route("DEFAULT", etr2a)
 
 # `Ping` from `h1` to `h2`.
-# Note: You may not see a packet duplicate rate of 20% because we transmit only 20
-# ping packets in this example. If we transmit large number of ping packets,
-# the average packet duplicate rate observed would be 20%.
+# Note: We may not see a packet duplication rate of 20% because we transmit
+# only 20 ping packets in this example. If we transmit large number of ping
+# packets, the average packet duplication rate observed would be 20%.
 h1.ping(eth2.address, packets=20)
