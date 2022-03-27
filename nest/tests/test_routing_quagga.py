@@ -64,6 +64,21 @@ class TestQuagga(unittest.TestCase):
         status = self.n1.ping("10.0.1.1", verbose=False)
         self.assertTrue(status)
 
+    def test_check_for_multiple_addresses_assigned(self):
+        (n0_n1, n1_n0) = connect(self.n0, self.n1)
+
+        n0_n1.set_address(["10.0.0.1/24", "10.0.0.2/24"])
+        n1_n0.set_address("10.0.0.3/24")
+
+        with self.assertRaises(NotImplementedError) as ex:
+            RoutingHelper("isis").populate_routing_tables()
+
+        self.assertEqual(
+            str(ex.exception),
+            "RoutingHelper doesn't support multiple addresses "
+            "being assigned to interfaces.",
+        )
+
     def test_ospf(self):
         self.routing_helper = RoutingHelper("ospf")
         self.routing_helper.populate_routing_tables()
