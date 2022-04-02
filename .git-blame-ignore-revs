@@ -12,3 +12,6 @@ f9062ca638d41a9bb1cb7fccc67ff0d4e8ef1e27
 
 # docs: Update indent size from 3 to 4 spaces
 6178d6c5a6406b75aec7175bdacd9227d7394e6a
+
+# lint: Update pylint version
+273347304cdf3daf2451ceed767eef8cd0cb5853
