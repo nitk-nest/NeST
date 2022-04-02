@@ -10,7 +10,7 @@ from nest.topology.veth_end import VethEnd
 from nest.topology.ifb import Ifb
 from nest.topology.network import Network
 from nest import engine
-import nest.config as config
+from nest import config
 
 # pylint: disable=cyclic-import
 from nest import topology

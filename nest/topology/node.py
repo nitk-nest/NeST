@@ -10,7 +10,7 @@ import logging
 from nest import topology
 from nest import engine
 from nest.topology_map import TopologyMap
-import nest.config as config
+from nest import config
 from nest.network_utilities import ipv6_dad_check
 import nest.global_variables as g_var
 from nest.input_validator import input_validator

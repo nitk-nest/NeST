@@ -148,8 +148,8 @@ class Iperf3Runner(Runner):
         # to netperf), so that plotter code can be reused
 
         stats_dict_list = {}
-        for socket in connection_info:
-            local_port = connection_info[socket]["local_port"]
+        for socket, socket_info in connection_info.items():
+            local_port = socket_info["local_port"]
             stats_dict_list[local_port] = [self.get_meta_item()]
 
         if len(stats_dict_list) > 1:

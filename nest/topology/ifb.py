@@ -4,7 +4,7 @@
 """API related to creation of IFB for qdiscs in topology"""
 
 import logging
-import nest.config as config
+from nest import config
 from nest import engine
 from nest.topology.device import Device
 

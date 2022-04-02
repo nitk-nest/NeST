@@ -4,7 +4,7 @@
 """API related to device creation in topology"""
 
 import logging
-import nest.config as config
+from nest import config
 from nest.topology_map import TopologyMap
 from nest.topology.id_generator import IdGen
 from nest.topology.traffic_control import TrafficControlHandler

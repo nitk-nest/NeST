@@ -7,7 +7,7 @@ import random
 from functools import partial
 from nest.engine.dynamic_routing import run_ospfd
 from nest.routing.route_daemons import RoutingDaemonBase
-import nest.config as config
+from nest import config
 
 
 class Ospf(RoutingDaemonBase):

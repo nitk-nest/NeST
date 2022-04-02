@@ -43,8 +43,8 @@ def _extract_from_tc_stats(stats, node, interface):
             stats_params[param] = []
 
     for data in stats:
-        for param in stats_params:
-            stats_params[param].append(data[param])
+        for param, param_data in stats_params.items():
+            param_data.append(data[param])
         relative_time = float(data["timestamp"]) - start_time
         timestamp.append(relative_time)
 

@@ -71,8 +71,7 @@ def input_validator(func):
 
         # Default values are not checked here, it is assumed that correct
         # values are passed for default parameters
-        for kwarg_name in kwargs:
-            kwarg_value = kwargs[kwarg_name]
+        for kwarg_name, kwarg_value in kwargs.items():
             casted_kwarg_value = kwarg_value
             if kwarg_name in annotations:
                 casted_kwarg_value = validate_input_and_cast(

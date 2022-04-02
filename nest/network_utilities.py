@@ -5,7 +5,7 @@
 
 import functools
 from time import sleep
-import nest.config as config
+from nest import config
 import nest.global_variables as g_var
 from nest.topology_map import TopologyMap
 from nest.engine.ipv6_states import check_ipv6_states

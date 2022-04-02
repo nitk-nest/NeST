@@ -10,7 +10,7 @@ from nest.topology.address_helper import AddressHelper
 from nest.experiment import Experiment, Flow, CoapFlow
 from nest.clean_up import delete_namespaces
 from nest.topology_map import TopologyMap
-import nest.config as config
+from nest import config
 
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name

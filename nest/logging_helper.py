@@ -36,11 +36,11 @@ def add_logging_level(level_name, level_num, method_name=None):
         method_name = level_name.lower()
 
     if hasattr(logging, level_name):
-        raise AttributeError("{} already defined in logging module".format(level_name))
+        raise AttributeError(f"{level_name} already defined in logging module")
     if hasattr(logging, method_name):
-        raise AttributeError("{} already defined in logging module".format(method_name))
+        raise AttributeError(f"{method_name} already defined in logging module")
     if hasattr(logging.getLoggerClass(), method_name):
-        raise AttributeError("{} already defined in logger class".format(method_name))
+        raise AttributeError(f"{method_name} already defined in logger class")
 
     def log_for_level(self, message, *args, **kwargs):
         if self.isEnabledFor(level_num):
@@ -80,7 +80,7 @@ def update_nest_logger(level):
         log level from config
     """
     nest_logger = logging.getLogger(
-        __name__.split(".")[0]
+        __name__.split(".", maxsplit=1)[0]
     )  # get the root's child logger
     nest_logger.setLevel(level)  # Update logger level
     # Update handler level

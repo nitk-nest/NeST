@@ -183,10 +183,10 @@ class TcRunner(Runner):
         if match.group(1):
             if match.group(1).endswith(","):
                 value = repr(match.group(1))
-                return ':"{}",'.format(value)
+                return f':"{value}",'
 
             value = repr(match.group(1))
-            return ':"{}"'.format(value)
+            return f':"{value}"'
         return ""
 
     def clean_json(self, stats):
@@ -332,6 +332,7 @@ class TcRunner(Runner):
             current tc version as date
         """
         cur_tc_version = get_tc_version()
+        # pylint: disable=use-maxsplit-arg
         cur_tc_version = "20" + cur_tc_version.split(" ")[-1][-7:].strip()
         return strptime(cur_tc_version, "%Y%m%d")
 

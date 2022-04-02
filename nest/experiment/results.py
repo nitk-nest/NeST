@@ -81,7 +81,7 @@ class Results:
         results = Results.get_results(results_q)
         if results:
             json_stats = json.dumps(results, indent=4)
-            Pack.dump_file("{}.json".format(toolname), json_stats)
+            Pack.dump_file(f"{toolname}.json", json_stats)
 
 
 # Shared variables to aggregate results

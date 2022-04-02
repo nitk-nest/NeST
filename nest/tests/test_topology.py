@@ -10,7 +10,7 @@ from nest.topology import Node, connect, Switch, Router, Address
 from nest.clean_up import delete_namespaces
 from nest.topology_map import TopologyMap
 from nest.topology.interface import Interface
-import nest.config as config
+from nest import config
 
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name

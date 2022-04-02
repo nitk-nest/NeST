@@ -26,9 +26,7 @@ class Pack:
             Name of experiment
         """
         timestamp = time.strftime("%d-%m-%Y-%H:%M:%S")
-        Pack.FOLDER = "{exp_name}({timestamp})_dump".format(
-            exp_name=exp_name, timestamp=timestamp
-        )
+        Pack.FOLDER = f"{exp_name}({timestamp})_dump"
         os.mkdir(Pack.FOLDER)
         Pack.set_owner(Pack.FOLDER)
 

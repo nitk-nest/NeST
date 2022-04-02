@@ -9,7 +9,7 @@
 import argparse
 import asyncio
 
-import aiocoap.resource as resource
+from aiocoap import resource
 import aiocoap
 
 

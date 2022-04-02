@@ -125,11 +125,11 @@ def _extract_from_ss_flow(flow, node, dest_ip, dest_port):
         flow_params[param] = []
 
     for data in flow[1:]:
-        for stat in flow_params:
+        for stat, stat_data in flow_params.items():
             if stat in data:
-                flow_params[stat].append(float(data[stat]))
+                stat_data.append(float(data[stat]))
             else:
-                flow_params[stat].append(None)
+                stat_data.append(None)
         relative_time = float(data["timestamp"]) - start_time
         timestamp.append(relative_time)
 

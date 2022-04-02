@@ -4,7 +4,7 @@
 """API related to creation of virtual ethernet devices in topology"""
 
 import logging
-import nest.config as config
+from nest import config
 from nest import engine
 from .device import Device
 
