@@ -11,9 +11,11 @@ from nest.topology.address_helper import AddressHelper
 
 # This program emulates point to point networks that connect two hosts `h1`
 # and `h2` via two routers `r1` and `r2`. It is similar to the
-# udp-point-to-point-3.py example in `examples/udp`. Instead of
-# `ping`, one CoAP flow is configured from `h1` to `h2`. The links between
-# `h1` to `r1` and between `r2` to `h2` are edge links.
+# `udp-point-to-point-3.py` example in `examples/udp`. Instead of a UDP flow,
+# two CoAP flows are configured from `h1` to `h2`, one for sending the GET
+# requests and another for sending the PUT requests. `h1` acts as a CoAP client
+# and `h2` acts as a CoAP server. Address helper is used in this program to
+# assign IPv4 addresses.
 
 ##############################################################################
 #                              Network Topology                              #
@@ -24,10 +26,15 @@ from nest.topology.address_helper import AddressHelper
 #                                                                            #
 ##############################################################################
 
-# This program sends 40 CoAP messages through two flows and creates a new
-# directory called `coap-point-to-point-3(date-timestamp)_dump`. It contains
-# a `README` which provides details about the sub-directories and files
-# within this directory.
+# This program sends a total of 40 CoAP messages: 20 are GET requests and 20
+# are PUT requests. Out of 20 messages that form the GET requests, 10 are
+# confirmable messages (CON) and 10 are non-confirmable messages (NON). It is
+# the same for 20 messages that form the PUT requests. The number of CON and
+# NON messages can be configured with two variables `n_con_msgs` and
+# `n_non_msgs`, respectively. The results obtained from this program are stored
+# in a new directory called `coap-point-to-point-3(date-timestamp)_dump`. It
+# contains a `README` which provides details about the sub-directories and
+# files within this directory.
 
 # Create two hosts `h1` and `h2`, and two routers `r1` and `r2`
 h1 = Node("h1")
@@ -75,46 +82,48 @@ r2.add_route("DEFAULT", etr2a)
 # Set up an Experiment. This API takes the name of the experiment as a string.
 exp = Experiment("coap-point-to-point-3")
 
-# The user options for the flow emulating a GET request.
+# Configure the user options for the flow that sends GET requests.
 #
-# Here, the timeout is for the `await` call when sending
-# a NON request. Since there is no guarantee of ever receiving
-# a response for a NON message, there needs to be a timeout period
-# after which there is a timeout error if the response hasn't
-# arrived.
+# Note: the `coap_non_timeout` parameter configured below is required for NON
+# messages only. In CoAP, NON messages are not acknowledged by the receiving
+# host, but if there is a `request` inside a NON message, the receiving host
+# sends a `response`. However, if the NON message gets dropped in the network,
+# the sender would never get a response. The `coap_non_timeout` parameter is
+# required in such cases.
 #
-# Setting a very low value for this will lead to an error since
-# the timeout period might end between the reception of the
-# empty ACK and the actual response for the NON message.
-user_options_get = {
-    "coap_server_content": "This is the user set content",
-    "coap_non_timeout": "5.0",
+# Setting a low value for `coap_non_timeout` parameter is not recommended
+# because the timeout might expire while the response is on its way to the
+# sender. The unit of `coap_non_timeout` parameters is seconds.
+user_options_flow_1 = {
+    "coap_request_type": "get",  # Set the request type to GET
+    "coap_server_content": "This is the payload when server responds to a GET request",
+    "coap_non_timeout": "5.0",  # Timeout associated with requests sent via NON
 }
 
-# The user options for the flow emulating a PUT request.
-user_options_put = {
-    "coap_request_type": "put",
-    "coap_message_payload": "This is the new message payload",
+# Configure the user options for the flow that sends PUT requests.
+user_options_flow_2 = {
+    "coap_request_type": "put",  # Set the request type to PUT
+    "coap_message_payload": "This is the payload when client sends the PUT request",
+    "coap_non_timeout": "5.0",  # Timeout associated with requests sent via NON
 }
 
-# These can be configured to set the number of CON and NON
-# messages sent in each flow.
+# Set the number of CON and NON messages to 10 each.
 n_con_msgs = 10
 n_non_msgs = 10
 
-# Configure a flow from `h1` to `h2`. Here, the number of CON and
-# NON messages is set to 10 each. The user options defined above are
-# provided to the flow as well.
-flow_get = CoapFlow(
-    h1, h2, eth2.get_address(), n_con_msgs, n_non_msgs, user_options_get
-)
-flow_put = CoapFlow(
-    h1, h2, eth2.get_address(), n_con_msgs, n_non_msgs, user_options_put
+# Configure two flows from `h1` to `h2`. `flow1` sends 20 GET requests (10 CON,
+# 10 NON) and `flow2` sends 20 PUT requests (10 CON, 10 NON).
+flow1 = CoapFlow(
+    h1, h2, eth2.get_address(), n_con_msgs, n_non_msgs, user_options_flow_1
 )
 
-# Add the above flows as CoAP flows to the current experiment
-exp.add_coap_flow(flow_get)
-exp.add_coap_flow(flow_put)
+flow2 = CoapFlow(
+    h1, h2, eth2.get_address(), n_con_msgs, n_non_msgs, user_options_flow_2
+)
+
+# Use both the flows as `CoAP` flows.
+exp.add_coap_flow(flow1)
+exp.add_coap_flow(flow2)
 
 # Run the experiment
 exp.run()
