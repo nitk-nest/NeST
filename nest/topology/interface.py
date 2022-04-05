@@ -4,6 +4,7 @@
 """API related to interfaces in topology"""
 
 import logging
+from nest.exceptions import DelayNotSetInInterface
 from nest.input_validator import input_validator
 from nest.input_validator.metric import Bandwidth, Delay, Percentage
 from nest.topology.veth_end import VethEnd
@@ -67,6 +68,7 @@ class Interface:
 
         # Track bandwidth
         self._bandwidth = None
+        self._delay = None
 
     @property
     def name(self):
@@ -310,6 +312,7 @@ class Interface:
         # TODO: Make adding delay possible without bandwidth being set
 
         self._veth_end.set_structure()
+        self._delay = delay.string_value
 
         delay_parameter = {"delay": delay.string_value}
 
@@ -388,6 +391,43 @@ class Interface:
         duplicate_parameter = {"duplicate": duplicate_rate.string_value}
 
         self._veth_end.change_qdisc("11:", "netem", **duplicate_parameter)
+
+    @input_validator
+    def set_packet_reorder(self, reorder_rate: Percentage, gap: int = None):
+        """
+        Adds reordering of packets configured on qdisc to outgoing packets
+        from one host to another.
+
+        Parameter
+        ---------
+        reorder_rate: Percentage
+            Percentage of packets to reorder
+        gap : int (Optional)
+            (gap - 1) packets will be delayed, and subsequent packets
+            will be sent immediately.
+        """
+
+        if self._delay is None:
+            raise DelayNotSetInInterface
+
+        reorder_parameter = {}
+
+        if gap is not None:
+            gap = f"{gap}"
+            reorder_parameter = {
+                "delay": self._delay,
+                "reorder": reorder_rate.string_value,
+                "gap": gap,
+            }
+        else:
+            reorder_parameter = {
+                "delay": self._delay,
+                "reorder": reorder_rate.string_value,
+            }
+
+        self._veth_end.set_structure()
+
+        self._veth_end.change_qdisc("11:", "netem", **reorder_parameter)
 
     def set_qdisc(self, qdisc, **kwargs):
         """

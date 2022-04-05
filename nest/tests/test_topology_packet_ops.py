@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2022 NITK Surathkal
-
 """Test APIs from topology packet operations"""
 
 import unittest
@@ -28,6 +27,18 @@ class TestTopologyPacketOps(unittest.TestCase):
         n0_n1.set_packet_duplication("20%")
 
         status = self.n0.ping("10.0.0.2")
+
+        self.assertTrue(status)
+
+    def test_packet_reordering(self):
+        (n0_n1, n1_n0) = connect(self.n0, self.n1)
+
+        n0_n1.set_address("10.0.0.1/24")
+        n1_n0.set_address("10.0.0.2/24")
+
+        n0_n1.set_packet_reorder("10ms", "20%", gap=5)
+
+        status = self.n0.ping("10.0.0.2", preload=10, packets=20)
 
         self.assertTrue(status)
 
