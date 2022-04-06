@@ -128,9 +128,9 @@ class TestIPv4AddressHelper(unittest.TestCase):
         r2_n1.set_address("2003:101::10:1/122")
         n1_r2.set_address("2003:101::10:2/122")
 
-        RoutingHelper(protocol="rip").populate_routing_tables()
+        RoutingHelper(protocol="rip", ipv6_routing=True).populate_routing_tables()
 
-        status = self.n0.ping(n1_r2.get_address(), verbose=0)
+        status = self.n0.ping(n1_r2.get_address(False, True, False), verbose=0)
 
         self.assertTrue(status)
 
