@@ -4,11 +4,10 @@
 """t_shark API management"""
 
 
-from platform import node
 from .exec import exec_subprocess
 
 
-def capture_packets(self, ns_name, **kwargs):
+def capture_packets(ns_name, **kwargs):
     """
     Executes packet capture using tshark
 

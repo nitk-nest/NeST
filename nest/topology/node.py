@@ -3,11 +3,9 @@
 
 """API related to node creation in topology"""
 
-from concurrent.futures import process
 import logging
 from multiprocessing.dummy import Process
 import time
-from tkinter.messagebox import NO
 
 from nest import engine
 from nest.topology.interface import BaseInterface, Interface
@@ -98,13 +96,8 @@ class Node:
         """
         Destructor for node objects
         """
-        for process in self.tshark_processes:
+        for process in self._tshark_processes:
             process.join()
-
-    @property
-    def tshark_processes(self):
-        """Getter for running tshark processes"""
-        return self._tshark_processes
 
     @input_validator
     def add_route(
@@ -439,6 +432,7 @@ class Node:
             interface_name = self._interfaces[i]
             interface_name.disable_ip_dad()
 
+    # pylint: disable=too-many-arguments
     @input_validator
     def capture_packets(
         self,
@@ -460,37 +454,30 @@ class Node:
 
         timestamp = time.strftime("%d-%m-%Y-%H:%M:%S")
 
-        if interface != None:
+        if interface is not None:
             kwargs["-i"] = interface.id
 
-        if packet_count != None:
+        if packet_count is not None:
             kwargs["-c"] = str(packet_count)
 
-        if timeout != None:
+        if timeout is not None:
             kwargs["-a"] = f"duration:{timeout}"
 
-        if output_file == None:
-            if interface == None:
+        if output_file is None:
+            if interface is None:
                 output_file = f"{self.name}_{timestamp}"
             else:
                 output_file = f"{self.name}_{interface.name}_{timestamp}"
         kwargs["-w"] = output_file
 
-        if output_format != None:
+        if output_format is not None:
             kwargs["-T"] = output_format
 
-        print(f"args={self.id} kwargs={kwargs}")
-
         t_shark_process = Process(
-            target=engine.capture_packets, args=(None, self.id), kwargs=kwargs
+            target=engine.capture_packets, args=(self.id,), kwargs=kwargs
         )
         self._tshark_processes.append(t_shark_process)
         t_shark_process.start()
-
-        # Processing for output file name if not given
-        # Check if a specific kwarg is there
-
-        # kwarg as per tshark command line args or custom?
 
     @property
     def id(self):
