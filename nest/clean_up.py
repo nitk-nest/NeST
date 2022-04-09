@@ -41,6 +41,7 @@ def kill_processes():
     """
     Kill any running processes in namespaces
     """
+
     for namespace in TopologyMap.get_namespaces():
         engine.kill_all_processes(namespace["id"])
 

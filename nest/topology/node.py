@@ -3,10 +3,15 @@
 
 """API related to node creation in topology"""
 
+from concurrent.futures import process
 import logging
+from multiprocessing.dummy import Process
+import time
+from tkinter.messagebox import NO
 
 from nest import engine
 from nest.topology.interface import BaseInterface, Interface
+from nest.engine import t_shark
 from nest.topology_map import TopologyMap
 from nest import config
 from nest.network_utilities import ipv6_dad_check
@@ -66,6 +71,7 @@ class Node:
         # Global variable disables when any new node is created
         # to ensure DAD check (if applicable)
         g_var.IS_DAD_CHECKED = False
+        self._tshark_processes = []
 
         engine.create_ns(self.id)
         engine.set_interface_mode(self.id, "lo", "up")
@@ -87,6 +93,18 @@ class Node:
         """
         # Switch back to default network namespace
         engine.set_ns(None)
+
+    def __del__(self):
+        """
+        Destructor for node objects
+        """
+        for process in self.tshark_processes:
+            process.join()
+
+    @property
+    def tshark_processes(self):
+        """Getter for running tshark processes"""
+        return self._tshark_processes
 
     @input_validator
     def add_route(
@@ -420,6 +438,59 @@ class Node:
         for i in range(len(self._interfaces)):
             interface_name = self._interfaces[i]
             interface_name.disable_ip_dad()
+
+    @input_validator
+    def capture_packets(
+        self,
+        interface: "topology.Interface" = None,
+        packet_count: int = None,
+        timeout: int = None,
+        output_file: str = None,
+        output_format: str = None,
+        **kwargs,
+    ):
+        """
+        Packets are captured from this node
+
+        Parameters
+        ----------
+        interface: Interface
+            If the packets need to be captured from only one specific interface
+        """
+
+        timestamp = time.strftime("%d-%m-%Y-%H:%M:%S")
+
+        if interface != None:
+            kwargs["-i"] = interface.id
+
+        if packet_count != None:
+            kwargs["-c"] = str(packet_count)
+
+        if timeout != None:
+            kwargs["-a"] = f"duration:{timeout}"
+
+        if output_file == None:
+            if interface == None:
+                output_file = f"{self.name}_{timestamp}"
+            else:
+                output_file = f"{self.name}_{interface.name}_{timestamp}"
+        kwargs["-w"] = output_file
+
+        if output_format != None:
+            kwargs["-T"] = output_format
+
+        print(f"args={self.id} kwargs={kwargs}")
+
+        t_shark_process = Process(
+            target=engine.capture_packets, args=(None, self.id), kwargs=kwargs
+        )
+        self._tshark_processes.append(t_shark_process)
+        t_shark_process.start()
+
+        # Processing for output file name if not given
+        # Check if a specific kwarg is there
+
+        # kwarg as per tshark command line args or custom?
 
     @property
     def id(self):
