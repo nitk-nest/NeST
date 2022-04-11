@@ -39,3 +39,12 @@ This program emulates point to point networks that connect two hosts `h1` and
 `ah-point-to-point-3.py` in `examples/address-helpers`. This program shows
 how to add an independent loss probability to the packets outgoing from the
 chosen network interface.
+
+## 5. packet-ping-preload-point-to-point-3.py
+This program emulates a point to point network that connects two hosts `h1`
+and `h2` via two routers `r1` and `r2`. 20 ping packets are sent from `h1` to
+`h2`. It is similar to `examples/address-helpers/ah-point-to-point-3.py`.
+Out of 20 ping packets that are sent, the first 10 ping packets are sent
+simultaneously without waiting for a reply from `h2`, and the remaining 10
+ping packets are sent one by one. The success/failure of all ping packets is
+reported. The ping preload option is used for sending the first 10 packets.
