@@ -5,6 +5,8 @@
 # SHOULD BE RUN AS ROOT
 ########################
 from nest.topology import *
+from nest.topology.network import Network
+from nest.topology.address_helper import AddressHelper
 
 # This program emulates a point to point network that connects two hosts `h1`
 # and `h2` via two routers `r1` and `r2`. 20 ping packets are sent from `h1` to
@@ -29,33 +31,26 @@ h2 = Node("h2")
 r1 = Router("r1")
 r2 = Router("r2")
 
+# Set the IPv4 address for the networks, and not the interfaces.
+# We will use the `AddressHelper` later to assign addresses to the interfaces.
+# Note: this example has three networks: one on the left of `r1`, second
+# between the two routers, and third on the right of `r2`.
+n1 = Network("192.168.1.0/24")  # network on the left of `r1`
+n2 = Network("192.168.2.0/24")  # network between two routers
+n3 = Network("192.168.3.0/24")  # network on the right of `r2`
+
 # Connect `h1` to `r1`, `r1` to `r2`, and then `r2` to `h2`
 # `eth1` and `eth2` are the interfaces at `h1` and `h2`, respectively.
 # `etr1a` is the first interface at `r1` which connects it with `h1`
 # `etr1b` is the second interface at `r1` which connects it with `r2`
 # `etr2a` is the first interface at `r2` which connects it with `r1`
 # `etr2b` is the second interface at `r2` which connects it with `h2`
-(eth1, etr1a) = connect(h1, r1)
-(etr1b, etr2a) = connect(r1, r2)
-(etr2b, eth2) = connect(r2, h2)
+(eth1, etr1a) = connect(h1, r1, network=n1)
+(etr1b, etr2a) = connect(r1, r2, network=n2)
+(etr2b, eth2) = connect(r2, h2, network=n3)
 
-# Assign IPv4 addresses to all the interfaces.
-# Note: this example has three networks: one on the left of `r1`, second
-# between the two routers, and third on the right of `r2`.
-# Assign IPv4 addresses to interfaces in the network which is on the left of
-# `r1`. We assume that the IPv4 address of this network is `192.168.1.0/24`
-eth1.set_address("192.168.1.1/24")
-etr1a.set_address("192.168.1.2/24")
-
-# Assign IPv4 addresses to interfaces in the network which is between the two
-# routers. We assume that the IPv4 address of this network is `192.168.2.0/24`
-etr1b.set_address("192.168.2.1/24")
-etr2a.set_address("192.168.2.2/24")
-
-# Assign IPv4 addresses to interfaces in the network which is on the right of
-# `r2`. We assume that the IPv4 address of this network is `192.168.3.0/24`
-etr2b.set_address("192.168.3.1/24")
-eth2.set_address("192.168.3.2/24")
+# Assign IPv4 addresses to all the interfaces in the network.
+AddressHelper.assign_addresses()
 
 # Set the link attributes: `h1` --> `r1` --> `r2` --> `h2`
 eth1.set_attributes("5mbit", "5ms")  # from `h1` to `r1`
