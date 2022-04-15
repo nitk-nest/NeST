@@ -17,7 +17,7 @@ from nest.topology.address_helper import AddressHelper
 ##############################################################################
 #                              Network Topology                              #
 #                                                                            #
-#                               Reorder rate: 20%                            #
+#                               Reorder rate: 25%                            #
 #                                  Delay : 10ms                              #
 #        5mbit, 5ms -->         5mbit, 5ms -->           5mbit, 5ms -->      #
 # h1 -------------------- r1 -------------------- r2 -------------------- h2 #
@@ -63,9 +63,9 @@ etr2a.set_attributes("10mbit", "100ms")  # from `r2` to `r1`
 etr1a.set_attributes("10mbit", "100ms")  # from `r1` to `h1`
 
 # Set a delay of 10ms and a packet reorder rate of 20% and gap 5
-# on the link from `r1` to `r2`. Gap is optional
+# on the link from `r1` to `r2`.
 # Note: Delay must be specified to emulate packet reordering.
-etr1a.set_packet_reorder("10ms", "25%", gap=5)
+eth1.set_packet_reorder("25%", gap=5)  # Gap is optional
 
 # Set default routes in `h1` and `h2`. Additionally, set default routes in
 # `r1` and `r2` so that the packets that cannot be forwarded based on the
@@ -78,4 +78,4 @@ r2.add_route("DEFAULT", etr2a)
 # `Ping` from `h1` to `h2`.
 # Note: ping preload option must be used to see the reordered packet sequence
 # in the output.
-h1.ping(eth2.address, packets=20)
+h1.ping(eth2.address, preload=10, packets=15)
