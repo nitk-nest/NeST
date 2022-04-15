@@ -36,9 +36,11 @@ class TestTopologyPacketOps(unittest.TestCase):
         n0_n1.set_address("10.0.0.1/24")
         n1_n0.set_address("10.0.0.2/24")
 
-        n0_n1.set_packet_reorder("10ms", "20%", gap=5)
+        n0_n1.set_attributes("10mbit", "10ms")
 
-        status = self.n0.ping("10.0.0.2", preload=10, packets=20)
+        n0_n1.set_packet_reorder("20%", gap=5)
+
+        status = self.n0.ping("10.0.0.2", preload=10, packets=10)
 
         self.assertTrue(status)
 
