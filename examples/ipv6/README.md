@@ -20,6 +20,9 @@ of these packets is reported. It is similar to `point-to-point-1.py` available
 in `examples/basic-examples`, the only difference is that IPv6 addresses are
 used in this program.
 
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: ipv6-point-to-point-1.py -->
+
 ## 2. ipv6-point-to-point-2.py
 This program emulates point to point networks that connect two hosts `h1`
 and `h2` via a router `r1`. Five ping packets are sent from `h1` to `h2`, and
@@ -27,6 +30,9 @@ the success/failure of these packets is reported. This example extends the
 `ipv6-point-to-point-1.py` example. It is similar to `point-to-point-2.py`
 available in `examples/basic-examples`, the only difference is that IPv6
 addresses are used in this program.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: ipv6-point-to-point-2.py -->
 
 ## 3. ipv6-point-to-point-3.py
 This program emulates point to point networks that connect two hosts `h1`
@@ -36,6 +42,9 @@ extends the `ipv6-point-to-point-2.py` example. It is similar to
 `point-to-point-3.py` available in `examples/basic-examples`, the only
 difference is that IPv6 addresses are used in this program.
 
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: ipv6-point-to-point-3.py -->
+
 ## 4. ipv6-simple-lan.py
 This program emulates a Local Area Network (LAN). Four hosts: `h1` to `h4`
 are connected using a switch `s1`. Five ping packets are sent from `h1` to `h2`
@@ -43,6 +52,9 @@ and five ping packets from `h3` to `h4`. The success/failure of these packets
 is reported. It is similar to `simple-lan.py` available in
 `examples/basic-examples`, the only difference is that IPv6 addresses are used
 in this program.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: ipv6-simple-lan.py -->
 
 ## 5. ipv6-two-lans-connected-directly.py
 This program emulates two Local Area Networks (LANs) connected directly to
@@ -54,3 +66,6 @@ The success/failure of these packets is reported. This program extends
 `ipv6-simple-lan.py`. It is similar to `two-lans-connected-directly.py`
 available in `examples/basic-examples`, the only difference is that IPv6
 addresses are used in this program.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: ipv6-two-lans-connected-directly.py -->

@@ -36,6 +36,9 @@ helper is used to assign the IPv4 addresses to the interfaces. Five ping
 packets are sent from `ce1` to `ce2`, and the success/failure of these packets
 is reported.
 
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: mpls-basic-ce-pe-routers.py -->
+
 ## 2. mpls-ce-pe-p-routers.py
 This program demonstrates how to set up a MPLS network that connects two
 customer edge (ce) routers `ce1` and `ce2` via two provider edge (pe) routers
@@ -45,6 +48,9 @@ labels are assigned manually and Penultimate Hop Popping (PHP) is used in
 this program. Address helper is used to assign the IPv4 addresses to the
 interfaces. Five ping packets are sent from `ce1` to `ce2`, and the
 success/failure of these packets is reported.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: mpls-ce-pe-p-routers.py -->
 
 ## 3. mpls-ldp-ce-pe-p-routers.py
 This program demonstrates how to set up a MPLS network that connects two
@@ -58,6 +64,9 @@ IP addresses. In this program, we use Open Shortest Path First (OSPF) routing
 protocol. Penultimate Hop Popping (PHP) is used in this program. Address helper
 is used to assign the IPv4 addresses to the interfaces. Five ping packets are
 sent from `ce1` to `ce2`, and the success/failure of these packets is reported.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: mpls-ldp-ce-pe-p-routers.py -->
 
 Once these programs are understood, and if MPLS modules are no longer needed,
 they can be disabled using:

@@ -19,6 +19,9 @@ This program runs for 50 seconds and creates a new directory called
 provides details about the sub-directories and files within this directory.
 For this program, see the plots in `iperf3` and `ping` sub-directories.
 
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: udp-point-to-point-3.py -->
+
 ## 2. udp-simple-lan.py
 This program emulates a Local Area Network (LAN). Four hosts: `h1` to `h4`
 are connected using a switch `s1`. It is similar to the `ah-simple-lan.py`
@@ -30,3 +33,6 @@ This program runs for 50 seconds and creates a new directory called
 `udp-simple-lan(date-timestamp)_dump`. It contains a `README` which
 provides details about the sub-directories and files within this directory.
 For this program, see the plots in `iperf3` and `ping` sub-directories.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: udp-simple-lan.py -->

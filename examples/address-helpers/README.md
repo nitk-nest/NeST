@@ -15,6 +15,9 @@ address helper in this program to assign IPv4 addresses to interfaces instead
 of manually assigning them. Note that two packages: `Network` and
 `AddressHelper` are imported in this program.
 
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: ah-point-to-point-1.py -->
+
 ## 2. ah-point-to-point-2.py
 This program emulates point to point networks that connect two hosts `h1`
 and `h2` via a router `r1`. Five ping packets are sent from `h1` to `h2`, and
@@ -24,6 +27,9 @@ difference is that we use an address helper in this program to assign IPv4
 addresses to interfaces instead of manually assigning them. Note that two
 packages: `Network` and `AddressHelper` are imported in this program.
 
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: ah-point-to-point-2.py -->
+
 ## 3. ah-point-to-point-3.py
 This program emulates point to point networks that connect two hosts `h1` and
 `h2` via two routers `r1` and `r2`. Five ping packets are sent from `h1` to
@@ -32,6 +38,9 @@ This program emulates point to point networks that connect two hosts `h1` and
 difference is that we use an address helper in this program to assign IPv4
 addresses to interfaces instead of manually assigning them. Note that two
 packages: `Network` and `AddressHelper` are imported in this program.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: ah-point-to-point-3.py -->
 
 ## 4. ah-simple-lan.py
 This program emulates a Local Area Network (LAN). Four hosts: `h1` to `h4`
@@ -44,6 +53,9 @@ manually assigning them. Note that two packages: `Network` and
 `AddressHelper` are imported in this program. Since all the interfaces in this
 example belong to the same network, we demonstrate a simpler approach to use
 the `Network` API.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: ah-simple-lan.py -->
 
 ## 5. ah-two-lans-connected-directly.py
 This program emulates two Local Area Networks (LANs) connected directly to
@@ -59,6 +71,9 @@ packages: `Network` and `AddressHelper` are imported in this program. Since all
 the interfaces in this example belong to the same network, we demonstrate a
 simpler approach to use the `Network` API.
 
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: ah-two-lans-connected-directly.py -->
+
 ## 6. ipv6-ah-point-to-point-1.py
 This program emulates a point to point network between two hosts `h1` and
 `h2`. Five ping packets are sent from `h1` to `h2`, and the success/failure
@@ -67,6 +82,9 @@ available in `examples/ipv6`, the only difference is that we use an address
 helper in this program to assign IPv6 addresses to interfaces instead of
 manually assigning them. Note that two packages: `Network` and `AddressHelper`
 are imported in this program.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: ipv6-ah-point-to-point-1.py -->
 
 ## 7. ipv6-ah-point-to-point-2.py
 This program emulates point to point networks that connect two hosts `h1`
@@ -77,6 +95,9 @@ that we use an address helper in this program to assign IPv6 addresses to
 interfaces instead of manually assigning them. Note that two packages:
 `Network` and `AddressHelper` are imported in this program.
 
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: ipv6-ah-point-to-point-2.py -->
+
 ## 8. ipv6-ah-point-to-point-3.py
 This program emulates point to point networks that connect two hosts `h1` and
 `h2` via two routers `r1` and `r2`. Five ping packets are sent from `h1` to
@@ -85,6 +106,9 @@ This program emulates point to point networks that connect two hosts `h1` and
 that we use an address helper in this program to assign IPv6 addresses to
 interfaces instead of manually assigning them. Note that two packages:
 `Network` and `AddressHelper` are imported in this program.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: ipv6-ah-point-to-point-3.py -->
 
 ## 9. ipv6-ah-simple-lan.py
 This program emulates a Local Area Network (LAN). Four hosts: `h1` to `h4`
@@ -96,6 +120,9 @@ program to assign IPv6 addresses to interfaces instead of manually assigning
 them. Note that two packages: `Network` and `AddressHelper` are imported in
 this program. Since all the interfaces in this example belong to the same
 network, we demonstrate a simpler approach to use the `Network` API.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: ipv6-ah-simple-lan.py -->
 
 ## 10. ipv6-ah-two-lans-connected-directly.py
 This program emulates two Local Area Networks (LANs) connected directly to
@@ -110,3 +137,6 @@ addresses to interfaces instead of manually assigning them. Note that two
 packages: `Network` and `AddressHelper` are imported in this program. Since
 all the interfaces in this example belong to the same network, we demonstrate
 a simpler approach to use the `Network` API.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: ipv6-ah-two-lans-connected-directly.py -->

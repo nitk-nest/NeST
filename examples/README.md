@@ -8,15 +8,15 @@ A detailed README is provided in every sub-directory in `examples`.
 We recommend the users to traverse through the examples in the following order
 to quickly learn and use NeST APIs and its features.
 
-1. basic-examples
-2. config-options
-3. ipv6 (optional)
-4. address-helpers
-5. packet-operations (optional)
-6. udp (optional)
-7. tcp (optional)
-8. qdiscs (optional)
-9. routing (optional)
+1. [basic-examples](./basic-examples/README.md)
+2. [config-options](./config-options/README.md)
+3. [ipv6](./ipv6/README.md) (optional)
+4. [address-helpers](./address-helpers/README.md)
+5. [packet-operations](./packet-operations/README.md) (optional)
+6. [udp](./udp/README.md) (optional)
+7. [tcp](./tcp/README.md) (optional)
+8. [qdiscs](./tcp/README.md) (optional)
+9. [routing](./routing/README.md) (optional)
 
 | Examples          | Basic APIs         | Address Helpers    | Routing Helpers    | Ping Application   | UDP Flows          | TCP Flows          |
 |-------------------|--------------------|--------------------|--------------------|--------------------|--------------------|--------------------|

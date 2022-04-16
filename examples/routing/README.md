@@ -26,3 +26,19 @@ before proceedings with the example programs.
 System (ISIS), Open Shortest Path First (OSPF) and Routing Information Protocol
 (RIP) via both `quagga` and `frr`. Label Distribution Protocol (LDP) is
 supported for label distribution in MPLS.
+
+<!-- The below snippet will only render in docs website -->
+<!--
+#BEGIN_DOCS
+
+```{toctree}
+---
+---
+
+frr/README
+mpls/README
+quagga/README
+```
+
+#END_DOCS
+-->

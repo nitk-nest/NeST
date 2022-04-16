@@ -24,6 +24,9 @@ See the plots in `netperf`, `ping` and `ss` sub-directories for this program.
 NOTE: This program does not generate the stats for `choke` qdisc because NeST
 does not support this feature yet.
 
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: choke-point-to-point.py -->
+
 ## 2. codel-point-to-point.py
 This program emulates point to point networks that connect four hosts: `h1`
 - `h4` via two routers `r1` and `r2`. One TCP flow is configured from `h1` to
@@ -42,6 +45,9 @@ This program runs for 200 seconds and creates a new directory called
 provides details about the sub-directories and files within this directory.
 See the plots in `netperf`, `ping`, `ss` and `tc` sub-directories for this
 program.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: codel-point-to-point.py -->
 
 ## 3. fq-codel-point-to-point.py
 This program emulates point to point networks that connect four hosts: `h1`
@@ -62,6 +68,9 @@ provides details about the sub-directories and files within this directory.
 See the plots in `netperf`, `ping`, `ss` and `tc` sub-directories for this
 program.
 
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: fq-codel-point-to-point.py -->
+
 ## 4. fq-pie-point-to-point.py
 This program emulates point to point networks that connect four hosts: `h1`
 - `h4` via two routers `r1` and `r2`. One TCP flow is configured from `h1` to
@@ -81,6 +90,9 @@ provides details about the sub-directories and files within this directory.
 See the plots in `netperf`, `ping`, `ss` and `tc` sub-directories for this
 program.
 
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: fq-pie-point-to-point.py -->
+
 ## 5. pfifo-point-to-point.py
 This program emulates point to point networks that connect four hosts: `h1`
 - `h4` via two routers `r1` and `r2`. One TCP flow is configured from `h1` to
@@ -98,6 +110,9 @@ This program runs for 200 seconds and creates a new directory called
 provides details about the sub-directories and files within this directory.
 See the plots in `netperf`, `ping`, `ss` and `tc` sub-directories for this
 program.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: pfifo-point-to-point.py -->
 
 ## 6. pie-point-to-point.py
 This program emulates point to point networks that connect four hosts: `h1`
@@ -117,6 +132,9 @@ This program runs for 200 seconds and creates a new directory called
 provides details about the sub-directories and files within this directory.
 See the plots in `netperf`, `ping`, `ss` and `tc` sub-directories for this
 program.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: pie-point-to-point.py -->
 
 ## 7. red-point-to-point.py
 This program emulates point to point networks that connect four hosts: `h1`
@@ -138,3 +156,6 @@ See the plots in `netperf`, `ping` and `ss` sub-directories for this program.
 
 NOTE: This program does not generate the stats for `red` qdisc because NeST
 does not support this feature yet.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: red-point-to-point.py -->

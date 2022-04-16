@@ -49,6 +49,9 @@ program uses ISIS from Free Range Routing (FRR) suite for dynamic routing. A
 new package called `RoutingHelper` is imported in this program. The routing
 logs are written to files in a dedicated `logs` directory.
 
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: frr-isis-point-to-point-2.py -->
+
 ## 2. frr-isis-point-to-point-3.py
 This program emulates point to point networks that connect two hosts `h1` and
 `h2` via two routers `r1` and `r2`. Five ping packets are sent from `h1` to
@@ -59,6 +62,9 @@ dynamic routing protocol, instead of manually configuring the routes. This
 program uses ISIS from Free Range Routing (FRR) suite for dynamic routing. A
 new package called `RoutingHelper` is imported in this program. The routing
 logs are written to files in a dedicated `logs` directory.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: frr-isis-point-to-point-3.py -->
 
 ## 3. frr-ospf-point-to-point-2.py
 This program emulates point to point networks that connect two hosts `h1`
@@ -71,6 +77,9 @@ from Free Range Routing (FRR) suite for dynamic routing. A new package called
 `RoutingHelper` is imported in this program. The routing logs are written to
 files in a dedicated `logs` directory.
 
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: frr-ospf-point-to-point-2.py -->
+
 ## 4. frr-ospf-point-to-point-3.py
 This program emulates point to point networks that connect two hosts `h1` and
 `h2` via two routers `r1` and `r2`. Five ping packets are sent from `h1` to
@@ -81,6 +90,9 @@ protocol, instead of manually configuring the routes. This program uses OSPF
 from Free Range Routing (FRR) suite for dynamic routing. A new package called
 `RoutingHelper` is imported in this program. The routing logs are written to
 files in a dedicated `logs` directory.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: frr-ospf-point-to-point-3.py -->
 
 ## 5. frr-rip-point-to-point-2.py
 This program emulates point to point networks that connect two hosts `h1`
@@ -93,6 +105,9 @@ from Free Range Routing (FRR) suite for dynamic routing. A new package called
 `RoutingHelper` is imported in this program. The routing logs are written to
 files in a dedicated `logs` directory.
 
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: frr-rip-point-to-point-2.py -->
+
 ## 6. frr-rip-point-to-point-3.py
 This program emulates point to point networks that connect two hosts `h1` and
 `h2` via two routers `r1` and `r2`. Five ping packets are sent from `h1` to
@@ -103,6 +118,9 @@ protocol, instead of manually configuring the routes. This program uses RIP
 from Free Range Routing (FRR) suite for dynamic routing. A new package called
 `RoutingHelper` is imported in this program. The routing logs are written to
 files in a dedicated `logs` directory.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: frr-rip-point-to-point-3.py -->
 
 `Note`: The above examples can be modified to work with IPv6 addressing by
 changing the IPv4 subnets to IPv6 subnets. Replace IPv4 subnets

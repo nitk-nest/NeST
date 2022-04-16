@@ -29,6 +29,9 @@ This program runs for 200 seconds and creates a new directory called
 provides details about the sub-directories and files within this directory.
 See the plots in `netperf`, `ping` and `ss` sub-directories for this program.
 
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: tcp-bbr-point-to-point-3.py -->
+
 ## 2. tcp-cubic-point-to-point-3.py
 This program emulates point to point networks that connect two hosts `h1`
 and `h2` via two routers `r1` and `r2`. This program is similar to
@@ -46,6 +49,9 @@ which provides details about the sub-directories and files within this
 directory. See the plots in `netperf`, `ping` and `ss` sub-directories for
 this program.
 
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: tcp-cubic-point-to-point-3.py -->
+
 ## 3. tcp-offloads-point-to-point.py
 This program emulates point to point networks that connect two hosts `h1`
 and `h2` via two routers `r1` and `r2`. This program is similar to
@@ -59,6 +65,9 @@ This program runs for 200 seconds and creates a new directory called
 which provides details about the sub-directories and files within this
 directory. See the plots in `netperf`, `ping` and `ss` sub-directories for
 this program.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: tcp-offloads-point-to-point.py -->
 
 ## 4. tcp-reno-point-to-point-3.py
 This program emulates point to point networks that connect two hosts `h1`
@@ -76,6 +85,9 @@ This program runs for 200 seconds and creates a new directory called
 provides details about the sub-directories and files within this directory.
 See the plots in `netperf`, `ping` and `ss` sub-directories for this program.
 
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: tcp-reno-point-to-point-3.py -->
+
 ## 5. tcp-udp-point-to-point.py
 This program emulates point to point networks that connect four hosts: `h1`
 - `h4` via two routers `r1` and `r2`. One TCP flow is configured from `h1` to
@@ -86,3 +98,6 @@ This program runs for 200 seconds and creates a new directory called
 provides details about the sub-directories and files within this directory.
 See the plots in `iperf3`, `netperf`, `ping` and `ss` sub-directories for
 this program.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: tcp-udp-point-to-point.py -->
