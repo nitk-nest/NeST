@@ -168,14 +168,11 @@ test docs:
     - pip install .
     - pip install -r docs/doc_requirements.txt
     - make -C docs multiversion
+    - make -C docs html BUILDDIR=build/mr-docs  # to get the latest docs (in MRs)
     - git fetch --tags --force  # Undo tag changes made in previous commands
     # Create index.html file pointing to latest release docs
     - TAG=$(git tag | tail -1)
     - echo "<meta http-equiv=\"refresh\" content=\"0; URL=./$TAG/index.html\">" > docs/build/html/index.html
-  rules:
-    - changes:
-        - docs/**/*
-        - nest/**/*
   artifacts:
     paths:
       - docs/build
@@ -188,9 +185,6 @@ release docs:
     - cp -rv docs/build/html/* /var/www/html/nest-docs/docs
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes:
-        - docs/**/*
-        - nest/**/*
     - if: $CI_COMMIT_TAG
 
 upload to PyPI:

@@ -51,6 +51,7 @@ NeST is officially supported for Python 3.6+.
 
     user/install
     user/tutorial
+    user/examples_index
     user/config
 
 .. toctree::

@@ -1,0 +1,13 @@
+/*
+SPDX-License-Identifier: GPL-2.0-only
+Copyright (c) 2019-2022 NITK Surathkal
+*/
+
+/*
+Keep content width to 48em (default is 46em)
+It renders the width of example code (80 character limit)
+correctly
+*/
+.content {
+    width: 48em !important;
+}
