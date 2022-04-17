@@ -89,7 +89,7 @@ class RoutingHelper:
 
         if protocol not in ["rip", "ospf", "isis", "static"]:
             raise ValueError(
-                f"Supported routing protocols are rip, ospf, isis and static "
+                f"Supported routing protocols are rip, ospf, isis and static, "
                 f"but got protocol {protocol}"
             )
         self.protocol = protocol

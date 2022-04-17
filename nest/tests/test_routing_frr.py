@@ -91,7 +91,7 @@ class TestFrr(unittest.TestCase):
 
         self.assertEqual(
             str(ex.exception),
-            "Supported routing protocols are rip, ospf and isis, "
+            "Supported routing protocols are rip, ospf, isis and static, "
             "but got protocol babel",
         )
 
