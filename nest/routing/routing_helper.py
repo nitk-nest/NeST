@@ -16,6 +16,7 @@ from typing import List
 from nest.exceptions import RequiredDependencyNotFound
 from nest.input_validator.input_validator import input_validator
 from nest.topology.id_generator import IdGen
+from nest.routing.static_routing import StaticRouting
 from nest.routing.zebra import Zebra
 from nest.routing.ldp import Ldp
 from nest.topology_map import TopologyMap
@@ -55,6 +56,7 @@ class RoutingHelper:
         "ospf": ["nest.routing.ospf", "Ospf"],
         "rip": ["nest.routing.rip", "Rip"],
         "isis": ["nest.routing.isis", "Isis"],
+        "static": ["nest.routing.static_routing", "StaticRouting"],
     }
 
     @input_validator
@@ -84,14 +86,10 @@ class RoutingHelper:
             List of Routers which are to be used with mpls.
             Only enables ldp discovery on interfaces with mpls enabled
         """
-        if protocol == "static":
-            raise NotImplementedError(
-                "Static routing is yet to be implemented. Use rip, ospf or isis"
-            )
 
-        if protocol not in ["rip", "ospf", "isis"]:
+        if protocol not in ["rip", "ospf", "isis", "static"]:
             raise ValueError(
-                f"Supported routing protocols are rip, ospf and isis, "
+                f"Supported routing protocols are rip, ospf, isis and static "
                 f"but got protocol {protocol}"
             )
         self.protocol = protocol
@@ -149,7 +147,9 @@ class RoutingHelper:
         self._setup_default_routes()
 
         if self.protocol == "static":
-            pass  # TODO: add static routing
+            static_routing = StaticRouting()
+            static_routing.run_static_routing()
+
         else:
             try:
                 self._run_dyn_routing()
