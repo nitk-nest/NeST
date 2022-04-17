@@ -76,6 +76,40 @@ class TestExperiment(unittest.TestCase):
 
         exp.run()
 
+    def test_experiment_tcp_module_params(self):
+        n1 = Node("n1")
+        n2 = Node("n2")
+        r = Node("r")
+        r.enable_ip_forwarding()
+        
+        (n1_r, r_n1) = connect(n1, r)
+        (r_n2, n2_r) = connect(r, n2)
+
+        n1_r.set_address("10.1.1.1/24")
+        r_n1.set_address("10.1.1.2/24")
+        r_n2.set_address("10.1.2.2/24")
+        n2_r.set_address("10.1.2.1/24")
+
+        n1.add_route("DEFAULT", n1_r)
+        n2.add_route("DEFAULT", n2_r)
+        
+        n1_r.set_attributes("100mbit", "5ms")
+        r_n1.set_attributes("100mbit", "5ms")
+
+        r_n2.set_attributes("1mbit", "10ms", "pfifo")
+        n2_r.set_attributes("1mbit", "10ms")
+
+        flow = Flow(n1, n2, n2_r.get_address(), 0, 20, 1)
+
+        exp1 = Experiment("cubic-default-params")
+        exp1.add_tcp_flow(flow)
+        exp1.run()
+
+        exp2 = Experiment("cubic-beta=1000")
+        exp2.configure_tcp_module_params("cubic", beta=1000)
+        exp2.add_tcp_flow(flow)
+        exp2.run()
+
     # Test `CoapFlow` API by generating GET and PUT CoAP traffic
     def test_experiment_coap(self):
         h1 = Node("h1")
