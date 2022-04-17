@@ -13,6 +13,10 @@ from . import config
 
 from . import engine
 from .topology_map import TopologyMap
+from nest.engine.tcp_modules import (
+    set_tcp_params,
+    remove_tcp_module,
+)
 
 logger = logging.getLogger(__name__)
 
