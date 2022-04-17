@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2020 NITK Surathkal
+# Copyright (c) 2019-2022 NITK Surathkal
 
 """User API to setup and run experiments on a given topology"""
 
 import copy
 import logging
+from collections import defaultdict
 from nest.input_validator.metric import Bandwidth
 from nest.network_utilities import ipv6_dad_check
 from nest.input_validator import input_validator
@@ -173,6 +174,10 @@ class CoapFlow(Flow):
 class Experiment:
     """Handles experiment to be run on topology"""
 
+    # Stores configuration of old and new congestion algorithms for cleanup
+    old_cong_algos = defaultdict(dict)
+    new_cong_algos = []
+
     @input_validator
     def __init__(self, name: str):
         """
@@ -188,6 +193,7 @@ class Experiment:
         self.coap_flows = []
         self.node_stats = []
         self.qdisc_stats = []
+        self.tcp_module_params = defaultdict(dict)
 
     def add_flow(self, flow):
         """
@@ -289,6 +295,20 @@ class Experiment:
                 "stats": stats,
             }
         )
+
+    def configure_tcp_module_params(self, congestion_algorithm, **kwargs):
+        """
+        Set TCP module parameters
+
+        Parameters
+        ----------
+        congestion_algorithm : str
+            TCP congestion algorithm
+        **kwargs :
+            module parameters to set
+        """
+        self.tcp_module_params[congestion_algorithm].update(kwargs)
+        logger.info("TCP module parameters will be set when the experiment is run")
 
     @ipv6_dad_check
     def run(self):

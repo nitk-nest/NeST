@@ -17,6 +17,25 @@ from .topology_map import TopologyMap
 logger = logging.getLogger(__name__)
 
 
+# pylint: disable=import-outside-toplevel
+# pylint: disable=cyclic-import
+@atexit.register
+def tcp_modules_clean_up():
+    """Clean up the modified TCP modules"""
+
+    from .experiment.experiment import Experiment
+
+    # Remove newly loaded modules
+    for cong_algo in Experiment.new_cong_algos:
+        remove_tcp_module(cong_algo)
+    (Experiment.new_cong_algos).clear()
+
+    # Reset old modules with original params
+    for cong_algo, params in (Experiment.old_cong_algos).items():
+        set_tcp_params(cong_algo, params, True)
+    (Experiment.old_cong_algos).clear()
+
+
 def kill_processes():
     """
     Kill any running processes in namespaces
