@@ -96,13 +96,13 @@ class TestFrr(unittest.TestCase):
         )
 
     def test_static(self):
-        with self.assertRaises(NotImplementedError) as ex:
-            RoutingHelper("static").populate_routing_tables()
+        RoutingHelper("static").populate_routing_tables()
 
-        self.assertEqual(
-            str(ex.exception),
-            "Static routing is yet to be implemented. Use rip, ospf or isis",
-        )
+        status = self.n0.ping("10.0.3.4", verbose=False)
+        self.assertTrue(status)
+
+        status = self.n1.ping("10.0.1.1", verbose=False)
+        self.assertTrue(status)
 
     def test_logs(self):
         config.set_value("routing_logs", True)

@@ -12,6 +12,7 @@ or GitLab merge request number (prefixed by '!').
 New user-visible features
 -------------------------
 - !153: Add support for CoAP simulation
+- !243: Add support for static routing
 
 Release 0.4.1 (Mar 14, 2022)
 ============================
