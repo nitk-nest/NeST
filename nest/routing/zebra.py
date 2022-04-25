@@ -46,18 +46,11 @@ class Zebra(RoutingDaemonBase):
         self.add_to_config(" no shutdown")
         for interface in self.interfaces:
             self.add_interface(interface.id)
-            for i in range(
-                len(
-                    interface.get_address(
-                        not self.ipv6_routing, self.ipv6_routing, True
-                    )
-                )
+            for addr in interface.get_address(
+                not self.ipv6_routing, self.ipv6_routing, True
             ):
-                self.add_ip_address(
-                    interface.get_address(
-                        not self.ipv6_routing, self.ipv6_routing, True
-                    )[i].get_addr()
-                )
+                self.add_ip_address(addr.get_addr())
+
         if self.log_file is not None:
             self.add_to_config(f"log file {self.log_file}")
 

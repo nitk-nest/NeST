@@ -13,8 +13,10 @@ class Ldp(RoutingDaemonBase):
     Handles Ldp related functionalities for frr.
     """
 
-    def __init__(self, router_ns_id, interfaces, conf_dir, **kwargs):
-        super().__init__(router_ns_id, interfaces, "ldpd", conf_dir, **kwargs)
+    def __init__(self, router_ns_id, ipv6_routing, interfaces, conf_dir, **kwargs):
+        super().__init__(
+            router_ns_id, ipv6_routing, interfaces, "ldpd", conf_dir, **kwargs
+        )
 
     def create_basic_config(self):
         """
@@ -22,16 +24,26 @@ class Ldp(RoutingDaemonBase):
         Use base `add_to_config` directly for more complex configurations
         """
         self.add_to_config("mpls ldp")
+        router_ip = self.interfaces[0].get_address(
+            not self.ipv6_routing, self.ipv6_routing, True
+        )[0]
+        self.add_to_config(f" router-id {router_ip.get_addr(with_subnet=False)}")
+        if not self.ipv6_routing:
+            self.add_to_config(" address-family ipv4")
+        else:
+            self.add_to_config(" address-family ipv6")
         self.add_to_config(
-            f" router-id {self.interfaces[0].address.get_addr(with_subnet=False)}"
-        )
-        self.add_to_config(" address-family ipv4")
-        self.add_to_config(
-            f"discovery transport-address {self.interfaces[0].address.get_addr(with_subnet=False)}"
+            f"discovery transport-address {router_ip.get_addr(with_subnet=False)}"
         )
 
         for interface in self.interfaces:
-            self.add_to_config(f"  interface {interface.id}")
+            if self.ipv6_routing and len(interface.get_address(False, True, True)) > 0:
+                self.add_to_config(f"  interface {interface.id}")
+            elif (
+                not self.ipv6_routing
+                and len(interface.get_address(True, False, True)) > 0
+            ):
+                self.add_to_config(f"  interface {interface.id}")
 
         if self.log_file is not None:
             self.add_to_config(f"log file {self.log_file}")

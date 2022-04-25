@@ -146,6 +146,17 @@ class RoutingHelper:
 
         else:
             try:
+                # Warning for using ISIS daemons along with other daemons
+                # since they interfere with other routing daemons (which may
+                # or may not be of ISIS)
+                if (
+                    self.protocol == "isis"
+                    and config.get_value("routing_suite") == "quagga"
+                ):
+                    logger.warning(
+                        "ISIS routing protocol in quagga might overwrite "
+                        "previously assigned routes by other RoutingHelpers"
+                    )
                 self._run_dyn_routing()
             except RequiredDependencyNotFound:
                 return
@@ -264,7 +275,13 @@ class RoutingHelper:
                 mpls_interfaces.append(interface)
         if len(mpls_interfaces) == 0:
             raise Exception("MPLS isn't enabled in any interface!")
-        ldp = Ldp(router.id, mpls_interfaces, self.conf_dir, log_dir=self.log_dir)
+        ldp = Ldp(
+            router.id,
+            self.ipv6_routing,
+            mpls_interfaces,
+            self.conf_dir,
+            log_dir=self.log_dir,
+        )
         ldp.create_basic_config()
         ldp.run()
         self.ldp_list.append(ldp)
