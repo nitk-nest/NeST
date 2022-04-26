@@ -4,7 +4,6 @@
 """API related to interfaces in topology"""
 
 import logging
-from nest.exceptions import DelayNotSetInInterface
 from nest.input_validator import input_validator
 from nest.input_validator.metric import Bandwidth, Delay, Percentage
 from nest.topology.veth_end import VethEnd
@@ -393,37 +392,33 @@ class Interface:
         self._veth_end.change_qdisc("11:", "netem", **duplicate_parameter)
 
     @input_validator
-    def set_packet_reorder(self, reorder_rate: Percentage, gap: int = None):
+    def set_packet_reordering(
+        self, delay: Delay, reorder_rate: Percentage, gap: int = None
+    ):
         """
         Adds reordering of packets configured on qdisc to outgoing packets
         from one host to another.
 
         Parameter
         ---------
+        delay: Delay
+            Delay to be added for reordering
         reorder_rate: Percentage
             Percentage of packets to reorder
         gap : int (Optional)
             (gap - 1) packets will be delayed, and subsequent packets
             will be sent immediately.
         """
-
-        if self._delay is None:
-            raise DelayNotSetInInterface
-
-        reorder_parameter = {}
+        
+        new_delay = delay + self._delay
+        
+        reorder_parameter = {
+            "delay": new_delay.string_value,
+            "reorder": reorder_rate.string_value,
+        }
 
         if gap is not None:
-            gap = f"{gap}"
-            reorder_parameter = {
-                "delay": self._delay,
-                "reorder": reorder_rate.string_value,
-                "gap": gap,
-            }
-        else:
-            reorder_parameter = {
-                "delay": self._delay,
-                "reorder": reorder_rate.string_value,
-            }
+            reorder_parameter["gap"] = str(gap)
 
         self._veth_end.set_structure()
 
@@ -613,7 +608,7 @@ def _autogenerate_interface_name(node1, node2, connections):
         if len(interface_name) > MAX_CUSTOM_NAME_LEN:
             raise ValueError(
                 f"Auto-generated device name {interface_name} is too long. "
-                f"The length of name should not exceed 15 characters."
+                f"The length of name shoulink_delay_value not exceed 15 characters."
             )
 
     return interface_name

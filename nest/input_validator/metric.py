@@ -73,6 +73,13 @@ class Metric:
         """
         return [str]
 
+    def __repr__(self):
+        """
+        String representation of Metric
+        """
+        classname = self.__class__.__name__
+        return f"{classname}({self.string_value!r})"
+
 
 class Bandwidth(Metric):
     """
@@ -119,6 +126,24 @@ class Delay(Metric):
 
         if self.unit not in Delay.valid_units:
             raise ValueError(f"{self.unit} is not a valid unit for delay.")
+
+        # Stores the value in milliseconds
+        self._value_in_msec = None
+
+        if self.unit in ["us", "usec", "usecs"]:
+            self._value_in_msec = str(float(self.value) / 1000)
+        elif self.unit in ["ms", "msec", "msecs"]:
+            self._value_in_msec = self.value
+        else:
+            self._value_in_msec = str(float(self.value) * 1000)
+
+    def __add__(self, other):
+        """
+        Add `Delay` objects and create a new `Delay` object
+        with milliseconds unit (by default).
+        """
+        value_in_msec = float(self._value_in_msec) + float(other._value_in_msec)
+        return Delay(f"{value_in_msec}ms")
 
 
 class Percentage(Metric):
