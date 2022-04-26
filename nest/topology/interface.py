@@ -311,7 +311,7 @@ class Interface:
         # TODO: Make adding delay possible without bandwidth being set
 
         self._veth_end.set_structure()
-        self._delay = delay.string_value
+        self._delay = delay
 
         delay_parameter = {"delay": delay.string_value}
 
@@ -402,7 +402,7 @@ class Interface:
         Parameter
         ---------
         delay: Delay
-            Delay to be added for reordering
+            Delay to be added for packet reordering
         reorder_rate: Percentage
             Percentage of packets to reorder
         gap : int (Optional)

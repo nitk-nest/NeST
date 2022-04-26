@@ -37,9 +37,11 @@ class TestTopologyPacketOps(unittest.TestCase):
         n1_n0.set_address("10.0.0.2/24")
 
         n0_n1.set_attributes("10mbit", "10ms")
+        n1_n0.set_attributes("10mbit", "5ms")
 
-        n0_n1.set_packet_reorder("20%", gap=5)
+        n0_n1.set_packet_reordering("10ms", "25%", gap=5)
 
+        self.n0.ping("10.0.0.2", packets=1)  # build ARP table before preload is used.
         status = self.n0.ping("10.0.0.2", preload=10, packets=10)
 
         self.assertTrue(status)
