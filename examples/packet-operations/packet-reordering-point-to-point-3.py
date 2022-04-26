@@ -17,8 +17,10 @@ from nest.topology.address_helper import AddressHelper
 ##############################################################################
 #                              Network Topology                              #
 #                                                                            #
-#                               Reorder rate: 25%                            #
-#                                  Delay : 10ms                              #
+#                                                                            #
+#                                  Delay : 20ms                              #
+#                           Reorder rate : 25%                               #
+#                                    gap : 5                                 #
 #        5mbit, 5ms -->         5mbit, 5ms -->           5mbit, 5ms -->      #
 # h1 -------------------- r1 -------------------- r2 -------------------- h2 #
 #     <-- 10mbit, 100ms       <-- 10mbit, 100ms       <-- 10mbit, 100ms      #
@@ -62,10 +64,10 @@ eth2.set_attributes("10mbit", "100ms")  # from `h2` to `r2`
 etr2a.set_attributes("10mbit", "100ms")  # from `r2` to `r1`
 etr1a.set_attributes("10mbit", "100ms")  # from `r1` to `h1`
 
-# Set a delay of 10ms and a packet reorder rate of 20% and gap 5
+# Set a delay of 20ms and a packet reorder rate of 25% and gap 5
 # on the link from `r1` to `r2`.
 # Note: Delay must be specified to emulate packet reordering.
-eth1.set_packet_reorder("25%", gap=5)  # Gap is optional
+eth1.set_packet_reordering("20ms", "25%", gap=5)  # Gap is optional
 
 # Set default routes in `h1` and `h2`. Additionally, set default routes in
 # `r1` and `r2` so that the packets that cannot be forwarded based on the
@@ -78,4 +80,5 @@ r2.add_route("DEFAULT", etr2a)
 # `Ping` from `h1` to `h2`.
 # Note: ping preload option must be used to see the reordered packet sequence
 # in the output.
+h1.ping(eth2.address, packets=1)  # build ARP table before using preload.
 h1.ping(eth2.address, preload=10, packets=15)

@@ -409,9 +409,9 @@ class Interface:
             (gap - 1) packets will be delayed, and subsequent packets
             will be sent immediately.
         """
-        
+
         new_delay = delay + self._delay
-        
+
         reorder_parameter = {
             "delay": new_delay.string_value,
             "reorder": reorder_rate.string_value,
@@ -608,7 +608,7 @@ def _autogenerate_interface_name(node1, node2, connections):
         if len(interface_name) > MAX_CUSTOM_NAME_LEN:
             raise ValueError(
                 f"Auto-generated device name {interface_name} is too long. "
-                f"The length of name shoulink_delay_value not exceed 15 characters."
+                f"The length of name should not exceed 15 characters."
             )
 
     return interface_name
