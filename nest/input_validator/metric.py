@@ -7,6 +7,8 @@ metrics in NeST. For eg., Bandwidth and Delay
 """
 
 import re
+import os
+from nest.exceptions import DistributionOptionError
 from .input_validator import input_validator
 
 
@@ -162,3 +164,59 @@ class Percentage(Metric):
 
         if not 0 <= float(self.value) <= 100:
             raise ValueError(f"{self.string_value} is not a valid percentage.")
+
+
+class Distribution:
+    """
+    Validate the delay distribution input
+    """
+
+    # stores the list of distribution files exist on the path '/usr/lib/tc'
+    valid_options = []
+
+    with open("/etc/os-release") as f:
+        machine = {}
+        for lines in f:
+            k, v = lines.rstrip().split("=")
+            machine[k] = v.strip('"')
+
+    if machine["NAME"] == "Arch Linux":
+        files = [f for f in os.listdir("/usr/share/tc") if f.endswith(".dist")]
+    else:
+        files = [f for f in os.listdir("/usr/lib/tc") if f.endswith(".dist")]
+
+    for i in files:
+        valid_options.append(os.path.splitext(i)[0])
+
+    @input_validator
+    def __init__(
+        self,
+        distribution: str,
+    ):
+        """
+        Parameters
+        -----------
+        distribution: str
+            The delay distribution options: uniform | normal | pareto | paretonormal | experimental
+        """
+        self._option = distribution
+
+        if self._option not in Distribution.valid_options:
+            raise DistributionOptionError(
+                "Please set proper delay distribution."
+                f"\nDelay distribution option:{Distribution.valid_options}"
+            )
+
+    @property
+    def option(self):
+        """
+        Get the distribution option
+        """
+        return self._option
+
+    @staticmethod
+    def allowed_type_cast():
+        """
+        Indicate str can be typecasted into Metric type
+        """
+        return [str]

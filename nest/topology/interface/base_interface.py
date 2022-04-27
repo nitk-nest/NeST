@@ -5,7 +5,7 @@
 
 import logging
 from nest.input_validator import input_validator
-from nest.input_validator.metric import Bandwidth, Delay, Percentage
+from nest.input_validator.metric import Bandwidth, Delay, Distribution, Percentage
 from nest.topology.device import Ifb, Device
 
 logger = logging.getLogger(__name__)
@@ -277,6 +277,36 @@ class BaseInterface:
         delay_parameter = {"delay": delay.string_value}
 
         self._device.change_qdisc("11:", "netem", **delay_parameter)
+
+    @input_validator
+    def set_delay_distribution(
+        self, delay: Delay, jitter: Delay, distribution: Distribution
+    ):
+        """
+        Allows to choose delay distribution. If not specified,
+        the default distribution is normal.
+
+        Parameters:
+        ------------
+        delay: Delay
+            Delay to the packets outgoing to chosen network  interface
+        jitter: Jitter
+            Variations of delay
+        distribution: Distribution
+            Default delay distribution: normal | pareto | paretonormal | experimental
+        """
+
+        self._delay = delay + self._delay
+
+        distribution_parameter = {
+            "delay": self._delay.string_value,
+            "": jitter.string_value,
+            "distribution": distribution.option,
+        }
+
+        self._device.set_structure()
+
+        self._device.change_qdisc("11:", "netem", **distribution_parameter)
 
     @input_validator
     def set_packet_corruption(

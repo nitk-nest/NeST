@@ -36,3 +36,9 @@ class DelayNotSetInInterface(NestBaseException):
 
         self.message = message
         super().__init__(self.message)
+
+
+class DistributionOptionError(NestBaseException):
+    """
+    Raised when distribution is not set properly
+    """
