@@ -8,7 +8,7 @@ metrics in NeST. For eg., Bandwidth and Delay
 
 import re
 import os
-from nest.exceptions import DistributionOptionError
+from nest.exception import DistributionOptionError
 from .input_validator import input_validator
 
 
@@ -203,14 +203,14 @@ class Distribution:
 
         if self._option not in Distribution.valid_options:
             raise DistributionOptionError(
-                "Please set proper delay distribution."
-                f"\nDelay distribution option:{Distribution.valid_options}"
+                "Please set a valid delay distribution option."
+                f"\nValid delay distribution options are:{Distribution.valid_options}"
             )
 
     @property
     def option(self):
         """
-        Get the distribution option
+        Get the delay distribution option
         """
         return self._option
 

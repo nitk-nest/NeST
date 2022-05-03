@@ -284,12 +284,12 @@ class BaseInterface:
     ):
         """
         Allows to choose delay distribution. If not specified,
-        the default distribution is normal.
+        the default delay distribution is normal.
 
         Parameters:
         ------------
         delay: Delay
-            Delay to the packets outgoing to chosen network  interface
+            Add delay to the outgoing packets on a specified interface
         jitter: Jitter
             Variations of delay
         distribution: Distribution

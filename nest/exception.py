@@ -40,5 +40,5 @@ class DelayNotSetInInterface(NestBaseException):
 
 class DistributionOptionError(NestBaseException):
     """
-    Raised when distribution is not set properly
+    Raised when the delay distribution is not set properly
     """
