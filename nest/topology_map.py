@@ -89,9 +89,9 @@ class TopologyMap:
             namespace name of the router
         """
         routers = TopologyMap.get_routers()
-
-        routers.append(router)
-        TopologyMap.get_hosts().remove(router)  # remove the router from hosts list
+        if router not in routers:
+            routers.append(router)
+            TopologyMap.get_hosts().remove(router)  # remove the router from hosts list
 
     @staticmethod
     def add_interface(ns_id, int_id, int_name):

@@ -439,6 +439,56 @@ class TestTopology(unittest.TestCase):
 
         self.assertTrue(status)
 
+    def test_duplicate_ip_forwarding(self):
+        """to enable ip forwarding more than once"""
+
+        h1 = Node("h1")
+        h2 = Node("h2")
+        r1 = Node("r1")
+        r1.enable_ip_forwarding(ipv6=False)
+        r1.enable_ip_forwarding(ipv4=False)
+
+        (eth1, etr1a) = connect(h1, r1)
+        (etr1b, eth2) = connect(r1, h2)
+
+        eth1.set_address("192.168.1.1/24")
+        etr1a.set_address("192.168.1.2/24")
+
+        etr1b.set_address("192.168.2.1/24")
+        eth2.set_address("192.168.2.2/24")
+
+        eth1.set_attributes("5mbit", "5ms")
+        etr1b.set_attributes("5mbit", "5ms")
+
+        eth2.set_attributes("10mbit", "100ms")
+        etr1a.set_attributes("10mbit", "100ms")
+
+        h1.add_route("DEFAULT", eth1)
+        h2.add_route("DEFAULT", eth2)
+
+        status = h1.ping(eth2.address)
+
+        self.assertTrue(status)
+
+        eth1.set_address("2001::1:1/122")
+        etr1a.set_address("2001::1:2/122")
+
+        etr1b.set_address("2001::2:1/122")
+        eth2.set_address("2001::2:2/122")
+
+        eth1.set_attributes("5mbit", "5ms")
+        etr1b.set_attributes("5mbit", "5ms")
+
+        eth2.set_attributes("10mbit", "100ms")
+        etr1a.set_attributes("10mbit", "100ms")
+
+        h1.add_route("DEFAULT", eth1)
+        h2.add_route("DEFAULT", eth2)
+
+        status = h1.ping(eth2.address)
+
+        self.assertTrue(status)
+
 
 if __name__ == "__main__":
     unittest.main()
