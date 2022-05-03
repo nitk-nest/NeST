@@ -32,7 +32,9 @@ class AddressHelper:
             It will assign addresses to specific network if network object is mentioned.
         """
         if network is None:
-            for net in TopologyMap.list_of_network:
+
+            networks = TopologyMap.get_networks()
+            for net in networks:
                 AddressHelper.__assign_addresses_to_network(net)
 
             # Warning for the assignment of the addresses to the interfaces,

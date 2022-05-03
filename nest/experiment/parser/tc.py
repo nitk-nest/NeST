@@ -369,5 +369,5 @@ class TcRunner(Runner):
                 )
 
         # Store parsed results
-        dev_name = TopologyMap.get_interface(self.ns_id, self.dev)["name"]
+        dev_name = TopologyMap.get_device(self.ns_id, self.dev).name
         TcResults.add_result(self.ns_id, {dev_name: aggregate_stats})

@@ -110,7 +110,7 @@ class NetperfRunner(Runner):
         """
         return_code = run_netserver(ns_id)
         if return_code != 0:
-            ns_name = TopologyMap.get_namespace(ns_id)["name"]
+            ns_name = TopologyMap.get_node(ns_id).name
             logger.error("Error running netserver at %s.", ns_name)
 
     def run(self):

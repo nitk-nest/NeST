@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2020 NITK Surathkal
+# Copyright (c) 2019-2022 NITK Surathkal
 
 """Necessary checks before running utilities on experiment"""
 
@@ -40,7 +40,10 @@ def ipv6_dad_check(func):
             and g_var.IS_DAD_CHECKED is not True
         ):
 
-            namespaces = TopologyMap.get_namespaces()
+            nodes = TopologyMap.get_nodes()
+            namespaces = list(
+                map(lambda ns_id: {"id": ns_id, "name": nodes[ns_id].name}, nodes)
+            )
 
             # Verifies if IPv6 states are addressable or not
             while True:

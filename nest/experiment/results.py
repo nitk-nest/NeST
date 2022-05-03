@@ -27,7 +27,7 @@ class Results:
             parsed stats
         """
         # Convert nest's internal name to user given name
-        ns_name = TopologyMap.get_namespace(ns_id)["name"]
+        ns_name = TopologyMap.get_node(ns_id).name
 
         item = results_q.get()
         if ns_name not in item:

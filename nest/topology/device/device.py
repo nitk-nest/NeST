@@ -65,7 +65,7 @@ class Device:
         self._id = IdGen.get_id(name)
         self._traffic_control_handler = TrafficControlHandler(node_id, self._id)
         if node_id is not None:
-            TopologyMap.add_interface(self.node_id, self._id, self._name)
+            TopologyMap.add_device(self.node_id, self.id, self)
 
         self._set_structure = False
         self._mtu = 1500
@@ -109,7 +109,7 @@ class Device:
         """
         self._traffic_control_handler.node_id = node_id
         if node_id is not None:
-            TopologyMap.add_interface(self.node_id, self._id, self._name)
+            TopologyMap.add_device(self.node_id, self.id, self)
 
     def set_mode(self, mode):
         """

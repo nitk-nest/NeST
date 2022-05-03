@@ -474,7 +474,7 @@ def setup_tcp_flows(dependency, flow, ss_schedules, destination_nodes):
         if dst_ns not in destination_nodes:
             NetperfRunner.run_netserver(dst_ns)
 
-        src_name = TopologyMap.get_namespace(src_ns)["name"]
+        src_name = TopologyMap.get_node(src_ns).name
 
         netperf_options = {}
         netperf_options["testname"] = "TCP_STREAM"
@@ -540,7 +540,7 @@ def setup_udp_flows(dependency, flow):
             options,
         ] = flow._get_props()  # pylint: disable=protected-access
 
-        src_name = TopologyMap.get_namespace(src_ns)["name"]
+        src_name = TopologyMap.get_node(src_ns).name
         f_flow = "flow" if n_flows == 1 else "flows"
         logger.info(
             "Running %s udp %s from %s to %s...", n_flows, f_flow, src_name, dst_addr

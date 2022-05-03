@@ -94,7 +94,7 @@ class CoAPRunner(Runner):
         # Run CoAP server
         return_code = run_coap_server(ns_id, server_options_string)
         if return_code != 0:
-            ns_name = TopologyMap.get_namespace(ns_id)["name"]
+            ns_name = TopologyMap.get_node(ns_id).name
             logger.error("Error running coap server at %s.", ns_name)
 
     def run(self):

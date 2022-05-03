@@ -74,7 +74,7 @@ class Node:
 
         engine.create_ns(self.id)
         engine.set_interface_mode(self.id, "lo", "up")
-        TopologyMap.add_namespace(self.id, self.name)
+        TopologyMap.add_node(self.id, self)
         TopologyMap.add_host(self)
 
     def __enter__(self):

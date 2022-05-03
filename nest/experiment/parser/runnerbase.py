@@ -69,7 +69,7 @@ class Runner:
             if return_code != 0:
                 self.print_error(error_string_prefix)
         except KeyboardInterrupt:
-            ns_name = TopologyMap.get_namespace(self.ns_id)["name"]
+            ns_name = TopologyMap.get_node(self.ns_id).name
             self.logger.debug(
                 "%s at %s: Received KeyboardInterrupt, hence shutting down the process gracefully.",
                 error_string_prefix,
@@ -82,7 +82,7 @@ class Runner:
         """
         self.err.seek(0)  # rewind to start of file
         error = self.err.read().decode()
-        ns_name = TopologyMap.get_namespace(self.ns_id)["name"]
+        ns_name = TopologyMap.get_node(self.ns_id).name
         self.logger.error("%s at %s. %s", error_string_prefix, ns_name, error)
 
     def get_meta_item(self):
@@ -97,9 +97,7 @@ class Runner:
         }
 
         if self.dst_ns is not None:
-            meta_item["destination_node"] = TopologyMap.get_namespace(self.dst_ns)[
-                "name"
-            ]
+            meta_item["destination_node"] = TopologyMap.get_node(self.dst_ns).name
 
         return meta_item
 

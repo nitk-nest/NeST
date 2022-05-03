@@ -3,7 +3,6 @@
 
 """Handle traffic control entities"""
 
-from nest.topology_map import TopologyMap
 from nest import engine
 
 # TODO: Improve this module such that the below pylint disables are no
@@ -67,9 +66,6 @@ class TrafficControlHandler:
             Qdisc(self.node_id, self.dev_id, qdisc, parent, handle, **kwargs)
         )
 
-        # Add qdisc to TopologyMap
-        TopologyMap.add_qdisc(self.node_id, self.dev_id, qdisc, handle, parent=parent)
-
     def change_qdisc(self, handle, qdisc="", **kwargs):
         """
         Change a qdisc that is already present in the device
@@ -88,7 +84,6 @@ class TrafficControlHandler:
                 if qdisc == "":
                     qdisc = qdisc_member.qdisc
                 else:
-                    TopologyMap.change_qdisc(self.node_id, self.dev_id, qdisc, handle)
                     qdisc_member.qdisc = qdisc
                 engine.change_qdisc(
                     self.node_id,
@@ -115,7 +110,6 @@ class TrafficControlHandler:
                 engine.delete_qdisc(
                     qdisc.node_id, qdisc.dev_id, qdisc.parent, qdisc.handle
                 )
-                TopologyMap.delete_qdisc(self.node_id, self.dev_id, handle)
                 del self.qdisc_list[counter]
                 break
             counter += 1
