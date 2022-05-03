@@ -33,7 +33,7 @@ def is_module_loaded(cong_algo):
     return False
 
 
-def set_tcp_params(cong_algo, tcp_module_params, reset_flag = False):
+def set_tcp_params(cong_algo, tcp_module_params, reset_flag=False):
     """
     Change TCP module parameters
 
@@ -67,7 +67,7 @@ def set_tcp_params(cong_algo, tcp_module_params, reset_flag = False):
                 "%s:%s parameter not modifiable. Parameter set to default value - %s",
                 cong_algo,
                 key,
-                default_value
+                default_value,
             )
 
 

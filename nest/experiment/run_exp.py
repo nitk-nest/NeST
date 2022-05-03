@@ -14,14 +14,8 @@ from nest.logging_helper import DepedencyCheckFilter
 from nest import config
 from nest.topology_map import TopologyMap
 from nest.clean_up import kill_processes, tcp_modules_clean_up
+from nest import engine
 from .pack import Pack
-from nest.engine.tcp_modules import (
-    is_module_loaded,
-    set_tcp_params,
-    load_tcp_module,
-    get_current_params,
-    remove_tcp_module,
-)
 
 # Import results
 from .results import (
@@ -233,18 +227,18 @@ def tcp_modules_helper(exp):
         if (
             not (config.get_value("show_tcp_module_parameter_confirmation"))
             or input(
-                "Are you sure you want to modify TCP module parameters? (y/n) : "
+                "Are you sure you want to modify TCP module parameters in Linux kernel? (y/n) : "
             ).lower()
             == "y"
         ):
             for cong_algo, params in exp.tcp_module_params.items():
-                flag = is_module_loaded(cong_algo)
+                flag = engine.is_module_loaded(cong_algo)
                 if flag:
                     # the module is already loaded, so store the old parameters
                     # during experiment set these parameters with new values (reset=False)
                     # during cleanup reset these parameters with old values (reset=True)
-                    exp.old_cong_algos[cong_algo] = get_current_params(cong_algo)
-                    set_tcp_params(cong_algo, params, False)
+                    exp.old_cong_algos[cong_algo] = engine.get_current_params(cong_algo)
+                    engine.set_tcp_params(cong_algo, params, False)
                 else:
                     # the module will be newly loaded
                     # it should be removed during cleanup
@@ -252,7 +246,7 @@ def tcp_modules_helper(exp):
                     params_string = " ".join(
                         {f"{key}={value}" for key, value in params.items()}
                     )
-                    load_tcp_module(cong_algo, params_string)
+                    engine.load_tcp_module(cong_algo, params_string)
 
 
 def run_workers(workers):
@@ -722,6 +716,7 @@ def progress_bar(stop_time, precision=1):
 
     logger.info("Cleaning up all the spawned child processes...")
 
+
 def cleanup():
     """
     Clean up
@@ -732,7 +727,7 @@ def cleanup():
     TcResults.remove_all_results()
     PingResults.remove_all_results()
     CoAPResults.remove_all_results()
-    
+
     # Clean up the configured TCP modules and kill processes
     tcp_modules_clean_up()
     kill_processes()

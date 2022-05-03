@@ -77,11 +77,13 @@ class TestExperiment(unittest.TestCase):
         exp.run()
 
     def test_experiment_tcp_module_params(self):
+        config.set_value("show_tcp_module_parameter_confirmation", False)
+
         n1 = Node("n1")
         n2 = Node("n2")
         r = Node("r")
         r.enable_ip_forwarding()
-        
+
         (n1_r, r_n1) = connect(n1, r)
         (r_n2, n2_r) = connect(r, n2)
 
@@ -92,7 +94,7 @@ class TestExperiment(unittest.TestCase):
 
         n1.add_route("DEFAULT", n1_r)
         n2.add_route("DEFAULT", n2_r)
-        
+
         n1_r.set_attributes("100mbit", "5ms")
         r_n1.set_attributes("100mbit", "5ms")
 
@@ -109,6 +111,8 @@ class TestExperiment(unittest.TestCase):
         exp2.configure_tcp_module_params("cubic", beta=1000)
         exp2.add_tcp_flow(flow)
         exp2.run()
+
+        config.set_value("show_tcp_module_parameter_confirmation", True)
 
     # Test `CoapFlow` API by generating GET and PUT CoAP traffic
     def test_experiment_coap(self):

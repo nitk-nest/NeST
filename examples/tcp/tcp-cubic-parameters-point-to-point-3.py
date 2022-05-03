@@ -28,11 +28,12 @@ from nest.topology.address_helper import AddressHelper
 #                                                                            #
 ##############################################################################
 
-# This program runs for 200 seconds and creates a new directory called
-# `tcp-cubic-point-to-point-3(date-timestamp)_dump`. It contains a `README`
-# which provides details about the sub-directories and files within this
-# directory. See the plots in `netperf`, `ping` and `ss` sub-directories for
-# this program.
+# This program runs for 200 seconds and creates two new directories called
+# `tcp-cubic-parameters-point-to-point-3-default(date-timestamp)_dump`
+# and `tcp-cubic-parameters-point-to-point-3-beta=1000(date-timestamp)_dump`.
+# They contain a `README` which provides details about the sub-directories
+# and files within this directory. See the plots in `netperf`, `ping`
+# and `ss` sub-directories for this program.
 
 # Create two hosts `h1` and `h2`, and two routers `r1` and `r2`
 h1 = Node("h1")
@@ -81,7 +82,7 @@ r1.add_route("DEFAULT", etr1b)
 r2.add_route("DEFAULT", etr2a)
 
 # Set up an Experiment. This API takes the name of the experiment as a string.
-exp1 = Experiment("tcp-cubic-point-to-point-3-default")
+exp1 = Experiment("tcp-cubic-parameters-point-to-point-3-default")
 
 # Configure a flow from `h1` to `h2`. We do not use it as a TCP flow yet.
 # The `Flow` API takes in the source node, destination node, destination IP
@@ -97,7 +98,7 @@ exp1.add_tcp_flow(flow1)
 # Run the experiment
 exp1.run()
 # Set up a second Experiment
-exp2 = Experiment("tcp-cubic-point-to-point-3-beta=1000")
+exp2 = Experiment("tcp-cubic-parameters-point-to-point-3-beta=1000")
 
 # Use `flow1` as a TCP CUBIC flow with cubic parameter beta set to 1000
 exp2.configure_tcp_module_params("cubic", beta=1000)
@@ -105,7 +106,3 @@ exp2.add_tcp_flow(flow1)
 
 # Run the experiment
 exp2.run()
-
-
-
-
