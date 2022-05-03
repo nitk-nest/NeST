@@ -10,6 +10,7 @@ import time
 from nest import engine
 from nest.topology.interface import BaseInterface, Interface
 from nest.engine import t_shark
+from nest.engine.util import is_dependency_installed
 from nest.topology_map import TopologyMap
 from nest import config
 from nest.network_utilities import ipv6_dad_check
@@ -451,6 +452,14 @@ class Node:
         interface: Interface
             If the packets need to be captured from only one specific interface
         """
+
+        install_status = is_dependency_installed("tshark")
+
+        if install_status is False:
+            logger.warning(
+                "The system doesn't have tshark installed\n"
+                "Packet capture method requires this tool"
+            )
 
         timestamp = time.strftime("%d-%m-%Y-%H:%M:%S")
 
