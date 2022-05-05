@@ -37,7 +37,7 @@ class TestIPv4AddressHelper(unittest.TestCase):
 
         AddressHelper.assign_addresses()
 
-        status = self.n0.ping(n1_n0.get_address(), verbose=False)
+        status = self.n0.ping(n1_n0.get_address(), verbose=0)
         self.assertTrue(status)
 
     def test_p2p_ipv6(self):
@@ -45,7 +45,7 @@ class TestIPv4AddressHelper(unittest.TestCase):
 
         AddressHelper.assign_addresses()
 
-        status = self.n0.ping(n1_n0.get_address(), verbose=False)
+        status = self.n0.ping(n1_n0.get_address(), verbose=0)
         self.assertTrue(status)
 
     def test_prp(self):
@@ -64,7 +64,7 @@ class TestIPv4AddressHelper(unittest.TestCase):
         self.n0.add_route("DEFAULT", n0_r)
         self.n1.add_route("DEFAULT", n1_r)
 
-        status = self.n0.ping(n1_r.get_address(), verbose=False)
+        status = self.n0.ping(n1_r.get_address(), verbose=0)
 
         self.assertTrue(status)
 
@@ -84,7 +84,7 @@ class TestIPv4AddressHelper(unittest.TestCase):
         self.n0.add_route("DEFAULT", n0_r)
         self.n1.add_route("DEFAULT", n1_r)
 
-        status = self.n0.ping(n1_r.get_address(), verbose=False)
+        status = self.n0.ping(n1_r.get_address(), verbose=0)
 
         self.assertTrue(status)
 
@@ -107,7 +107,7 @@ class TestIPv4AddressHelper(unittest.TestCase):
 
         RoutingHelper(protocol="rip").populate_routing_tables()
 
-        status = self.n0.ping(n1_r2.get_address(), verbose=False)
+        status = self.n0.ping(n1_r2.get_address(), verbose=0)
 
         self.assertTrue(status)
 
@@ -130,7 +130,7 @@ class TestIPv4AddressHelper(unittest.TestCase):
 
         RoutingHelper(protocol="rip").populate_routing_tables()
 
-        status = self.n0.ping(n1_r2.get_address(), verbose=False)
+        status = self.n0.ping(n1_r2.get_address(), verbose=0)
 
         self.assertTrue(status)
 

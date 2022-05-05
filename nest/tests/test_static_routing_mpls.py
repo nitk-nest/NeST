@@ -66,10 +66,10 @@ class TestStaticMPLS(unittest.TestCase):
         self.r1.add_route_mpls_switch(201, eth_r0_r1.get_address(), 202)
         self.r0.add_route_mpls_pop(202, eth_n0_r0.get_address())
 
-        status = self.n0.ping("10.0.3.4", verbose=True)
+        status = self.n0.ping("10.0.3.4", verbose=2)
         self.assertTrue(status)
 
-        status = self.n1.ping("10.0.1.1", verbose=True)
+        status = self.n1.ping("10.0.1.1", verbose=2)
         self.assertTrue(status)
 
 

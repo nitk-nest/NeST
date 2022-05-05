@@ -87,7 +87,7 @@ class TestStaticRouting(unittest.TestCase):
         for node1, address1 in self.nodes_addresses:
             for _, address2 in self.nodes_addresses:
                 if address1 != address2:
-                    status = node1.ping(address2, verbose=True)
+                    status = node1.ping(address2, verbose=2)
                     self.assertTrue(status)
 
 

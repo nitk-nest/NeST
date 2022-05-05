@@ -57,30 +57,30 @@ class TestQuagga(unittest.TestCase):
         self.routing_helper = RoutingHelper("rip")
         self.routing_helper.populate_routing_tables()
 
-        status = self.n0.ping("10::3:4", verbose=False)
+        status = self.n0.ping("10::3:4", verbose=0)
         self.assertTrue(status)
 
-        status = self.n1.ping("10::1:1", verbose=False)
+        status = self.n1.ping("10::1:1", verbose=0)
         self.assertTrue(status)
 
     def test_ospf(self):
         self.routing_helper = RoutingHelper("ospf")
         self.routing_helper.populate_routing_tables()
 
-        status = self.n0.ping("10::3:4", verbose=False)
+        status = self.n0.ping("10::3:4", verbose=0)
         self.assertTrue(status)
 
-        status = self.n1.ping("10::1:1", verbose=False)
+        status = self.n1.ping("10::1:1", verbose=0)
         self.assertTrue(status)
 
     def test_isis(self):
         self.routing_helper = RoutingHelper("isis")
         self.routing_helper.populate_routing_tables()
 
-        status = self.n0.ping("10::3:4", verbose=False)
+        status = self.n0.ping("10::3:4", verbose=0)
         self.assertTrue(status)
 
-        status = self.n1.ping("10::1:1", verbose=False)
+        status = self.n1.ping("10::1:1", verbose=0)
         self.assertTrue(status)
 
 

@@ -271,7 +271,7 @@ class RoutingHelper:
             for i in range(len(self.hosts)):
                 for j in range(i + 1, len(self.hosts)):
                     if not self.hosts[i].ping(
-                        self.hosts[j].interfaces[0].address.get_addr(), verbose=False
+                        self.hosts[j].interfaces[0].address.get_addr(), verbose=0
                     ):
                         converged = False
                         break
