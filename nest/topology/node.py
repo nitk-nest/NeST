@@ -321,7 +321,7 @@ class Node:
         destination_address: Address,
         preload: int = 1,
         packets: int = 5,
-        verbose: bool = True,
+        verbose: int = 2,
     ):
         """
         Ping from current `Node` to destination address
@@ -336,8 +336,10 @@ class Node:
             waiting for reply.
         packets: int
             Number of ping packets sent
-        verbose: bool
-            If `True`, output ping packet details
+        verbose: int
+            If verbose = '0', no output is printed to stdout.
+            If verbose = '1', output if ping succeeded or failed.
+            If verbose = '2', output details of each ping packet.
 
         Returns
         -------
@@ -345,10 +347,12 @@ class Node:
             `True` if `Node` can successfully ping `destination_address`.
             Else `False`.
         """
-        if isinstance(destination_address, str):
-            destination_address = Address(destination_address)
+        if verbose not in [0, 1, 2]:
+            raise ValueError(
+                f"Verbose parameter value is {verbose}. It should be 0, 1 or 2."
+            )
 
-        if verbose:
+        if verbose == 2:
             print()
             print(
                 f"=== PING from {self.name} to "
@@ -362,8 +366,22 @@ class Node:
             preload,
             packets,
             destination_address.is_ipv6(),
-            live_output=verbose,
+            verbose == 2,
         )
+
+        if verbose == 1:
+            print()
+            if status is True:
+                print(
+                    f"SUCCESS : === PING from {self.name} to "
+                    f"{destination_address.get_addr(with_subnet=False)} ==="
+                )
+            elif status is False:
+                print(
+                    f"FAILURE: === PING from {self.name} to "
+                    f"{destination_address.get_addr(with_subnet=False)} ==="
+                )
+            print()
 
         return status
 
