@@ -125,3 +125,26 @@ class Pack:
         shutil.copy(src_path, dst_path)
         filename = os.path.join(dst_path, os.path.basename(src_path))
         Pack.set_owner(filename)
+
+    @staticmethod
+    def move_files(src_path, dst_path=None):
+        """
+        Copies file from source to stats folder
+
+        Parameters
+        ----------
+        src_path : str
+            Path of source file
+        dst_path : str
+            Relative Path of destination inside the stats folder
+        """
+
+        if dst_path is None:
+            # Default destination path is stats folder
+            dst_path = Pack.FOLDER
+        else:
+            dst_path = os.path.join(Pack.FOLDER, dst_path)
+
+        shutil.move(src_path, dst_path)
+        filename = os.path.join(dst_path, os.path.basename(src_path))
+        Pack.set_owner(filename)

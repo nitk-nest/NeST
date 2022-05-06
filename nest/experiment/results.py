@@ -302,3 +302,40 @@ class CoAPResults:
     def output_to_file():
         """Outputs the aggregated CoAP stats to file"""
         Results.output_to_file(coap_results_q, "coap")
+
+
+# Shared variables to aggregate results
+iperf3_server_results_q = Manager().Queue()
+iperf3_server_results_q.put({})
+
+
+class Iperf3ServerResults:
+    """This class aggregates the iperf3 server stats from the entire experiment environment"""
+
+    @staticmethod
+    def add_result(ns_id, result):
+        """Adds the iperf3 server stats parsed from a process to the shared `iperf3_server_results`
+
+        Parameters
+        ----------
+        ns_id : string
+            namespace id (internal name)
+        result : dict
+            parsed iperf3 server stats
+        """
+        Results.add_result(iperf3_server_results_q, ns_id, result)
+
+    @staticmethod
+    def remove_all_results():
+        """Remove all results obtained from the experiment"""
+        Results.remove_all_results(iperf3_server_results_q)
+
+    @staticmethod
+    def get_results():
+        """Get results obtained in the experiment so far"""
+        return Results.get_results(iperf3_server_results_q)
+
+    @staticmethod
+    def output_to_file():
+        """Outputs the aggregated iperf3 stats to file"""
+        Results.output_to_file(iperf3_server_results_q, "iperf3Server")

@@ -19,6 +19,7 @@ from .pack import Pack
 
 # Import results
 from .results import (
+    Iperf3ServerResults,
     SsResults,
     NetperfResults,
     Iperf3Results,
@@ -30,7 +31,7 @@ from .results import (
 # Import parsers
 from .parser.ss import SsRunner
 from .parser.netperf import NetperfRunner
-from .parser.iperf3 import Iperf3Runner
+from .parser.iperf3 import Iperf3Runner, Iperf3ServerRunner
 from .parser.tc import TcRunner
 from .parser.ping import PingRunner
 from .parser.coap import CoAPRunner
@@ -62,10 +63,10 @@ def run_experiment(exp):
     """
 
     tcp_modules_helper(exp)
-    tools = ["netperf", "ss", "tc", "iperf3", "ping", "coap"]
+    tools = ["netperf", "ss", "tc", "iperf3", "ping", "coap", "server"]
     Runners = namedtuple("runners", tools)
     exp_runners = Runners(
-        netperf=[], ss=[], tc=[], iperf3=[], ping=[], coap=[]
+        netperf=[], ss=[], tc=[], iperf3=[], ping=[], coap=[], server=[]
     )  # Runner objects
 
     # Keep track of all destination nodes [to ensure netperf, iperf3 and
@@ -84,6 +85,8 @@ def run_experiment(exp):
 
     ss_required = False
     ss_filters = set()
+    server_runner = []
+    iperf3_options = {}
 
     # Traffic generation
     for flow in exp.flows:
@@ -134,14 +137,18 @@ def run_experiment(exp):
             #   there can be another flow in the reverse direction whose control
             #   connection also we must ignore.
             ss_filters.add("sport != 5201 and dport != 5201")
-            udp_runners = setup_udp_flows(
-                dependencies["iperf3"], flow, destination_nodes["iperf3"]
-            )
+            udp_runners = setup_udp_flows(dependencies["iperf3"], flow)
 
             exp_runners.iperf3.extend(udp_runners)
 
             # Update destination nodes
             destination_nodes["iperf3"].add(dst_ns)
+            dst_port_options = {options["port_no"]: options}
+            if dst_ns in iperf3_options:
+                dst_port_options.update(iperf3_options.get(dst_ns))
+            iperf3_options.update({dst_ns: dst_port_options})
+
+    server_runner = run_server(iperf3_options, exp_end_t)
 
     for coap_flow in exp.coap_flows:
         [
@@ -178,6 +185,8 @@ def run_experiment(exp):
         run_workers(setup_flow_workers(exp_runners, exp_end_t))
 
         logger.info("Parsing statistics...")
+
+        exp_runners.server.extend(server_runner)
 
         # Parse the stored statistics
         run_workers(setup_parser_workers(exp_runners))
@@ -249,6 +258,28 @@ def tcp_modules_helper(exp):
                     engine.load_tcp_module(cong_algo, params_string)
 
 
+def run_server(iperf3options, exp_end_t):
+    """
+    Run and wait for all server to start
+
+    Parameters
+    ----------
+    iperf3options: dict
+        start server with iperf3 server options
+    exp_end_t: int
+        experiment completion time
+    """
+    # Start server
+    server_list = []
+    for dst_ns in iperf3options:
+        for dst_port in iperf3options[dst_ns]:
+            runner_obj = Iperf3ServerRunner(dst_ns, exp_end_t)
+            runner_obj.setup_iperf3_server(iperf3options[dst_ns][dst_port])
+            Process(target=runner_obj.run).start()
+            server_list.append(runner_obj)
+    return server_list
+
+
 def run_workers(workers):
     """
     Run and wait for processes to finish
@@ -297,6 +328,7 @@ def dump_json_ouputs():
     TcResults.output_to_file()
     PingResults.output_to_file()
     CoAPResults.output_to_file()
+    Iperf3ServerResults.output_to_file()
 
 
 def setup_flow_workers(exp_runners, exp_stop_time):
@@ -363,6 +395,9 @@ def setup_parser_workers(exp_runners):
 
     for coap_runner in exp_runners.coap:
         parsers.append(Process(target=coap_runner.parse))
+
+    for server_runner in exp_runners.server:
+        parsers.append(Process(target=server_runner.parse))
 
     return parsers
 
@@ -464,7 +499,7 @@ def setup_tcp_flows(dependency, flow, ss_schedules, destination_nodes):
     return netperf_runners, ss_schedules
 
 
-def setup_udp_flows(dependency, flow, destination_nodes):
+def setup_udp_flows(dependency, flow):
     """
     Setup iperf3 to run udp flows
 
@@ -501,10 +536,6 @@ def setup_udp_flows(dependency, flow, destination_nodes):
             options,
         ] = flow._get_props()  # pylint: disable=protected-access
 
-        # Run iperf3 server if not already run before on given dst_node
-        if dst_ns not in destination_nodes:
-            Iperf3Runner.run_server(dst_ns)
-
         src_name = TopologyMap.get_namespace(src_ns)["name"]
         f_flow = "flow" if n_flows == 1 else "flows"
         logger.info(
@@ -520,6 +551,7 @@ def setup_udp_flows(dependency, flow, destination_nodes):
             stop_t - start_t,
             dst_ns,
         )
+        runner_obj.setup_iperf3_client(options)
         iperf3_runners.append(runner_obj)
 
     return iperf3_runners
@@ -727,6 +759,8 @@ def cleanup():
     TcResults.remove_all_results()
     PingResults.remove_all_results()
     CoAPResults.remove_all_results()
+    Iperf3Results.remove_all_results()
+    Iperf3ServerResults.remove_all_results()
 
     # Clean up the configured TCP modules and kill processes
     tcp_modules_clean_up()

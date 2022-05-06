@@ -3,10 +3,10 @@
 
 """iperf commands"""
 
-from .exec import exec_subprocess, exec_exp_commands
+from .exec import exec_exp_commands
 
 
-def run_iperf_server(ns_name):
+def run_iperf_server(ns_name, server_options, out, err):
     """
     Run Iperf Server on a namesapce
 
@@ -14,9 +14,22 @@ def run_iperf_server(ns_name):
     ----------
     ns_name : str
         name of the server namespace
+    server_options : str
+        Specific options (like port_no, interval ) to run iperf3 command with
+    out : File
+        temporary file to hold the stats
+    err : File
+        temporary file to hold any errors
+
+    Returns
+    -------
+    int
+        return code of the command executed
     """
-    # Runs server as a daemon
-    return exec_subprocess(f"ip netns exec {ns_name} iperf3 -s -D")
+    # Runs server
+    return exec_exp_commands(
+        f"ip netns exec {ns_name} iperf3 -s {server_options}", stdout=out, stderr=err
+    )
 
 
 # pylint: disable=too-many-arguments
@@ -46,13 +59,13 @@ def run_iperf_client(ns_name, iperf3_options, destination_ip, ipv6, out, err):
     """
     if ipv6:
         return exec_exp_commands(
-            f"ip netns exec {ns_name} iperf3 -6 -u -c {destination_ip} {iperf3_options}",
+            f"ip netns exec {ns_name} iperf3 -6 -c {destination_ip} {iperf3_options}",
             stdout=out,
             stderr=err,
         )
 
     return exec_exp_commands(
-        f"ip netns exec {ns_name} iperf3 -u -c {destination_ip} {iperf3_options}",
+        f"ip netns exec {ns_name} iperf3 -c {destination_ip} {iperf3_options}",
         stdout=out,
         stderr=err,
     )
