@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 import pytest
-from subprocess import Popen, PIPE
+from subprocess import PIPE, run
 import sys
 
 UTILS_DIR = Path(os.path.abspath(__file__)).parent
@@ -19,8 +19,12 @@ Path(EXAMPLES_DUMP_DIR).mkdir(exist_ok=True)
 os.chdir(EXAMPLES_DUMP_DIR)
 
 # Load default command line args for some examples
-with open(UTILS_DIR / "default_examples_args.json") as json_file:
-    ARGS = json.load(json_file)
+with open(UTILS_DIR / "default_examples_args.json") as default_examples_args:
+    ARGS = json.load(default_examples_args)
+
+# Load standard input for some examples
+with open(UTILS_DIR / "examples_stdin.json") as examples_stdin:
+    INPUT = json.load(examples_stdin)
 
 
 def run_example(path):
@@ -30,10 +34,8 @@ def run_example(path):
     cmd = ["coverage", "run", "--rcfile", UTILS_DIR / ".coveragerc", path] + get_args(
         path
     )
-    process = Popen(cmd, stdout=PIPE, stderr=PIPE)
-    stdout, stderr = process.communicate()
-    return_code = process.returncode
-    return {"stdout": stdout, "stderr": stderr, "return_code": return_code}
+    result = run(cmd, input=get_input(path), stdout=PIPE, stderr=PIPE)
+    return result
 
 
 def get_args(path):
@@ -45,6 +47,17 @@ def get_args(path):
         if path.endswith(key):
             return val
     return []
+
+
+def get_input(path):
+    """
+    Get the standard input for example, if needed.
+    If not required, return `None`.
+    """
+    for key, val in INPUT.items():
+        if path.endswith(key):
+            return val.encode()
+    return None
 
 
 # Lists contains all example program paths
@@ -68,9 +81,9 @@ for root, subdirs, files in os.walk(EXAMPLES_DIR):
 def test_example(example_path):
     # Run example
     result = run_example(example_path)
-    stdout = result["stdout"].decode()
-    stderr = result["stderr"].decode()
-    return_code = result["return_code"]
+    stdout = result.stdout.decode()
+    stderr = result.stderr.decode()
+    return_code = result.returncode
 
     # Print stdout, stderr
     print(stdout, file=sys.stdout)
