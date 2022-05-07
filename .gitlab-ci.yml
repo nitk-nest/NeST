@@ -151,7 +151,9 @@ generate coverage report:
       artifacts: true
   artifacts:
     reports:
-      cobertura: coverage.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
     paths:
       - coverage.json
       - coverage.xml
