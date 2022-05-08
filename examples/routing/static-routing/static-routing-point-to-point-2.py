@@ -10,13 +10,12 @@ from nest.topology.address_helper import AddressHelper
 from nest.routing.routing_helper import RoutingHelper
 
 # This program emulates point to point networks that connect two hosts `h1`
-# and `h2` via a router `r1`. Five ping packets are sent from `h1` to `h2`
-# and also from 'h2' to 'h1', and the success/failure of these packets
-# is reported. This program is similar to `ah-point-to-point-2.py` available
-# in `examples/address-helpers`, the only difference is that we populate
-# the routing tables by constructing a spanning tree of the network using DFS.
-# A new package called `RoutingHelper` is imported in this program
-# (Line 10 above).
+# and `h2` via a router `r1`. Five ping packets are sent from `h1` to `h2`,
+# and the success/failure of these packets is reported. This program is
+# similar to `ah-point-to-point-2.py` available in `examples/address-helpers`,
+# the only difference is that we populate the routing tables by constructing a
+# spanning tree of the network using Depth First Search (DFS). A new package
+# called `RoutingHelper` is imported in this program (Line 10 above).
 
 ##########################################################
 #                   Network Topology                     #
@@ -56,11 +55,9 @@ etr1b.set_attributes("5mbit", "5ms")  # from `r1` to `h2`
 eth2.set_attributes("10mbit", "100ms")  # from `h2` to `r1`
 etr1a.set_attributes("10mbit", "100ms")  # from `r1` to `h1`
 
-# Run a Depth First Search to populate routing tables
-# these routes remain fixed throughout the experiment
+# Run a Depth First Search (DFS) to populate routing tables. These routes
+# remain fixed throughout the experiment.
 RoutingHelper(protocol="static").populate_routing_tables()
 
 # `Ping` from `h1` to `h2`.
 h1.ping(eth2.address)
-# `Ping` from `h2` to `h1`.
-h2.ping(eth1.address)
