@@ -1,8 +1,9 @@
-# Examples to demonstrate the support of dynamic routing in NeST
+# Examples to demonstrate the support of routing in NeST
 
 This directory contains the examples to demonstrate how dynamic routing
-protocols can be used to form routes in `NeST`.
+protocols and static routing can be used to form routes in `NeST`.
 
+**Support of dynamic routing protocols**
 `NeST` currently supports two routing suites and Multi Protocol Label
 Switching (MPLS) to provide the support of dynamic routing:
 
@@ -27,6 +28,11 @@ System (ISIS), Open Shortest Path First (OSPF) and Routing Information Protocol
 (RIP) via both `quagga` and `frr`. Label Distribution Protocol (LDP) is
 supported for label distribution in MPLS.
 
+**Support of static routing**
+NeST supports statically populating the routing tables by constructing a
+spanning tree of the network using Depth First Search (DFS). No additional
+libraries are required to use static routing in NeST.
+
 <!-- The below snippet will only render in docs website -->
 <!--
 #BEGIN_DOCS
@@ -38,6 +44,7 @@ supported for label distribution in MPLS.
 frr/README
 mpls/README
 quagga/README
+static-routing/README
 ```
 
 #END_DOCS
