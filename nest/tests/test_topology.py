@@ -12,6 +12,7 @@ from nest.topology_map import TopologyMap
 from nest.topology.interface import Interface
 from nest import config
 
+# pylint: disable=R0904
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
 class TestTopology(unittest.TestCase):
@@ -486,6 +487,26 @@ class TestTopology(unittest.TestCase):
         h2.add_route("DEFAULT", eth2)
 
         status = h1.ping(eth2.address)
+
+        self.assertTrue(status)
+
+    def test_enable_disable_interfaces(self):
+        (n0_n1, n1_n0) = connect(self.n0, self.n1)
+
+        n0_n1.set_address("10.0.0.1/24")
+        n1_n0.set_address("10.0.0.2/24")
+
+        n1_n0.disable(1, 4)
+        n0_n1.disable(6, 9)
+
+        status = self.n0.ping("10.0.0.2", packets=10)
+
+        self.assertTrue(status)
+
+        n0_n1.enable(1, 4)
+        n0_n1.enable(6, 9)
+
+        status = self.n0.ping("10.0.0.2", packets=10)
 
         self.assertTrue(status)
 
