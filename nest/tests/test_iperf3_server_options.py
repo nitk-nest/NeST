@@ -12,9 +12,7 @@ from nest.topology import Node, connect, Switch
 from nest.clean_up import delete_namespaces
 from nest.topology_map import TopologyMap
 from nest.experiment import Experiment, Flow
-
-# from nest import config
-# config.set_value("log_level", "TRACE")
+from nest.experiment.tools import Iperf3
 
 
 # pylint: disable=unused-variable
@@ -34,7 +32,7 @@ def search_file(filename):
     folder_path = os.path.join(os.getcwd(), folder_name)
     file_name = filename
     if os.path.exists(folder_path):
-        for root, directory, files in os.walk(folder_path):
+        for _, _, files in os.walk(folder_path):
             if file_name in files:
                 filepath = os.path.join(folder_path, file_name)
                 with open(filepath, "r") as file:
@@ -44,10 +42,13 @@ def search_file(filename):
     return False
 
 
-# pylint: disable=missing-docstring
 # pylint: disable=invalid-name, unused-variable, redefined-builtin
 # pylint: disable=too-many-instance-attributes,  too-many-nested-blocks
 class TestIperf3Options(unittest.TestCase):
+    """
+    Test cases for different options enabled in iperf3
+    """
+
     def tearDown(self):
         delete_namespaces()
         TopologyMap.delete_all_mapping()
@@ -128,13 +129,21 @@ class TestIperf3Options(unittest.TestCase):
         self.flow_udp_2 = Flow(self.h2, self.h4, eth4.get_address(), 5, 15, 1)
 
     def test_set_dport(self):
+        """
+        In this test case user defines a port no to start server on the destination node.
+        At the end of experiment, we will searh for destination port no in the output file.
+        if destination port no and user defined port no are same, that means the test case
+        has successfully passed.
+        """
+        portno = 1234
 
         # iperf3_server_options API is used to configure iperf3 server options
-        portno = 12345
-        self.flow_udp_1.iperf3_server_options(port_no=portno)
-
-        exp = Experiment("flow")
-        exp.add_udp_flow(self.flow_udp_1)
+        exp = Experiment("flow-udp")
+        exp.add_udp_flow(
+            self.flow_udp_1,
+            server_options=Iperf3.server_option(s_interval=0.5, port_no=portno),
+            client_options=Iperf3.client_option(interval=0.4, cport=12345),
+        )
         exp.run()
 
         exp_output = search_file("iperf3Server.json")
@@ -147,17 +156,28 @@ class TestIperf3Options(unittest.TestCase):
                     for dst_port in dict[src_ip]:
                         if portno == int(dst_port):
                             status = True
-
+                        else:
+                            print(
+                                f"Failed! input port_no {portno} is not equal "
+                                "to server port_no {dst_port}"
+                            )
         self.assertTrue(status)
 
     def test_set_interval(self):
+        """
+        In this test case user defines a time interval for each output line at the server.
+        At the end of experiment, we will searh for value of "duration" in the output JSON file.
+        if the average of "duration" and user defined interval is same, that means this
+        test case has successfully passed.
+        """
 
         # iperf3_server_options API is used to configure iperf3 server options
         interval = 0.4
-        self.flow_udp_1.iperf3_server_options(interval=interval)
+        portno = 1234
 
         exp = Experiment("flow")
-        exp.add_udp_flow(self.flow_udp_1)
+        tool_options = {"s_interval": interval, "port_no": portno}
+        exp.add_udp_flow(self.flow_udp_1, server_options=tool_options)
         exp.run()
 
         exp_output = search_file("iperf3Server.json")
@@ -167,14 +187,19 @@ class TestIperf3Options(unittest.TestCase):
         if exp_output:
             for dict in exp_output[dst_name]:
                 if src_ip in dict:
-                    interval = []
+                    interval_val = []
                     for dst_port in dict[src_ip]:
                         for dict1 in dict[src_ip][dst_port]:
                             if "duration" in dict1:
-                                interval.append(float(dict1["duration"]))
-                    average = sum(interval) / len(interval)
-                    if interval == round(average, 1):
+                                interval_val.append(float(dict1["duration"]))
+                    average = round(sum(interval_val) / len(interval_val), 1)
+                    if interval == average:
                         status = True
+                    else:
+                        print(
+                            f"Failed! input interval {interval} is not equal "
+                            "to output interval {average}"
+                        )
 
         self.assertTrue(status)
 

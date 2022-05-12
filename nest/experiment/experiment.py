@@ -14,6 +14,7 @@ from nest.topology import Node, Address
 from nest.topology.interface import BaseInterface
 from .run_exp import run_experiment
 from .pack import Pack
+from .tools import Iperf3Options
 
 logger = logging.getLogger(__name__)
 
@@ -97,66 +98,6 @@ class Flow:
             f" {self.destination_address!r}), {self.start_time!r}, {self.stop_time!r}"
             f" {self.number_of_streams!r})"
         )
-
-        # pylint: disable=unused-argument, too-many-arguments
-
-    @input_validator
-    def iperf3_server_options(
-        self,
-        port_no: int = None,
-        interval: float = 0.2,
-        s_format: str = None,
-        timestamps: str = None,
-        s_logfile: str = None,
-        verbose: bool = None,
-        forceflush: bool = None,
-        daemon: bool = None,
-        one_off: bool = True,
-        bitrate: str = None,
-    ):
-        """
-        Configure iperf3 server options
-
-        Parameters
-        ----------
-        port_no : int
-            server port to listen on/connect to
-        interval : float
-            seconds between periodic throughput reports (Default is 0.2s)
-        s_format : str [kmgtKMGT]
-            format to report: Kbits, Mbits, Gbits, Tbits
-        timestamps : str
-            emit a timestamp at the start of each output line
-            (using optional format string as per strftime(3))
-        s_logfile : str
-            send output to a log file
-        verbose : bool
-            more detailed output as a log file
-        forceflush : bool
-            force flushing output at every interval
-        daemon : bool
-            run the server as a daemon
-        one_off : bool
-            handle one client connection then exit (Default is True)
-        """
-
-        self.user_input_options.update(locals())
-        self.user_input_options.pop("self")
-
-        # iperf3 default server options
-        server_options = {}
-        for option in self.user_input_options:
-            if self.user_input_options.get(option):
-                server_options.update({option: self.user_input_options.get(option)})
-
-        if "port_no" in server_options and (
-            server_options.get("port_no") not in range(1, 65536)
-        ):
-            raise Exception(
-                "Invalid port number. must be numeric and in range (1, 65536)."
-            )
-
-        self._options.update(server_options)
 
 
 class CoapFlow(Flow):
@@ -298,7 +239,11 @@ class Experiment:
 
     @input_validator
     def add_udp_flow(
-        self, flow: Flow, target_bandwidth: Bandwidth = Bandwidth("1mbit")
+        self,
+        flow: Flow,
+        target_bandwidth: Bandwidth = Bandwidth("1mbit"),
+        server_options: dict = None,
+        client_options: dict = None,
     ):
         """
         Add UDP flow to experiment
@@ -311,15 +256,24 @@ class Experiment:
             UDP bandwidth (in Mbits) (Default value = '1mbit')
             This bandwidth limit is for each UDP stream in the flow
         """
-        options = {"protocol": "UDP", "target_bw": target_bandwidth.string_value}
+        options = {"protocol": "udp", "target_bw": target_bandwidth.string_value}
 
         # options update with user configuration
-        # pylint: disable=protected-access
-        if "port_no" not in flow._options:
-            options.update({"port_no": random.randrange(1024, 65536, 100)})
+        user_options = {}
+        if server_options:
+            user_options.update(server_options)
+        if client_options:
+            user_options.update(client_options)
+
+        iperf3options = Iperf3Options(kwargs=user_options).getter()
+
+        if "port_no" not in iperf3options:
+            iperf3options.update({"port_no": random.randrange(1024, 65536)})
+
+        iperf3options.update(options)
 
         # pylint: disable=protected-access
-        flow._options.update(options)
+        flow._options = iperf3options
         self.add_flow(flow)
 
     @input_validator

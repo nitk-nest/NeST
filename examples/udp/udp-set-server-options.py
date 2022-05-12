@@ -6,6 +6,7 @@
 ########################
 from nest.topology import *
 from nest.experiment import Experiment, Flow
+from nest.experiment.tools import Iperf3
 
 # This program emulates configuration of iperf3 server on two
 # Local Area Networks (LANs) connected directly to
@@ -15,7 +16,7 @@ from nest.experiment import Experiment, Flow
 # host 'h1' sends packets to 'h4' for 10 sec.
 # At 'h4' output is reported at an interval of 1 sec.
 # After 5 sec of the start of the program 'h2' starts sending packets to 'h4' for 10 sec
-#  which is reported at an interval of 0.5 sec.
+# which is reported at an interval of 0.5 sec.
 
 #########################################################
 #                    Network Topology                   #
@@ -86,10 +87,12 @@ flow_udp_1 = Flow(h1, h4, eth4.get_address(), 0, 10, 2)
 flow_udp_2 = Flow(h2, h4, eth4.get_address(), 5, 15, 1)
 
 # iperf3_server_options API is used to configure iperf3 server options
-flow_udp_1.iperf3_server_options(interval=2.0)
-flow_udp_2.iperf3_server_options(interval=0.5)
 
 exp = Experiment("udp_flow")
-exp.add_udp_flow(flow_udp_1)
-exp.add_udp_flow(flow_udp_2)
+exp.add_udp_flow(
+    flow_udp_1, server_options=Iperf3.server_option(s_interval=0.5, port_no=2345)
+)
+exp.add_udp_flow(
+    flow_udp_2, client_options=Iperf3.client_option(interval=0.3, cport=1234)
+)
 exp.run()

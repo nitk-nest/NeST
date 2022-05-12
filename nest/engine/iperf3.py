@@ -27,9 +27,14 @@ def run_iperf_server(ns_name, server_options, out, err):
         return code of the command executed
     """
     # Runs server
-    return exec_exp_commands(
+    return_code = exec_exp_commands(
         f"ip netns exec {ns_name} iperf3 -s {server_options}", stdout=out, stderr=err
     )
+    # return code 1 denotes that server is terminated at the end of experiment by cleaning process
+    # so it is not an error.
+    if return_code == 1:
+        return_code = 0
+    return return_code
 
 
 # pylint: disable=too-many-arguments

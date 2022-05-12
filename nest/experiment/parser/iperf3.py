@@ -4,9 +4,9 @@
 """ Runs iperf command to setup UDP flows """
 
 import os
+import tempfile
 from time import sleep
 from functools import partial
-import copy
 import json
 import logging
 
@@ -29,19 +29,6 @@ class Iperf3Runner(Runner):
     ns_id : str
         network namespace to run iperf from
     """
-
-    # fmt: off
-
-    default_iperf3_options = {
-        "interval": "-i 0.2",       # Generate interim results every INTERVAL seconds
-        "json": "--json",           # Get output in easily parsable JSON format
-        "testlen": "-t 10",         # Length of test (NOTE: Default 10s)
-        "protocol": "--udp",        # Transport protocol to use (TODO: Add support for TCP as well)
-        "n_flows": "-P 1",          # Number of parallel flows (NOTE: Default 1)
-        "bitrate": "-b 1M"          # Target bitrate (NOTE: Default 1 Mbit/sec)
-    }
-
-    # fmt: on
 
     # pylint: disable=too-many-arguments
     def __init__(
@@ -82,9 +69,35 @@ class Iperf3Runner(Runner):
             iperf3 client options configured by user
         """
 
-        default_client_options = {"port_no": "-p "}  # server port to connect to
+        default_client_options = {
+            "verbose": "-V",  # more detailed output as a log file
+            "format": "-f ",  # format to report: Kbits, Mbits, Gbits, Tbits
+            "logfile": "--logfile ",  # send output to a log file
+            "forceflush": "--forceflush",  # force flushing output at every interval
+            "port_no": "-p ",  # # server port to connect to
+            "cport": "--cport ",  # bind to a specific client port
+            "interval": "-i ",  # Generate interim results every INTERVAL seconds
+            "protocol": "--",  # Transport protocol to use (TODO: Add support for TCP as well)
+            "n_flows": "-P 1",  # Number of parallel flows (NOTE: Default 1)
+            "testlen": "-t 10",  # Length of test (NOTE: Default 10s)
+        }
 
-        client_options = {}
+        client_options = {"json": "--json"}
+        # if iperf3 contains any of the below options then output will be a .log file
+        loglist = [
+            "format",
+            "timestamps",
+            "verbose",
+            "forceflush",
+            "logfile",
+        ]
+        for listitem in loglist:
+            if listitem in options:
+                client_options.pop("json")
+                if "logfile" not in options:
+                    options.update({"logfile": "Iperf3_Client_Output"})
+                options.update({"logfile": options["logfile"] + ".log"})
+                break
         for option in options:
             if option in default_client_options:
                 option_value = default_client_options[option]
@@ -92,13 +105,19 @@ class Iperf3Runner(Runner):
                     option_value += str(options[option])
                 client_options.update({option: option_value})
 
+        if "timestamps" in options:
+            client_options.update(
+                {"timestamps": f"--timestamps=\"{options['timestamps']} \""}
+            )
+
         self.options = client_options
 
     def run(self):
         """
         calls engine method to run iperf client
         """
-        iperf3_options = copy.copy(Iperf3Runner.default_iperf3_options)
+        # set user defined iperf3 client options
+        iperf3_options = self.options
 
         # Set run time
         iperf3_options["testlen"] = f"-t {self.run_time}"
@@ -109,9 +128,6 @@ class Iperf3Runner(Runner):
         # Set target bitrate
         iperf3_options["bitrate"] = f"-b {self.bandwidth}"
 
-        # set user defined iperf3 client options
-        iperf3_options.update(self.options)
-
         # Convert iperf3_options dict to string
         iperf3_options_list = list(iperf3_options.values())
         iperf3_options_string = " ".join(iperf3_options_list)
@@ -119,28 +135,55 @@ class Iperf3Runner(Runner):
         if self.start_time != 0:
             sleep(self.start_time)
 
-        super().run(
-            partial(
-                run_iperf_client,
-                self.ns_id,
-                iperf3_options_string,
-                self.destination_address.get_addr(with_subnet=False),
-                self.destination_address.is_ipv6(),
-            ),
-            error_string_prefix="Running iperf3 client",
-        )
+        waiting_time = self.run_time
+        while True:
+            super().run(
+                partial(
+                    run_iperf_client,
+                    self.ns_id,
+                    iperf3_options_string,
+                    self.destination_address.get_addr(with_subnet=False),
+                    self.destination_address.is_ipv6(),
+                ),
+                error_string_prefix="Running iperf3 Client",
+            )
+            self.out.seek(0)
+            out_str = self.out.read().decode()
+            parse = json.loads(out_str)
+            if not "error" in parse:
+                break
+            if waiting_time < 2:
+                dst_address = self.destination_address.get_addr(with_subnet=False)
+                logger.error("unable to connect server on destination %s", dst_address)
+                break
+            logger.info("%s\nRetrying to connect ...\n", parse["error"])
+            self.out.close()
 
+            # pylint: disable=consider-using-with
+            self.out = tempfile.TemporaryFile()
+            waiting_time -= 1
+            sleep(1)
+
+    # pylint: disable=too-many-locals
     @handle_keyboard_interrupt
     def parse(self):
         """
         Parse iperf3 output from self.out
         """
+        if "logfile" in self.options:
+            logfile_name = self.options["logfile"].replace("--logfile ", "")
+            logfile_path = os.path.join(os.getcwd(), logfile_name)
+            if os.path.exists(logfile_path):
+                Pack.move_files(logfile_path)
+            return
         self.out.seek(0)  # rewind to start of the temp file
         raw_stats = self.out.read().decode()
 
         # Iperf3 already gives output in JSON format, so we parse
         # into a dictionary
         parsed_stats = json.loads(raw_stats)
+        if "error" in parsed_stats:
+            return
 
         # Extract from useful connection info from parsed data
         # Useful for diffrentiating between flows
@@ -236,24 +279,24 @@ class Iperf3ServerRunner(Runner):
 
         default_server_options = {
             "one_off": "-1",  # handle one client connection then exit
-            "verbose": "-V",  # more detailed output as a log file
             "port_no": "-p ",  # server port to listen on
-            "interval": "-i ",  # Generate interim results every INTERVAL seconds
+            "s_verbose": "-V",  # more detailed output as a log file
+            "s_interval": "-i ",  # Generate interim results every INTERVAL seconds
             "s_format": "-f ",  # format to report: Kbits, Mbits, Gbits, Tbits
             "s_logfile": "--logfile ",  # send output to a log file
-            "forceflush": "--forceflush",  # force flushing output at every interval
+            "s_forceflush": "--forceflush",  # force flushing output at every interval
             "bitrate": "--server-bitrate-limit ",  # server's total bit rate limit
         }
 
         # Default Server output is a .json file
-        server_options = {"json": "-J"}
+        server_options = {"json": "--json"}
 
         # if iperf3 contains any of the below options then output will be a .log file
         loglist = [
             "s_format",
-            "timestamps",
-            "verbose",
-            "forceflush",
+            "s_timestamps",
+            "s_verbose",
+            "s_forceflush",
             "s_logfile",
             "daemon",
         ]
@@ -261,7 +304,7 @@ class Iperf3ServerRunner(Runner):
             if listitem in options:
                 server_options.pop("json")
                 if "s_logfile" not in options:
-                    options.update({"s_logfile": "Server_Output"})
+                    options.update({"s_logfile": "Iperf3_Server_Output"})
                 options.update({"s_logfile": options["s_logfile"] + ".log"})
                 break
 
@@ -271,13 +314,14 @@ class Iperf3ServerRunner(Runner):
                 if not isinstance(options[option], bool):
                     option_value += str(options[option])
                 server_options.update({option: option_value})
-        if "timestamps" in options:
+        if "s_timestamps" in options:
             server_options.update(
-                {"timestamps": f"--timestamps=\"{options['timestamps']} \""}
+                {"s_timestamps": f"--timestamps=\"{options['s_timestamps']} \""}
             )
 
         self.server_options = server_options
 
+    # pylint: disable = invalid-name
     def run(self):
         """
         calls engine method to run iperf3 server
@@ -290,7 +334,7 @@ class Iperf3ServerRunner(Runner):
 
         super().run(
             partial(run_iperf_server, self.ns_id, iperf3_options_string),
-            error_string_prefix="Running iperf3 server ",
+            error_string_prefix="Running iperf3 server",
         )
 
     # pylint: disable = too-many-locals
@@ -309,6 +353,8 @@ class Iperf3ServerRunner(Runner):
 
         self.out.seek(0)  # rewind to start of the temp file
         raw_stats = self.out.read()
+        if not raw_stats.decode():
+            return
 
         # Iperf3 already gives output in JSON format, so we parse
         # into a dictionary

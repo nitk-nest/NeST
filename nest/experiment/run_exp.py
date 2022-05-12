@@ -50,8 +50,8 @@ if not any(isinstance(filter, DepedencyCheckFilter) for filter in logger.filters
     # messages incase any of the tools is not installed
     logger.addFilter(DepedencyCheckFilter())
 
-# pylint: disable=too-many-locals
-# pylint: disable=too-many-statements
+# pylint: disable=too-many-locals, too-many-branches
+# pylint: disable=too-many-statements, invalid-name
 def run_experiment(exp):
     """
     Run experiment
@@ -130,7 +130,7 @@ def run_experiment(exp):
             # Update destination nodes
             destination_nodes["netperf"].add(dst_ns)
 
-        elif options["protocol"] == "UDP":
+        elif options["protocol"] == "udp":
             # * Ignore iperf3 tcp control connections
             # * Destination port of iperf3  control connection is 5201
             # * We also have "sport" (source port) in the below condition since
@@ -275,8 +275,12 @@ def run_server(iperf3options, exp_end_t):
         for dst_port in iperf3options[dst_ns]:
             runner_obj = Iperf3ServerRunner(dst_ns, exp_end_t)
             runner_obj.setup_iperf3_server(iperf3options[dst_ns][dst_port])
-            Process(target=runner_obj.run).start()
             server_list.append(runner_obj)
+
+    for server in server_list:
+        process = Process(target=server.run)
+        process.start()
+
     return server_list
 
 
