@@ -436,6 +436,11 @@ class Interface:
             Link bandwidth
         """
 
+        qdisc_list = ["choke", "codel", "fq_codel", "pie", "fq_pie", "pfifo", "red"]
+
+        if qdisc not in qdisc_list:
+            raise ValueError(f"{qdisc} is not a valid Qdisc")
+
         self._veth_end.set_structure()
 
         if self._ifb is None:
