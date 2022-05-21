@@ -4,8 +4,7 @@ This directory contains the following examples to understand how IPv6 addresses
 can be used in `NeST`. We recommend that you walk through these examples in
 the same order as they are presented.
 
-## Note:
-
+**NOTE**  
 Duplicate Address Detection (DAD) feature of IPv6 in Linux is disabled by
 default in NeST. It can be enabled by using the `config` as shown [here](http://nest.nitk.ac.in/docs/master/user/config.html).
 However, you might have to manually add delays during the IPv6 address

@@ -22,7 +22,7 @@ assigns random names to the namespaces by default. However, when random names
 are disabled, node names cannot be longer than three characters. We use names
 `h1` and `h2` in this example.
 
-### Important note:
+**IMPORTANT NOTE**  
 Do not forget to delete the namespaces manually before re-running this program.
 You can delete namespaces one-by-one by using `sudo ip netns del h1` command
 (similarly for `h2`) or delete all namespaces at once by using
