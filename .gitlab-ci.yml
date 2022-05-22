@@ -1,238 +1,229 @@
-# Merge-Request Pipeline
+# You can override the included template(s) by including variable overrides
+# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
+# Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/#customizing-settings
+# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
+# Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
+# Note that environment variables can be set in several places
+# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 workflow:
   rules:
-    - if: $CI_MERGE_REQUEST_IID
-    - if: $FORK_PIPELINE_RUN == "true"
-    - if: $CI_PROJECT_URL != "https://gitlab.com/nitk-nest/nest"
-      when: never
-    - if: $CI_COMMIT_TAG
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-
-
+  - if: "$CI_MERGE_REQUEST_IID"
+  - if: $FORK_PIPELINE_RUN == "true"
+  - if: $CI_PROJECT_URL != "https://gitlab.com/nitk-nest/nest"
+    when: never
+  - if: "$CI_COMMIT_TAG"
+  - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
 default:
   tags:
-    - nest
+  - nest
   image: docker:20.10.3
-
 stages:
-  - validate
-  - build
-  - test
-  - release
-
+- validate
+- build
+- test
+- release
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-  CONTAINER_TEST_CI_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG   # Image to used for running tests on CI
-  CONTAINER_TEST_DEFAULT_IMAGE: $CI_REGISTRY_IMAGE:$CI_DEFAULT_BRANCH   # Image used for running tests on default branch
-  CONTAINER_DEV_IMAGE: $CI_REGISTRY_IMAGE:dev  # Image to be uploaded to docker hub
+  CONTAINER_TEST_CI_IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+  CONTAINER_TEST_DEFAULT_IMAGE: "$CI_REGISTRY_IMAGE:$CI_DEFAULT_BRANCH"
+  CONTAINER_DEV_IMAGE: "$CI_REGISTRY_IMAGE:dev"
   DOCKERHUB_REPO: nestnitk/nest-docker
   DOCKER_TLS_CERTDIR: "/certs"
-  FORK_PIPELINE_RUN: "false"  # If pipeline runs should be allowed in fork repos
-
+  FORK_PIPELINE_RUN: 'false'
 validate mr:
   stage: validate
   script:
-    - echo "Source branch -> $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
-    - echo "Target branch -> $CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
-    - if [[ $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME = $CI_DEFAULT_BRANCH_NAME ]]; then
-        echo "The source branch for the MR should not be master! Please create a new branch for your changes and create a new MR from it.";
-        exit 1;
-      fi
+  - echo "Source branch -> $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+  - echo "Target branch -> $CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+  - if [[ $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME = $CI_DEFAULT_BRANCH_NAME ]]; then
+    echo "The source branch for the MR should not be master! Please create a new branch
+    for your changes and create a new MR from it."; exit 1; fi
   rules:
-    - if: $CI_MERGE_REQUEST_IID
-
-# https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#making-docker-in-docker-builds-faster-with-docker-layer-caching
+  - if: "$CI_MERGE_REQUEST_IID"
 build docker image:
   rules:
-    - if: $CI_MERGE_REQUEST_IID || $FORK_PIPELINE_RUN == "true"
-      variables:
-        DOCKER_SERVICES: "test"
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_TAG
-      variables:
-        DOCKER_SERVICES: "test dev"
+  - if: $CI_MERGE_REQUEST_IID || $FORK_PIPELINE_RUN == "true"
+    variables:
+      DOCKER_SERVICES: test
+  - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_TAG"
+    variables:
+      DOCKER_SERVICES: test dev
   tags:
-    - dind-runner
+  - dind-runner
   services:
-    - docker:20.10.3-dind
+  - docker:20.10.3-dind
   stage: build
   script:
-    - apk add --no-cache docker-compose
-    - docker login -u $CI_DEPLOY_USERNAME -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
-    - docker pull $CONTAINER_TEST_DEFAULT_IMAGE || true
-    - docker-compose build $DOCKER_SERVICES
-    - docker images
-    - docker push $CONTAINER_TEST_CI_IMAGE
-    - if [ "$DOCKER_SERVICES" == "test dev" ]; then docker push $CONTAINER_DEV_IMAGE; fi
-
+  - apk add --no-cache docker-compose
+  - docker login -u $CI_DEPLOY_USERNAME -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
+  - docker pull $CONTAINER_TEST_DEFAULT_IMAGE || true
+  - docker-compose build $DOCKER_SERVICES
+  - docker images
+  - docker push $CONTAINER_TEST_CI_IMAGE
+  - if [ "$DOCKER_SERVICES" == "test dev" ]; then docker push $CONTAINER_DEV_IMAGE;
+    fi
 run style checks:
-  image: $CONTAINER_TEST_CI_IMAGE
+  image: "$CONTAINER_TEST_CI_IMAGE"
   stage: test
   script:
-    - pre-commit --version
-    - pre-commit run --all-files
-    - gitlint --version
-    - git fetch
-    - gitlint --commits origin/$CI_DEFAULT_BRANCH..HEAD
-
+  - pre-commit --version
+  - pre-commit run --all-files
+  - gitlint --version
+  - git fetch
+  - gitlint --commits origin/$CI_DEFAULT_BRANCH..HEAD
 run unit tests:
-  image: $CONTAINER_TEST_CI_IMAGE
+  image: "$CONTAINER_TEST_CI_IMAGE"
   stage: test
   script:
-    - pip install -e .
-    - coverage --version
-    - pytest --version
-    - coverage run
-    - tar -cvf coverage_dump_${CI_JOB_NAME// /_}.tar .coverage_dump*
+  - pip install -e .
+  - coverage --version
+  - pytest --version
+  - coverage run
+  - tar -cvf coverage_dump_${CI_JOB_NAME// /_}.tar .coverage_dump*
   artifacts:
     reports:
       junit: junit_report.xml
     paths:
-      - test-experiment*/
-      - quagga-logs*/
-      - frr-logs*/
-      - junit_report.xml
-      - coverage_dump_*.tar
+    - test-experiment*/
+    - quagga-logs*/
+    - frr-logs*/
+    - junit_report.xml
+    - coverage_dump_*.tar
     when: always
-
 run examples:
-  image: $CONTAINER_TEST_CI_IMAGE
+  image: "$CONTAINER_TEST_CI_IMAGE"
   stage: test
   script:
-    - pip install -e .
-    - coverage --version
-    - pytest --version
-    - >
-        pytest -v -o python_files="utils/run_examples.py"
-        -o junit_logging=all
-        --junitxml=junit_report.xml || exit_code=$?
-    - mv examples_dump/.coverage_dump* .
-    - tar -cvf coverage_dump_${CI_JOB_NAME// /_}.tar .coverage_dump*
-    - >
-        if [ $exit_code -ne 0 ];
-        then echo "Some example runs failed. Please check pytest logs";
-        exit 1;
-        fi;
+  - pip install -e .
+  - coverage --version
+  - pytest --version
+  - 'pytest -v -o python_files="utils/run_examples.py" -o junit_logging=all --junitxml=junit_report.xml
+    || exit_code=$?
+
+    '
+  - mv examples_dump/.coverage_dump* .
+  - tar -cvf coverage_dump_${CI_JOB_NAME// /_}.tar .coverage_dump*
+  - 'if [ $exit_code -ne 0 ]; then echo "Some example runs failed. Please check pytest
+    logs"; exit 1; fi;
+
+    '
   rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
+  - if: $CI_PIPELINE_SOURCE == "schedule"
   artifacts:
     reports:
       junit: junit_report.xml
     paths:
-      - examples_dump/
-      - junit_report.xml
-      - coverage_dump_*.tar
+    - examples_dump/
+    - junit_report.xml
+    - coverage_dump_*.tar
     when: always
-
 run examples (manual):
   extends: run examples
   rules:
-    - if: $CI_MERGE_REQUEST_IID
-      when: manual
-      allow_failure: true
-
+  - if: "$CI_MERGE_REQUEST_IID"
+    when: manual
+    allow_failure: true
 generate coverage report:
-  image: $CONTAINER_TEST_CI_IMAGE
+  image: "$CONTAINER_TEST_CI_IMAGE"
   stage: test
   script:
-    - pip install -e .
-    - coverage --version
-    - cat coverage_dump_*.tar | tar xvf - -i
-    - coverage combine
-    - coverage report
-    - coverage xml
-    - coverage html
-    - coverage json
-  coverage: '/^TOTAL.+?(\d+.\d+\%)$/'
+  - pip install -e .
+  - coverage --version
+  - cat coverage_dump_*.tar | tar xvf - -i
+  - coverage combine
+  - coverage report
+  - coverage xml
+  - coverage html
+  - coverage json
+  coverage: "/^TOTAL.+?(\\d+.\\d+\\%)$/"
   needs:
-    - job: run unit tests
-      artifacts: true
-    - job: run examples
-      optional: true
-      artifacts: true
+  - job: run unit tests
+    artifacts: true
+  - job: run examples
+    optional: true
+    artifacts: true
   artifacts:
     reports:
       coverage_report:
         coverage_format: cobertura
         path: coverage.xml
     paths:
-      - coverage.json
-      - coverage.xml
-      - htmlcov/
-      - .coverage
+    - coverage.json
+    - coverage.xml
+    - htmlcov/
+    - ".coverage"
     when: always
-
 test docs:
-  image: $CONTAINER_TEST_CI_IMAGE
+  image: "$CONTAINER_TEST_CI_IMAGE"
   stage: test
   script:
-    - git fetch --tags --force
-    - sh ./docs/source/_version/version.sh
-    - pip install .
-    - pip install -r docs/doc_requirements.txt
-    - make -C docs multiversion
-    - make -C docs html BUILDDIR=build/mr-docs  # to get the latest docs (in MRs)
-    - git fetch --tags --force  # Undo tag changes made in previous commands
-    # Create index.html file pointing to latest release docs
-    - TAG=$(git tag | tail -1)
-    - echo "<meta http-equiv=\"refresh\" content=\"0; URL=./$TAG/index.html\">" > docs/build/html/index.html
+  - git fetch --tags --force
+  - sh ./docs/source/_version/version.sh
+  - pip install .
+  - pip install -r docs/doc_requirements.txt
+  - make -C docs multiversion
+  - make -C docs html BUILDDIR=build/mr-docs
+  - git fetch --tags --force
+  - TAG=$(git tag | tail -1)
+  - echo "<meta http-equiv=\"refresh\" content=\"0; URL=./$TAG/index.html\">" > docs/build/html/index.html
   artifacts:
     paths:
-      - docs/build
-
+    - docs/build
 release docs:
   stage: release
   tags:
-    - nest-website
+  - nest-website
   script:
-    - cp -rv docs/build/html/* /var/www/html/nest-docs/docs
+  - cp -rv docs/build/html/* /var/www/html/nest-docs/docs
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_COMMIT_TAG
-
+  - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+  - if: "$CI_COMMIT_TAG"
 upload to PyPI:
-  image: $CONTAINER_TEST_CI_IMAGE
+  image: "$CONTAINER_TEST_CI_IMAGE"
   stage: release
   script:
-    - pip install -U build twine
-    - python -m build
-    - twine upload dist/* --verbose
+  - pip install -U build twine
+  - python -m build
+  - twine upload dist/* --verbose
   rules:
-    - if: $CI_COMMIT_TAG
-
+  - if: "$CI_COMMIT_TAG"
 push to gitlab registry:
   tags:
-    - dind-runner
+  - dind-runner
   services:
-    - docker:dind
+  - docker:dind
   stage: release
   script:
-   - docker login -u $CI_DEPLOY_USERNAME -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
-   - docker pull $CONTAINER_TEST_CI_IMAGE
-   - docker tag $CONTAINER_TEST_CI_IMAGE $CONTAINER_TEST_DEFAULT_IMAGE
-   - docker push $CONTAINER_TEST_DEFAULT_IMAGE
+  - docker login -u $CI_DEPLOY_USERNAME -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
+  - docker pull $CONTAINER_TEST_CI_IMAGE
+  - docker tag $CONTAINER_TEST_CI_IMAGE $CONTAINER_TEST_DEFAULT_IMAGE
+  - docker push $CONTAINER_TEST_DEFAULT_IMAGE
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes:
-        - "Dockerfile"
-    - if: $CI_COMMIT_TAG
-
+  - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+    changes:
+    - Dockerfile
+  - if: "$CI_COMMIT_TAG"
 push to docker hub:
   rules:
-    - if: $CI_COMMIT_TAG
-      variables:
-        TAG: $DOCKERHUB_REPO:$CI_COMMIT_TAG
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      variables:
-        TAG: $DOCKERHUB_REPO:latest
+  - if: "$CI_COMMIT_TAG"
+    variables:
+      TAG: "$DOCKERHUB_REPO:$CI_COMMIT_TAG"
+  - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+    variables:
+      TAG: "$DOCKERHUB_REPO:latest"
   tags:
-    - dind-runner
+  - dind-runner
   services:
-    - docker:dind
+  - docker:dind
   stage: release
   script:
-   - docker login -u $CI_DEPLOY_USERNAME -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
-   - docker pull $CONTAINER_DEV_IMAGE
-   - docker logout $CI_REGISTRY
-   - docker login -u $CI_DOCKERHUB_USER -p $CI_DOCKERHUB_PASS # Login to dockerhub
-   - docker tag $CONTAINER_DEV_IMAGE $TAG
-   - docker push $TAG
+  - docker login -u $CI_DEPLOY_USERNAME -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
+  - docker pull $CONTAINER_DEV_IMAGE
+  - docker logout $CI_REGISTRY
+  - docker login -u $CI_DOCKERHUB_USER -p $CI_DOCKERHUB_PASS
+  - docker tag $CONTAINER_DEV_IMAGE $TAG
+  - docker push $TAG
+sast:
+  stage: test
+include:
+- template: Security/SAST.gitlab-ci.yml
