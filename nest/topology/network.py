@@ -4,6 +4,9 @@
 """API related to Network"""
 
 import logging
+
+# pylint: disable=unused-import
+import nest
 from nest.input_validator import input_validator
 from nest.topology_map import TopologyMap
 from .address import Address
@@ -58,16 +61,17 @@ class Network:
 
     # TODO: Handle the get interface request using the interface list
 
-    def add_interface(self, _interface=None):
+    @input_validator
+    def add_interface(self, interface: "nest.topology.interface.BaseInterface"):
         """
         Adding interface to the network.
 
         Parameters
         ----------
-        _interface : interface
+        interface : BaseInterface
             The interface which needs to be added to the Network.
         """
-        self.interface.append(_interface)
+        self.interface.append(interface)
         TopologyMap.decrement_orphan_interfaces()
 
     def __repr__(self):

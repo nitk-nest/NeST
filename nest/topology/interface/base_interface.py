@@ -1,36 +1,19 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2021 NITK Surathkal
+# Copyright (c) 2019-2022 NITK Surathkal
 
-"""API related to interfaces in topology"""
+"""Base class for all interfaces"""
 
 import logging
 from nest.input_validator import input_validator
 from nest.input_validator.metric import Bandwidth, Delay, Percentage
-from nest.topology.veth_end import VethEnd
-from nest.topology.ifb import Ifb
-from nest.topology.network import Network
-from nest import engine
-from nest import config
-
-# pylint: disable=cyclic-import
-from nest import topology
-
-# Max length of interface when Topology Map is disabled
-# i.e. 'assign_random_names' is set to False in config
-MAX_CUSTOM_NAME_LEN = 15
+from nest.topology.device import Ifb, Device
 
 logger = logging.getLogger(__name__)
 
-# TODO: Improve this module such that the below pylint disables are no
-# longer required
-
-# pylint: disable=too-many-instance-attributes
-# pylint: disable=protected-access
-# pylint: disable=too-few-public-methods
 # pylint: disable=too-many-public-methods
 
 
-class Interface:
+class BaseInterface:
     """
     Abstraction for an network interface.
 
@@ -48,13 +31,9 @@ class Interface:
     """
 
     @input_validator
-    def __init__(self, interface_name: str):
+    def __init__(self, interface_name: str, device: Device):
         """
-        Constructor of Interface.
-
-        *Note*: The creation of Interface object does not
-        create any devices in the interface.
-        [See `create_veth_pair` method]
+        Constructor of BaseInterface.
 
         Parameters
         ----------
@@ -62,41 +41,23 @@ class Interface:
             Name of the interface
         """
 
-        self._veth_end = VethEnd(interface_name, None)
+        self._name = interface_name
+        self._device = device
         self._ifb = None
 
-        # Track bandwidth
+        # Track bandwidth and delay
         self._bandwidth = None
         self._delay = None
 
     @property
     def name(self):
         """Getter for name"""
-        return self._veth_end.name
+        return self._device.name
 
     @property
     def id(self):
         """Getter for id"""
-        return self._veth_end.id
-
-    @property
-    def pair(self):
-        """
-        Get other pair for this interface (assuming veth)
-        """
-        return self._pair
-
-    @pair.setter
-    def pair(self, interface):
-        """
-        Setter for the other end of the interface that it is connected to
-
-        Parameters
-        ----------
-        interface : Interface
-            The interface to which this interface is connected to
-        """
-        self._pair = interface
+        return self._device.id
 
     @property
     def node_id(self):
@@ -104,7 +65,7 @@ class Interface:
         Getter for the `Node` associated
         with the interface
         """
-        return self._veth_end.node_id
+        return self._device.node_id
 
     @node_id.setter
     def node_id(self, node_id):
@@ -117,7 +78,7 @@ class Interface:
         node : Node
             The node where the interface is to be installed
         """
-        self._veth_end.node_id = node_id
+        self._device.node_id = node_id
 
     @property
     def ifb_id(self):
@@ -136,7 +97,7 @@ class Interface:
         Getter for the address associated
         with the interface
         """
-        return self._veth_end.get_address()
+        return self._device.get_address()
 
     @address.setter
     def address(self, address):
@@ -151,7 +112,7 @@ class Interface:
         address : Address/str or List[Address/str]
             IP address to be assigned to the interface
         """
-        self._veth_end.set_address(address)
+        self._device.set_address(address)
 
     def set_address(self, address):
         """
@@ -162,7 +123,7 @@ class Interface:
         address : Address/str or List[Address/str]
             IP address to be assigns to the interface
         """
-        self._veth_end.set_address(address)
+        self._device.set_address(address)
 
     def add_address(self, address):
         """
@@ -173,7 +134,7 @@ class Interface:
         address : Address/str or List[Address/str]
             IP address to be added to the interface
         """
-        self._veth_end.add_address(address)
+        self._device.add_address(address)
 
     def del_address(self, address):
         """
@@ -184,7 +145,7 @@ class Interface:
         address : str or list
             IP address to be deleted from the interface
         """
-        self._veth_end.del_address(address)
+        self._device.del_address(address)
 
     def enable_mpls(self):
         """
@@ -193,20 +154,20 @@ class Interface:
 
         Run ``sudo modprobe mpls_iptunnel`` to load mpls modules.
         """
-        self._veth_end.enable_mpls()
+        self._device.enable_mpls()
 
     def is_mpls_enabled(self):
         """
         Check if the interface has mpls enabled
         """
-        return self._veth_end.is_mpls_enabled()
+        return self._device.is_mpls_enabled()
 
     @property
     def mtu(self):
         """
         Get the maximum transmit unit value for the interface
         """
-        return self._veth_end.mtu
+        return self._device.mtu
 
     @mtu.setter
     def mtu(self, mtu_value):
@@ -214,7 +175,7 @@ class Interface:
         Set the maximum transmit unit value for the interface
         Default is 1500 bytes.
         """
-        self._veth_end.mtu = mtu_value
+        self._device.mtu = mtu_value
 
     @input_validator
     def get_address(self, ipv4: bool = True, ipv6: bool = True, as_list: bool = False):
@@ -233,13 +194,13 @@ class Interface:
         Returns Address object when false, else returns a single Address object in list
         (defaults to False).
         """
-        return self._veth_end.get_address(ipv4, ipv6, as_list)
+        return self._device.get_address(ipv4, ipv6, as_list)
 
     def disable_ip_dad(self):
         """
         Disables Duplicate addresses Detection (DAD) for an interface.
         """
-        self._veth_end.disable_ip_dad()
+        self._device.disable_ip_dad()
 
     def set_mode(self, mode):
         """
@@ -250,7 +211,7 @@ class Interface:
         mode : string
             interface mode to be set
         """
-        self._veth_end.set_mode(mode)
+        self._device.set_mode(mode)
 
     def get_qdisc(self):
         """
@@ -290,12 +251,12 @@ class Interface:
             The minimum rate that has to be set in kbit
         """
 
-        self._veth_end.set_structure()
+        self._device.set_structure()
         self._bandwidth = bandwidth.string_value
 
         bandwidth_parameter = {"rate": bandwidth.string_value}
 
-        self._veth_end.change_class("htb", "1:", "1:1", **bandwidth_parameter)
+        self._device.change_class("htb", "1:", "1:1", **bandwidth_parameter)
 
     @input_validator
     def set_delay(self, delay: Delay):
@@ -310,12 +271,12 @@ class Interface:
         """
         # TODO: Make adding delay possible without bandwidth being set
 
-        self._veth_end.set_structure()
+        self._device.set_structure()
         self._delay = delay
 
         delay_parameter = {"delay": delay.string_value}
 
-        self._veth_end.change_qdisc("11:", "netem", **delay_parameter)
+        self._device.change_qdisc("11:", "netem", **delay_parameter)
 
     @input_validator
     def set_packet_corruption(
@@ -337,14 +298,14 @@ class Interface:
             correlation_rate.string_value if correlation_rate else ""
         )
 
-        self._veth_end.set_structure()
+        self._device.set_structure()
 
         corrupt_parameter = {
             "corrupt": corrupt_rate.string_value,
             "": parsed_correlation_rate,
         }
 
-        self._veth_end.change_qdisc("11:", "netem", **corrupt_parameter)
+        self._device.change_qdisc("11:", "netem", **corrupt_parameter)
 
     @input_validator
     def set_packet_loss(
@@ -366,11 +327,11 @@ class Interface:
             correlation_rate.string_value if correlation_rate else ""
         )
 
-        self._veth_end.set_structure()
+        self._device.set_structure()
 
         loss_parameter = {"loss": loss_rate.string_value, "": parsed_correlation_rate}
 
-        self._veth_end.change_qdisc("11:", "netem", **loss_parameter)
+        self._device.change_qdisc("11:", "netem", **loss_parameter)
 
     @input_validator
     def set_packet_duplication(self, duplicate_rate: Percentage):
@@ -385,11 +346,11 @@ class Interface:
 
         """
 
-        self._veth_end.set_structure()
+        self._device.set_structure()
 
         duplicate_parameter = {"duplicate": duplicate_rate.string_value}
 
-        self._veth_end.change_qdisc("11:", "netem", **duplicate_parameter)
+        self._device.change_qdisc("11:", "netem", **duplicate_parameter)
 
     @input_validator
     def set_packet_reordering(
@@ -420,9 +381,9 @@ class Interface:
         if gap is not None:
             reorder_parameter["gap"] = str(gap)
 
-        self._veth_end.set_structure()
+        self._device.set_structure()
 
-        self._veth_end.change_qdisc("11:", "netem", **reorder_parameter)
+        self._device.change_qdisc("11:", "netem", **reorder_parameter)
 
     def set_qdisc(self, qdisc, **kwargs):
         """
@@ -441,7 +402,7 @@ class Interface:
         if qdisc not in qdisc_list:
             raise ValueError(f"{qdisc} is not a valid Qdisc")
 
-        self._veth_end.set_structure()
+        self._device.set_structure()
 
         if self._ifb is None:
             self._create_and_mirred_to_ifb()
@@ -485,7 +446,7 @@ class Interface:
             The type of offload names that need to enable
         """
 
-        self._veth_end.enable_offload(offload_name)
+        self._device.enable_offload(offload_name)
 
     def disable_offload(self, offload_name):
         """
@@ -496,140 +457,8 @@ class Interface:
             The type of offload names that need to disable
         """
 
-        self._veth_end.disable_offload(offload_name)
+        self._device.disable_offload(offload_name)
 
     def __repr__(self):
         classname = self.__class__.__name__
         return f"{classname}({self.name!r})"
-
-
-def create_veth_pair(interface1_name, interface2_name):
-    """
-    Handle creation of Veth pairs between
-    `interface1_name` and `interface2_name`
-
-    Parameters
-    ----------
-    interface1_name : str
-            Name of one of the interfaces to be connected
-    interface2_name : str
-            Name of the other interface to be connected
-    """
-
-    interface1 = Interface(interface1_name)
-    interface2 = Interface(interface2_name)
-
-    interface1.pair = interface2
-    interface2.pair = interface1
-
-    # Create the veth
-    engine.create_veth(interface1.id, interface2.id)
-
-    return (interface1, interface2)
-
-
-@input_validator
-def connect(
-    node1: topology.Node,
-    node2: topology.Node,
-    interface1_name: str = "",
-    interface2_name: str = "",
-    network: Network = None,
-):
-    """
-    Connects two nodes `node1` and `node2`.
-    Creates two paired Virtual Ethernet interfaces (veth) and returns
-    them as a 2-element tuple.
-    The first interface belongs to `node1`, and the second interface
-    belongs to `node2`.
-
-    Parameters
-    ----------
-    node1 : Node
-        First veth interface added in this node
-    node2 : Node
-        Second veth interface added in this node
-    interface1_name : str
-        Name of first veth interface
-    interface2_name : str
-        Name of second veth interface
-    network : Network
-        Object of the Network to add interfaces
-
-    Returns
-    -------
-    (interface1, interface2)
-        2 tuple of created (paired) veth interfaces. `interface1` is in
-        `n1` and `interface2` is in `n2`.
-    """
-    # Number of connections between `node1` and `node2`, set to `None`
-    # initially since it hasn't been computed yet
-    connections = None
-
-    # Check interface names
-    if interface1_name == "":
-        connections = _number_of_connections(node1, node2)
-        interface1_name = _autogenerate_interface_name(node1, node2, connections)
-
-    if interface2_name == "":
-        if connections is None:
-            connections = _number_of_connections(node1, node2)
-        # pylint: disable=arguments-out-of-order
-        interface2_name = _autogenerate_interface_name(node2, node1, connections)
-
-    # Create 2 interfaces
-    (interface1, interface2) = create_veth_pair(interface1_name, interface2_name)
-
-    node1._add_interface(interface1)
-    node2._add_interface(interface2)
-
-    interface1.set_mode("UP")
-    interface2.set_mode("UP")
-
-    # Disabling Duplicate Address Detection(DAD) at the interfaces
-    if config.get_value("disable_dad") is True:
-        interface1.disable_ip_dad()
-        interface2.disable_ip_dad()
-
-    # The network parameter takes precedence over "global" network level
-    if network is None:
-        network = Network.current_network
-    # Add the interfaces to the network if mentioned
-    if network is not None:
-        network.add_interface(interface1)
-        network.add_interface(interface2)
-
-    return (interface1, interface2)
-
-
-def _autogenerate_interface_name(node1, node2, connections):
-    """
-    Auto-generate interface names based on respective node names
-    and number of connections
-    """
-    interface_name = node1.name + "-" + node2.name + "-" + str(connections)
-
-    if config.get_value("assign_random_names") is False:
-        if len(interface_name) > MAX_CUSTOM_NAME_LEN:
-            raise ValueError(
-                f"Auto-generated device name {interface_name} is too long. "
-                f"The length of name should not exceed 15 characters."
-            )
-
-    return interface_name
-
-
-def _number_of_connections(node1, node2):
-    """
-    Return number of connections between the two nodes
-    """
-    connections = 0
-
-    if len(node1.interfaces) > len(node2.interfaces):
-        node1, node2 = node2, node1
-
-    for interface in node1.interfaces:
-        if interface.pair.node_id == node2.id:
-            connections = connections + 1
-
-    return connections

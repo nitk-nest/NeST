@@ -4,7 +4,7 @@
 """Handle traffic control entities"""
 
 from nest.topology_map import TopologyMap
-from .. import engine
+from nest import engine
 
 # TODO: Improve this module such that the below pylint disables are no
 # longer required

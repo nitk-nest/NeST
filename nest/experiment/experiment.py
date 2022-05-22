@@ -9,7 +9,8 @@ from collections import defaultdict
 from nest.input_validator.metric import Bandwidth
 from nest.network_utilities import ipv6_dad_check
 from nest.input_validator import input_validator
-from nest.topology import Node, Address, Interface
+from nest.topology import Node, Address
+from nest.topology.interface import BaseInterface
 from .run_exp import run_experiment
 from .pack import Pack
 
@@ -266,13 +267,13 @@ class Experiment:
         self.coap_flows.append(copy.deepcopy(coap_flow))
 
     @input_validator
-    def require_qdisc_stats(self, interface: Interface, stats=""):
+    def require_qdisc_stats(self, interface: BaseInterface, stats=""):
         """
         Stats to be obtained from qdisc in interface
 
         Parameters
         ----------
-        interface : Interface
+        interface : BaseInterface
             Interface containing the qdisc
         stats : list(str)
             Stats required (Default value = '') [NOT SUPPORTED]

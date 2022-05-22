@@ -5,10 +5,8 @@
 
 import logging
 
-# pylint: disable=unused-import
-# pylint: disable=cyclic-import
-from nest import topology
 from nest import engine
+from nest.topology.interface import BaseInterface, Interface
 from nest.topology_map import TopologyMap
 from nest import config
 from nest.network_utilities import ipv6_dad_check
@@ -60,7 +58,11 @@ class Node:
 
         self._name = name
         self._id = IdGen.get_id(name)
+
+        # TODO: This list maynot be accurate. Better to refer TopologyMap
+        # for list of interfaces in a Node.
         self._interfaces = []
+
         # Global variable disables when any new node is created
         # to ensure DAD check (if applicable)
         g_var.IS_DAD_CHECKED = False
@@ -90,7 +92,7 @@ class Node:
     def add_route(
         self,
         dest_addr: Address,
-        via_interface: "topology.Interface",
+        via_interface: BaseInterface,
         next_hop_addr: Address = None,
     ):
         """
@@ -101,12 +103,19 @@ class Node:
         dest_addr: Address/str
             Destination IP address of node to route to. 'DEFAULT' is
             for all addresses
-        via_interface: Interface
+        via_interface: BaseInterface
             `Interface` in `Node` to route via
         next_hop_addr: Address/str, optional
             IP address of next hop Node (or router), by default ''
         """
         if next_hop_addr is None:
+
+            if isinstance(via_interface, Interface) is False:
+                raise ValueError(
+                    "Unable to automatically determine the next_hop_addr. Please"
+                    " provide the parameter explicitly."
+                )
+
             via_interface_addresses = via_interface.pair.get_address(True, True, True)
             if len(via_interface_addresses) > 1:
                 raise ValueError(
@@ -128,7 +137,8 @@ class Node:
             via_interface.id,
         )
 
-    def get_interface(self, node, connection_number=1):
+    @input_validator
+    def get_interface(self, node: "Node", connection_number: int = 1):
         """
         Get the interface in `self` connected to `node`.
         By default, this returns a veth interface.
@@ -152,6 +162,10 @@ class Node:
             there are multiple connections.
             If no interface is found, then return None.
         """
+        logger.warning(
+            "Node.get_interface method will be deprecated soon. Please avoid using this method."
+        )
+
         if connection_number <= 0:
             raise ValueError("connection_number should be greater than 0")
 
@@ -223,13 +237,13 @@ class Node:
             self.id, incoming_label, next_hop_addr.get_addr(with_subnet=False)
         )
 
-    def _add_interface(self, interface):
+    def _add_interface(self, interface: BaseInterface):
         """
         Add `interface` to `Node`
 
         Parameters
         ----------
-        interface: Interface
+        interface: BaseInterface
             `Interface` to be added to `Node`
         """
         self._interfaces.append(interface)

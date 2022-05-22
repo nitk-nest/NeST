@@ -6,6 +6,7 @@
 import logging
 
 from nest import engine
+from nest.topology.interface import BaseInterface
 from nest.topology.node import Node
 
 logger = logging.getLogger(__name__)
@@ -38,7 +39,7 @@ class Switch(Node):
         engine.create_switch(self.id, self.id)
         engine.set_switch_mode(self.id, "up")
 
-    def _add_interface(self, interface):
+    def _add_interface(self, interface: BaseInterface):
         """
         Add `interface` to `Switch`
 

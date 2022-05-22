@@ -6,7 +6,7 @@
 import logging
 from nest import config
 from nest import engine
-from nest.topology.device import Device
+from .device import Device
 
 logger = logging.getLogger(__name__)
 

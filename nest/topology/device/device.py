@@ -7,17 +7,20 @@ import logging
 from nest import config
 from nest.topology_map import TopologyMap
 from nest.topology.id_generator import IdGen
-from nest.topology.traffic_control import TrafficControlHandler
+from nest.topology.device.traffic_control import TrafficControlHandler
 from nest import engine
 import nest.global_variables as g_var
 from nest.exception import NestBaseException
-from .address import Address
+from nest.topology.address import Address
 
 logger = logging.getLogger(__name__)
 
 # Max length of device when Topology Map is disabled
 # i.e. 'assign_random_names' is set to False in config
 MAX_CUSTOM_NAME_LEN = 15
+
+# pylint: disable=too-many-public-methods
+# pylint: disable=too-many-instance-attributes
 
 
 class Device:
@@ -63,6 +66,10 @@ class Device:
         self._traffic_control_handler = TrafficControlHandler(node_id, self._id)
         if node_id is not None:
             TopologyMap.add_interface(self.node_id, self._id, self._name)
+
+        self._set_structure = False
+        self._mtu = 1500
+        self._is_mpls_enabled = False
 
     @property
     def name(self):
@@ -423,9 +430,157 @@ class Device:
 
         self._traffic_control_handler.delete_filter(handle, parent)
 
+    def enable_offload(self, offload_name):
+        """
+        API for enabling offloads
+        Parameters
+        ----------
+        offload_name : str
+            The type of offload names that need to enable
+        """
+        if not isinstance(offload_name, list):
+            offload_name = [offload_name]
+        valid_offloads(offload_name)
+        namespace_id = self.node_id
+        interface_id = self.id
+        for offload_type in offload_name:
+            if engine.ethtool.enable_offloads(namespace_id, interface_id, offload_type):
+                logger.debug(
+                    "%s is enabled on interface %s",
+                    offload_type,
+                    self.name,
+                )
+            else:
+                logger.error(
+                    "%s is not enabled on interface %s",
+                    offload_type,
+                    self.name,
+                )
+
+    def disable_offload(self, offload_name):
+        """
+        API for disabling offloads
+        Parameters
+        ----------
+        offload_name : str
+            The type of offload names that need to disable
+        """
+        if not isinstance(offload_name, list):
+            offload_name = [offload_name]
+        valid_offloads(offload_name)
+        namespace_id = self.node_id
+        interface_id = self.id
+        for offload_type in offload_name:
+            if engine.ethtool.disable_offloads(
+                namespace_id, interface_id, offload_type
+            ):
+                logger.debug(
+                    "%s is disabled on interface %s",
+                    offload_type,
+                    self.name,
+                )
+            else:
+                logger.error(
+                    "%s is not disabled on interface %s",
+                    offload_type,
+                    self.name,
+                )
+
+    def disable_ip_dad(self):
+        """
+        Disables Duplicate addresses Detection (DAD) for an interface.
+        """
+        engine.disable_dad(self.node_id, self._id)
+
+    def enable_mpls(self):
+        """
+        Enables mpls input through the interface.
+        Requires mpls kernel modules to be loaded.
+
+        Run ``sudo modprobe mpls_iptunnel`` to load mpls modules.
+        """
+        if self.node_id is None:
+            raise NotImplementedError(
+                "You should assign the interface to node or router before enabling mpls"
+            )
+
+        engine.set_mpls_max_label_node(self.node_id, int(100000))
+
+        if self._is_mpls_enabled is False:
+            engine.enable_mpls_interface(self.node_id, self.id)
+            self._is_mpls_enabled = True
+            self.mtu = 1504
+
+    def is_mpls_enabled(self):
+        """
+        Check if the interface has mpls enabled
+        """
+        return self._is_mpls_enabled
+
+    @property
+    def mtu(self):
+        """
+        Get the maximum transmit unit value for the interface
+        """
+        return self._mtu
+
+    @mtu.setter
+    def mtu(self, mtu_value):
+        """
+        Set the maximum transmit unit value for the interface
+        Default is 1500 bytes.
+        """
+        if self._mtu != mtu_value:
+            engine.set_mtu_interface(self.node_id, self.id, int(mtu_value))
+            self._mtu = mtu_value
+            logger.debug("MTU of interface %s set to %s", self.name, str(self.mtu))
+
+    def set_structure(self):
+        """
+        Sets a proper structure to the interface by creating HTB class
+        with default bandwidth and a netem qdisc as a child.
+        HTB is used for setting bandwidth and netem is used for setting
+        delay, packet corruption etc
+        (default bandwidth = 1024mbit)
+        """
+
+        if self._set_structure is True:
+            return
+
+        self._set_structure = True
+
+        default_route = {"default": "1"}
+
+        # HTB is added since netem is a classless qdisc. So, htb class,
+        # With netem as child is added
+        self.add_qdisc("htb", "root", "1:", **default_route)
+
+        # TODO: find how to set a good bandwidth
+        default_bandwidth = {"rate": config.get_value("default_bandwidth")}
+
+        self.add_class("htb", "1:", "1:1", **default_bandwidth)
+
+        self.add_qdisc("netem", "1:1", "11:")
+
     def __repr__(self):
         classname = self.__class__.__name__
         return f"{classname}({self.name!r})"
+
+
+def valid_offloads(offload_name):
+    """
+    Check valid offloads
+
+    Parameters
+    -----------
+    offload_name : str
+        The offload name
+    """
+    offloads_list = ["tso", "gso", "gro"]
+    for offload_type in offload_name:
+        if not offload_type in offloads_list:
+            logger.error("Invalid offload")
+            raise ValueError(f"{offload_type} is not a valid offload")
 
 
 class DeviceNotPartOfNodeError(NestBaseException):
