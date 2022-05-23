@@ -9,7 +9,7 @@ import time
 
 from nest import engine
 from nest.topology.interface import BaseInterface, Interface
-from nest.engine import t_shark
+from nest.engine.t_shark import capture_packets
 from nest.engine.util import is_dependency_installed
 from nest.topology_map import TopologyMap
 from nest import config
@@ -437,7 +437,7 @@ class Node:
     @input_validator
     def capture_packets(
         self,
-        interface: "topology.Interface" = None,
+        interface: BaseInterface = None,
         packet_count: int = None,
         timeout: int = None,
         output_file: str = None,
@@ -449,14 +449,14 @@ class Node:
 
         Parameters
         ----------
-        interface: Interface
+        interface: BaseInterface
             If the packets need to be captured from only one specific interface
         """
 
         install_status = is_dependency_installed("tshark")
 
         if install_status is False:
-            logger.warning(
+            logger.error(
                 "The system doesn't have tshark installed\n"
                 "Packet capture method requires this tool"
             )
@@ -483,7 +483,7 @@ class Node:
             kwargs["-T"] = output_format
 
         t_shark_process = Process(
-            target=engine.capture_packets, args=(self.id,), kwargs=kwargs
+            target=capture_packets, args=(self.id,), kwargs=kwargs
         )
         self._tshark_processes.append(t_shark_process)
         t_shark_process.start()

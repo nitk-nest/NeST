@@ -9,6 +9,7 @@ FROM ubuntu:20.04@sha256:7cc0576c7c0ec2384de5cbf245f41567e922aab1b075f3e8ad565f5
 SHELL ["/bin/bash", "-c"]
 
 # Install basic dependencies
+RUN apt -y upgrade
 RUN apt -y update
 RUN apt -y install build-essential
 RUN apt -y install git
@@ -77,6 +78,9 @@ RUN apt install -y kmod
 
 # Install tcpdump
 RUN apt install -y tcpdump
+
+# Install tshark
+RUN DEBIAN_FRONTEND=noninteractive apt install -y tshark
 
 FROM test as dev
 

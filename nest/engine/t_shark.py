@@ -22,4 +22,4 @@ def capture_packets(ns_name, **kwargs):
     for param, value in kwargs.items():
         tshark_params += param + " " + value + " "
 
-    exec_subprocess(f"sudo ip netns exec {ns_name} tshark {tshark_params} -q")
+    exec_subprocess(f"ip netns exec {ns_name} tshark {tshark_params} -q")
