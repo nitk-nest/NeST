@@ -13,7 +13,7 @@ import atexit
 from shutil import rmtree, chown
 from signal import SIGTERM
 from typing import List
-from nest.exceptions import RequiredDependencyNotFound
+from nest.exception import RequiredDependencyNotFound
 from nest.input_validator.input_validator import input_validator
 from nest.topology.id_generator import IdGen
 from nest.routing.static_routing import StaticRouting

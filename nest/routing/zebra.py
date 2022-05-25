@@ -4,7 +4,7 @@
 """Class to handle zebra"""
 
 from functools import partial
-from nest.exceptions import RequiredDependencyNotFound
+from nest.exception import RequiredDependencyNotFound
 from nest.routing.route_daemons import RoutingDaemonBase
 from nest.engine.dynamic_routing import run_zebra
 
