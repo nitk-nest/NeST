@@ -531,3 +531,33 @@ class BaseInterface:
                 "start_time should be greater than or equal to 0 "
                 "and end_time should be greater than 0"
             )
+
+    @input_validator
+    def enable(self, start_time: float, end_time: float):
+        """
+        API for enable a network interface from 'start_time' sec to 'end_time' sec
+
+        Parameters
+        ----------
+        start_time : float
+            time in second after which the interface mode is set 'UP'
+        end_time : float
+            time in second which the interface mode is set 'DOWN'
+        """
+        if start_time >= 0 and end_time > 0:
+            if start_time < end_time:
+                enable_process = multiprocessing.Process(
+                    target=self.set_mode, args=["UP", start_time]
+                )
+                disable_process = multiprocessing.Process(
+                    target=self.set_mode, args=["DOWN", end_time]
+                )
+                enable_process.start()
+                disable_process.start()
+            else:
+                raise ValueError(f"{start_time} should be smaller than {end_time}")
+        else:
+            raise ValueError(
+                "start_time should be greater than or equal to 0 "
+                "and end_time should be greater than 0"
+            )

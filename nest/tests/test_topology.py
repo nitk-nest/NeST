@@ -12,7 +12,7 @@ from nest.topology_map import TopologyMap
 from nest.topology.interface import Interface
 from nest import config
 
-# pylint: disable=R0904
+# pylint: disable=too-many-public-methods
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
 class TestTopology(unittest.TestCase):
@@ -496,19 +496,41 @@ class TestTopology(unittest.TestCase):
         n0_n1.set_address("10.0.0.1/24")
         n1_n0.set_address("10.0.0.2/24")
 
-        n1_n0.disable(1, 4)
-        n0_n1.disable(6, 9)
+        n0_n1.disable(1.5, 3.5)
 
-        status = self.n0.ping("10.0.0.2", packets=10)
+        with self.assertRaises(ValueError) as err:
+            n1_n0.disable(-1.0, 4.0)
+        self.assertEqual(
+            str(err.exception),
+            "start_time should be greater than or equal to 0 "
+            "and end_time should be greater than 0",
+        )
 
-        self.assertTrue(status)
+        with self.assertRaises(ValueError) as err:
+            n1_n0.disable(4.0, 3.0)
+        self.assertEqual(str(err.exception), "4.0 should be smaller than 3.0")
 
-        n0_n1.enable(1, 4)
-        n0_n1.enable(6, 9)
+        status_1 = self.n0.ping("10.0.0.2")
 
-        status = self.n0.ping("10.0.0.2", packets=10)
+        self.assertTrue(status_1)
 
-        self.assertTrue(status)
+        n0_n1.enable(2.0, 3.0)
+
+        with self.assertRaises(ValueError) as err:
+            n1_n0.enable(-2.0, 3.0)
+        self.assertEqual(
+            str(err.exception),
+            "start_time should be greater than or equal to 0 "
+            "and end_time should be greater than 0",
+        )
+
+        with self.assertRaises(ValueError) as err:
+            n1_n0.enable(4.0, 3.0)
+        self.assertEqual(str(err.exception), "4.0 should be smaller than 3.0")
+
+        status_2 = self.n0.ping("10.0.0.2")
+
+        self.assertTrue(status_2)
 
 
 if __name__ == "__main__":
