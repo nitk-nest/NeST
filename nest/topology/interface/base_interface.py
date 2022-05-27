@@ -4,6 +4,8 @@
 """Base class for all interfaces"""
 
 import logging
+import multiprocessing
+import time
 from nest.input_validator import input_validator
 from nest.input_validator.metric import Bandwidth, Delay, Distribution, Percentage
 from nest.topology.device import Ifb, Device
@@ -202,7 +204,8 @@ class BaseInterface:
         """
         self._device.disable_ip_dad()
 
-    def set_mode(self, mode):
+    @input_validator
+    def set_mode(self, mode: str, delay: float = 0.0):
         """
         Changes the mode of the interface
 
@@ -210,8 +213,14 @@ class BaseInterface:
         ----------
         mode : string
             interface mode to be set
+        delay : float
+            time in sec after which the mode is set
         """
-        self._device.set_mode(mode)
+        if delay >= 0:
+            time.sleep(delay)
+            self._device.set_mode(mode)
+        else:
+            raise ValueError(f"{delay} should be greater than or equal to 0")
 
     def get_qdisc(self):
         """
@@ -492,3 +501,33 @@ class BaseInterface:
     def __repr__(self):
         classname = self.__class__.__name__
         return f"{classname}({self.name!r})"
+
+    @input_validator
+    def disable(self, start_time: float, end_time: float):
+        """
+        API for disable a network interface from 'start_time' sec  to 'end_time' sec
+
+        Parameters
+        ----------
+        start_time : float
+            time in sec after which the interface mode is set 'DOWN'
+        end_time : float
+            time in sec after which the interface mode is set 'UP'
+        """
+        if start_time >= 0 and end_time > 0:
+            if start_time < end_time:
+                disable_process = multiprocessing.Process(
+                    target=self.set_mode, args=["DOWN", start_time]
+                )
+                enable_process = multiprocessing.Process(
+                    target=self.set_mode, args=["UP", end_time]
+                )
+                disable_process.start()
+                enable_process.start()
+            else:
+                raise ValueError(f"{start_time} should be smaller than {end_time}")
+        else:
+            raise ValueError(
+                "start_time should be greater than or equal to 0 "
+                "and end_time should be greater than 0"
+            )
