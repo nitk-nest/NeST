@@ -149,6 +149,16 @@ class Node:
             via_interface.id,
         )
 
+    def get_route(self, *args):
+        """
+        Get the routes from the routing table of a Node.
+
+        Parameters
+        *args: Interface object
+        """
+
+        engine.get_route(self.id, *args)
+
     @input_validator
     def get_interface(self, node: "Node", connection_number: int = 1):
         """
