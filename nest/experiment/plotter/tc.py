@@ -5,13 +5,14 @@
 
 import logging
 import matplotlib.pyplot as plt
-
-from .common import simple_plot
+import pandas as pd  # pylint: disable=import-error
+from nest import config
+from .common import simple_plot, simple_gnu_plot
 from ..pack import Pack
 
 logger = logging.getLogger(__name__)
 
-
+# pylint: disable=too-many-locals
 def _extract_from_tc_stats(stats, node, interface):
     """
     Extract information from tc stats and convert it to
@@ -84,6 +85,26 @@ def _plot_tc_stats(stats, node, interface):
         filename = f"{node}_{interface}_{qdisc}_{param}.png"
         Pack.dump_plot("tc", filename, fig)
         plt.close(fig)
+        if config.get_value("gnu_enable"):
+            data_tuples = list(zip(timestamp, stats_params[param]))
+            data_frame = pd.DataFrame(data_tuples)
+            filename_dat = f"{node}_{interface}_{qdisc}_{param}.dat"
+            Pack.dump_datfile("tc", filename_dat, data_frame)
+            filename_eps = f"{node}_{interface}_{qdisc}_{param}.eps"
+            filename_plt = f"{node}_{interface}_{qdisc}_{param}.plt"
+            path_dat = Pack.get_path("tc", filename_dat)
+            path_eps = Pack.get_path("tc", filename_eps)
+            path_plt = Pack.get_path("tc", filename_plt)
+            legend_string = f"Interface {interface} in {node}"
+            simple_gnu_plot(
+                path_dat,
+                path_plt,
+                path_eps,
+                "Time (Seconds)",
+                param,
+                legend_string,
+                "Traffic Control (tc) Statistics",
+            )
 
 
 def plot_tc(parsed_data):

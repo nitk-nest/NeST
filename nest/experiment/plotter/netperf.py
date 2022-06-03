@@ -5,14 +5,16 @@
 
 import logging
 import matplotlib.pyplot as plt
+import pandas as pd  # pylint: disable=import-error
+from nest import config
 from nest.experiment.interrupts import handle_keyboard_interrupt
 from ..pack import Pack
-from .common import simple_plot, mix_plot
+from .common import simple_plot, mix_plot, simple_gnu_plot, mix_gnu_plot
 
 logger = logging.getLogger(__name__)
 
-
-def _plot_netperf_flow(flow, node, dest):
+# pylint: disable=too-many-locals
+def _plot_netperf_flow(flow, node, dest, dat_list_flows):
     """
     Plot netperf stats of the flow
 
@@ -26,6 +28,8 @@ def _plot_netperf_flow(flow, node, dest):
         Node from which netperf results were obtained from
     dest :
         Destination ip:port address of the flow
+    dat_list_flows :
+        Store dat files name of all flows along with their path.
 
     Returns
     -------
@@ -72,6 +76,25 @@ def _plot_netperf_flow(flow, node, dest):
     filename = f"sending_rate_{node}_to_{destination_node}({dest}).png"
     Pack.dump_plot("netperf", filename, fig)
     plt.close(fig)
+    if config.get_value("gnu_enable"):
+        data_tuples = list(zip(timestamp, sending_rate))
+        data_frame = pd.DataFrame(data_tuples)
+        filename_dat = f"sending_rate_{node}_to_{destination_node}({dest}).dat"
+        Pack.dump_datfile("netperf", filename_dat, data_frame)
+        filename_eps = f"sending_rate_{node}_to_{destination_node}({dest}).eps"
+        filename_plt = f"sending_rate_{node}_to_{destination_node}({dest}).plt"
+        path_plt = Pack.get_path("netperf", filename_plt)
+        path_dat = Pack.get_path("netperf", filename_dat)
+        path_eps = Pack.get_path("netperf", filename_eps)
+        simple_gnu_plot(
+            path_dat,
+            path_plt,
+            path_eps,
+            "Time (Seconds)",
+            "Sending Rate (Mbps)",
+            legend_string,
+        )
+        dat_list_flows.append(path_dat)
 
     return {"label": legend_string, "values": (timestamp, sending_rate)}
 
@@ -91,11 +114,13 @@ def plot_netperf(parsed_data):
     for node in parsed_data:
         node_data = parsed_data[node]
 
+        # this store dat files name of all flows along with their path.
+        dat_list_flows = []
         all_flow_data = []
         for connection in node_data:
             for dest in connection:
                 flow = connection[dest]
-                plotted_data = _plot_netperf_flow(flow, node, dest)
+                plotted_data = _plot_netperf_flow(flow, node, dest, dat_list_flows)
                 if plotted_data is not None:
                     all_flow_data.append(plotted_data)
 
@@ -110,3 +135,20 @@ def plot_netperf(parsed_data):
             filename = f"sending_rate_{node}.png"
             Pack.dump_plot("netperf", filename, fig)
             plt.close(fig)
+
+            if config.get_value("gnu_enable"):
+                filename_eps = f"sending_rate_{node}.eps"
+                path_eps = Pack.get_path("netperf", filename_eps)
+                filename_plt = f"sending_rate_{node}.plt"
+                path_plt = Pack.get_path("netperf", filename_plt)
+                legend_list = []
+                for chunk in all_flow_data:
+                    legend_list.append(chunk["label"])
+                mix_gnu_plot(
+                    dat_list_flows,
+                    path_plt,
+                    path_eps,
+                    "Time (Seconds)",
+                    "Sending Rate (Mbps)",
+                    legend_list,
+                )

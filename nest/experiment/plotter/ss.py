@@ -4,14 +4,19 @@
 """Plot ss results"""
 
 import logging
+from collections import defaultdict
 import matplotlib.pyplot as plt
+import pandas as pd  # pylint: disable=import-error
+from nest import config
 from nest.experiment.interrupts import handle_keyboard_interrupt
 from ..pack import Pack
-from .common import simple_plot, mix_plot
+from .common import simple_plot, mix_plot, simple_gnu_plot, mix_gnu_plot
 
 logger = logging.getLogger(__name__)
 
 
+# pylint: disable=too-many-locals
+# pylint: disable=too-many-branches
 def _get_list_of_ss_params():
     """
     Return list of params parsed by ss
@@ -137,7 +142,7 @@ def _extract_from_ss_flow(flow, node, dest_ip, dest_port):
     return {"destination_node": destination_node, "values": (timestamp, flow_params)}
 
 
-def _plot_ss_flow(flow, node, dest_ip, dest_port):
+def _plot_ss_flow(flow, node, dest_ip, dest_port, dat_tuple_flows):
     """
     Plot ss stats of the flow
 
@@ -176,6 +181,39 @@ def _plot_ss_flow(flow, node, dest_ip, dest_port):
         filename = f"{param}_{node}_to_{destination_node}({dest_ip}:{dest_port}).png"
         Pack.dump_plot("ss", filename, fig)
         plt.close(fig)
+        if config.get_value("gnu_enable"):
+            xlist = []
+            ylist = []
+            for xvalue, yvalue in zip(timestamp, flow_params[param]):
+                if yvalue is None:
+                    continue
+                xlist.append(xvalue)
+                ylist.append(yvalue)
+            data_tuples = list(zip(xlist, ylist))
+            data_frame = pd.DataFrame(data_tuples)
+            filename_dat = (
+                f"{param}_{node}_to_{destination_node}({dest_ip}:{dest_port}).dat"
+            )
+            Pack.dump_datfile("ss", filename_dat, data_frame)
+            filename_eps = (
+                f"{param}_{node}_to_{destination_node}({dest_ip}:{dest_port}).eps"
+            )
+            filename_plt = (
+                f"{param}_{node}_to_{destination_node}({dest_ip}:{dest_port}).plt"
+            )
+            path_dat = Pack.get_path("ss", filename_dat)
+            path_eps = Pack.get_path("ss", filename_eps)
+            path_plt = Pack.get_path("ss", filename_plt)
+            simple_gnu_plot(
+                path_dat,
+                path_plt,
+                path_eps,
+                "Time (Seconds)",
+                _get_ylabel(param),
+                legend_string,
+                "Socket Statistics",
+            )
+            dat_tuple_flows.append((param, path_dat))
 
     return {
         "label": legend_string,
@@ -203,14 +241,22 @@ def plot_ss(parsed_data):
         node_data = parsed_data[node]
         for connection in node_data:
             for dest_ip in connection:
-
+                # this will store all dat files of different
+                # parameters in form of pair of (param,dat_file)
+                # example :dat_tuple_flows = [("cwnd",flow1_dat_name),
+                #                             ("cwnd",flow2_dat_name),
+                #                             ("rtt",flow1_dat_name),
+                #                             ("rtt",flow12_dat_name)]
+                dat_tuple_flows = []
                 all_flow_data = []
                 destination_node = None
 
                 flow_data = connection[dest_ip]
                 for dest_port in flow_data:
                     flow = flow_data[dest_port]
-                    plotted_data = _plot_ss_flow(flow, node, dest_ip, dest_port)
+                    plotted_data = _plot_ss_flow(
+                        flow, node, dest_ip, dest_port, dat_tuple_flows
+                    )
                     if plotted_data is not None:
                         all_flow_data.append(
                             {
@@ -236,6 +282,11 @@ def plot_ss(parsed_data):
                         x_vals.append(flow_data["values"][0])
                         labels.append(flow_data["label"])
 
+                    # Dictionary which store {"cwnd":[flow1_dat_file,flow2_dat_file],
+                    #                         "rtt":[flow1_dat_file,flow2_dat_file]}
+                    dat_dictionary = defaultdict(list)
+                    for param, path in dat_tuple_flows:
+                        dat_dictionary[param].append(path)
                     for param in all_flow_data[0]["values"][1]:
                         y_vals = []
                         for flow_data in all_flow_data:
@@ -259,3 +310,21 @@ def plot_ss(parsed_data):
                         )
                         Pack.dump_plot("ss", filename, fig)
                         plt.close(fig)
+                        if config.get_value("gnu_enable"):
+                            filename_eps = (
+                                f"{param}_{node}_to_{destination_node}({dest_ip}).eps"
+                            )
+                            filename_plt = (
+                                f"{param}_{node}_to_{destination_node}({dest_ip}).plt"
+                            )
+                            path_eps = Pack.get_path("ss", filename_eps)
+                            path_plt = Pack.get_path("ss", filename_plt)
+                            mix_gnu_plot(
+                                dat_dictionary[param],
+                                path_plt,
+                                path_eps,
+                                "Time (Seconds)",
+                                _get_ylabel(param),
+                                labels,
+                                "Socket Statistics",
+                            )

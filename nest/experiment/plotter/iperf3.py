@@ -4,14 +4,16 @@
 """Plot ss results"""
 
 import logging
+import pandas as pd  # pylint: disable=import-error
 import matplotlib.pyplot as plt
+from nest import config
 from nest.experiment.interrupts import handle_keyboard_interrupt
 from ..pack import Pack
-from .common import simple_plot
+from .common import simple_plot, simple_gnu_plot
 
 logger = logging.getLogger(__name__)
 
-
+# pylint: disable-msg=too-many-locals
 def _extract_from_iperf3_flow(flow, node, dest_ip, local_port):
     """
     Extract information from flow data and convert it to
@@ -98,6 +100,27 @@ def _plot_iperf3_flow(flow, node, dest_ip, local_port):
     filename = f"sending_rate_{node}({local_port})_to_{destination_node}({dest_ip}).png"
     Pack.dump_plot("iperf3", filename, fig)
     plt.close(fig)
+    if config.get_value("gnu_enable"):
+        data_tuples = list(zip(timestamp, sending_rate))
+        data_frame = pd.DataFrame(data_tuples)
+        filename_dat = f"sending_rate_{node}_to_{destination_node}({dest_ip}).dat"
+        Pack.dump_datfile("iperf3", filename_dat, data_frame)
+        filename_eps = f"sending_rate_{node}_to_{destination_node}({dest_ip}).eps"
+        path_dat = Pack.get_path("iperf3", filename_dat)
+        path_eps = Pack.get_path("iperf3", filename_eps)
+        filename_plt = f"sending_rate_{node}_to_{destination_node}({dest_ip}).plt"
+        path_plt = Pack.get_path("iperf3", filename_plt)
+        legend_string = (
+            f"{node} from port {local_port} to {destination_node} ({dest_ip})"
+        )
+        simple_gnu_plot(
+            path_dat,
+            path_plt,
+            path_eps,
+            "Time (Seconds)",
+            "Sending Rate (Mbps)",
+            legend_string,
+        )
 
 
 # pylint: disable=too-many-locals

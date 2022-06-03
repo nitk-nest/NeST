@@ -148,3 +148,28 @@ class Pack:
         shutil.move(src_path, dst_path)
         filename = os.path.join(dst_path, os.path.basename(src_path))
         Pack.set_owner(filename)
+
+    def dump_datfile(subfolder, filename_dat, data_frame):
+        """
+        Save Dataframe as dat file.
+        Parameters
+        ----------
+        subfolder : str
+        filename_dat : str
+        data_frame:pandas Dataframe
+        """
+        path_dat = os.path.join(Pack.FOLDER, subfolder, filename_dat)
+        data_frame.to_csv(path_dat, index=False, sep=" ", header=False)
+        Pack.set_owner(path_dat)
+
+    @staticmethod
+    def get_path(subfolder, filename):
+        """
+        To get file path
+        Parameters
+        ----------
+        subfolder : str
+        filename : str
+        """
+        path = os.path.join(Pack.FOLDER, subfolder, filename)
+        return path

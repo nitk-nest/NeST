@@ -5,13 +5,15 @@
 
 import logging
 import matplotlib.pyplot as plt
+import pandas as pd  # pylint: disable=import-error
+from nest import config
 from nest.experiment.interrupts import handle_keyboard_interrupt
 from ..pack import Pack
-from .common import simple_plot
+from .common import simple_plot, simple_gnu_plot
 
 logger = logging.getLogger(__name__)
 
-
+# pylint: disable=too-many-locals
 def _plot_ping_flow(flow, node, dest):
     """
     Plot ping stats of the flow
@@ -68,6 +70,25 @@ def _plot_ping_flow(flow, node, dest):
     filename = f"ping_{node}_to_{destination_node}({dest}).png"
     Pack.dump_plot("ping", filename, fig)
     plt.close(fig)
+    if config.get_value("gnu_enable"):
+        data_tuples = list(zip(timestamp, rtt))
+        data_frame = pd.DataFrame(data_tuples)
+        filename_dat = f"ping_{node}_to_{destination_node}({dest}).dat"
+        Pack.dump_datfile("ping", filename_dat, data_frame)
+        filename_eps = f"ping_{node}_to_{destination_node}({dest}).eps"
+        filename_plt = f"ping_{node}_to_{destination_node}({dest}).plt"
+        path_dat = Pack.get_path("ping", filename_dat)
+        path_eps = Pack.get_path("ping", filename_eps)
+        legend_string = f"{node} to {destination_node} ({dest})"
+        path_plt = Pack.get_path("ping", filename_plt)
+        simple_gnu_plot(
+            path_dat,
+            path_plt,
+            path_eps,
+            "Time (Seconds)",
+            "Ping Latency (ms)",
+            legend_string,
+        )
 
     return (timestamp, rtt)
 

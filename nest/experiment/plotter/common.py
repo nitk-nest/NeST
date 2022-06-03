@@ -3,12 +3,16 @@
 
 """Common plotting logic among tools"""
 
+import random
+import os
 import numpy as np
 import matplotlib.pyplot as plt
+from ..pack import Pack
 
 # pylint: disable=invalid-name
 
 # pylint: disable=too-many-arguments
+# pylint: disable=too-many-locals
 def simple_plot(title, x_list, y_list, x_label, y_label, legend_string=None):
     """
     Plot values
@@ -100,7 +104,6 @@ def mix_plot(title, data, x_label, y_label, with_sum=False):
 
     return fig
 
-
 def bar_plot(title, x_list, y_list, x_label, y_label, legend_string=None):
     """
     Plot values
@@ -168,3 +171,109 @@ def html_table(rowLabels, colLabels, tableData):
         table_html += "</tr>"
     table_html += "</table></html>"
     return table_html
+
+
+def simple_gnu_plot(path_dat, path_plt, path_eps, x_label, y_label, legend, title=""):
+    """Plot Gnuplot
+
+    Parameters
+    ----------
+    path_dat : str
+        Path of dat file
+    path_plt : str
+        Path of plt file
+    path_eps : str
+        path of eps file
+    x_label : str
+        Label for x values
+    y_label : str
+        Label for y values
+    legend: str
+        Legend in the plot
+    title : str
+        Title for the plot
+    """
+    directory = os.getcwd() + "/"
+    pltline = "set term postscript eps  color blacktext 'Arial'\n"
+    pltline += "set output " + '"' + directory + path_eps + '"' + "\n"
+    pltline += "set title " + "'" + title + "'" + "\n"
+    pltline += "set xlabel " + '"' + x_label + '"' + "\n"
+    pltline += "set ylabel " + '"' + y_label + '"' + "\n"
+    pltline += "set key right top vertical" + "\n"
+    splot = (
+        "plot"
+        + '"'
+        + directory
+        + path_dat
+        + '"'
+        + "title "
+        + '"'
+        + legend
+        + '"'
+        + " with lines lw 0.5 lc 'blue'"
+    )
+    pltline += splot
+    run_cmd = "gnuplot " + "'" + directory + path_plt + "'"
+    with open(path_plt, "w") as pltfile:
+        pltfile.write(pltline)
+        pltfile.close()
+    os.system(run_cmd)
+    Pack.set_owner(path_plt)
+    Pack.set_owner(path_eps)
+
+
+def mix_gnu_plot(dat_list, path_plt, path_eps, x_label, y_label, legend_list, title=""):
+    """Plot Gnuplot
+
+    Parameters
+    ----------
+    dat_list : List
+        List of dat file's paths
+    path_plt : str
+        Path of plt file
+    path_eps : str
+        path of eps file
+    x_label : str
+        Label for x values
+    y_label : str
+        Label for y values
+    legend_list: List
+        List of legends in the plot
+    title : str
+        Title for the plot
+    """
+    directory = os.getcwd() + "/"
+    pltline = "set term postscript eps  color blacktext 'Arial'\n"
+    pltline += "set output " + '"' + directory + path_eps + '"' + "\n"
+    pltline += "set title " + "'" + title + "'" + "\n"
+    pltline += "set xlabel " + '"' + x_label + '"' + "\n"
+    pltline += "set ylabel " + '"' + y_label + '"' + "\n"
+    pltline += "set key right top vertical" + "\n"
+    splot = "plot "
+    for datfile, legend_string in zip(dat_list, legend_list):
+        a = random.randint(0, 255)
+        b = random.randint(0, 255)
+        c = random.randint(0, 255)
+        color = "rgb(" + str(a) + "," + str(b) + "," + str(c) + ")"
+        splot += (
+            '"'
+            + directory
+            + datfile
+            + '"'
+            + " title "
+            + '"'
+            + legend_string
+            + '"'
+            + " with lines lw 0.5 lc "
+            + color
+            + ","
+        )
+    splot = splot[:-1]
+    pltline += splot
+    run_cmd = "gnuplot " + "'" + directory + path_plt + "'"
+    with open(path_plt, "w") as pltfile:
+        pltfile.write(pltline)
+        pltfile.close()
+    os.system(run_cmd)
+    Pack.set_owner(path_plt)
+    Pack.set_owner(path_eps)
