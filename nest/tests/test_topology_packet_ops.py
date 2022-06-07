@@ -2,8 +2,10 @@
 # Copyright (c) 2019-2022 NITK Surathkal
 """Test APIs from topology packet operations"""
 
-import os
 import unittest
+from contextlib import redirect_stdout
+import io
+import os
 from os.path import exists
 from nest.topology import Node, connect
 from nest.clean_up import delete_namespaces
@@ -14,7 +16,6 @@ from nest.topology_map import TopologyMap
 
 
 class TestTopologyPacketOps(unittest.TestCase):
-    # Add rate in percent to get packet duplicated.
     def setUp(self):
         self.n0 = Node("n0")
         self.n1 = Node("n1")
@@ -26,10 +27,16 @@ class TestTopologyPacketOps(unittest.TestCase):
 
     # Add rate in percent to get packet duplicated.
     def test_packet_duplication(self):
-        self.n0_n1.set_packet_duplication("20%")
-        status = self.n0.ping("10.0.0.2")
+        self.n0_n1.set_packet_duplication("50%")
 
-        self.assertTrue(status)
+        f = io.StringIO()
+        checker = False
+        with redirect_stdout(f):
+            self.n0.ping("10.0.0.2")
+        out = f.getvalue()
+        if "duplicates" in out:
+            checker = True
+        self.assertTrue(checker, "Packets are not being duplicated")
 
     def test_packet_reordering(self):
         self.n0_n1.set_attributes("10mbit", "10ms")
