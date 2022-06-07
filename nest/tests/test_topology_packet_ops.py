@@ -11,6 +11,7 @@ from nest.topology import Node, connect
 from nest.clean_up import delete_namespaces
 from nest.topology_map import TopologyMap
 
+
 # pylint: disable=invalid-name
 # pylint: disable=missing-docstring
 
@@ -25,6 +26,29 @@ class TestTopologyPacketOps(unittest.TestCase):
         self.n0_n1.set_address("10.0.0.1/24")
         self.n1_n0.set_address("10.0.0.2/24")
 
+    def parse_ping_output(self):
+        # TODO: Optimize the below function using regex
+
+        f = io.StringIO()
+        checker = False
+        with redirect_stdout(f):
+            self.n0.ping("10.0.0.2")
+        out = f.getvalue()
+        # print(out)
+        pointer = out.find(
+            "packet loss"
+        )  # pointer to the initial character of string "packet loss".
+        pointer = pointer - 3  # it will point to the last digit of packet loss %.
+        num = 0
+        while (
+            out[pointer] != " "
+        ):  # it is tracing from last digit to the first digit to get actual % loss number.
+            num = int(out[pointer]) * 10 + num
+            pointer = pointer - 1
+        if num > 0:
+            checker = True
+        self.assertTrue(checker, "packets are not being corrupted")
+
     def test_packet_duplication(self):
         # Add rate in percent to get packet duplicated.
         self.n0_n1.set_packet_duplication("50%")
@@ -37,6 +61,10 @@ class TestTopologyPacketOps(unittest.TestCase):
         if "duplicates" in out:
             checker = True
         self.assertTrue(checker, "Packets are not being duplicated")
+
+    def test_packet_corruption(self):
+        self.n0_n1.set_packet_corruption("30%", "50%")
+        self.parse_ping_output()
 
     def test_packet_reordering(self):
         self.n0_n1.set_attributes("10mbit", "10ms")
