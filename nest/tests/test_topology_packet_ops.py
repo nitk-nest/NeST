@@ -48,6 +48,19 @@ class TestTopologyPacketOps(unittest.TestCase):
             checker = True
         self.assertTrue(checker, "packets are not being corrupted")
 
+    def test_packet_loss_state(self):
+        self.n0_n1.set_packet_loss_state("20%", "4%", "5%", "4%", "3%", True)
+        status = self.n0.ping("10.0.0.2")
+
+        self.assertTrue(status)
+
+    def test_packet_loss_gemodel(self):
+        self.n0_n1.set_packet_loss_gemodel("10%", "4%", "5%", "4%", True)
+        status = self.n0.ping("10.0.0.2")
+
+        self.assertTrue(status)
+
+    # Add rate in percent to get packet duplicated.
     def test_packet_duplication(self):
         # Add rate in percent to get packet duplicated.
         self.n0_n1.set_packet_duplication("50%")
