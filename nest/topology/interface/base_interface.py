@@ -13,6 +13,8 @@ from nest.topology.device import Ifb, Device
 logger = logging.getLogger(__name__)
 
 # pylint: disable=too-many-public-methods
+# pylint: disable=too-many-arguments
+# pylint: disable=invalid-name
 
 
 class BaseInterface:
@@ -371,6 +373,124 @@ class BaseInterface:
         loss_parameter = {"loss": loss_rate.string_value, "": parsed_correlation_rate}
 
         self._device.change_qdisc("11:", "netem", **loss_parameter)
+
+    @input_validator
+    def set_packet_loss_state(
+        self,
+        p13: Percentage,
+        p31: Percentage = None,
+        p32: Percentage = None,
+        p23: Percentage = None,
+        p14: Percentage = None,
+        ecn: bool = False,
+    ):
+        """
+        Adds packet loss using Markov model with 4-states
+        of transitional probabilities as parameters
+        p13 p31 p23 p32 p14 in sequence. p13 is mandatory.
+
+        Parameters
+        -----------
+        p13: Percentage
+            State 1, corresponds to good reception.
+        p31: Percentage
+            State 2, from Burst to Good state, shows second state.
+        p23: Percentage
+            Third state to burst loss of packet
+        p32: Percentage
+            Third state, that corresponds to burst loss of packet
+        p14: Percentage
+            Fourth state, corresponds to independent loss of packet
+        ecn: bool
+            To marked packet instead of dropping them
+        """
+
+        probabilities = f"{p13.string_value} "
+
+        if p31 is not None:
+            probabilities += f"{p31.string_value} "
+        else:
+            probabilities = "0% "
+
+        if p32 is not None:
+            probabilities += f"{p32.string_value} "
+        else:
+            probabilities += "0% "
+
+        if p23 is not None:
+            probabilities += f"{p23.string_value} "
+        else:
+            probabilities += "0% "
+
+        if p14 is not None:
+            probabilities += f"{p14.string_value} "
+        else:
+            probabilities += "0% "
+
+        if ecn is True:
+            probabilities += "ecn"
+
+        loss_parameter = {"loss": "state", "": probabilities}
+
+        self._device.set_structure()
+
+        self._device.change_qdisc("11:", "netem", **loss_parameter)
+
+    @input_validator
+    def set_packet_loss_gemodel(
+        self,
+        p: Percentage,
+        r: Percentage = None,
+        h: Percentage = None,
+        k: Percentage = None,
+        ecn: bool = False,
+    ):
+        """
+        adds packet loss using Gilber Elliot Model,
+        To use Bernoulli model, only parameter p is required.
+        Simple Gilbert Model requires p and r parameters.
+        Gilbert model needs p, r and 1-h parameter
+        Gilber Elliot model require all four, i.e p, r , 1-h and 1-k
+
+        Parameter
+        -----------
+        p: Percentage
+            Probability from Good state to Burst State
+        r: Percentage
+            Probability from Burst state to Good State
+        h: Percentage
+            Probability of packet transmision on Burst State
+        k: Percentage
+            Probability of pracket loss in Good state
+        """
+
+        loss_parameters = {"loss": "gemodel"}
+
+        probabilities = f"{p.string_value} "
+
+        if r is not None:
+            probabilities += f"{r.string_value} "
+        else:
+            probabilities += "0% "
+
+        if h is not None:
+            probabilities += f"{h.string_value} "
+        else:
+            probabilities += "0% "
+
+        if k is not None:
+            probabilities += f"{k.string_value} "
+        else:
+            probabilities += "0% "
+
+        if ecn is True:
+            probabilities += "ecn"
+
+        loss_parameters[""] = probabilities
+
+        self._device.set_structure()
+
+        self._device.change_qdisc("11:", "netem", **loss_parameters)
 
     @input_validator
     def set_packet_duplication(self, duplicate_rate: Percentage):
