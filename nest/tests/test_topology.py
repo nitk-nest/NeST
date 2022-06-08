@@ -496,25 +496,8 @@ class TestTopology(unittest.TestCase):
         n0_n1.set_address("10.0.0.1/24")
         n1_n0.set_address("10.0.0.2/24")
 
-        n0_n1.disable(1.5, 3.5)
-
-        with self.assertRaises(ValueError) as err:
-            n1_n0.disable(-1.0, 4.0)
-        self.assertEqual(
-            str(err.exception),
-            "start_time should be greater than or equal to 0 "
-            "and end_time should be greater than 0",
-        )
-
-        with self.assertRaises(ValueError) as err:
-            n1_n0.disable(4.0, 3.0)
-        self.assertEqual(str(err.exception), "4.0 should be smaller than 3.0")
-
-        status_1 = self.n0.ping("10.0.0.2")
-
-        self.assertTrue(status_1)
-
         n0_n1.enable(2.0, 3.0)
+        n0_n1.enable(5.0)
 
         with self.assertRaises(ValueError) as err:
             n1_n0.enable(-2.0, 3.0)
@@ -528,9 +511,50 @@ class TestTopology(unittest.TestCase):
             n1_n0.enable(4.0, 3.0)
         self.assertEqual(str(err.exception), "4.0 should be smaller than 3.0")
 
-        status_2 = self.n0.ping("10.0.0.2")
+        with self.assertRaises(ValueError) as err:
+            n1_n0.enable(end_time=4.0)
+        self.assertEqual(
+            str(err.exception),
+            "start_time is required and should be greater than or equal to 0",
+        )
 
+        status_1 = self.n0.ping("10.0.0.2", packets=7)
+
+        self.assertTrue(status_1)
+
+        n0_n1.enable()
+        status_2 = self.n0.ping("10.0.0.2")
         self.assertTrue(status_2)
+
+        n0_n1.disable(1.5, 3.5)
+        n0_n1.disable(5.0)
+
+        with self.assertRaises(ValueError) as err:
+            n1_n0.disable(-2.0, 4.0)
+        self.assertEqual(
+            str(err.exception),
+            "start_time should be greater than or equal to 0 "
+            "and end_time should be greater than 0",
+        )
+
+        with self.assertRaises(ValueError) as err:
+            n1_n0.disable(4.0, 3.0)
+        self.assertEqual(str(err.exception), "4.0 should be smaller than 3.0")
+
+        with self.assertRaises(ValueError) as err:
+            n1_n0.disable(end_time=4.0)
+        self.assertEqual(
+            str(err.exception),
+            "start_time is required and should be greater than or equal to 0",
+        )
+
+        status_3 = self.n0.ping("10.0.0.2", packets=7)
+
+        self.assertTrue(status_3)
+
+        n0_n1.disable()
+        status_4 = self.n0.ping("10.0.0.2")
+        self.assertFalse(status_4)
 
 
 if __name__ == "__main__":

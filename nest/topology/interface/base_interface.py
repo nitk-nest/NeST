@@ -503,7 +503,7 @@ class BaseInterface:
         return f"{classname}({self.name!r})"
 
     @input_validator
-    def disable(self, start_time: float, end_time: float):
+    def disable(self, start_time: float = -1.0, end_time: float = -1.0):
         """
         API for disable a network interface from 'start_time' sec  to 'end_time' sec
 
@@ -514,7 +514,21 @@ class BaseInterface:
         end_time : float
             time in sec after which the interface mode is set 'UP'
         """
-        if start_time >= 0 and end_time > 0:
+        if start_time == -1.0 and end_time == -1.0:
+            self.set_mode("DOWN")
+
+        elif start_time >= 0.0 and end_time == -1.0:
+            disable_process = multiprocessing.Process(
+                target=self.set_mode, args=["DOWN", start_time]
+            )
+            disable_process.start()
+
+        elif start_time == -1.0 and end_time > 0.0:
+            raise ValueError(
+                "start_time is required and should be greater than or equal to 0"
+            )
+
+        elif start_time >= 0.0 and end_time > 0.0:
             if start_time < end_time:
                 disable_process = multiprocessing.Process(
                     target=self.set_mode, args=["DOWN", start_time]
@@ -533,7 +547,7 @@ class BaseInterface:
             )
 
     @input_validator
-    def enable(self, start_time: float, end_time: float):
+    def enable(self, start_time: float = -1.0, end_time: float = -1.0):
         """
         API for enable a network interface from 'start_time' sec to 'end_time' sec
 
@@ -544,7 +558,21 @@ class BaseInterface:
         end_time : float
             time in second which the interface mode is set 'DOWN'
         """
-        if start_time >= 0 and end_time > 0:
+        if start_time == -1.0 and end_time == -1.0:
+            self.set_mode("UP")
+
+        elif start_time >= 0.0 and end_time == -1.0:
+            enable_process = multiprocessing.Process(
+                target=self.set_mode, args=["UP", start_time]
+            )
+            enable_process.start()
+
+        elif start_time == -1.0 and end_time > 0.0:
+            raise ValueError(
+                "start_time is required and should be greater than or equal to 0"
+            )
+
+        elif start_time >= 0.0 and end_time > 0.0:
             if start_time < end_time:
                 enable_process = multiprocessing.Process(
                     target=self.set_mode, args=["UP", start_time]
