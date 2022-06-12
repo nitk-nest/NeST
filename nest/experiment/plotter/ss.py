@@ -181,7 +181,7 @@ def _plot_ss_flow(flow, node, dest_ip, dest_port, dat_tuple_flows):
         filename = f"{param}_{node}_to_{destination_node}({dest_ip}:{dest_port}).png"
         Pack.dump_plot("ss", filename, fig)
         plt.close(fig)
-        if config.get_value("gnu_enable"):
+        if config.get_value("enable_gnuplot"):
             xlist = []
             ylist = []
             for xvalue, yvalue in zip(timestamp, flow_params[param]):
@@ -310,7 +310,7 @@ def plot_ss(parsed_data):
                         )
                         Pack.dump_plot("ss", filename, fig)
                         plt.close(fig)
-                        if config.get_value("gnu_enable"):
+                        if config.get_value("enable_gnuplot"):
                             filename_eps = (
                                 f"{param}_{node}_to_{destination_node}({dest_ip}).eps"
                             )

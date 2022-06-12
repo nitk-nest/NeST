@@ -76,7 +76,7 @@ def _plot_netperf_flow(flow, node, dest, dat_list_flows):
     filename = f"sending_rate_{node}_to_{destination_node}({dest}).png"
     Pack.dump_plot("netperf", filename, fig)
     plt.close(fig)
-    if config.get_value("gnu_enable"):
+    if config.get_value("enable_gnuplot"):
         data_tuples = list(zip(timestamp, sending_rate))
         data_frame = pd.DataFrame(data_tuples)
         filename_dat = f"sending_rate_{node}_to_{destination_node}({dest}).dat"
@@ -136,7 +136,7 @@ def plot_netperf(parsed_data):
             Pack.dump_plot("netperf", filename, fig)
             plt.close(fig)
 
-            if config.get_value("gnu_enable"):
+            if config.get_value("enable_gnuplot"):
                 filename_eps = f"sending_rate_{node}.eps"
                 path_eps = Pack.get_path("netperf", filename_eps)
                 filename_plt = f"sending_rate_{node}.plt"

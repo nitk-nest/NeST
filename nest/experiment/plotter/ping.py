@@ -70,7 +70,7 @@ def _plot_ping_flow(flow, node, dest):
     filename = f"ping_{node}_to_{destination_node}({dest}).png"
     Pack.dump_plot("ping", filename, fig)
     plt.close(fig)
-    if config.get_value("gnu_enable"):
+    if config.get_value("enable_gnuplot"):
         data_tuples = list(zip(timestamp, rtt))
         data_frame = pd.DataFrame(data_tuples)
         filename_dat = f"ping_{node}_to_{destination_node}({dest}).dat"

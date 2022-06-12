@@ -194,12 +194,14 @@ def simple_gnu_plot(path_dat, path_plt, path_eps, x_label, y_label, legend, titl
         Title for the plot
     """
     directory = os.getcwd() + "/"
-    pltline = "set term postscript eps  color blacktext 'Arial'\n"
-    pltline += "set output " + '"' + directory + path_eps + '"' + "\n"
-    pltline += "set title " + "'" + title + "'" + "\n"
-    pltline += "set xlabel " + '"' + x_label + '"' + "\n"
-    pltline += "set ylabel " + '"' + y_label + '"' + "\n"
-    pltline += "set key right top vertical" + "\n"
+    pltline = (
+        f"set term postscript eps  color blacktext 'Arial'\n"
+        f'set output "{directory}{path_eps}"\n'
+        f"set title '{title}'\n"
+        f'set xlabel "{x_label}"\n'
+        f'set ylabel "{y_label}"\n'
+        f"set key right top vertical\n"
+    )
     splot = (
         "plot"
         + '"'
@@ -213,6 +215,8 @@ def simple_gnu_plot(path_dat, path_plt, path_eps, x_label, y_label, legend, titl
         + " with lines lw 0.5 lc 'blue'"
     )
     pltline += splot
+
+    # TODO: This code should be moved to engine module
     run_cmd = "gnuplot " + "'" + directory + path_plt + "'"
     with open(path_plt, "w") as pltfile:
         pltfile.write(pltline)

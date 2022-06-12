@@ -85,7 +85,7 @@ def _plot_tc_stats(stats, node, interface):
         filename = f"{node}_{interface}_{qdisc}_{param}.png"
         Pack.dump_plot("tc", filename, fig)
         plt.close(fig)
-        if config.get_value("gnu_enable"):
+        if config.get_value("enable_gnuplot"):
             data_tuples = list(zip(timestamp, stats_params[param]))
             data_frame = pd.DataFrame(data_tuples)
             filename_dat = f"{node}_{interface}_{qdisc}_{param}.dat"

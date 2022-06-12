@@ -100,7 +100,7 @@ def _plot_iperf3_flow(flow, node, dest_ip, local_port):
     filename = f"sending_rate_{node}({local_port})_to_{destination_node}({dest_ip}).png"
     Pack.dump_plot("iperf3", filename, fig)
     plt.close(fig)
-    if config.get_value("gnu_enable"):
+    if config.get_value("enable_gnuplot"):
         data_tuples = list(zip(timestamp, sending_rate))
         data_frame = pd.DataFrame(data_tuples)
         filename_dat = f"sending_rate_{node}_to_{destination_node}({dest_ip}).dat"
