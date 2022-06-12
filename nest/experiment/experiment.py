@@ -230,6 +230,28 @@ class Experiment:
             TCP congestion algorithm (Default value = 'cubic')
         """
 
+        congestion_algo_list = [
+            "bbr",
+            "bic",
+            "cdg",
+            "cubic",
+            "dctcp",
+            "highspeed",
+            "htcp",
+            "illinois",
+            "reno",
+            "scalable",
+            "vegas",
+            "veno",
+            "westwood",
+            "yeah",
+        ]
+
+        if congestion_algorithm not in congestion_algo_list:
+            raise ValueError(
+                f"{congestion_algorithm} is not a valid TCP Congestion Control algorithm"
+            )
+
         # TODO: Verify congestion algorithm
 
         options = {"protocol": "TCP", "cong_algo": congestion_algorithm}
