@@ -1,0 +1,29 @@
+# NOTE: If a file matches multiple rules,
+# then the last rule will be applied
+
+*                       @nitk-nest
+
+[NeST Source Code]
+nest/                   @shanthanu9 @DhanaSekharM @gnarayang
+nest/topology           @gnarayang @shanthanu9
+nest/routing            @DhanaSekharM
+nest/input_validator    @shanthanu9
+nest/experiment         @shanthanu9 @DhanaSekharM
+
+[Documentation]
+docs/                   @shanthanu9
+examples/               @mohittahiliani
+
+[CI/CD]
+Dockerfile              @shanthanu9 @DhanaSekharM
+docker-compose.yml      @DhanaSekharM
+setup.py                @shanthanu9
+.gitlab-ci.yml          @shanthanu9 @DhanaSekharM
+
+[Maintenance]
+utils/                  @shanthanu9
+.coveragerc             @shanthanu9
+.git-blame-ignore-revs  @shanthanu9
+.gitlint                @shanthanu9
+.pre-commit-config.yaml @shanthanu9
+.pylintrc               @shanthanu9
