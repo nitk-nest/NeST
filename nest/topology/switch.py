@@ -6,13 +6,14 @@
 import logging
 
 from nest import engine
+from nest.topology.device.bridge import Bridge
 from nest.topology.interface import BaseInterface
 from nest.topology.node import Node
 
 logger = logging.getLogger(__name__)
 
 
-class Switch(Node):
+class Switch(Node, BaseInterface):
     """
     Abstraction for a switch.
 
@@ -26,8 +27,8 @@ class Switch(Node):
         """
         Create a switch with given `name` inside a 'Node'.
 
-        A namespace is created by inheriting the "Node" class and unique id is given
-        to the namespace. Then a switch with the same name and unique id as namespace
+        A namespace is created by instantiating the "Node" class and unique id is given
+        to the namespace. Then a bridge with the same name and unique id as namespace
         is created inside the created namespace.
 
         Parameters
@@ -35,9 +36,10 @@ class Switch(Node):
         name: str
             The name of the switch to be created
         """
-        super().__init__(name)
-        engine.create_switch(self.id, self.id)
-        engine.set_switch_mode(self.id, "up")
+
+        Node.__init__(self, name)
+        _bridge = Bridge(name, self._id)
+        BaseInterface.__init__(self, name, _bridge)
 
     def _add_interface(self, interface: BaseInterface):
         """
