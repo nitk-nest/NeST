@@ -93,15 +93,16 @@ class TestQuagga(unittest.TestCase):
         self.routing_helper_ipv4 = RoutingHelper("isis")
         self.routing_helper_ipv6 = RoutingHelper("isis", ipv6_routing=True)
         self.routing_helper_ipv4.populate_routing_tables()
-        self.routing_helper_ipv6.populate_routing_tables()
 
         status_ipv4 = self.n0.ping("10.0.3.4", verbose=False)
         self.assertTrue(status_ipv4)
-        status_ipv6 = self.n0.ping("10::3:4", verbose=False)
-        self.assertTrue(status_ipv6)
-
         status_ipv4 = self.n0.ping("10.0.1.1", verbose=False)
         self.assertTrue(status_ipv4)
+
+        self.routing_helper_ipv6.populate_routing_tables()
+
+        status_ipv6 = self.n0.ping("10::3:4", verbose=False)
+        self.assertTrue(status_ipv6)
         status_ipv6 = self.n1.ping("10::1:1", verbose=False)
         self.assertTrue(status_ipv6)
 
