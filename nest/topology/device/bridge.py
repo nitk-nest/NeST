@@ -1,13 +1,12 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2021 NITK Surathkal
+# Copyright (c) 2019-2022 NITK Surathkal
 
 """API related to creation of bridge in topology"""
 
 import logging
 
-from nest.topology import Node
-from .device import Device
 from nest import engine
+from .device import Device
 
 logger = logging.getLogger(__name__)
 
@@ -39,5 +38,3 @@ class Bridge(Device):
         engine.create_switch(node_id, node_id)
         engine.set_switch_mode(node_id, "up")
         super().__init__(name, node_id)
-
-    
