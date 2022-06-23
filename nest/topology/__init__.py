@@ -20,10 +20,13 @@ import uuid
 
 from . import id_generator
 from .address import Address, Subnet
+from .interface import Interface
 from .node import Node
 from .router import Router
-from .interface import Interface, connect
 from .switch import Switch
+
+# pylint: disable=cyclic-import
+from .connect import connect
 
 
 # Generate unique topology id for the *to be created* topology

@@ -4,6 +4,8 @@
 """API related to Address Helper"""
 
 import logging
+from nest.input_validator.input_validator import input_validator
+from nest.topology.network import Network
 from nest.topology_map import TopologyMap
 from .address import Subnet
 
@@ -18,7 +20,8 @@ class AddressHelper:
     """
 
     @staticmethod
-    def assign_addresses(network=None):
+    @input_validator
+    def assign_addresses(network: Network = None):
         """
         Assignment of addresses to the interfaces.
 
@@ -43,7 +46,7 @@ class AddressHelper:
             AddressHelper.__assign_addresses_to_network(network)
 
     @staticmethod
-    def __assign_addresses_to_network(network):
+    def __assign_addresses_to_network(network: Network):
         """
         Assignment of addresses to all interfaces of specific network.
 
@@ -52,10 +55,10 @@ class AddressHelper:
         network : Network
             Assigning the addresses to each interfaces of the given network object.
         """
-        _interface = []
-        _interface = network.interface
+        _interfaces = []
+        _interfaces = network.interfaces
 
         _net_address = Subnet(network.net_address)
 
-        for inter in _interface:
+        for inter in _interfaces:
             inter.set_address(_net_address.get_next_addr())

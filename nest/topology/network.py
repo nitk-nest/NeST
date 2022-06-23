@@ -40,7 +40,7 @@ class Network:
         """
 
         self.net_address = network_address
-        self.interface = []
+        self.interfaces = []
 
         # Adding each network's object reference to the static list of networks in topology_map.
         TopologyMap.add_network(self)
@@ -71,8 +71,11 @@ class Network:
         interface : BaseInterface
             The interface which needs to be added to the Network.
         """
-        self.interface.append(interface)
-        TopologyMap.decrement_orphan_interfaces()
+        if interface not in self.interfaces:
+            self.interfaces.append(interface)
+            TopologyMap.decrement_orphan_interfaces()
+        else:
+            logger.debug("Ignore adding duplicate %s in %s", interface, self)
 
     def __repr__(self):
         classname = self.__class__.__name__
