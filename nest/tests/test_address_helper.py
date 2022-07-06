@@ -6,7 +6,7 @@
 import unittest
 import subprocess
 
-from nest.topology import Node, connect
+from nest.topology import Node, connect, Switch, Router
 from nest.clean_up import delete_namespaces
 from nest.topology_map import TopologyMap
 from nest.routing.routing_helper import RoutingHelper
@@ -17,12 +17,17 @@ from nest.topology.address_helper import AddressHelper
 # pylint: disable=invalid-name
 # pylint: disable=unused-variable
 # pylint: disable=consider-using-with
+# pylint: disable=too-many-instance-attributes
 
 
 class TestIPv4AddressHelper(unittest.TestCase):
     def setUp(self):
         self.n0 = Node("n0")
         self.n1 = Node("n1")
+        self.n2 = Node("n2")
+        self.n3 = Node("n3")
+        self.n4 = Node("n4")
+        self.n5 = Node("n5")
         self.net1 = Network("10.0.1.0/24")
         self.net2 = Network("10.0.2.0/24")
         self.net3 = Network("2001:101::/122")
@@ -153,6 +158,42 @@ class TestIPv4AddressHelper(unittest.TestCase):
             (stdout, _) = proc.communicate()
 
         self.assertEqual(stdout[:4], b"PING", "Invalid ping output")
+
+    def test_ip_addr_to_switch(self):
+        # pylint: disable=too-many-locals
+        s1 = Switch("s1")
+        s2 = Switch("s2")
+        r1 = Router("r1")
+
+        with self.net1:
+            (n0_s1, s1_n0) = connect(self.n0, s1)
+            (n1_s1, s1_n1) = connect(self.n1, s1)
+            (n2_s1, s1_n2) = connect(self.n2, s1)
+            (s1_r1, r1_s1) = connect(s1, r1)
+
+        with self.net2:
+            (n3_s2, s2_n3) = connect(self.n3, s2)
+            (n4_s2, s2_n4) = connect(self.n4, s2)
+            (n5_s2, s2_n5) = connect(self.n5, s2)
+            (s2_r1, r1_s2) = connect(s2, r1)
+
+        AddressHelper.assign_addresses()
+
+        self.n0.add_route("DEFAULT", n0_s1, r1_s1.address)
+        self.n1.add_route("DEFAULT", n1_s1, r1_s1.address)
+        self.n2.add_route("DEFAULT", n2_s1, r1_s1.address)
+        self.n3.add_route("DEFAULT", n3_s2, r1_s2.address)
+        self.n4.add_route("DEFAULT", n4_s2, r1_s2.address)
+        self.n5.add_route("DEFAULT", n5_s2, r1_s2.address)
+
+        # `Ping` from `n0` to 'n3', `n1` to `n4`, and `n2` to `n5`
+        status_1 = self.n0.ping(n3_s2.address)
+        status_2 = self.n1.ping(n4_s2.address)
+        status_3 = self.n2.ping(n5_s2.address)
+
+        self.assertTrue(status_1)
+        self.assertTrue(status_2)
+        self.assertTrue(status_3)
 
 
 if __name__ == "__main__":

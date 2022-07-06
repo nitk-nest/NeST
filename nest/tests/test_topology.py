@@ -19,6 +19,10 @@ class TestTopology(unittest.TestCase):
     def setUp(self):
         self.n0 = Node("n0")
         self.n1 = Node("n1")
+        self.n2 = Node("n2")
+        self.n3 = Node("n3")
+        self.n4 = Node("n4")
+        self.n5 = Node("n5")
 
     def tearDown(self):
         delete_namespaces()
@@ -555,6 +559,49 @@ class TestTopology(unittest.TestCase):
         n0_n1.disable()
         status_4 = self.n0.ping("10.0.0.2")
         self.assertFalse(status_4)
+
+    def test_two_lans_via_router(self):
+        # pylint: disable=too-many-locals
+        s1 = Switch("s1")
+        s2 = Switch("s2")
+        r1 = Router("r1")
+
+        (n0_s1, _) = connect(self.n0, s1)
+        (n1_s1, _) = connect(self.n1, s1)
+        (n2_s1, _) = connect(self.n2, s1)
+        (n3_s2, _) = connect(self.n3, s2)
+        (n4_s2, _) = connect(self.n4, s2)
+        (n5_s2, _) = connect(self.n5, s2)
+        (_, r1_s1) = connect(s1, r1)
+        (_, r1_s2) = connect(s2, r1)
+
+        n0_s1.set_address("192.168.1.1/24")
+        n1_s1.set_address("192.168.1.2/24")
+        n2_s1.set_address("192.168.1.3/24")
+        r1_s1.set_address("192.168.1.4/24")
+        n3_s2.set_address("192.168.2.1/24")
+        n4_s2.set_address("192.168.2.2/24")
+        n5_s2.set_address("192.168.2.3/24")
+        r1_s2.set_address("192.168.2.4/24")
+
+        s1.set_address("192.168.1.5/24")
+        s2.set_address("192.168.2.5/24")
+
+        self.n0.add_route("DEFAULT", n0_s1, r1_s1.address)
+        self.n1.add_route("DEFAULT", n1_s1, r1_s1.address)
+        self.n2.add_route("DEFAULT", n2_s1, r1_s1.address)
+        self.n3.add_route("DEFAULT", n3_s2, r1_s2.address)
+        self.n4.add_route("DEFAULT", n4_s2, r1_s2.address)
+        self.n5.add_route("DEFAULT", n5_s2, r1_s2.address)
+
+        # `Ping` from `n0` to 'n3', `n1` to `n4`, and `n2` to `n5`
+        status_1 = self.n0.ping(n3_s2.address)
+        status_2 = self.n1.ping(n4_s2.address)
+        status_3 = self.n2.ping(n5_s2.address)
+
+        self.assertTrue(status_1)
+        self.assertTrue(status_2)
+        self.assertTrue(status_3)
 
 
 if __name__ == "__main__":
