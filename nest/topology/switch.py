@@ -27,7 +27,7 @@ class Switch(Node, BaseInterface):
         """
         Create a switch with given `name` inside a 'Node'.
 
-        A namespace is created by instantiating the "Node" class and unique id is given
+        A namespace is created by inheriting the "Node" class and unique id is given
         to the namespace. Then a bridge with the same name and unique id as namespace
         is created inside the created namespace.
 
