@@ -25,14 +25,14 @@ class TestTopologyPacketOps(unittest.TestCase):
         self.n0_n1.set_address("10.0.0.1/24")
         self.n1_n0.set_address("10.0.0.2/24")
 
-    # Add rate in percent to get packet duplicated.
     def test_packet_duplication(self):
+        # Add rate in percent to get packet duplicated.
         self.n0_n1.set_packet_duplication("50%")
 
         f = io.StringIO()
         checker = False
         with redirect_stdout(f):
-            self.n0.ping("10.0.0.2")
+            self.n0.ping("10.0.0.2", packets=15)
         out = f.getvalue()
         if "duplicates" in out:
             checker = True
