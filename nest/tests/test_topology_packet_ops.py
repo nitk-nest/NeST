@@ -32,9 +32,8 @@ class TestTopologyPacketOps(unittest.TestCase):
         f = io.StringIO()
         checker = False
         with redirect_stdout(f):
-            self.n0.ping("10.0.0.2")
+            self.n0.ping("10.0.0.2", packets=50)
         out = f.getvalue()
-        # print(out)
         pointer = out.find(
             "packet loss"
         )  # pointer to the initial character of string "packet loss".
@@ -63,7 +62,7 @@ class TestTopologyPacketOps(unittest.TestCase):
         self.assertTrue(checker, "Packets are not being duplicated")
 
     def test_packet_corruption(self):
-        self.n0_n1.set_packet_corruption("30%", "50%")
+        self.n0_n1.set_packet_corruption("75%", "50%")
         self.parse_ping_output()
 
     def test_packet_reordering(self):
