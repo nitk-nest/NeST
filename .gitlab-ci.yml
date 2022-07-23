@@ -82,7 +82,8 @@ run unit tests:
     - coverage --version
     - pytest --version
     - coverage run
-    - tar -cvf coverage_dump_${CI_JOB_NAME// /_}.tar .coverage_dump*
+    - tar -cvf coverage_dump_${CI_JOB_NAME// /_}.tar .coverage_dump* > /dev/null
+    - junit2html junit_report.xml test_output.html
   artifacts:
     reports:
       junit: junit_report.xml
@@ -91,6 +92,7 @@ run unit tests:
       - quagga-logs*/
       - frr-logs*/
       - junit_report.xml
+      - test_output.html
       - coverage_dump_*.tar
     when: always
 
@@ -106,7 +108,8 @@ run examples:
         -o junit_logging=all
         --junitxml=junit_report.xml || exit_code=$?
     - mv examples_dump/.coverage_dump* .
-    - tar -cvf coverage_dump_${CI_JOB_NAME// /_}.tar .coverage_dump*
+    - tar -cvf coverage_dump_${CI_JOB_NAME// /_}.tar .coverage_dump* > /dev/null
+    - junit2html junit_report.xml test_output.html
     - >
         if [ $exit_code -ne 0 ];
         then echo "Some example runs failed. Please check pytest logs";
@@ -120,6 +123,7 @@ run examples:
     paths:
       - examples_dump/
       - junit_report.xml
+      - test_output.html
       - coverage_dump_*.tar
     when: always
 

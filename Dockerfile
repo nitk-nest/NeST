@@ -3,7 +3,7 @@
 
 # Dockerfile to build image with dependecies required for testing nest on CI.
 
-FROM ubuntu:20.04@sha256:7cc0576c7c0ec2384de5cbf245f41567e922aab1b075f3e8ad565f508032df17 as test
+FROM ubuntu:20.04@sha256:b2339eee806d44d6a8adc0a790f824fb71f03366dd754d400316ae5a7e3ece3e as test
 
 # Use bash by default instead of sh
 SHELL ["/bin/bash", "-c"]
@@ -29,6 +29,7 @@ RUN python -m venv venv
 RUN source venv/bin/activate
 
 # Install python dependencies
+RUN pip install junit2html
 RUN pip install coverage
 RUN pip install gitlint
 RUN pip install pre-commit
