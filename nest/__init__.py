@@ -18,7 +18,6 @@ import os
 import sys
 import signal
 
-from nest import clean_up
 from .logging_helper import add_logging_level, get_trace_filehandler
 from .user import User
 from . import config
@@ -61,6 +60,10 @@ nest_logger.addHandler(ch)
 
 if log_level == "TRACE":
     nest_logger.addHandler(get_trace_filehandler())
+
+# Moving import here, since it's causing issues with running
+# NeST without sudo privilege
+from nest import clean_up  # # pylint: disable=wrong-import-position, wrong-import-order
 
 # On recieving Termination signal, execute the given function
 signal.signal(signal.SIGTERM, clean_up.delete_namespaces)
