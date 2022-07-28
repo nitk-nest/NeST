@@ -3,7 +3,7 @@ NeST RELEASE NOTES
 
 This file contains NeST release notes (most recent release first).
 
-Release 0.5-dev (Not yet available)
+Release 0.4.2 (Jun 03, 2023)
 ============================
 
 If available, the numbers below mark the issue numbers on GitLab (prefixed by '#'),
@@ -11,8 +11,30 @@ or GitLab merge request number (prefixed by '!').
 
 New user-visible features
 -------------------------
-- !153: Add support for CoAP simulation
-- !243: Add support for static routing
+- !153, !296: Added support for CoAP simulation
+- !154: Added support for multiple IPv4 and IPv6 addresses in interfaces
+- !156: Added support for setting TCP module parameters
+- !199: Added API to set duplicate packets
+- !219: Added iperf3 server options in Experiment API
+- !222: Added preload option in ping API
+- !225: Ensure dynamic routing works correctly with multiple ip addresses on interface
+- !231: Added packet-reordering API
+- !243: Added support for static routing
+- !246: Added delay distribution API
+- !250: Redesigned TopologyMap and made it thread-safe
+- !254: Added APIs to enable/disable network interfaces dynamically
+- !257: Added support for adding IP address to Switch
+- !270: Added support for BIRD routing suite
+- !280, !281, !282, !297, !298, !299, !311: Improved existing examples and added new example programs
+- !284: Added Iperf3 support in TCP flows
+
+Bugs fixed
+----------
+- !245: Fixed issue with duplicate IP forwarding
+- !255: Ensure Qdisc names are validated correctly
+- !264: Ensure TCP algorithm names are validated correctly
+- !293: Fixed FRR Zebra removing previously installed mulitaddress routes
+- !303, #255: Fixed pcap file creation in capture_packets API
 
 Release 0.4.1 (Mar 14, 2022)
 ============================
