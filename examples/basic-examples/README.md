@@ -60,3 +60,15 @@ The success/failure of these packets is reported. This program extends
 
 <!-- The below snippet will render example code in docs website -->
 <!-- #DOCS_INCLUDE: two-lans-connected-directly.py -->
+
+## 6. two-lans-connected-via-router.py
+This program emulates two Local Area Networks (LANs) connected via a router.
+LAN-1 consists three hosts `h1` to `h3` connected to switch `s1`, and
+LAN-2 consists three hosts `h4` to `h6` connected to switch `s2`. Switches
+`s1` and `s2` are connected to each other via a router `r1`. Five ping
+packets are sent from `h1` to `h4`, five from `h2` to `h5` and lastly, five
+from `h3` to `h6`. The success/failure of these packets is reported. This
+program extends `two-lans-connected-directly.py`.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: two-lans-connected-via-router.py -->
