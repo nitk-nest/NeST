@@ -68,3 +68,28 @@ addresses are used in this program.
 
 <!-- The below snippet will render example code in docs website -->
 <!-- #DOCS_INCLUDE: ipv6-two-lans-connected-directly.py -->
+
+## 6. ipv6-two-lans-connected-via-router.py
+This program emulates two Local Area Networks (LANs) connected via a router.
+LAN-1 consists three hosts `h1` to `h3` connected to switch `s1`, and
+LAN-2 consists three hosts `h4` to `h6` connected to switch `s2`. Switches
+`s1` and `s2` are connected to each other via a router `r1`. Five ping
+packets are sent from `h1` to `h4`, five from `h2` to `h5` and lastly, five
+from `h3` to `h6`. The success/failure of these packets is reported. It is
+similar to `two-lans-connected-via-router.py` available in
+`examples/basic-examples`, the only difference is that IPv6 addresses are
+used in this program.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: ipv6-two-lans-connected-via-router.py -->
+
+## 7. ipv6-v4-point-to-point-3.py
+This program emulates point to point networks that connect two hosts `h1`
+and `h2` via two routers `r1` and `r2`. It is similar to
+`ipv6-point-to-point-3.py` available in `examples/ipv6`, the only difference
+is that both IPv4 and IPv6 addresses are assigned to hosts and routers. Five
+ping packets are sent from `h1` to `h2`, first with IPv4 addresses and then
+with IPv6 addresses. The success/failure of these packets is reported.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: ipv6-v4-point-to-point-3.py -->
