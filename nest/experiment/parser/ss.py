@@ -90,6 +90,7 @@ class SsRunner(Runner):
         )
 
     # pylint: disable=too-many-locals
+    # pylint: disable=too-many-branches
     @handle_keyboard_interrupt
     def parse(self):
         """
@@ -141,9 +142,10 @@ class SsRunner(Runner):
                     )
                     # result list stores all the string that is matched by the `pattern`
                     try:
-                        param_value = re.search(
-                            pattern, statistics_data[i]).group(1).strip()
-                    except:
+                        param_value = (
+                            re.search(pattern, statistics_data[i]).group(1).strip()
+                        )
+                    except AttributeError:
                         continue
 
                     if param_value.endswith("bps"):

@@ -8,6 +8,7 @@ from collections import namedtuple, defaultdict
 import logging
 import os
 from time import sleep
+import copy
 from tqdm import tqdm
 
 from nest.logging_helper import DepedencyCheckFilter
@@ -111,24 +112,47 @@ def run_experiment(exp):
 
         # Setup TCP/UDP flows
         if options["protocol"] == "TCP":
-            # * Ignore netperf tcp control connections
-            # * Destination port of netperf control connection is 12865
-            # * We also have "sport" (source port) in the below condition since
-            #   there can be another flow in the reverse direction whose control
-            #   connection also we must ignore.
-            ss_filters.add("sport != 12865 and dport != 12865")
             ss_required = True
-            (tcp_runners, ss_schedules,) = setup_tcp_flows(
-                dependencies["netperf"],
-                flow,
-                ss_schedules,
-                destination_nodes["netperf"],
-            )
 
-            exp_runners.netperf.extend(tcp_runners)
+            if options["tool"] == "netperf":
+                # * Ignore netperf tcp control connections
+                # * Destination port of netperf control connection is 12865
+                # * We also have "sport" (source port) in the below condition since
+                #   there can be another flow in the reverse direction whose control
+                #   connection also we must ignore.
+                ss_filters.add("sport != 12865 and dport != 12865")
 
-            # Update destination nodes
-            destination_nodes["netperf"].add(dst_ns)
+                (tcp_runners, ss_schedules,) = setup_tcp_flows(
+                    dependencies["netperf"],
+                    flow,
+                    ss_schedules,
+                    destination_nodes["netperf"],
+                )
+                exp_runners.netperf.extend(tcp_runners)
+                # Update destination nodes
+                destination_nodes["netperf"].add(dst_ns)
+
+            elif options["tool"] == "iperf3":
+                ss_filters.add("sport != 5201 and dport != 5201")
+                (tcp_runners, ss_schedules,) = setup_tcp_flows(
+                    dependencies["iperf3"],
+                    flow,
+                    ss_schedules,
+                    destination_nodes["iperf3"],
+                )
+                exp_runners.iperf3.extend(tcp_runners)
+                # Update destination nodes
+                destination_nodes["iperf3"].add(dst_ns)
+
+                dst_port_options = {}
+                port_nos = options["port_nos"]
+                for port_no in port_nos:
+                    options["port_no"] = port_no
+                    dst_port_options[port_no] = copy.deepcopy(options)
+
+                if dst_ns in iperf3_options:
+                    dst_port_options.update(iperf3_options.get(dst_ns))
+                iperf3_options.update({dst_ns: dst_port_options})
 
         elif options["protocol"] == "udp":
             # * Ignore iperf3 tcp control connections
@@ -148,7 +172,7 @@ def run_experiment(exp):
                 dst_port_options.update(iperf3_options.get(dst_ns))
             iperf3_options.update({dst_ns: dst_port_options})
 
-    server_runner = run_server(iperf3_options, exp_end_t)
+    server_runner = run_server(iperf3_options, exp_end_t, options["protocol"])
 
     for coap_flow in exp.coap_flows:
         [
@@ -258,7 +282,7 @@ def tcp_modules_helper(exp):
                     engine.load_tcp_module(cong_algo, params_string)
 
 
-def run_server(iperf3options, exp_end_t):
+def run_server(iperf3options, exp_end_t, protocol):
     """
     Run and wait for all server to start
 
@@ -268,12 +292,14 @@ def run_server(iperf3options, exp_end_t):
         start server with iperf3 server options
     exp_end_t: int
         experiment completion time
+    protocol: str
+        transport layer protocol, either "tcp" or "udp"
     """
     # Start server
     server_list = []
     for dst_ns in iperf3options:
         for dst_port in iperf3options[dst_ns]:
-            runner_obj = Iperf3ServerRunner(dst_ns, exp_end_t)
+            runner_obj = Iperf3ServerRunner(dst_ns, exp_end_t, protocol)
             runner_obj.setup_iperf3_server(iperf3options[dst_ns][dst_port])
             server_list.append(runner_obj)
 
@@ -432,32 +458,32 @@ def get_dependency_status(tools):
 
 def setup_tcp_flows(dependency, flow, ss_schedules, destination_nodes):
     """
-    Setup netperf to run tcp flows
+    Setup netperf/iperf3 to run tcp flows
     Parameters
     ----------
     dependency: int
-        whether netperf is installed
+        whether netperf/iperf3 is installed
     flow: Flow
         Flow parameters
     ss_schedules:
         ss_schedules so far
     destination_nodes:
-        Destination nodes so far already running netperf server
+        Destination nodes so far already running netperf/iperf3 server
 
     Returns
     -------
     dependency: int
-        updated dependency in case netperf is not installed
-    netperf_runners: List[NetperfRunner]
-        all the netperf flows generated
+        updated dependency in case netperf/iperf3 is not installed
+    tcp_runners: List[NetperfRunner] / List[Iperf3Runner]
+        all the netperf/iperf3 flows generated
     workers: List[multiprocessing.Process]
-        Processes to run netperf flows
+        Processes to run netperf/iperf3 flows
     ss_schedules: dict
         updated ss_schedules
     """
-    netperf_runners = []
+    tcp_runners = []
     if not dependency:
-        logger.warning("Netperf not found. Tcp flows cannot be generated")
+        logger.warning("Dependency not found. Tcp flows cannot be generated")
     else:
         # Get flow attributes
         [
@@ -470,37 +496,71 @@ def setup_tcp_flows(dependency, flow, ss_schedules, destination_nodes):
             options,
         ] = flow._get_props()  # pylint: disable=protected-access
 
-        # Run netserver if not already run before on given dst_node
-        if dst_ns not in destination_nodes:
-            NetperfRunner.run_netserver(dst_ns)
+        if options["tool"] == "netperf":
+            # Run netserver if not already run before on given dst_node
+            if dst_ns not in destination_nodes:
+                NetperfRunner.run_netserver(dst_ns)
 
-        src_name = TopologyMap.get_node(src_ns).name
+            src_name = TopologyMap.get_node(src_ns).name
 
-        netperf_options = {}
-        netperf_options["testname"] = "TCP_STREAM"
-        netperf_options["cong_algo"] = options["cong_algo"]
-        f_flow = "flow" if n_flows == 1 else "flows"
-        logger.info(
-            "Running %s netperf %s from %s to %s...",
-            n_flows,
-            f_flow,
-            src_name,
-            dst_addr,
-        )
-
-        # Create new processes to be run simultaneously
-        for _ in range(n_flows):
-            runner_obj = NetperfRunner(
-                src_ns, dst_addr, start_t, stop_t - start_t, dst_ns, **netperf_options
+            netperf_options = {}
+            netperf_options["testname"] = "TCP_STREAM"
+            netperf_options["cong_algo"] = options["cong_algo"]
+            f_flow = "flow" if n_flows == 1 else "flows"
+            logger.info(
+                "Running %s netperf %s from %s to %s...",
+                n_flows,
+                f_flow,
+                src_name,
+                dst_addr,
             )
-            netperf_runners.append(runner_obj)
+
+            # Create new processes to be run simultaneously
+            for _ in range(n_flows):
+                runner_obj = NetperfRunner(
+                    src_ns,
+                    dst_addr,
+                    start_t,
+                    stop_t - start_t,
+                    dst_ns,
+                    **netperf_options,
+                )
+                tcp_runners.append(runner_obj)
+
+        elif options["tool"] == "iperf3":
+            src_name = TopologyMap.get_node(src_ns).name
+            f_flow = "flow" if n_flows == 1 else "flows"
+            logger.info(
+                "Running %s udp %s from %s to %s...",
+                n_flows,
+                f_flow,
+                src_name,
+                dst_addr,
+            )
+
+            port_nos = options["port_nos"]
+
+            # Create new processes to be run simultaneously
+            for i in range(n_flows):
+                runner_obj = Iperf3Runner(
+                    src_ns,
+                    dst_addr,
+                    options["target_bw"],
+                    1,
+                    start_t,
+                    stop_t - start_t,
+                    dst_ns,
+                    "tcp",
+                )
+                options["port_no"] = port_nos[i]
+                runner_obj.setup_iperf3_client(options)
+                tcp_runners.append(runner_obj)
 
         # Find the start time and stop time to run ss command in `src_ns` to a `dst_addr`
         ss_schedules = _get_start_stop_time_for_ss(
             src_ns, dst_ns, dst_addr, start_t, stop_t, ss_schedules
         )
-
-    return netperf_runners, ss_schedules
+    return tcp_runners, ss_schedules
 
 
 def setup_udp_flows(dependency, flow):
@@ -554,6 +614,7 @@ def setup_udp_flows(dependency, flow):
             start_t,
             stop_t - start_t,
             dst_ns,
+            "udp",
         )
         runner_obj.setup_iperf3_client(options)
         iperf3_runners.append(runner_obj)

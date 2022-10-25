@@ -21,8 +21,7 @@ logger = logging.getLogger(__name__)
 
 class Iperf3Runner(Runner):
     """
-    Runs iperf client and server. Currently being used
-    for UDP flows only
+    Runs iperf client and server.
 
     Attributes
     ----------
@@ -32,7 +31,7 @@ class Iperf3Runner(Runner):
 
     # pylint: disable=too-many-arguments
     def __init__(
-        self, ns_id, destination_ip, bandwidth, n_flows, start_time, run_time, dst_ns
+        self, ns_id, destination_ip, bandwidth, n_flows, start_time, run_time, dst_ns, protocol
     ):
         """
         Constructor to initialize the runner
@@ -53,9 +52,12 @@ class Iperf3Runner(Runner):
             test duration
         dst_ns: str
             network namespace to run iperf3 server from
+        protocol: str
+            transport layer protocol, either "tcp" or "udp"
         """
         self.bandwidth = bandwidth
         self.n_flows = n_flows
+        self.protocol = protocol
         self.options = {}
         super().__init__(ns_id, start_time, run_time, destination_ip, dst_ns)
 
@@ -77,7 +79,6 @@ class Iperf3Runner(Runner):
             "port_no": "-p ",  # # server port to connect to
             "cport": "--cport ",  # bind to a specific client port
             "interval": "-i ",  # Generate interim results every INTERVAL seconds
-            "protocol": "--",  # Transport protocol to use (TODO: Add support for TCP as well)
             "n_flows": "-P 1",  # Number of parallel flows (NOTE: Default 1)
             "testlen": "-t 10",  # Length of test (NOTE: Default 10s)
         }
@@ -104,6 +105,9 @@ class Iperf3Runner(Runner):
                 if not isinstance(options[option], bool):
                     option_value += str(options[option])
                 client_options.update({option: option_value})
+
+        if self.protocol == "udp":
+            client_options.update({"protocol": "--udp"})
 
         if "timestamps" in options:
             client_options.update(
@@ -231,12 +235,19 @@ class Iperf3Runner(Runner):
         Convert information in iperf3 stream into required
         dictionary format
         """
+        if self.protocol == "udp":
+            return {
+                "timestamp": str(stream["start"] + start_timestamp),
+                "sending_rate": str(stream["bits_per_second"] / 1e6),
+                "duration": str(stream["seconds"]),
+                "bytes": str(stream["bytes"]),
+                "packets": str(stream["packets"]),
+            }
         return {
             "timestamp": str(stream["start"] + start_timestamp),
             "sending_rate": str(stream["bits_per_second"] / 1e6),
             "duration": str(stream["seconds"]),
             "bytes": str(stream["bytes"]),
-            "packets": str(stream["packets"]),
         }
 
 
@@ -252,7 +263,7 @@ class Iperf3ServerRunner(Runner):
     """
 
     # pylint: disable=too-many-instance-attributes
-    def __init__(self, ns_id, run_time):
+    def __init__(self, ns_id, run_time, protocol):
         """
         Constructor to initialize the runner
 
@@ -262,8 +273,11 @@ class Iperf3ServerRunner(Runner):
             network namespace to run iperf3 server
         run_time : num
             test duration
+        protocol: str
+`           transport layer protocol, either "tcp" or "udp"
         """
         self.ns_id = ns_id
+        self.protocol = protocol
         self.server_options = {}
         super().__init__(ns_id, 0, run_time)
 
@@ -405,10 +419,17 @@ class Iperf3ServerRunner(Runner):
         Convert information in iperf3 stream into required
         dictionary format
         """
+        if self.protocol == "udp":
+            return {
+                "timestamp": str(stream["start"] + start_timestamp),
+                "receiving_rate": str(stream["bits_per_second"] / 1e6),
+                "duration": str(stream["seconds"]),
+                "bytes": str(stream["bytes"]),
+                "packets": str(stream["packets"]),
+            }
         return {
             "timestamp": str(stream["start"] + start_timestamp),
             "receiving_rate": str(stream["bits_per_second"] / 1e6),
             "duration": str(stream["seconds"]),
             "bytes": str(stream["bytes"]),
-            "packets": str(stream["packets"]),
         }

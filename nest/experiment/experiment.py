@@ -175,6 +175,36 @@ class CoapFlow(Flow):
         )
 
 
+class Iperf3Specs:
+    """
+    Handles common iperf3 Specifications for both TCP and UDP flows
+    """
+
+    @input_validator
+    def __init__(
+        self,
+        target_bandwidth: Bandwidth = Bandwidth("1mbit"),
+        server_options: dict = None,
+        client_options: dict = None,
+    ):
+        """
+        Create iperf3 Specifications
+
+        Parameters
+        ----------
+        target_bandwidth : Bandwidth
+            Bandwidth to be used during iperf3 flow
+        server_options : dict
+            The server specifc options for iperf3
+        client_options : dict
+            The client specific options for iperf3
+
+        """
+        self.target_bandwidth = target_bandwidth
+        self.server_options = server_options
+        self.client_options = client_options
+
+
 class Experiment:
     """Handles experiment to be run on topology"""
 
@@ -213,7 +243,13 @@ class Experiment:
         self.flows.append(copy.deepcopy(flow))
 
     @input_validator
-    def add_tcp_flow(self, flow: Flow, congestion_algorithm="cubic"):
+    def add_tcp_flow(
+        self,
+        flow: Flow,
+        congestion_algorithm="cubic",
+        tool="netperf",
+        specs: Iperf3Specs = Iperf3Specs(),
+    ):
         """
         Add TCP flow to experiment. If no congestion control algorithm
         is specified, then by default cubic is used.
@@ -228,6 +264,10 @@ class Experiment:
             Flow to be added to experiment
         congestion_algorithm : str
             TCP congestion algorithm (Default value = 'cubic')
+        tool : str
+            Tool (netperf/iperf3) to be used for the experiment (Default value = 'netperf')
+        specs: Iperf3Specs
+            Specifications for using iperf3
         """
 
         congestion_algo_list = [
@@ -247,6 +287,11 @@ class Experiment:
             "yeah",
         ]
 
+        if tool not in ["iperf3", "netperf"]:
+            raise ValueError(
+                f"{tool} is not a valid performance tool. Should be either netperf/iperf3"
+            )
+
         if congestion_algorithm not in congestion_algo_list:
             raise ValueError(
                 f"{congestion_algorithm} is not a valid TCP Congestion Control algorithm"
@@ -254,7 +299,29 @@ class Experiment:
 
         # TODO: Verify congestion algorithm
 
-        options = {"protocol": "TCP", "cong_algo": congestion_algorithm}
+        options = {"protocol": "TCP", "cong_algo": congestion_algorithm, "tool": tool}
+
+        if tool == "iperf3":
+            options.update({"target_bw": specs.target_bandwidth.string_value})
+            user_options = {}
+            if specs.server_options:
+                user_options.update(specs.server_options)
+            if specs.client_options:
+                user_options.update(specs.client_options)
+
+            iperf3options = Iperf3Options(kwargs=user_options).getter()
+
+            port_nos = iperf3options.get("port_nos")
+            if "port_nos" is None or len(port_nos) < flow.number_of_streams:
+                port_nos = set()
+                # if user has provided certain port_nos, use them
+                if iperf3options.get("port_nos") is not None:
+                    port_nos = set(iperf3options["port_nos"])
+                while len(port_nos) < flow.number_of_streams:
+                    port_nos.add(random.randrange(1024, 65536))
+                iperf3options.update({"port_nos": list(port_nos)})
+
+            options.update(iperf3options)
 
         flow._options = options  # pylint: disable=protected-access
         self.add_flow(flow)
