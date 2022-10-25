@@ -75,7 +75,6 @@ class SsRunner(Runner):
         """
         Runs the ss iterator
         """
-
         super().run(
             partial(
                 run_ss,
@@ -106,38 +105,47 @@ class SsRunner(Runner):
 
         for raw_stat in raw_stats[:-1]:
 
-            # Pattern to capture port numbers of flows to `destination ip`
-            if self.destination_address.is_ipv6():
-                port_pattern = re.escape(destination_ip) + r"]:(?P<port>\d+)"
-            else:
-                port_pattern = re.escape(destination_ip) + r":(?P<port>\d+)"
-            port_list = [
-                port.group("port") for port in re.finditer(port_pattern, raw_stat)
-            ]
-            timestamp_pattern = r"timestamp:(?P<timestamp>\d+\.\d+)"
-            timestamp = re.search(timestamp_pattern, raw_stat).group("timestamp")
+            stats = raw_stat.strip().split("\n")
+            timestamp = stats[0].split(":")[-1]
+            ports_info = []
+            statistics_data = []
 
-            for port in port_list:
-                # If port encountered first time
-                if port not in stats_dict_list:
-                    stats_dict_list[port] = [self.get_meta_item()]
+            for i, row in enumerate(stats[2:]):
+                if i % 2 == 0:
+                    ports_info.append(row.strip())
+                else:
+                    statistics_data.append(row.strip())
+            assert len(ports_info) == len(statistics_data)
 
-                stats_dict_list[port].append({"timestamp": timestamp})
+            for i in range(len(ports_info)):
+                # means that this is additional info entries and this data isn't required
+                if "ato" in statistics_data[i]:
+                    continue
+                each_ports_info = ports_info[i].split()
 
-            for param in SsRunner.param_list:
-                pattern = (
-                    r"\s"
-                    + re.escape(param)
-                    + r"[\s:](?P<value>\w+\.?\w*(?:[\/\,]\w+\.?\w*)*)\s"
-                )
-                # result list stores all the string that is matched by the `pattern`
-                param_value_list = [
-                    value.group("value") for value in re.finditer(pattern, raw_stat)
-                ]
-                param_value = ""
-                for i in range(len(param_value_list)):
-                    param_value = param_value_list[i].strip()
-                    # remove the (rate) units at the end and convert
+                # means that this entry was not meant for this stat collection
+                if each_ports_info[-1].split(":")[0] != destination_ip:
+                    continue
+
+                dst_port = each_ports_info[-1].split(":")[-1]
+
+                if dst_port not in stats_dict_list:
+                    stats_dict_list[dst_port] = [self.get_meta_item()]
+                stats_dict_list[dst_port].append({"timestamp": timestamp})
+
+                for param in SsRunner.param_list:
+                    pattern = (
+                        r"\s"
+                        + re.escape(param)
+                        + r"[\s:](?P<value>\w+\.?\w*(?:[\/\,]\w+\.?\w*)*)\s"
+                    )
+                    # result list stores all the string that is matched by the `pattern`
+                    try:
+                        param_value = re.search(
+                            pattern, statistics_data[i]).group(1).strip()
+                    except:
+                        continue
+
                     if param_value.endswith("bps"):
                         param_value = self.convert_to(param_value)
                     try:
@@ -145,10 +153,10 @@ class SsRunner(Runner):
                         if param == "rtt":
                             avg_rtt = param_value.split("/")[0]
                             dev_rtt = param_value.split("/")[1]
-                            stats_dict_list[port_list[i]][-1]["rtt"] = avg_rtt
-                            stats_dict_list[port_list[i]][-1]["dev_rtt"] = dev_rtt
+                            stats_dict_list[dst_port][-1]["rtt"] = avg_rtt
+                            stats_dict_list[dst_port][-1]["dev_rtt"] = dev_rtt
                         else:
-                            stats_dict_list[port_list[i]][-1][param] = param_value
+                            stats_dict_list[dst_port][-1][param] = param_value
                     except TypeError:
                         pass
 
