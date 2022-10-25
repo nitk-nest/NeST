@@ -87,10 +87,10 @@ def run_experiment(exp):
     ss_required = False
     ss_filters = set()
     server_runner = []
-    iperf3_options = {}
 
     # Traffic generation
     for flow in exp.flows:
+        iperf3_options = {}
         # Get flow attributes
         [
             src_ns,
@@ -172,7 +172,7 @@ def run_experiment(exp):
                 dst_port_options.update(iperf3_options.get(dst_ns))
             iperf3_options.update({dst_ns: dst_port_options})
 
-    server_runner = run_server(iperf3_options, exp_end_t, options["protocol"])
+        server_runner.extend(run_server(iperf3_options, exp_end_t, options["protocol"]))
 
     for coap_flow in exp.coap_flows:
         [
@@ -531,7 +531,7 @@ def setup_tcp_flows(dependency, flow, ss_schedules, destination_nodes):
             src_name = TopologyMap.get_node(src_ns).name
             f_flow = "flow" if n_flows == 1 else "flows"
             logger.info(
-                "Running %s udp %s from %s to %s...",
+                "Running %s tcp iperf3 %s from %s to %s...",
                 n_flows,
                 f_flow,
                 src_name,

@@ -312,7 +312,7 @@ class Experiment:
             iperf3options = Iperf3Options(kwargs=user_options).getter()
 
             port_nos = iperf3options.get("port_nos")
-            if "port_nos" is None or len(port_nos) < flow.number_of_streams:
+            if port_nos is None or len(port_nos) < flow.number_of_streams:
                 port_nos = set()
                 # if user has provided certain port_nos, use them
                 if iperf3options.get("port_nos") is not None:

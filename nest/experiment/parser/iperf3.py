@@ -31,7 +31,15 @@ class Iperf3Runner(Runner):
 
     # pylint: disable=too-many-arguments
     def __init__(
-        self, ns_id, destination_ip, bandwidth, n_flows, start_time, run_time, dst_ns, protocol
+        self,
+        ns_id,
+        destination_ip,
+        bandwidth,
+        n_flows,
+        start_time,
+        run_time,
+        dst_ns,
+        protocol,
     ):
         """
         Constructor to initialize the runner
@@ -218,19 +226,19 @@ class Iperf3Runner(Runner):
                 socket = stream["socket"]
                 local_port = connection_info[socket]["local_port"]
                 stats_dict_list[local_port].append(
-                    self._extract_from_ipref3_stream(start_timestamp, stream)
+                    self._extract_from_iperf3_stream(start_timestamp, stream)
                 )
 
             if len(stats_dict_list) > 1:
                 sum_stream = interval["sum"]
                 stats_dict_list["sum"].append(
-                    self._extract_from_ipref3_stream(start_timestamp, sum_stream)
+                    self._extract_from_iperf3_stream(start_timestamp, sum_stream)
                 )
 
         destination_ip = self.destination_address.get_addr(with_subnet=False)
         Iperf3Results.add_result(self.ns_id, {destination_ip: stats_dict_list})
 
-    def _extract_from_ipref3_stream(self, start_timestamp, stream):
+    def _extract_from_iperf3_stream(self, start_timestamp, stream):
         """
         Convert information in iperf3 stream into required
         dictionary format
@@ -265,16 +273,16 @@ class Iperf3ServerRunner(Runner):
     # pylint: disable=too-many-instance-attributes
     def __init__(self, ns_id, run_time, protocol):
         """
-        Constructor to initialize the runner
+                Constructor to initialize the runner
 
-        Parameters
-        ----------
-        ns_id : str
-            network namespace to run iperf3 server
-        run_time : num
-            test duration
-        protocol: str
-`           transport layer protocol, either "tcp" or "udp"
+                Parameters
+                ----------
+                ns_id : str
+                    network namespace to run iperf3 server
+                run_time : num
+                    test duration
+                protocol: str
+        `           transport layer protocol, either "tcp" or "udp"
         """
         self.ns_id = ns_id
         self.protocol = protocol
@@ -404,17 +412,17 @@ class Iperf3ServerRunner(Runner):
                 socket = stream["socket"]
                 local_port = connection_info[socket]["local_port"]
                 stats_dict_list[local_port].append(
-                    self._extract_from_ipref3_stream(start_timestamp, stream)
+                    self._extract_from_iperf3_stream(start_timestamp, stream)
                 )
 
             if len(stats_dict_list) > 1:
                 sum_stream = interval["sum"]
                 stats_dict_list["sum"].append(
-                    self._extract_from_ipref3_stream(start_timestamp, sum_stream)
+                    self._extract_from_iperf3_stream(start_timestamp, sum_stream)
                 )
         Iperf3ServerResults.add_result(self.ns_id, {destination_ip: stats_dict_list})
 
-    def _extract_from_ipref3_stream(self, start_timestamp, stream):
+    def _extract_from_iperf3_stream(self, start_timestamp, stream):
         """
         Convert information in iperf3 stream into required
         dictionary format
