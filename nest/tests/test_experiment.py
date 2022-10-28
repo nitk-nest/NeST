@@ -114,6 +114,35 @@ class TestExperiment(unittest.TestCase):
 
         config.set_value("show_tcp_module_parameter_confirmation", True)
 
+    def test_experiment_tcp_iperf3(self):
+        n0 = Node("n0")
+        n1 = Node("n1")
+        r = Node("r")
+        r.enable_ip_forwarding()
+
+        (n0_r, r_n0) = connect(n0, r)
+        (r_n1, n1_r) = connect(r, n1)
+
+        n0_r.set_address("10.1.1.1/24")
+        r_n0.set_address("10.1.1.2/24")
+        r_n1.set_address("10.1.2.2/24")
+        n1_r.set_address("10.1.2.1/24")
+
+        n0.add_route("DEFAULT", n0_r)
+        n1.add_route("DEFAULT", n1_r)
+
+        n0_r.set_attributes("100mbit", "5ms")
+        r_n0.set_attributes("100mbit", "5ms")
+
+        r_n1.set_attributes("10mbit", "40ms")
+        n1_r.set_attributes("10mbit", "40ms")
+
+        exp = Experiment("test-experiment-tcp-iperf3")
+        flow = Flow(n0, n1, n1_r.address, 0, 10, 3)
+        exp.add_tcp_flow(flow, "cubic", "iperf3")
+
+        exp.run()
+
     # Test `CoapFlow` API by generating GET and PUT CoAP traffic
     def test_experiment_coap(self):
         h1 = Node("h1")

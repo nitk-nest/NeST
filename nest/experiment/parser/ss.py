@@ -104,6 +104,15 @@ class SsRunner(Runner):
         raw_stats = self.out.read().decode().split("---")
         destination_ip = self.destination_address.get_addr(with_subnet=False)
 
+        # iperf3 creates 1 additional connection (apart from the N connections
+        # for the N flows specified) every time you run the iperf3 command.
+        # This additional connection is used by iperf3 API iperf for collecting,
+        # sending, and printing intermediate results at specific intervals
+        # (https://github.com/esnet/iperf/blob/master/src/iperf_api.c#L3269).
+        # The ss parser will split each of the raw_stat data in new lines,
+        # and get rid of (ignore) the data from that 1 additional connection
+        # altogether based on the 'ato' parameter (which is present only in the
+        # additional connection that we do not want to collect stats from).
         for raw_stat in raw_stats[:-1]:
 
             stats = raw_stat.strip().split("\n")

@@ -175,36 +175,6 @@ class CoapFlow(Flow):
         )
 
 
-class Iperf3Specs:
-    """
-    Handles common iperf3 Specifications for both TCP and UDP flows
-    """
-
-    @input_validator
-    def __init__(
-        self,
-        target_bandwidth: Bandwidth = Bandwidth("1mbit"),
-        server_options: dict = None,
-        client_options: dict = None,
-    ):
-        """
-        Create iperf3 Specifications
-
-        Parameters
-        ----------
-        target_bandwidth : Bandwidth
-            Bandwidth to be used during iperf3 flow
-        server_options : dict
-            The server specifc options for iperf3
-        client_options : dict
-            The client specific options for iperf3
-
-        """
-        self.target_bandwidth = target_bandwidth
-        self.server_options = server_options
-        self.client_options = client_options
-
-
 class Experiment:
     """Handles experiment to be run on topology"""
 
@@ -244,11 +214,7 @@ class Experiment:
 
     @input_validator
     def add_tcp_flow(
-        self,
-        flow: Flow,
-        congestion_algorithm="cubic",
-        tool="netperf",
-        specs: Iperf3Specs = Iperf3Specs(),
+        self, flow: Flow, congestion_algorithm="cubic", tool="netperf", **kwargs
     ):
         """
         Add TCP flow to experiment. If no congestion control algorithm
@@ -266,8 +232,6 @@ class Experiment:
             TCP congestion algorithm (Default value = 'cubic')
         tool : str
             Tool (netperf/iperf3) to be used for the experiment (Default value = 'netperf')
-        specs: Iperf3Specs
-            Specifications for using iperf3
         """
 
         congestion_algo_list = [
@@ -302,19 +266,28 @@ class Experiment:
         options = {"protocol": "TCP", "cong_algo": congestion_algorithm, "tool": tool}
 
         if tool == "iperf3":
-            options.update({"target_bw": specs.target_bandwidth.string_value})
+            options.update(
+                {"target_bw": kwargs.setdefault("target_bandwidth", "1mbit")}
+            )
+
             user_options = {}
-            if specs.server_options:
-                user_options.update(specs.server_options)
-            if specs.client_options:
-                user_options.update(specs.client_options)
+
+            for params, value in kwargs.items():
+
+                if params == "server_options":
+                    user_options.update(value)
+
+                if params == "client_options":
+                    user_options.update(value)
 
             iperf3options = Iperf3Options(kwargs=user_options).getter()
 
-            port_nos = iperf3options.get("port_nos")
-            if port_nos is None or len(port_nos) < flow.number_of_streams:
+            if (
+                "port_nos" not in iperf3options
+                or len(iperf3options["port_nos"]) < flow.number_of_streams
+            ):
                 port_nos = set()
-                # if user has provided certain port_nos, use them
+                # If user has provided certain port_nos, use them
                 if iperf3options.get("port_nos") is not None:
                     port_nos = set(iperf3options["port_nos"])
                 while len(port_nos) < flow.number_of_streams:
