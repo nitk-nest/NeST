@@ -12,6 +12,8 @@ UTILS_DIR = Path(os.path.abspath(__file__)).parent
 ROOT_DIR = UTILS_DIR.parent
 EXAMPLES_DIR = ROOT_DIR / "examples"
 
+EXAMPLES_TO_SKIP = ["mpls-ldp-ce-pe-p-routers-multi-address.py"]
+
 # Create a directory for all example dumps
 # and cd into that directory
 EXAMPLES_DUMP_DIR = ROOT_DIR / "examples_dump"
@@ -69,7 +71,7 @@ rel_example_paths = []
 for root, subdirs, files in os.walk(EXAMPLES_DIR):
     for f in files:
         path = os.path.join(root, f)
-        if path.endswith(".py"):
+        if path.endswith(".py") and (f not in EXAMPLES_TO_SKIP):
             abs_example_paths.append(path)
             rel_example_paths.append(os.path.relpath(path, EXAMPLES_DIR))
 
