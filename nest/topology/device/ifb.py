@@ -91,12 +91,11 @@ class Ifb(Device):
         # Action mirred, redicting traffic, etc is needed since netem and
         # the user giver qdisc are both classless and cannot be added to
         # the same device
-        engine.add_filter(
-            self.node_id,
-            self.veth_end_id,
-            "all",
+        self.add_filter(
             "1",
             "u32",
+            "",  # flow id
+            "all",
             parent="1:",
             **action_redirect,
         )
@@ -130,9 +129,7 @@ class Ifb(Device):
 
         current_bandwidth_parameter = {"rate": self.current_bandwidth}
 
-        engine.change_class(
-            self.node_id, self.id, "1:", "htb", "1:1", **current_bandwidth_parameter
-        )
+        self.change_class("1:", "htb", "1:1", **current_bandwidth_parameter)
 
         self.delete_qdisc("11:")
         self.add_qdisc(qdisc, "1:1", "11:", **kwargs)
