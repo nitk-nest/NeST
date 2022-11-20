@@ -413,8 +413,8 @@ class RoutingHelper:
                         pass
 
         # Delete config directory
-        if path.isdir(self.conf_dir):
-            rmtree(self.conf_dir, ignore_errors=True)
+        if self.conf_dir is not None and path.isdir(self.conf_dir):
+            rmtree(self.conf_dir)
 
         # Change ownership of log files to current user
         if self.log_dir is not None and path.isdir(self.log_dir):
