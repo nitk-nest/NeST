@@ -284,6 +284,14 @@ class Qdisc:
 
         engine.add_qdisc(node_id, dev_id, qdisc, parent, handle, **kwargs)
 
+    def __repr__(self):
+        classname = self.__class__.__name__
+        return (
+            f"{classname} node_id={self.node_id} "
+            + f"dev_id={self.dev_id} qdisc={self.qdisc} "
+            + f"parent={self.parent} handle={self.handle}"
+        )
+
 
 class Class:
     """Handle classes associated to qdisc"""
@@ -314,6 +322,13 @@ class Class:
         self.classid = classid
 
         engine.add_class(node_id, dev_id, parent, qdisc, classid, **kwargs)
+
+    def __repr__(self):
+        classname = self.__class__.__name__
+        return (
+            f"{classname} node_id={self.node_id} dev_id={self.dev_id} "
+            + f"qdisc={self.qdisc} parent={self.parent} class_id={self.classid}"
+        )
 
 
 class Filter:
@@ -367,4 +382,12 @@ class Filter:
 
         engine.add_filter(
             node_id, dev_id, protocol, priority, filtertype, parent, handle, **kwargs
+        )
+
+    def __repr__(self):
+        classname = self.__class__.__name__
+        return (
+            f"{classname} node_id={self.node_id} dev_id={self.dev_id} "
+            + f"protocol={self.protocol} priority={self.priority} filter_type={self.filtertype} "
+            + f"flow_id={self.flowid} parent={self.parent} handle={self.handle}"
         )
