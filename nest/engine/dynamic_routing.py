@@ -26,7 +26,7 @@ def run_zebra(ns_id, conf_file, pid_file):
     """
     if config.get_value("routing_suite") == "frr":
         cmd = f"ip netns exec {ns_id} {FRR_DAEMONPATH}zebra --config_file {conf_file} \
-                --pid_file {pid_file} --retain --daemon -N {ns_id}"
+                --pid_file {pid_file} --vrfwnetns --retain --daemon -N {ns_id}"
     else:
         cmd = f"ip netns exec {ns_id} zebra --config_file {conf_file} \
                 --pid_file {pid_file} --retain --daemon"
