@@ -281,7 +281,6 @@ class Experiment:
                     user_options.update(value)
 
             iperf3options = Iperf3Options(kwargs=user_options).getter()
-
             if (
                 "port_nos" not in iperf3options
                 or len(iperf3options["port_nos"]) < flow.number_of_streams
@@ -294,7 +293,8 @@ class Experiment:
                     port_nos.add(random.randrange(1024, 65536))
                 iperf3options.update({"port_nos": list(port_nos)})
 
-            options.update(iperf3options)
+            # iperf3options.update(options)
+            options = {**iperf3options, **options}
 
         flow._options = options  # pylint: disable=protected-access
         self.add_flow(flow)

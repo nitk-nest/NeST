@@ -9,6 +9,7 @@ from time import sleep
 from functools import partial
 import json
 import logging
+import copy
 
 from nest.experiment.interrupts import handle_keyboard_interrupt
 from nest.experiment.pack import Pack
@@ -40,6 +41,7 @@ class Iperf3Runner(Runner):
         run_time,
         dst_ns,
         protocol,
+        **kwargs,
     ):
         """
         Constructor to initialize the runner
@@ -66,7 +68,7 @@ class Iperf3Runner(Runner):
         self.bandwidth = bandwidth
         self.n_flows = n_flows
         self.protocol = protocol
-        self.options = {}
+        self.options = copy.deepcopy(kwargs)
         super().__init__(ns_id, start_time, run_time, destination_ip, dst_ns)
 
     def setup_iperf3_client(self, options):
@@ -89,6 +91,7 @@ class Iperf3Runner(Runner):
             "interval": "-i ",  # Generate interim results every INTERVAL seconds
             "n_flows": "-P 1",  # Number of parallel flows (NOTE: Default 1)
             "testlen": "-t 10",  # Length of test (NOTE: Default 10s)
+            "cong_algo": "-C cubic",  # Congestion algorithm
         }
 
         client_options = {"json": "--json"}
@@ -113,6 +116,9 @@ class Iperf3Runner(Runner):
                 if not isinstance(options[option], bool):
                     option_value += str(options[option])
                 client_options.update({option: option_value})
+
+        if self.protocol == "tcp":
+            client_options.update({"cong_algo": f"-C {self.options['cong_algo']}"})
 
         if self.protocol == "udp":
             client_options.update({"protocol": "--udp"})

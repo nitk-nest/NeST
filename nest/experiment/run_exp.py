@@ -530,6 +530,8 @@ def setup_tcp_flows(dependency, flow, ss_schedules, destination_nodes):
         elif options["tool"] == "iperf3":
             src_name = TopologyMap.get_node(src_ns).name
             f_flow = "flow" if n_flows == 1 else "flows"
+            iperf3_options = {}
+            iperf3_options["cong_algo"] = options["cong_algo"]
             logger.info(
                 "Running %s tcp iperf3 %s from %s to %s...",
                 n_flows,
@@ -551,6 +553,7 @@ def setup_tcp_flows(dependency, flow, ss_schedules, destination_nodes):
                     stop_t - start_t,
                     dst_ns,
                     "tcp",
+                    **iperf3_options,
                 )
                 options["port_no"] = port_nos[i]
                 runner_obj.setup_iperf3_client(options)
