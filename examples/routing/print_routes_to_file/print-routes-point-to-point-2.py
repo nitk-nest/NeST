@@ -58,7 +58,7 @@ h1.add_route("DEFAULT", eth1)
 h2.add_route("DEFAULT", eth2)
 
 # Get the routes from the routing table of a Node r1 of interface etr1a and etr1b
-r1.get_route(etr1a, etr1b)
+r1.print_routes_to_file(etr1a, etr1b)
 
 # Get the all routes from the routing table of a Node r1
-r1.get_route()
+r1.print_routes_to_file()

@@ -149,7 +149,7 @@ class Node:
             via_interface.id,
         )
 
-    def get_route(self, *args):
+    def print_routes_to_file(self, *args):
         """
         Get the routes from the routing table of a Node.
 
