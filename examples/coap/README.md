@@ -1,7 +1,7 @@
 # Examples to demonstrate how to generate CoAP traffic in NeST
 
 This directory contains the following example to understand how Contrained
-Application Protocol (CoAP) traffic can be generated in `NeST`. `CoapFlow` API
+Application Protocol (CoAP) traffic can be generated in `NeST`. `CoapApplication` API
 is used in these examples to configure flows between a pair of hosts.
 
 ## 1. coap-point-to-point-3.py

@@ -160,8 +160,8 @@ class Application:
         )
 
 
-class CoapFlow(Flow):
-    """Defines a CoAP flow in the topology"""
+class CoapApplication(Application):
+    """Defines a CoAP application in the topology"""
 
     # pylint: disable=too-many-arguments
     @input_validator
@@ -175,8 +175,8 @@ class CoapFlow(Flow):
         user_options=None,
     ):
         """
-        Flow object representing CoAP flows in the topology.
-        Inherited from the `Flow` class.
+        Application object representing CoAP applications in the topology.
+        Inherited from the `Application` class.
 
         Parameters
         ----------
@@ -208,7 +208,7 @@ class CoapFlow(Flow):
         super().__init__(source_node, destination_node, destination_address, 0, 0, 0)
 
     # Destination address getter and setter are implemented
-    # in the Flow class which is the superclass of CoapFlow class
+    # in the Application class which is the superclass of CoapApplication class
 
     def _get_props(self):
         """
@@ -254,7 +254,7 @@ class Experiment:
         """
         self.name = name
         self.flows = []
-        self.coap_flows = []
+        self.coap_applications = []
         self.node_stats = []
         self.qdisc_stats = []
         self.tcp_module_params = defaultdict(dict)
@@ -399,16 +399,16 @@ class Experiment:
         self.add_flow(flow)
 
     @input_validator
-    def add_coap_flow(self, coap_flow: CoapFlow):
+    def add_coap_application(self, coap_application: CoapApplication):
         """
-        Add a CoAP flow to experiment
+        Add a CoAP application to experiment
 
         Parameters
         ----------
-        coap_flow : CoapFlow
-            The coap flow to be added to experiment
+        coap_application : CoapApplication
+            The coap application to be added to experiment
         """
-        self.coap_flows.append(copy.deepcopy(coap_flow))
+        self.coap_applications.append(copy.deepcopy(coap_application))
 
     @input_validator
     def require_qdisc_stats(self, interface: BaseInterface, stats=""):

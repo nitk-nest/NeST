@@ -174,7 +174,7 @@ def run_experiment(exp):
 
         server_runner.extend(run_server(iperf3_options, exp_end_t, options["protocol"]))
 
-    for coap_flow in exp.coap_flows:
+    for coap_application in exp.coap_applications:
         [
             src_ns,
             dst_ns,
@@ -182,13 +182,13 @@ def run_experiment(exp):
             _,
             _,
             _,
-        ] = coap_flow._get_props()  # pylint: disable=protected-access
+        ] = coap_application._get_props()  # pylint: disable=protected-access
 
         config.set_value("show_progress_bar", False)
 
         # Setup runners for emulating CoAP traffic
         coap_runners = setup_coap_runners(
-            dependencies["coap"], coap_flow, destination_nodes["coap"]
+            dependencies["coap"], coap_application, destination_nodes["coap"]
         )
         exp_runners.coap.extend(coap_runners)
         destination_nodes["coap"].add(dst_ns)
@@ -726,7 +726,7 @@ def setup_ping_runners(dependency, ping_schedules):
     return runners
 
 
-def setup_coap_runners(dependency, flow, destination_nodes):
+def setup_coap_runners(dependency, application, destination_nodes):
     """
     Setup CoAPRunner objects for generating CoAP traffic
 
@@ -734,8 +734,8 @@ def setup_coap_runners(dependency, flow, destination_nodes):
     ----------
     dependency : int
         Whether aiocoap is installed
-    flow : CoapFlow
-        The CoapFlow object
+    application : CoapApplication
+        The CoapApplication object
     destination_nodes:
         Destination nodes so far already running CoAP server
 
@@ -756,7 +756,7 @@ def setup_coap_runners(dependency, flow, destination_nodes):
             n_con_msgs,
             n_non_msgs,
             user_options,
-        ] = flow._get_props()  # pylint: disable=protected-access
+        ] = application._get_props()  # pylint: disable=protected-access
 
         # Run CoAP server if not already run before on given dst_node
         if dst_ns not in destination_nodes:

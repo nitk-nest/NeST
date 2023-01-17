@@ -7,7 +7,7 @@ import unittest
 from nest.topology import Node, Router, connect
 from nest.topology.network import Network
 from nest.topology.address_helper import AddressHelper
-from nest.experiment import Experiment, Flow, CoapFlow
+from nest.experiment import Experiment, Flow, CoapApplication
 from nest.clean_up import delete_namespaces
 from nest.topology_map import TopologyMap
 from nest import config
@@ -143,7 +143,7 @@ class TestExperiment(unittest.TestCase):
 
         exp.run()
 
-    # Test `CoapFlow` API by generating GET and PUT CoAP traffic
+    # Test `CoapApplication` API by generating GET and PUT CoAP traffic
     def test_experiment_coap(self):
         h1 = Node("h1")
         h2 = Node("h2")
@@ -172,12 +172,12 @@ class TestExperiment(unittest.TestCase):
         n_non_msgs = 10
 
         # Configure a flow from `h1` to `h2`.
-        flow_get = CoapFlow(h1, h2, eth2.get_address(), n_con_msgs, n_non_msgs)
-        flow_put = CoapFlow(h1, h2, eth2.get_address(), n_con_msgs, n_non_msgs)
+        application_get = CoapApplication(h1, h2, eth2.get_address(), n_con_msgs, n_non_msgs)
+        application_put = CoapApplication(h1, h2, eth2.get_address(), n_con_msgs, n_non_msgs)
 
         # Add the above flows as CoAP flows to the current experiment
-        exp.add_coap_flow(flow_get)
-        exp.add_coap_flow(flow_put)
+        exp.add_coap_application(application_get)
+        exp.add_coap_application(application_put)
 
         # Run the experiment
         exp.run()

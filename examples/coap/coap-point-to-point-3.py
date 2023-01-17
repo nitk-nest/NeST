@@ -111,19 +111,19 @@ user_options_flow_2 = {
 n_con_msgs = 10
 n_non_msgs = 10
 
-# Configure two flows from `h1` to `h2`. `flow1` sends 20 GET requests (10 CON,
+# Configure two applications from `h1` to `h2`. `flow1` sends 20 GET requests (10 CON,
 # 10 NON) and `flow2` sends 20 PUT requests (10 CON, 10 NON).
-flow1 = CoapFlow(
+application1 = CoapApplication(
     h1, h2, eth2.get_address(), n_con_msgs, n_non_msgs, user_options_flow_1
 )
 
-flow2 = CoapFlow(
+application2 = CoapApplication(
     h1, h2, eth2.get_address(), n_con_msgs, n_non_msgs, user_options_flow_2
 )
 
 # Use both the flows as `CoAP` flows.
-exp.add_coap_flow(flow1)
-exp.add_coap_flow(flow2)
+exp.add_coap_application(application1)
+exp.add_coap_application(application2)
 
 # Run the experiment
 exp.run()
