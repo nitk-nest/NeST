@@ -110,9 +110,6 @@ class Application:
         source_node: Node,
         destination_node: Node,
         destination_address: Address,
-        start_time: int,
-        stop_time: int,
-        number_of_streams: int,
     ):
         """
         'Application' object in the topology
@@ -120,27 +117,15 @@ class Application:
         Parameters
         ----------
         source_node : Node
-            Source node of flow
+            Source node of application
         destination_node : Node
-            Destination node of flow
+            Destination node of application
         destination_address : Address/str
-            Destination address of flow
-        start_time : int
-            Time to start flow (in seconds)
-        stop_time : int
-            Time to stop flow (in seconds)
-        number_of_streams : int
-            Number of streams in the flow
+            Destination address of application
         """
         self.source_node = source_node
         self.destination_node = destination_node
         self.destination_address = destination_address
-        self.start_time = start_time
-        self.stop_time = stop_time
-        self.number_of_streams = number_of_streams
-
-        self._options = {"protocol": "TCP", "cong_algo": "cubic"}
-        self.user_input_options = {}
 
     @property
     def destination_address(self):
@@ -156,7 +141,7 @@ class Application:
 
     def _get_props(self):
         """
-        Get flow properties.
+        Get application properties.
 
         NOTE: To be used internally
         """
@@ -165,18 +150,13 @@ class Application:
             self.source_node.id,
             self.destination_node.id,
             self.destination_address.get_addr(with_subnet=False),
-            self.start_time,
-            self.stop_time,
-            self.number_of_streams,
-            self._options,
         ]
 
     def __repr__(self):
         classname = self.__class__.__name__
         return (
             f"{classname}({self.source_node!r}, {self.destination_node!r},"
-            f" {self.destination_address!r}), {self.start_time!r}, {self.stop_time!r}"
-            f" {self.number_of_streams!r})"
+            f" {self.destination_address!r})"
         )
 
 
