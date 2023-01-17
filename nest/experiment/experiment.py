@@ -100,6 +100,86 @@ class Flow:
         )
 
 
+class Application:
+    """Defines an application in the topology"""
+
+    # pylint: disable=too-many-arguments
+    @input_validator
+    def __init__(
+        self,
+        source_node: Node,
+        destination_node: Node,
+        destination_address: Address,
+        start_time: int,
+        stop_time: int,
+        number_of_streams: int,
+    ):
+        """
+        'Application' object in the topology
+
+        Parameters
+        ----------
+        source_node : Node
+            Source node of flow
+        destination_node : Node
+            Destination node of flow
+        destination_address : Address/str
+            Destination address of flow
+        start_time : int
+            Time to start flow (in seconds)
+        stop_time : int
+            Time to stop flow (in seconds)
+        number_of_streams : int
+            Number of streams in the flow
+        """
+        self.source_node = source_node
+        self.destination_node = destination_node
+        self.destination_address = destination_address
+        self.start_time = start_time
+        self.stop_time = stop_time
+        self.number_of_streams = number_of_streams
+
+        self._options = {"protocol": "TCP", "cong_algo": "cubic"}
+        self.user_input_options = {}
+
+    @property
+    def destination_address(self):
+        """Getter for destination address"""
+        return self._destination_address
+
+    @destination_address.setter
+    def destination_address(self, destination_address):
+        """Setter for destination address"""
+        if isinstance(destination_address, str):
+            destination_address = Address(destination_address)
+        self._destination_address = destination_address
+
+    def _get_props(self):
+        """
+        Get flow properties.
+
+        NOTE: To be used internally
+        """
+
+        return [
+            self.source_node.id,
+            self.destination_node.id,
+            self.destination_address.get_addr(with_subnet=False),
+            self.start_time,
+            self.stop_time,
+            self.number_of_streams,
+            self._options,
+        ]
+
+    def __repr__(self):
+        classname = self.__class__.__name__
+        return (
+            f"{classname}({self.source_node!r}, {self.destination_node!r},"
+            f" {self.destination_address!r}), {self.start_time!r}, {self.stop_time!r}"
+            f" {self.number_of_streams!r})"
+        )
+
+
 class CoapFlow(Flow):
     """Defines a CoAP flow in the topology"""
 
