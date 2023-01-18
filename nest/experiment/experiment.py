@@ -103,7 +103,6 @@ class Flow:
 class Application:
     """Defines an application in the topology"""
 
-    # pylint: disable=too-many-arguments
     @input_validator
     def __init__(
         self,
@@ -193,19 +192,12 @@ class CoapApplication(Application):
         user_options : dict, optional
             User specified options for particular tools
         """
-        self.source_node = source_node
-        self.destination_node = destination_node
-        self.destination_address = destination_address
         self.n_con_msgs = n_con_msgs
         self.n_non_msgs = n_non_msgs
 
         # Options for users to set
         self.user_options = user_options
-
-        # Since start time, stop time and number of streams are needed for
-        # initializing the parent class, we need to provide dummy values
-        # for these members.
-        super().__init__(source_node, destination_node, destination_address, 0, 0, 0)
+        super().__init__(source_node, destination_node, destination_address)
 
     # Destination address getter and setter are implemented
     # in the Application class which is the superclass of CoapApplication class

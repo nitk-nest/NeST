@@ -12,7 +12,7 @@ from nest.topology.address_helper import AddressHelper
 # This program emulates point to point networks that connect two hosts `h1`
 # and `h2` via two routers `r1` and `r2`. It is similar to the
 # `udp-point-to-point-3.py` example in `examples/udp`. Instead of a UDP flow,
-# two CoAP flows are configured from `h1` to `h2`, one for sending the GET
+# two CoAP applications are configured from `h1` to `h2`, one for sending the GET
 # requests and another for sending the PUT requests. `h1` acts as a CoAP client
 # and `h2` acts as a CoAP server. Address helper is used in this program to
 # assign IPv4 addresses.
@@ -82,7 +82,7 @@ r2.add_route("DEFAULT", etr2a)
 # Set up an Experiment. This API takes the name of the experiment as a string.
 exp = Experiment("coap-point-to-point-3")
 
-# Configure the user options for the flow that sends GET requests.
+# Configure the user options for the application that sends GET requests.
 #
 # Note: the `coap_non_timeout` parameter configured below is required for NON
 # messages only. In CoAP, NON messages are not acknowledged by the receiving
@@ -94,14 +94,14 @@ exp = Experiment("coap-point-to-point-3")
 # Setting a low value for `coap_non_timeout` parameter is not recommended
 # because the timeout might expire while the response is on its way to the
 # sender. The unit of `coap_non_timeout` parameters is seconds.
-user_options_flow_1 = {
+user_options_application_1 = {
     "coap_request_type": "get",  # Set the request type to GET
     "coap_server_content": "This is the payload when server responds to a GET request",
     "coap_non_timeout": "5.0",  # Timeout associated with requests sent via NON
 }
 
-# Configure the user options for the flow that sends PUT requests.
-user_options_flow_2 = {
+# Configure the user options for the application that sends PUT requests.
+user_options_application_2 = {
     "coap_request_type": "put",  # Set the request type to PUT
     "coap_message_payload": "This is the payload when client sends the PUT request",
     "coap_non_timeout": "5.0",  # Timeout associated with requests sent via NON
@@ -111,17 +111,17 @@ user_options_flow_2 = {
 n_con_msgs = 10
 n_non_msgs = 10
 
-# Configure two applications from `h1` to `h2`. `flow1` sends 20 GET requests (10 CON,
-# 10 NON) and `flow2` sends 20 PUT requests (10 CON, 10 NON).
+# Configure two applications from `h1` to `h2`. `application1` sends 20 GET requests (10 CON,
+# 10 NON) and `application2` sends 20 PUT requests (10 CON, 10 NON).
 application1 = CoapApplication(
-    h1, h2, eth2.get_address(), n_con_msgs, n_non_msgs, user_options_flow_1
+    h1, h2, eth2.get_address(), n_con_msgs, n_non_msgs, user_options_application_1
 )
 
 application2 = CoapApplication(
-    h1, h2, eth2.get_address(), n_con_msgs, n_non_msgs, user_options_flow_2
+    h1, h2, eth2.get_address(), n_con_msgs, n_non_msgs, user_options_application_2
 )
 
-# Use both the flows as `CoAP` flows.
+# Use both the applications as `CoAP` applications.
 exp.add_coap_application(application1)
 exp.add_coap_application(application2)
 
