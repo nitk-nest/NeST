@@ -172,8 +172,12 @@ class TestExperiment(unittest.TestCase):
         n_non_msgs = 10
 
         # Configure a flow from `h1` to `h2`.
-        application_get = CoapApplication(h1, h2, eth2.get_address(), n_con_msgs, n_non_msgs)
-        application_put = CoapApplication(h1, h2, eth2.get_address(), n_con_msgs, n_non_msgs)
+        application_get = CoapApplication(
+            h1, h2, eth2.get_address(), n_con_msgs, n_non_msgs
+        )
+        application_put = CoapApplication(
+            h1, h2, eth2.get_address(), n_con_msgs, n_non_msgs
+        )
 
         # Add the above flows as CoAP flows to the current experiment
         exp.add_coap_application(application_get)
