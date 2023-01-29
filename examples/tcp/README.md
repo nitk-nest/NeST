@@ -52,6 +52,38 @@ this program.
 <!-- The below snippet will render example code in docs website -->
 <!-- #DOCS_INCLUDE: tcp-cubic-point-to-point-3.py -->
 
+## 4. tcp-cubic-ssr-point-to-point-3.py
+This program emulates point to point networks that connect two hosts `h1`
+and `h2` via two routers `r1` and `r2`. This program is similar to
+`tcp-cubic-point-to-point-3.py` in `examples/tcp`. This example demonstrates
+how to disable and re-enable Slow Start Restart (SSR). By default, SSR is
+enabled in Linux kernel.
+
+This program runs for 200 seconds and creates a new directory called
+`tcp-cubic-ssr-point-to-point-3(date-timestamp)_dump`. It contains a `README`
+which provides details about the sub-directories and files within this
+directory. See the plots in `netperf`, `ping` and `ss` sub-directories for
+this program.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: tcp-cubic-ssr-point-to-point-3.py -->
+
+## 6. tcp-cubic-tfo-point-to-point-3.py
+This program emulates point to point networks that connect two hosts `h1`
+and `h2` via two routers `r1` and `r2`. This program is similar to
+`tcp-cubic-point-to-point-3.py` in `examples/tcp`. This example demonstrates
+how to disable and re-enable TCP Fast Open (TFO). By default, TFO is
+enabled in Linux kernel.
+
+This program runs for 200 seconds and creates a new directory called
+`tcp-cubic-tfo-point-to-point-3(date-timestamp)_dump`. It contains a `README`
+which provides details about the sub-directories and files within this
+directory. See the plots in `netperf`, `ping` and `ss` sub-directories for
+this program.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: tcp-cubic-tfo-point-to-point-3.py -->
+
 ## 3. tcp-offloads-point-to-point.py
 This program emulates point to point networks that connect two hosts `h1`
 and `h2` via two routers `r1` and `r2`. This program is similar to
@@ -101,3 +133,21 @@ this program.
 
 <!-- The below snippet will render example code in docs website -->
 <!-- #DOCS_INCLUDE: tcp-udp-point-to-point.py -->
+
+## 8. tcp-cubic-wnd-scale-point-to-point-3.py
+This program emulates point to point networks that connect two hosts `h1`
+and `h2` via two routers `r1` and `r2`. This program is similar to
+`tcp-cubic-point-to-point-3.py` in `examples/tcp`.  This example demonstrates
+how to run the experiment by disabling Window Scaling . In Linux
+kernel, it is enabled by default and the value is set to 1.
+In this example we disable Window Scaling, run the experiment, then set
+the value back to default.
+
+This program runs for 200 seconds and creates a new directory called
+`tcp-cubic-wnd-scale-point-to-point-3(date-timestamp)_dump`. It contains
+a `README` which provides details about the sub-directories and files within
+this directory. See the plots in `netperf`, `ping` and `ss` sub-directories
+for this program.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: tcp-cubic-wnd-scale-point-to-point-3.py -->
