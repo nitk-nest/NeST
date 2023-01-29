@@ -68,7 +68,7 @@ this program.
 <!-- The below snippet will render example code in docs website -->
 <!-- #DOCS_INCLUDE: tcp-cubic-ssr-point-to-point-3.py -->
 
-## 6. tcp-cubic-tfo-point-to-point-3.py
+## 5. tcp-cubic-tfo-point-to-point-3.py
 This program emulates point to point networks that connect two hosts `h1`
 and `h2` via two routers `r1` and `r2`. This program is similar to
 `tcp-cubic-point-to-point-3.py` in `examples/tcp`. This example demonstrates
@@ -84,7 +84,23 @@ this program.
 <!-- The below snippet will render example code in docs website -->
 <!-- #DOCS_INCLUDE: tcp-cubic-tfo-point-to-point-3.py -->
 
-## 3. tcp-offloads-point-to-point.py
+## 6. tcp-cubic-wnd-scale-point-to-point-3.py
+This program emulates point to point networks that connect two hosts `h1`
+and `h2` via two routers `r1` and `r2`. This program is similar to
+`tcp-cubic-point-to-point-3.py` in `examples/tcp`. This example demonstrates
+how to disable and re-enable Window Scaling in TCP. By default, Window Scaling
+is enabled in Linux kernel.
+
+This program runs for 200 seconds and creates a new directory called
+`tcp-cubic-wnd-scale-point-to-point-3(date-timestamp)_dump`. It contains
+a `README` which provides details about the sub-directories and files within
+this directory. See the plots in `netperf`, `ping` and `ss` sub-directories
+for this program.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: tcp-cubic-wnd-scale-point-to-point-3.py -->
+
+## 7. tcp-offloads-point-to-point.py
 This program emulates point to point networks that connect two hosts `h1`
 and `h2` via two routers `r1` and `r2`. This program is similar to
 `tcp-cubic-point-to-point-3.py`. It demonstrates how to disable Generic
@@ -101,7 +117,7 @@ this program.
 <!-- The below snippet will render example code in docs website -->
 <!-- #DOCS_INCLUDE: tcp-offloads-point-to-point.py -->
 
-## 4. tcp-reno-point-to-point-3.py
+## 8. tcp-reno-point-to-point-3.py
 This program emulates point to point networks that connect two hosts `h1`
 and `h2` via two routers `r1` and `r2`. This program is similar to
 `udp-point-to-point-3.py` in `examples/udp`. Instead of UDP, one Reno flow
@@ -120,7 +136,7 @@ See the plots in `netperf`, `ping` and `ss` sub-directories for this program.
 <!-- The below snippet will render example code in docs website -->
 <!-- #DOCS_INCLUDE: tcp-reno-point-to-point-3.py -->
 
-## 5. tcp-udp-point-to-point.py
+## 9. tcp-udp-point-to-point.py
 This program emulates point to point networks that connect four hosts: `h1`
 - `h4` via two routers `r1` and `r2`. One TCP flow is configured from `h1` to
 `h3` and one UDP flow is configured from `h2` to `h4`.
