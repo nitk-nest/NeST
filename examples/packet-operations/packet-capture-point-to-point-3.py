@@ -14,6 +14,8 @@ import multiprocessing
 # `h2` via two routers `r1` and `r2`. 10 ping packets are sent from `h1` to
 # `h2`. It is similar to `ah-point-to-point-3.py` in `examples/address-helpers`.
 # This program shows how to capture packets at `h2` by using `tcpdump`.
+# Output of the details of the packets captured at the `eth2` interface of `h2`
+# is then displayed.
 
 ##############################################################################
 #                              Network Topology                              #
