@@ -11,7 +11,9 @@ from nest.topology.address_helper import AddressHelper
 # This program emulates point to point networks that connect two hosts `h1` and
 # `h2` via two routers `r1` and `r2`. 10 ping packets are sent from `h1` to
 # `h2`. It is similar to `ah-point-to-point-3.py` in `examples/address-helpers`.
-# This program shows how to capture packets at `h2` by using `tcpdump`. The details of the packets captured at the `eth2` interface of `h2` are then written into `packet_capture.pcap` file.
+# This program shows how to capture packets at `h2` by using `tcpdump`.
+# The details of the packets captured at the `eth2` interface of `h2` are then
+# written into `packet_capture.pcap` file.
 
 ##############################################################################
 #                              Network Topology                              #
