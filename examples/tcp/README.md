@@ -32,7 +32,24 @@ See the plots in `netperf`, `ping` and `ss` sub-directories for this program.
 <!-- The below snippet will render example code in docs website -->
 <!-- #DOCS_INCLUDE: tcp-bbr-point-to-point-3.py -->
 
-## 2. tcp-cubic-point-to-point-3.py
+## 2. tcp-cubic-parameters-point-to-point-3.py
+This program emulates point to point networks that connect two hosts `h1`
+and `h2` via two routers `r1` and `r2`. This program is similar to
+`tcp-bbr-point-to-point-3.py` in `examples/tcp`. Instead of TCP BBR
+algorithm, TCP CUBIC algorithm is used for congestion control. This example
+demonstrates how to customize the beta parameter for TCP CUBIC algorithm.
+
+This program runs for 200 seconds and creates two new directories called
+`tcp-cubic-parameters-point-to-point-3-default(date-timestamp)_dump`
+and `tcp-cubic-parameters-point-to-point-3-beta=1000(date-timestamp)_dump`.
+They contain a `README` which provides details about the sub-directories
+and files within this directory. See the plots in `netperf`, `ping`
+and `ss` sub-directories for this program.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: tcp-cubic-parameters-point-to-point-3.py -->
+
+## 3. tcp-cubic-point-to-point-3.py
 This program emulates point to point networks that connect two hosts `h1`
 and `h2` via two routers `r1` and `r2`. This program is similar to
 `udp-point-to-point-3.py` in `examples/udp`. Instead of UDP, one TCP CUBIC

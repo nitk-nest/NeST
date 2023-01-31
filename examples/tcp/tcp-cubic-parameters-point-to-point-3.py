@@ -11,13 +11,9 @@ from nest.topology.address_helper import AddressHelper
 
 # This program emulates point to point networks that connect two hosts `h1`
 # and `h2` via two routers `r1` and `r2`. This program is similar to
-# `udp-point-to-point-3.py` in `examples/udp`. Instead of UDP, one TCP CUBIC
-# flow is configured from `h1` to `h2`. The links between `h1` to `r1` and
-# between `r2` to `h2` are edge links. The link between `r1` and `r2` is the
-# bottleneck link with lesser bandwidth and higher propagation delays. `pfifo`
-# queue discipline is enabled on the link from `r1` to `r2`, but not from `r2`
-# to `r1` because data packets flow in one direction only (`h1` to `h2`) in
-# this example.
+# `tcp-bbr-point-to-point-3.py` in `examples/tcp`. Instead of TCP BBR
+# algorithm, TCP CUBIC algorithm is used for congestion control. This example
+# demonstrates how to customize the beta parameter for TCP CUBIC algorithm.
 
 ##############################################################################
 #                              Network Topology                              #
@@ -81,9 +77,6 @@ h2.add_route("DEFAULT", eth2)
 r1.add_route("DEFAULT", etr1b)
 r2.add_route("DEFAULT", etr2a)
 
-# Set up an Experiment. This API takes the name of the experiment as a string.
-exp1 = Experiment("tcp-cubic-parameters-point-to-point-3-default")
-
 # Configure a flow from `h1` to `h2`. We do not use it as a TCP flow yet.
 # The `Flow` API takes in the source node, destination node, destination IP
 # address, start and stop time of the flow, and the total number of flows.
@@ -91,12 +84,13 @@ exp1 = Experiment("tcp-cubic-parameters-point-to-point-3-default")
 # number of flows is 1.
 flow1 = Flow(h1, h2, eth2.get_address(), 0, 200, 1)
 
+# Set up an Experiment. This API takes the name of the experiment as a string.
+exp1 = Experiment("tcp-cubic-parameters-point-to-point-3-default")
+
 # Use `flow1` as a TCP CUBIC flow.
 # TCP CUBIC is default in Linux, hence no additional setting is required.
 exp1.add_tcp_flow(flow1)
 
-# Run the experiment
-exp1.run()
 # Set up a second Experiment
 exp2 = Experiment("tcp-cubic-parameters-point-to-point-3-beta=1000")
 
@@ -104,5 +98,6 @@ exp2 = Experiment("tcp-cubic-parameters-point-to-point-3-beta=1000")
 exp2.configure_tcp_module_params("cubic", beta=1000)
 exp2.add_tcp_flow(flow1)
 
-# Run the experiment
+# Run the experiments
+exp1.run()
 exp2.run()
