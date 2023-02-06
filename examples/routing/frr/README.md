@@ -129,7 +129,7 @@ This program emulates point to point networks that connect two hosts `h1` and
 `frr-rip-point-to-point-3.py` available in `examples/routing/frr`, the only
 difference is that we assign both IPv4 and IPv6 addresses to the interfaces.
 This program uses RIP from FRR routing suite for dynamic routing. A new
-package called `RoutingHelper` is imported in this program. The routing logs 
+package called `RoutingHelper` is imported in this program. The routing logs
 are written to files in a dedicated `logs` directory.
 
 <!-- The below snippet will render example code in docs website -->

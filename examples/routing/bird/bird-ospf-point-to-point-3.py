@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2022 NITK Surathkal
+# Copyright (c) 2019-2023 NITK Surathkal
 
 ########################
 # SHOULD BE RUN AS ROOT
@@ -16,7 +16,7 @@ from nest.routing.routing_helper import RoutingHelper
 # `ah-point-to-point-3.py` available in `examples/address-helpers`, the only
 # difference is that we use Open Shortest Path First (OSPF), a dynamic routing
 # protocol, instead of manually configuring the routes. This program uses OSPF
-# from BIRD Internet Routing Daemon (BIRD) suite for dynamic routing. A new 
+# from BIRD Internet Routing Daemon (BIRD) suite for dynamic routing. A new
 # package called `RoutingHelper` is imported in this program (Line 11 above).
 #
 # IMPORTANT: BIRD module is not installed by default in Linux. Hence, before

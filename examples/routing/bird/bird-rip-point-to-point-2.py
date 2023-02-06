@@ -10,15 +10,15 @@ from nest.topology.network import Network
 from nest.topology.address_helper import AddressHelper
 from nest.routing.routing_helper import RoutingHelper
 
-# This program emulates point to point networks that connect two hosts `h1` and
-# `h2` via a router `r1`. Five ping packets are sent from `h1` to `h2`, and the
-# success/failure of these packets is reported. This program is similar to
-# `ah-point-to-point-2.py` available in `examples/address-helpers`, the only
-# difference is that we use Routing Information Protocol (RIP),
+# This program emulates point to point networks that connect two hosts `h1`
+# and `h2` via a router `r1`. Five ping packets are sent from `h1` to `h2`,
+# and the success/failure of these packets is reported. This program is
+# similar to `ah-point-to-point-2.py` available in `examples/address-helpers`
+# , the only difference is that we use Routing Information Protocol (RIP),
 # a dynamic routing protocol, instead of manually configuring the routes. This
-# program uses RIP from BIRD Internet Routing Daemon (BIRD) suite for dynamic routing. A
-# new package called `RoutingHelper` is imported in this program (Line 11
-# above).
+# program uses RIP from BIRD Internet Routing Daemon (BIRD) suite for dynamic
+# routing. A new package called `RoutingHelper` is imported in this program
+# (Line 11 above).
 #
 # IMPORTANT: BIRD module is not installed by default in Linux. Hence, before
 # running this program, install the BIRD module as explained in the README

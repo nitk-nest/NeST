@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2022 NITK Surathkal
+# Copyright (c) 2019-2023 NITK Surathkal
 
 ########################
 # SHOULD BE RUN AS ROOT
@@ -15,9 +15,10 @@ from nest.routing.routing_helper import RoutingHelper
 # `h2`, and the success/failure of these packets is reported. It is similar to
 # `ah-point-to-point-3.py` available in `examples/address-helpers`, the only
 # difference is that we use Routing Information Protocol (RIP), a dynamic
-# routing protocol, instead of manually configuring the routes. This program uses 
-# RIP from BIRD Internet Routing Daemon (BIRD) suite for dynamic routing. A new
-# package called `RoutingHelper` is imported in this program (Line 11 above).
+# routing protocol, instead of manually configuring the routes. This program
+# uses RIP from BIRD Internet Routing Daemon (BIRD) suite for dynamic routing.
+# A new package called `RoutingHelper` is imported in this program
+# (Line 11 above).
 #
 # IMPORTANT: BIRD module is not installed by default in Linux. Hence, before
 # running this program, install the BIRD module as explained in the README
