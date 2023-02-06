@@ -27,6 +27,20 @@ files in a dedicated `logs` directory.
 <!-- The below snippet will render example code in docs website -->
 <!-- #DOCS_INCLUDE: bird-ospf-point-to-point-2.py -->
 
+## 2. bird-rip-point-to-point-2.py
+This program emulates point to point networks that connect two hosts `h1`
+and `h2` via a router `r1`. Five ping packets are sent from `h1` to `h2`, and
+the success/failure of these packets is reported. It is similar to
+`ah-point-to-point-2.py` available in `examples/address-helpers`, the only
+difference is that we use Routing Information Protocol (RIP), a dynamic routing
+protocol, instead of manually configuring the routes. This program uses RIP
+from BIRD Internet Routing Daemon (BIRD) suite for dynamic routing. A new package called
+`RoutingHelper` is imported in this program. The routing logs are written to
+files in a dedicated `logs` directory.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: bird-rip-point-to-point-2.py -->
+
 `Note`: The above examples can be modified to work with IPv6 addressing by
 changing the IPv4 subnets to IPv6 subnets. Replace IPv4 subnets
 `192.168.1.0/24`, `192.168.2.0/24` and `192.168.13.0/24` by IPv6 subnets
