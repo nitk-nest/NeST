@@ -179,6 +179,7 @@ class TrafficControlHandler:
     # pylint: disable=too-many-arguments
     def add_filter(
         self,
+        dev_id,
         priority,
         filtertype,
         flowid,
@@ -214,7 +215,7 @@ class TrafficControlHandler:
         self.filter_list.append(
             Filter(
                 self.node_id,
-                self.dev_id,
+                dev_id,
                 protocol,
                 priority,
                 filtertype,

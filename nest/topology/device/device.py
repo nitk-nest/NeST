@@ -382,6 +382,7 @@ class Device:
     # pylint: disable=too-many-arguments
     def add_filter(
         self,
+        dev_id,
         priority,
         filtertype,
         flowid,
@@ -395,6 +396,8 @@ class Device:
 
         Parameters
         ----------
+        dev_id : string
+            Device from the packets are being mirrored
         protocol : string
             protocol used (Default value = 'ip')
         priority : int
@@ -415,7 +418,7 @@ class Device:
         # TODO: Reduce arguments to the engine functions by finding parent and handle automatically
 
         self._traffic_control_handler.add_filter(
-            priority, filtertype, flowid, protocol, parent, handle, **kwargs
+            dev_id, priority, filtertype, flowid, protocol, parent, handle, **kwargs
         )
 
     def delete_filter(self, handle, parent):

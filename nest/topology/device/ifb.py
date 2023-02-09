@@ -92,6 +92,7 @@ class Ifb(Device):
         # the user giver qdisc are both classless and cannot be added to
         # the same device
         self.add_filter(
+            self.veth_end_id,
             "1",
             "u32",
             "",  # flow id
