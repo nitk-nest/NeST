@@ -1,0 +1,52 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Copyright (c) 2019-2023 NITK Surathkal
+
+"""Client side of a many-clients <-> one-server OpenVPN configuration"""
+
+from time import sleep
+from nest.engine.exec import exec_subprocess_in_background
+from nest.topology.address import Address
+from nest.engine.vpn.server import get_tun0_ip_address
+
+
+def run_ovpn_client(ns_name: str, client_name: str, server_ip: str) -> Address:
+    """
+    Starts an OpenVPN client in the specified namespace and connects it
+    to the specified server.
+
+    Parameters
+    ----------
+    ns_name : str
+        The name of the namespace in which to start the client.
+    client_name : str
+        The name to assign to the OpenVPN client.
+    server_ip : str
+        The IP address of the OpenVPN server to which the client will connect.
+
+    Returns
+    -------
+    Address
+        The IP address assigned to the VPN client's tun interface.
+    """
+    # Construct the OpenVPN command to run in the namespace.
+    cmd = f"""ip netns exec {ns_name} openvpn
+        --client
+        --proto udp
+        --remote {server_ip}
+        --port 1194 --dev tun
+        --nobind
+        --ca pki/ca.crt
+        --cert pki/issued/{client_name}.crt
+        --key pki/private/{client_name}.key
+        --float"""
+
+    # Start the OpenVPN client in the namespace.
+    exec_subprocess_in_background(cmd, wait_for_exit_code=True)
+
+    # Wait a few seconds for the client to start.
+    sleep(5)
+
+    address = get_tun0_ip_address(ns_name)
+
+    # Return the IP address as an Address object.
+    return Address(address)
