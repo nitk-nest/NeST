@@ -134,7 +134,6 @@ RUN ./configure
 RUN make
 RUN make install
 
-
 # Install SIPp
 WORKDIR /home
 RUN git clone https://github.com/SIPp/sipp.git
@@ -144,6 +143,10 @@ WORKDIR /home/sipp
 RUN cmake . -DUSE_SSL=1 -DUSE_SCTP=1 -DUSE_PCAP=1 -DUSE_GSL=1
 RUN make all
 RUN make install
+
+# Install OVPN
+RUN apt -y install openvpn
+RUN DEBIAN_FRONTEND=noninteractive apt -y install easy-rsa
 
 FROM test as dev
 
