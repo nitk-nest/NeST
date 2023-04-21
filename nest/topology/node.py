@@ -21,7 +21,6 @@ from .id_generator import IdGen
 
 logger = logging.getLogger(__name__)
 
-
 # pylint: disable=too-many-public-methods
 class Node:
     """
@@ -63,6 +62,8 @@ class Node:
 
         self._name = name
         self._id = IdGen.get_id(name)
+        self.is_mptcp = True
+        self.mptcp_monitor_required = False
 
         # TODO: This list maynot be accurate. Better to refer TopologyMap
         # for list of interfaces in a Node.
@@ -100,6 +101,47 @@ class Node:
         """
         for process in self._tshark_processes:
             process.join()
+
+    @input_validator
+    def set_mptcp_parameters(self, max_subflows: int, max_add_addr_accepted: int):
+        """
+        Set MPTCP node parameters
+
+        Parameters
+        ----------
+        max_subflows: int
+        max_add_addr_accepted: int
+        """
+        engine.set_mptcp_node_parameters(max_subflows, max_add_addr_accepted, self.id)
+
+    @input_validator
+    def add_mptcp_monitor(self):
+        """
+        Run MPTCP Monitor on node
+        """
+        self.mptcp_monitor_required = True
+
+    @input_validator
+    def enable_mptcp(self):
+        """
+        Enable MPTCP sysctl on Node
+        """
+        self.is_mptcp = True
+        engine.enable_mptcp_node(self.id)
+
+    @input_validator
+    def disable_mptcp(self):
+        """
+        Disable MPTCP sysctl on Node
+        """
+        self.is_mptcp = False
+        engine.disable_mptcp_node(self.id)
+
+    def get_mptcp_endpoints(self):
+        """
+        Gets the MPTCP endpoints of all interfaces on the Node
+        """
+        return engine.get_mptcp_endpoints(self._id)
 
     @input_validator
     def add_route(
@@ -201,6 +243,54 @@ class Node:
                     return interface
 
         return None
+
+    @input_validator
+    def __is_multihomed__(self):
+        """
+        Is Multihomed?
+
+        This functions returns whether the node has multiple interfaces
+
+        Paramters
+        ---------
+        self
+            Current Node
+        """
+        return len(self.interfaces) > 1
+
+    @input_validator
+    def __is_multiaddressed__(self):
+        """
+        Is Multiaddressed?
+
+        This functions returns whether the node has multiple gateways
+        """
+        if not self.__is_multihomed__():
+            return False
+
+        differing_subnet_found = False
+        subnets_found = {}
+        for interface in self.interfaces:
+            if interface.get_address().get_subnet() in subnets_found:
+                continue
+
+            if len(subnets_found) == 0:
+                subnets_found[interface.get_address().get_subnet()] = 1
+            else:
+                differing_subnet_found = True
+                break
+        return differing_subnet_found
+
+    @input_validator
+    def is_mptcp_supported(self):
+        """
+        Is MPTCP Supported?
+
+        An MPTCP connection can be setup only if either of the TCP hosts are
+        multihomed and multiaddressed. This function returns whether this
+        condition is satisfied by the current node (self).
+        """
+        return self.__is_multiaddressed__() and self.__is_multihomed__()
 
     @input_validator
     def add_route_mpls_push(

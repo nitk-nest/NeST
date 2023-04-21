@@ -520,6 +520,18 @@ class Device:
         """
         return self._is_mpls_enabled
 
+    def enable_mptcp_endpoint(self, flags):
+        """
+        Declares the interface as an MPTCP endpoint
+        """
+        engine.enable_mptcp_endpoint(self.node_id, self, flags)
+
+    def get_mptcp_endpoints(self):
+        """
+        Gets the MPTCP endpoints of the interface
+        """
+        return engine.get_mptcp_endpoints(self.node_id, self)
+
     @property
     def mtu(self):
         """

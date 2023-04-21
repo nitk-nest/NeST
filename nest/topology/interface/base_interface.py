@@ -5,10 +5,12 @@
 
 import logging
 import multiprocessing
+import sys
 import time
 from nest.input_validator import input_validator
 from nest.input_validator.metric import Bandwidth, Delay, Distribution, Percentage
 from nest.topology.device import Ifb, Device
+from nest.engine.mptcp import get_default_mptcp_flags, possible_mptcp_flags
 
 logger = logging.getLogger(__name__)
 
@@ -165,6 +167,25 @@ class BaseInterface:
         Check if the interface has mpls enabled
         """
         return self._device.is_mpls_enabled()
+
+    # pylint: disable=dangerous-default-value
+    def enable_mptcp_endpoint(self, flags=get_default_mptcp_flags()):
+        """
+        Declares the interface as an MPTCP endpoint
+        """
+        if len(set(flags) - set(possible_mptcp_flags)) > 0:
+            logger.error(
+                "The mptcp flags are missing or invalid for your iproute2 version"
+            )
+            sys.exit()
+        self._device.enable_mptcp_endpoint(flags)
+
+    # pylint: disable=dangerous-default-value
+    def get_mptcp_endpoints(self):
+        """
+        Gets the MPTCP endpoints of the interface
+        """
+        return self._device.get_mptcp_endpoints()
 
     @property
     def mtu(self):
@@ -574,7 +595,7 @@ class BaseInterface:
 
     @input_validator
     def set_attributes(
-        self, bandwidth: Bandwidth, delay: Delay, qdisc: str = None, **kwargs
+        self, bandwidth: Bandwidth, delay: Delay, qdisc: str|None = None, **kwargs
     ):
         """
         Add attributes bandwidth, delay and qdisc to interface
@@ -691,7 +712,7 @@ class BaseInterface:
             raise ValueError(
                 "start_time is required and should be greater than or equal to 0"
             )
-
+ 
         elif start_time >= 0.0 and end_time > 0.0:
             if start_time < end_time:
                 enable_process = multiprocessing.Process(
