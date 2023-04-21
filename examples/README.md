@@ -19,6 +19,7 @@ to quickly learn and use NeST APIs and its features.
 9. [routing](./routing/README.md) (optional)
 10. [coap](./coap/README.md) (optional)
 11. [mpeg-dash](./mpeg-dash/README.md) (optional)
+12. [mptcp](./mptcp/README.md) (optional)
 
 | Examples          | Basic APIs         | Address Helpers    | Routing Helpers    | Ping Application   | UDP Flows          | TCP Flows          |
 |-------------------|--------------------|--------------------|--------------------|--------------------|--------------------|--------------------|
@@ -29,7 +30,8 @@ to quickly learn and use NeST APIs and its features.
 | packet-operations | :white_check_mark: | :white_check_mark: | :x:                | :white_check_mark: | :x:                | :x:                |
 | udp               | :white_check_mark: | :white_check_mark: | :x:                | :x:                | :white_check_mark: | :x: |
 | tcp               | :white_check_mark: | :white_check_mark: | :x:                | :x:                | :white_check_mark: | :white_check_mark: |
-| qdiscs               | :white_check_mark: | :white_check_mark: | :x:                | :x:                | :white_check_mark: | :white_check_mark: |
+| qdiscs            | :white_check_mark: | :white_check_mark: | :x:                | :x:                | :white_check_mark: | :white_check_mark: |
 | routing           | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :x:                | :x:                |
 |coap               | :white_check_mark: | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
 |mpeg-dash         | :white_check_mark: | :white_check_mark: | :x:                | :x:                | :x:                | :white_check_mark: |
+| mptcp             | :white_check_mark: | :white_check_mark: | :x:                | :x:                | :x:                | :white_check_mark: |
