@@ -7,9 +7,11 @@ from multiprocessing import Process
 from collections import namedtuple, defaultdict
 import logging
 import os
+import sys
 from time import sleep
 import copy
 from tqdm import tqdm
+from nest.engine.mptcp import add_mptcp_monitor
 
 from nest.logging_helper import DepedencyCheckFilter
 from nest import config
@@ -70,6 +72,7 @@ def run_experiment(exp):
     """
 
     tcp_modules_helper(exp)
+    additional_tools = ["mptcpize"]
     tools = ["netperf", "ss", "tc", "iperf3", "ping", "coap", "server", "mpeg_dash"]
     Runners = namedtuple("runners", tools)
     exp_runners = Runners(
@@ -93,7 +96,7 @@ def run_experiment(exp):
     # Overall experiment stop time considering all flows
     exp_end_t = float("-inf")
 
-    dependencies = get_dependency_status(exp, tools)
+    dependencies = get_dependency_status(exp, tools + additional_tools)
 
     ss_required = False
     ss_filters = set()
@@ -111,6 +114,7 @@ def run_experiment(exp):
             stop_t,
             _,
             options,
+            _,
         ] = flow._get_props()  # pylint: disable=protected-access
 
         exp_end_t = max(exp_end_t, stop_t)
@@ -122,7 +126,7 @@ def run_experiment(exp):
         )
 
         # Setup TCP/UDP flows
-        if options["protocol"] == "TCP":
+        if options["protocol"] in ["TCP", "MPTCP"]:
             ss_required = True
 
             if options["tool"] == "netperf":
@@ -134,10 +138,15 @@ def run_experiment(exp):
                 ss_filters.add("sport != 12865 and dport != 12865")
 
                 (tcp_runners, ss_schedules,) = setup_tcp_flows(
-                    dependencies["netperf"],
+                    {
+                        k: v
+                        for k, v in dependencies.items()
+                        if k in ["netperf", "mptcpize"]
+                    },
                     flow,
                     ss_schedules,
                     destination_nodes["netperf"],
+                    options["protocol"] == "MPTCP",
                 )
                 exp_runners.netperf.extend(tcp_runners)
                 # Update destination nodes
@@ -146,10 +155,15 @@ def run_experiment(exp):
             elif options["tool"] == "iperf3":
                 ss_filters.add("sport != 5201 and dport != 5201")
                 (tcp_runners, ss_schedules,) = setup_tcp_flows(
-                    dependencies["iperf3"],
+                    {
+                        k: v
+                        for k, v in dependencies.items()
+                        if k in ["iperf3", "mptcpize"]
+                    },
                     flow,
                     ss_schedules,
                     destination_nodes["iperf3"],
+                    options["protocol"] == "MPTCP",
                 )
                 exp_runners.iperf3.extend(tcp_runners)
                 # Update destination nodes
@@ -183,7 +197,14 @@ def run_experiment(exp):
                 dst_port_options.update(iperf3_options.get(dst_ns))
             iperf3_options.update({dst_ns: dst_port_options})
 
-        server_runner.extend(run_server(iperf3_options, exp_end_t, options["protocol"]))
+        server_runner.extend(
+            run_server(
+                iperf3_options,
+                exp_end_t,
+                options["protocol"],
+                options["protocol"] == "MPTCP",
+            )
+        )
 
     for coap_application in exp.coap_applications:
         [
@@ -325,7 +346,7 @@ def tcp_modules_helper(exp):
                     engine.load_tcp_module(cong_algo, params_string)
 
 
-def run_server(iperf3options, exp_end_t, protocol):
+def run_server(iperf3options, exp_end_t, protocol, is_mptcp):
     """
     Run and wait for all server to start
 
@@ -342,7 +363,7 @@ def run_server(iperf3options, exp_end_t, protocol):
     server_list = []
     for dst_ns in iperf3options:
         for dst_port in iperf3options[dst_ns]:
-            runner_obj = Iperf3ServerRunner(dst_ns, exp_end_t, protocol)
+            runner_obj = Iperf3ServerRunner(dst_ns, exp_end_t, protocol, is_mptcp)
             runner_obj.setup_iperf3_server(iperf3options[dst_ns][dst_port])
             server_list.append(runner_obj)
 
@@ -525,19 +546,23 @@ def get_dependency_status(exp, tools):
     return dependencies
 
 
-def setup_tcp_flows(dependency, flow, ss_schedules, destination_nodes):
+def setup_tcp_flows(
+    dependencies, flow, ss_schedules, destination_nodes, is_mptcp=False
+):
     """
     Setup netperf/iperf3 to run tcp flows
     Parameters
     ----------
-    dependency: int
-        whether netperf/iperf3 is installed
+    dependencies: dictionary of dependencies
+        whether dependencies are installed
     flow: Flow
         Flow parameters
     ss_schedules:
         ss_schedules so far
     destination_nodes:
         Destination nodes so far already running netperf/iperf3 server
+    is_mptcp:
+        boolean to determine if connection is MPTCP enabled
 
     Returns
     -------
@@ -551,84 +576,124 @@ def setup_tcp_flows(dependency, flow, ss_schedules, destination_nodes):
         updated ss_schedules
     """
     tcp_runners = []
-    if not dependency:
-        logger.warning("Dependency not found. Tcp flows cannot be generated")
-    else:
-        # Get flow attributes
+
+    # pylint: disable=use-a-generator
+    if not all(
         [
-            src_ns,
-            dst_ns,
-            dst_addr,
-            start_t,
-            stop_t,
+            status if dependency in ["netperf", "iperf3"] else True
+            for dependency, status in dependencies.items()
+        ]
+    ):
+        logger.error("Netperf/iperf3 not found. Tcp flows cannot be generated")
+        sys.exit()
+    if is_mptcp and not dependencies["mptcpize"]:
+        logger.error("Mptcpize not found. MPTCP connections cannot be made")
+        sys.exit()
+    # Get flow attributes
+    [
+        src_ns,
+        dst_ns,
+        dst_addr,
+        start_t,
+        stop_t,
+        n_flows,
+        options,
+        src_addr,
+    ] = flow._get_props()  # pylint: disable=protected-access
+
+    source_node = TopologyMap.get_node(src_ns)
+    destination_node = TopologyMap.get_node(dst_ns)
+
+    if source_node.mptcp_monitor_required:
+        add_mptcp_monitor(src_ns, Pack.FOLDER)
+
+    if destination_node.mptcp_monitor_required:
+        add_mptcp_monitor(dst_ns, Pack.FOLDER)
+
+    if options["tool"] == "netperf":
+        # Run netserver if not already run before on given dst_node
+        if dst_ns not in destination_nodes:
+            NetperfRunner.run_netserver(dst_ns, is_mptcp)
+
+        src_name = TopologyMap.get_node(src_ns).name
+        netperf_options = {}
+        netperf_options["testname"] = "TCP_STREAM"
+        netperf_options["cong_algo"] = options["cong_algo"]
+        f_flow = "flow" if n_flows == 1 else "flows"
+        logger.info(
+            "Running %s netperf %s from %s (%s) to %s...",
             n_flows,
-            options,
-        ] = flow._get_props()  # pylint: disable=protected-access
+            f_flow,
+            src_name,
+            src_addr if src_addr else "Default IP",
+            dst_addr,
+        )
 
-        if options["tool"] == "netperf":
-            # Run netserver if not already run before on given dst_node
-            if dst_ns not in destination_nodes:
-                NetperfRunner.run_netserver(dst_ns)
-
-            src_name = TopologyMap.get_node(src_ns).name
-
-            netperf_options = {}
-            netperf_options["testname"] = "TCP_STREAM"
-            netperf_options["cong_algo"] = options["cong_algo"]
-            f_flow = "flow" if n_flows == 1 else "flows"
-            logger.info(
-                "Running %s netperf %s from %s to %s...",
-                n_flows,
-                f_flow,
-                src_name,
+        # Create new processes to be run simultaneously
+        for _ in range(n_flows):
+            runner_obj = NetperfRunner(
+                src_ns,
+                src_addr,
                 dst_addr,
+                start_t,
+                stop_t - start_t,
+                dst_ns,
+                is_mptcp,
+                **netperf_options,
             )
+            tcp_runners.append(runner_obj)
 
-            # Create new processes to be run simultaneously
-            for _ in range(n_flows):
-                runner_obj = NetperfRunner(
-                    src_ns,
-                    dst_addr,
-                    start_t,
-                    stop_t - start_t,
-                    dst_ns,
-                    **netperf_options,
-                )
-                tcp_runners.append(runner_obj)
+    elif options["tool"] == "iperf3":
+        src_name = TopologyMap.get_node(src_ns).name
+        f_flow = "flow" if n_flows == 1 else "flows"
+        iperf3_options = {}
+        iperf3_options["cong_algo"] = options["cong_algo"]
 
-        elif options["tool"] == "iperf3":
-            src_name = TopologyMap.get_node(src_ns).name
-            f_flow = "flow" if n_flows == 1 else "flows"
-            iperf3_options = {}
-            iperf3_options["cong_algo"] = options["cong_algo"]
-            logger.info(
-                "Running %s tcp iperf3 %s from %s to %s...",
-                n_flows,
-                f_flow,
-                src_name,
+        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-function-args
+        logger.info(
+            "Running %s tcp iperf3 %s from %s (%s) to %s...",
+            n_flows,
+            f_flow,
+            src_name,
+            src_addr if src_addr else "Default IP",
+            dst_addr,
+        )
+
+        port_nos = options["port_nos"]
+
+        # Create new processes to be run simultaneously
+        for i in range(n_flows):
+            runner_obj = Iperf3Runner(
+                src_ns,
                 dst_addr,
+                options.get("target_bw"),
+                1,
+                start_t,
+                stop_t - start_t,
+                dst_ns,
+                "tcp",
+                is_mptcp,
+                **iperf3_options,
             )
+            options["port_no"] = port_nos[i]
+            runner_obj.setup_iperf3_client(options)
+            tcp_runners.append(runner_obj)
 
-            port_nos = options["port_nos"]
-
-            # Create new processes to be run simultaneously
-            for i in range(n_flows):
-                runner_obj = Iperf3Runner(
-                    src_ns,
-                    dst_addr,
-                    options["target_bw"],
-                    1,
-                    start_t,
-                    stop_t - start_t,
-                    dst_ns,
-                    "tcp",
-                    **iperf3_options,
-                )
-                options["port_no"] = port_nos[i]
-                runner_obj.setup_iperf3_client(options)
-                tcp_runners.append(runner_obj)
-
-        # Find the start time and stop time to run ss command in `src_ns` to a `dst_addr`
+    # Since MPTCP potentially has multiple destination addresses,
+    # we will run SS on each of those to ensure that user has visibility
+    # into each destination interface's statistics.
+    if options["protocol"] in ["MPTCP"]:
+        for interface in flow.destination_node.interfaces:
+            ss_schedules = _get_start_stop_time_for_ss(
+                src_ns,
+                dst_ns,
+                interface.get_address().get_addr(with_subnet=False),
+                start_t,
+                stop_t,
+                ss_schedules,
+            )
+    else:
         ss_schedules = _get_start_stop_time_for_ss(
             src_ns, dst_ns, dst_addr, start_t, stop_t, ss_schedules
         )
@@ -659,37 +724,43 @@ def setup_udp_flows(dependency, flow):
     """
     iperf3_runners = []
     if not dependency:
-        logger.warning("Iperf3 not found. Udp flows cannot be generated")
-    else:
-        # Get flow attributes
-        [
-            src_ns,
-            dst_ns,
-            dst_addr,
-            start_t,
-            stop_t,
-            n_flows,
-            options,
-        ] = flow._get_props()  # pylint: disable=protected-access
+        logger.error("Iperf3 not found. Udp flows cannot be generated")
+        sys.exit()
+    # Get flow attributes
+    [
+        src_ns,
+        dst_ns,
+        dst_addr,
+        start_t,
+        stop_t,
+        n_flows,
+        options,
+        src_addr,
+    ] = flow._get_props()  # pylint: disable=protected-access
 
-        src_name = TopologyMap.get_node(src_ns).name
-        f_flow = "flow" if n_flows == 1 else "flows"
-        logger.info(
-            "Running %s udp %s from %s to %s...", n_flows, f_flow, src_name, dst_addr
-        )
+    src_name = TopologyMap.get_node(src_ns).name
+    f_flow = "flow" if n_flows == 1 else "flows"
+    logger.info(
+        "Running %s udp %s from %s (%s) to %s...",
+        n_flows,
+        f_flow,
+        src_name,
+        src_addr if src_addr else "Default IP",
+        dst_addr,
+    )
 
-        runner_obj = Iperf3Runner(
-            src_ns,
-            dst_addr,
-            options["target_bw"],
-            n_flows,
-            start_t,
-            stop_t - start_t,
-            dst_ns,
-            "udp",
-        )
-        runner_obj.setup_iperf3_client(options)
-        iperf3_runners.append(runner_obj)
+    runner_obj = Iperf3Runner(
+        src_ns,
+        dst_addr,
+        options["target_bw"],
+        n_flows,
+        start_t,
+        stop_t - start_t,
+        dst_ns,
+        "udp",
+    )
+    runner_obj.setup_iperf3_client(options)
+    iperf3_runners.append(runner_obj)
 
     return iperf3_runners
 

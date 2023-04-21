@@ -41,6 +41,7 @@ class Iperf3Runner(Runner):
         run_time,
         dst_ns,
         protocol,
+        is_mptcp: bool = False,
         **kwargs,
     ):
         """
@@ -64,11 +65,14 @@ class Iperf3Runner(Runner):
             network namespace to run iperf3 server from
         protocol: str
             transport layer protocol, either "tcp" or "udp"
+        is_mptcp : bool
+            boolean to determine if connection is MPTCP enabled
         """
         self.bandwidth = bandwidth
         self.n_flows = n_flows
         self.protocol = protocol
         self.options = copy.deepcopy(kwargs)
+        self.is_mptcp = is_mptcp
         super().__init__(ns_id, start_time, run_time, destination_ip, dst_ns)
 
     def setup_iperf3_client(self, options):
@@ -90,7 +94,10 @@ class Iperf3Runner(Runner):
             "port_no": "-p ",  # # server port to connect to
             "cport": "--cport ",  # bind to a specific client port
             "interval": "-i ",  # Generate interim results every INTERVAL seconds
+            "n_flows": "-P 1",  # Number of parallel flows (NOTE: Default 1)
+            "testlen": "-t 10",  # Length of test (NOTE: Default 10s)
             "cong_algo": "-C ",  # Congestion algorithm
+            "bind": "-B ",  # Bind to a specific interface
         }
 
         client_options = {"json": "--json"}
@@ -126,7 +133,7 @@ class Iperf3Runner(Runner):
 
         self.options = client_options
 
-    def run(self):
+    def run(self, protocol=None):
         """
         calls engine method to run iperf client
         """
@@ -140,7 +147,10 @@ class Iperf3Runner(Runner):
         iperf3_options["n_flows"] = f"-P {self.n_flows}"
 
         # Set target bitrate
-        iperf3_options["bitrate"] = f"-b {self.bandwidth}"
+        if protocol == "--udp":
+            iperf3_options["bitrate"] = (
+                f"-b {self.bandwidth}" if self.bandwidth else "-b 1mbit"
+            )
 
         # Convert iperf3_options dict to string
         iperf3_options_list = list(iperf3_options.values())
@@ -158,6 +168,7 @@ class Iperf3Runner(Runner):
                     iperf3_options_string,
                     self.destination_address.get_addr(with_subnet=False),
                     self.destination_address.is_ipv6(),
+                    self.is_mptcp,
                 ),
                 error_string_prefix="Running iperf3 Client",
             )
@@ -273,22 +284,25 @@ class Iperf3ServerRunner(Runner):
     """
 
     # pylint: disable=too-many-instance-attributes
-    def __init__(self, ns_id, run_time, protocol):
+    def __init__(self, ns_id, run_time, protocol, is_mptcp):
         """
                 Constructor to initialize the runner
 
-                Parameters
-                ----------
-                ns_id : str
-                    network namespace to run iperf3 server
-                run_time : num
-                    test duration
-                protocol: str
-        `           transport layer protocol, either "tcp" or "udp"
+        Parameters
+        ----------
+        ns_id : str
+            network namespace to run iperf3 server
+        run_time : num
+            test duration
+        protocol: str
+            transport layer protocol, either "tcp" or "udp"
+        is_mptcp : bool
+            boolean to determine if connection is MPTCP enabled
         """
         self.ns_id = ns_id
         self.protocol = protocol
         self.server_options = {}
+        self.is_mptcp = is_mptcp
         super().__init__(ns_id, 0, run_time)
 
     def setup_iperf3_server(self, options):
@@ -310,6 +324,7 @@ class Iperf3ServerRunner(Runner):
             "s_logfile": "--logfile ",  # send output to a log file
             "s_forceflush": "--forceflush",  # force flushing output at every interval
             "bitrate": "--server-bitrate-limit ",  # server's total bit rate limit
+            "bind": "-B ",  # Bind to a specific interface
         }
 
         # Default Server output is a .json file
@@ -357,7 +372,7 @@ class Iperf3ServerRunner(Runner):
         iperf3_options_string = " ".join(iperf3_options_list)
 
         super().run(
-            partial(run_iperf_server, self.ns_id, iperf3_options_string),
+            partial(run_iperf_server, self.ns_id, iperf3_options_string, self.is_mptcp),
             error_string_prefix="Running iperf3 server",
         )
 

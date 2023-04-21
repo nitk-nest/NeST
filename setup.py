@@ -58,6 +58,7 @@ setup(
         "packaging",
         "tqdm",
         "aiocoap",
+        "colorama",
     ],
     project_urls={
         "Source": "https://gitlab.com/nitk-nest/nest",

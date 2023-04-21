@@ -8,16 +8,21 @@ import logging
 from collections import defaultdict
 from pathlib import Path
 import random
+import sys
+from nest import engine, config
 from nest.input_validator.metric import Bandwidth
 from nest.network_utilities import ipv6_dad_check
 from nest.input_validator import input_validator
 from nest.topology import Node, Address
 from nest.topology.interface import BaseInterface
+from nest.topology_map import TopologyMap
 from .run_exp import run_experiment
 from .pack import Pack
 from .tools import Iperf3Options
+from .helpers.tcp_validations import TCPValidations
 
 logger = logging.getLogger(__name__)
+tcp_validator = TCPValidations()
 
 
 # pylint: disable=too-many-instance-attributes
@@ -35,6 +40,7 @@ class Flow:
         start_time: int,
         stop_time: int,
         number_of_streams: int,
+        source_address: Address = None,
     ):
         """
         'Flow' object in the topology
@@ -53,6 +59,8 @@ class Flow:
             Time to stop flow (in seconds)
         number_of_streams : int
             Number of streams in the flow
+        source_address : Address/str
+            Source address of flow
         """
         self.source_node = source_node
         self.destination_node = destination_node
@@ -60,9 +68,25 @@ class Flow:
         self.start_time = start_time
         self.stop_time = stop_time
         self.number_of_streams = number_of_streams
+        if source_address is None:
+            self.source_address = source_node.interfaces[0].get_address()
+        else:
+            self.source_address = source_address
 
         self._options = {"protocol": "TCP", "cong_algo": "cubic"}
         self.user_input_options = {}
+
+    @property
+    def source_address(self):
+        """Getter for source address"""
+        return self._source_address
+
+    @source_address.setter
+    def source_address(self, source_address):
+        """Setter for source address"""
+        if isinstance(source_address, str):
+            source_address = Address(source_address)
+        self._source_address = source_address
 
     @property
     def destination_address(self):
@@ -91,14 +115,106 @@ class Flow:
             self.stop_time,
             self.number_of_streams,
             self._options,
+            self.source_address.get_addr(with_subnet=False),
         ]
 
     def __repr__(self):
         classname = self.__class__.__name__
         return (
-            f"{classname}({self.source_node!r}, {self.destination_node!r},"
+            f"{classname}({self.source_node!r}, {self.destination_node!r}, {self.source_address!r},"
             f" {self.destination_address!r}), {self.start_time!r}, {self.stop_time!r}"
             f" {self.number_of_streams!r})"
+        )
+
+    @property
+    def protocol(self):
+        """Getter for protocol"""
+        return self._options["protocol"]
+
+    @staticmethod
+    @input_validator
+    # pylint: disable=too-many-arguments
+    def setup_mptcp_connection(
+        source_interface: BaseInterface,
+        destination_interface: BaseInterface,
+        start_time: int,
+        stop_time: int,
+        number_of_streams: int = 1,
+    ):
+        """
+        Creates and returns an MPTCP flow for given source and destination
+        interface with all MPTCP endpoints enabled on both nodes
+
+        Parameters
+        ----------
+        source_interface : Interface
+            Source interface for MPTCP Flow
+        destination_interface : Interface
+            Destination interface for MPTCP Flow
+        start_time : int
+            Start time for the flow
+        stop_time : int
+            Stop time for the flow
+        number_of_streams : int = 1
+            Number of streams in the flow
+
+        Returns
+        -------
+        Flow
+            An MPTCP capable flow from source_interface to destination_interface
+        """
+
+        # Enable MPTCP on the Source Nodes
+        source_node = TopologyMap.get_node(source_interface.node_id)
+        source_node.enable_mptcp()
+
+        # Enable MPTCP on the Destination Node
+        destination_node = TopologyMap.get_node(destination_interface.node_id)
+        destination_node.enable_mptcp()
+
+        # Set MPTCP limits on both the nodes
+        add_addr_limit = min(
+            5, max(len(source_node.interfaces), len(destination_node.interfaces))
+        )
+        max_subflow_limit = min(
+            5, len(source_node.interfaces) * len(destination_node.interfaces) - 1
+        )
+        source_node.set_mptcp_parameters(
+            max_subflows=max_subflow_limit, max_add_addr_accepted=add_addr_limit
+        )
+        destination_node.set_mptcp_parameters(
+            max_subflows=max_subflow_limit, max_add_addr_accepted=add_addr_limit
+        )
+
+        # Check if MPTCP can be run between the 2 hosts as per RFC
+        if not (
+            source_node.is_mptcp_supported() or destination_node.is_mptcp_supported()
+        ):
+            logger.error(
+                "Neither of your source node and destination node is multihomed and "
+                "multiadressed. Please check your topology and try again."
+            )
+            sys.exit()
+
+        # If MPTCP can be run, enable all interfaces as MPTCP endpoints with default flags
+        for interface in source_node.interfaces:
+            interface.enable_mptcp_endpoint(
+                ["subflow", "fullmesh"]
+                if "fullmesh" in engine.possible_mptcp_flags
+                else ["subflow"]
+            )
+        for interface in destination_node.interfaces:
+            interface.enable_mptcp_endpoint(["signal"])
+
+        # Create and return a flow that will work with MPTCP
+        return Flow(
+            source_node,
+            destination_node,
+            destination_interface.get_address(),
+            start_time,
+            stop_time,
+            number_of_streams,
+            source_address=source_interface.get_address(),
         )
 
 
@@ -178,6 +294,8 @@ class CoapApplication(Application):
         """
         Application object representing CoAP applications in the topology.
         Inherited from the `Application` class.
+        Application object representing CoAP applications in the topology.
+        Inherited from the `Application` class.
 
         Parameters
         ----------
@@ -200,8 +318,10 @@ class CoapApplication(Application):
         # Options for users to set
         self.user_options = user_options
         super().__init__(source_node, destination_node, destination_address)
+        super().__init__(source_node, destination_node, destination_address)
 
     # Destination address getter and setter are implemented
+    # in the Application class which is the superclass of CoapApplication class
     # in the Application class which is the superclass of CoapApplication class
 
     def _get_props(self):
@@ -363,7 +483,11 @@ class Experiment:
 
     @input_validator
     def add_tcp_flow(
-        self, flow: Flow, congestion_algorithm="cubic", tool="netperf", **kwargs
+        self,
+        flow: Flow,
+        congestion_algorithm="cubic",
+        tool: str = "netperf",
+        **kwargs: dict,
     ):
         """
         Add TCP flow to experiment. If no congestion control algorithm
@@ -383,42 +507,82 @@ class Experiment:
             Tool (netperf/iperf3) to be used for the experiment (Default value = 'netperf')
         """
 
-        congestion_algo_list = [
-            "bbr",
-            "bic",
-            "cdg",
-            "cubic",
-            "dctcp",
-            "highspeed",
-            "htcp",
-            "illinois",
-            "reno",
-            "scalable",
-            "vegas",
-            "veno",
-            "westwood",
-            "yeah",
-        ]
-
-        if tool not in ["iperf3", "netperf"]:
-            raise ValueError(
-                f"{tool} is not a valid performance tool. Should be either netperf/iperf3"
-            )
-
-        if congestion_algorithm not in congestion_algo_list:
-            raise ValueError(
-                f"{congestion_algorithm} is not a valid TCP Congestion Control algorithm"
-            )
+        tcp_validator.verify_tool(tool)
+        tcp_validator.verify_congestion_control_algorithm(congestion_algorithm)
 
         # TODO: Verify congestion algorithm
 
-        options = {"protocol": "TCP", "cong_algo": congestion_algorithm, "tool": tool}
+        options = {
+            "protocol": "TCP",
+            "cong_algo": congestion_algorithm,
+            "tool": tool,
+        }
 
         if tool == "iperf3":
-            options.update(
-                {"target_bw": kwargs.setdefault("target_bandwidth", "1mbit")}
-            )
+            user_options = {}
 
+            for params, value in kwargs.items():
+                if params == "server_options":
+                    user_options.update(value)
+
+                if params == "client_options":
+                    user_options.update(value)
+
+            iperf3options = Iperf3Options(kwargs=user_options).getter()
+            if (
+                "port_nos" not in iperf3options
+                or len(iperf3options["port_nos"]) < flow.number_of_streams
+            ):
+                port_nos = set()
+                # If user has provided certain port_nos, use them
+                if iperf3options.get("port_nos") is not None:
+                    port_nos = set(iperf3options["port_nos"])
+                while len(port_nos) < flow.number_of_streams:
+                    port_nos.add(random.randrange(1024, 65536))
+                iperf3options.update({"port_nos": list(port_nos)})
+
+            # iperf3options.update(options)
+            options = {**iperf3options, **options}
+
+        flow._options = options  # pylint: disable=protected-access
+        self.add_flow(flow)
+
+    @input_validator
+    def add_mptcp_flow(
+        self,
+        flow: Flow,
+        congestion_algorithm="cubic",
+        tool: str = "netperf",
+        **kwargs: dict,
+    ):
+        """
+        Add MPTCP flow to experiment. If no congestion control algorithm
+        is specified, then by default cubic is used.
+
+        Note: The congestion control algorithm specified in this API
+        overrides the congestion control algorithm specified in
+        `topology.Node.configure_tcp_param()` API.
+
+        Parameters
+        ----------
+        flow : Flow
+            Flow to be added to experiment
+        congestion_algorithm : str
+            TCP congestion algorithm (Default value = 'cubic')
+        tool : str
+            Tool (netperf/iperf3) to be used for the experiment
+            (Default value = 'netperf')
+        """
+        tcp_validator.verify_tool(tool)
+        tcp_validator.verify_congestion_control_algorithm(congestion_algorithm)
+
+        options = {
+            "protocol": "MPTCP",
+            "cong_algo": congestion_algorithm,
+            "tool": tool,
+        }
+
+        if tool == "iperf3":
             user_options = {}
 
             for params, value in kwargs.items():
@@ -571,6 +735,8 @@ class Experiment:
         print()
         logger.info("Running experiment %s ", self.name)
         Pack.init(self.name)
+        if config.get_value("show_mptcp_checklist"):
+            tcp_validator.verify_mptcp_setup(self)
         run_experiment(self)
 
     def __repr__(self):

@@ -68,6 +68,7 @@ class Iperf3(Options):
         one_off: bool = True,
         bitrate: str = None,
         daemon: bool = False,
+        bind: str = None,
     ):
         """
         select options to configure iperf3 server
@@ -93,6 +94,7 @@ class Iperf3(Options):
         timestamps: str = False,
         cport: int = None,
         target_bw: str = None,
+        bind: str = None,
     ):
         """
         select options to configure iperf3 client
@@ -122,6 +124,35 @@ class Iperf3Options(Options):
             A dictionary with correct options
     """
 
+    # server only options
+    s_verbose: bool
+    s_interval: float
+    s_format: str
+    s_logfile: str
+    s_forceflush: bool
+    s_timestamps: str
+    port_no: int
+    one_off: bool
+    bitrate: str
+    daemon: bool
+
+    # client only options
+    verbose: bool
+    interval: float
+    format: str
+    logfile: str
+    forceflush: bool
+    forceflush: bool
+    timestamps: str
+    cport: int
+    protocol: str
+    target_bw: str
+    cong_algo: str
+    kwargs: dict
+
+    # general options
+    bind: str
+
     # pylint: disable= consider-using-dict-items
     def __init__(self, protocol="tcp", kwargs: dict = None):
         super().__init__()
@@ -138,6 +169,7 @@ class Iperf3Options(Options):
                 "one_off": True,  # handle one client connection then exit
                 "bitrate": None,  # server's total bit rate limit
                 "daemon": False,  # run server as daemon
+                "bind": None,  # bind to the given interface
             },
             "default_client_options": {
                 "verbose": False,  # more detailed output as a log file
@@ -149,6 +181,7 @@ class Iperf3Options(Options):
                 "cport": None,  # bind to a specific client port
                 "protocol": None,  # protocol name which is going to be used
                 "target_bw": "1mbit",  # target bitrate in bits/sec at client side
+                "bind": None,  # bind to the given interface
                 # "cong_algo": "cubic",  # set TCP congestion control algorithm
             },
         }

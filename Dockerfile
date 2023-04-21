@@ -38,6 +38,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y install \
         autoconf \
         flex \
         bison \
+        mptcpize \
         vlc
 
 # Install prerequisite dependencies for building gpac
@@ -91,7 +92,8 @@ RUN pip install \
         gitlint \
         pre-commit \
         pylint \
-        pytest
+        pytest \
+        colorama
 
 # Configure FRR
 RUN mkdir -p /run/frr

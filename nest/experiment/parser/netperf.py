@@ -40,6 +40,8 @@ class NetperfRunner(Runner):
         time at which netperf is to run
     run_time : num
         total time to run netperf for
+    is_mptcp : bool
+        boolean to determine if connection is MPTCP enabled
     """
 
     tcp_output_options = [
@@ -75,7 +77,17 @@ class NetperfRunner(Runner):
     # fmt: on
 
     # pylint: disable=too-many-arguments
-    def __init__(self, ns_id, destination_ip, start_time, run_time, dst_ns, **kwargs):
+    def __init__(
+        self,
+        ns_id,
+        source_ip,
+        destination_ip,
+        start_time,
+        run_time,
+        dst_ns,
+        is_mptcp,
+        **kwargs,
+    ):
         """
         Constructor to initialize netperf runner
 
@@ -83,6 +95,8 @@ class NetperfRunner(Runner):
         ----------
         ns_id : str
             network namespace to run netperf from
+        source_ip : str
+            ip address of the source namespace's interface
         destination_ip : str
             ip address of the destination namespace
         start_time : num
@@ -91,15 +105,19 @@ class NetperfRunner(Runner):
             total time to run netperf for
         dst_ns : str
             network namespace to run netperf server in
+        is_mptcp : bool
+            boolean to determine if flow is MPTCP enabled
         **kwargs
             netperf options to override
         """
         self.options = copy.deepcopy(kwargs)
+        self.is_mptcp = is_mptcp
+        self.source_ip = source_ip
         super().__init__(ns_id, start_time, run_time, destination_ip, dst_ns)
 
     # Should this be placed somewhere else?
     @staticmethod
-    def run_netserver(ns_id):
+    def run_netserver(ns_id, is_mptcp):
         """
         Run netserver in `ns_id`
 
@@ -107,8 +125,10 @@ class NetperfRunner(Runner):
         ----------
         ns_id : str
             namespace to run netserver on
+        is_mptcp : bool
+            boolean to determine if flow is MPTCP enabled
         """
-        return_code = run_netserver(ns_id)
+        return_code = run_netserver(ns_id, is_mptcp)
         if return_code != 0:
             ns_name = TopologyMap.get_node(ns_id).name
             logger.error("Error running netserver at %s.", ns_name)
@@ -146,9 +166,11 @@ class NetperfRunner(Runner):
                 run_netperf,
                 self.ns_id,
                 netperf_options_string,
+                self.source_ip,
                 self.destination_address.get_addr(with_subnet=False),
                 test_options_string,
                 self.destination_address.is_ipv6(),
+                self.is_mptcp,
             ),
             error_string_prefix="Running netperf",
         )
