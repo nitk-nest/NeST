@@ -738,6 +738,81 @@ class Node:
         self._tshark_processes.append(t_shark_process)
         t_shark_process.start()
 
+    # pylint: disable=too-many-arguments
+    @input_validator
+    def traceroute(
+        self,
+        destination_address: Address,
+        verbose: int = 2,
+        protocol: str = "default",
+        max_ttl: int = 30,
+    ):
+        """
+        Packets are captured from this node
+
+        Parameters
+        ----------
+        interface: Address
+            IP address of the destination for which traceroute is to be run
+        verbose: int
+            If verbose = '0', no output is printed to stdout.
+            If verbose = '1', output if traceroute succeeded or failed.
+            If verbose = '2', output details of traceroute hop.
+        protocol: str
+            If protocol = 'default', UDP is used. This is the default option.
+            If protocol = 'icmp', use ICMP ECHO for tracerouting
+            If protocol = 'tcp' TCP SYN is used for tracerouting
+        max_ttl: int
+            Set the maximum number of hops (max TTL to be reached)
+
+        Returns
+        -------
+        bool
+            `True` if `Node` can successfully run traceroute else `False`.
+        """
+
+        if verbose not in [0, 1, 2]:
+            raise ValueError(
+                f"Verbose parameter value is {verbose}. It should be 0, 1 or 2."
+            )
+
+        if max_ttl < 0:
+            raise ValueError(
+                f"max_ttl parameter value is {verbose}. It should be a positive integer."
+            )
+
+        if verbose == 2:
+            print()
+            print(
+                f"=== TRACEROUTE from {self.name} to "
+                f"{destination_address.get_addr(with_subnet=False)} ==="
+            )
+            print()
+
+        status = engine.traceroute(
+            self.id,
+            destination_address.get_addr(with_subnet=False),
+            verbose == 2,
+            protocol,
+            max_ttl,
+        )
+
+        if verbose == 1:
+            print()
+            if status is True:
+                print(
+                    f"SUCCESS : === TRACEROUTE from {self.name} to "
+                    f"{destination_address.get_addr(with_subnet=False)} ==="
+                )
+            elif status is False:
+                print(
+                    f"FAILURE: === TRACEROUTE from {self.name} to "
+                    f"{destination_address.get_addr(with_subnet=False)} ==="
+                )
+            print()
+
+        return status
+
     @property
     def id(self):
         """
