@@ -1,10 +1,10 @@
-# Mytraceroute (MTR) Examples in NeST
+# Mytraceroute (MTR)/traceroute Examples in NeST
 
-This directory contains examples to demonstrate how to use Mytraceroute (MTR) in `NeST`.
+This directory contains examples to demonstrate how to use Mytraceroute (MTR) and traceroute in `NeST`.
 
 `IMPORTANT`
 
-Before running the examples, you will need to install mtr. You can do this by running the following command in your terminal:
+Before running the MTR examples, you will need to install mtr. You can do this by running the following command in your terminal:
 
 ```shell
 sudo apt install mtr
@@ -15,3 +15,12 @@ This program emulates point to point networks that connect two hosts `h1` and `h
 
 <!-- The below snippet will render example code in docs website -->
 <!-- #DOCS_INCLUDE: mtr-point-to-point-3.py -->
+
+
+## 2. traceroute-point-to-point-3.py
+
+This program emulates point to point networks that connect two hosts `h1` and
+`h2` via two routers `r1` and `r2`. Traceroute is run from h1 to an interface
+of h2. It is similar to `static-routing-point-to-point-3.py` available in
+`examples/static-routing` , the only difference is that traceroute is used
+instead of ping.
