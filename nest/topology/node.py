@@ -22,6 +22,7 @@ from .id_generator import IdGen
 logger = logging.getLogger(__name__)
 
 
+# pylint: disable=too-many-public-methods
 class Node:
     """
     Abstraction for a network namespace.
@@ -121,7 +122,6 @@ class Node:
             IP address of next hop Node (or router), by default ''
         """
         if next_hop_addr is None:
-
             if isinstance(via_interface, Interface) is False:
                 raise ValueError(
                     "Unable to automatically determine the next_hop_addr. Please"
@@ -349,6 +349,109 @@ class Node:
             is returned.
         """
         return engine.read_kernel_param(self.id, "net.ipv4.udp_", param)
+
+    def get_arp_table(self):
+        """
+        Retrieve the ARP table for the current `Node`
+
+        Returns
+        -------
+        bool
+            Returns `True` if the ARP table is successfully retrieved from the `Node`.
+            Else `False`.
+        """
+        print("ARP table for " + self.name)
+        status = engine.get_arp_table(
+            self.id,
+        )
+        return status
+
+    @input_validator
+    def delete_arp_entry(self, ip_address: Address):
+        """
+        Delete an ARP table entry for a specified IP address from the current `Node`
+
+        Parameters
+        ----------
+        ip_address : Address
+            The IP address of the ARP table entry to be deleted.
+
+        Returns
+        -------
+        bool
+            Returns `True` if the ARP table entry for the specified IP address\
+            is successfully deleted from the `Node`.
+            Else `False`
+        """
+        logger.info(
+            "Deleting ARP table entry for IP address: %s",
+            ip_address.get_addr(with_subnet=False),
+        )
+        status = engine.delete_arp_entry(
+            self.id, ip_address.get_addr(with_subnet=False)
+        )
+        return status
+
+    def flush_arp_table(self):
+        """
+        Delete all ARP table entries for the current Node.
+
+        Returns
+        -------
+        bool
+            Returns `True` if all entries were deleted successfully.
+            Else `False`
+        """
+        logger.info("Flushing ARP table for: %s", self.name)
+        status = engine.flush_arp_table(self.id)
+        return status
+
+    @input_validator
+    def get_arp_entry(self, ip_address: Address):
+        """
+        Retrieve the ARP table entry for a specified IP address from the current Node.
+
+        Parameters
+        ----------
+        ip_address : Address
+            The IP address for which to retrieve the ARP table entry.
+
+        Returns
+        -------
+        bool
+            Returns `True` if the entry for the specified IP address was received successfully.
+            Else `False`
+        """
+        status = engine.get_arp_entry(self.id, ip_address.get_addr(with_subnet=False))
+        return status
+
+    def set_arp_entry(self, ip_address: Address, mac_address: str):
+        """
+        Set the ARP table entry for a specified IP address and MAC address from the given Node.
+
+        Parameters
+        ----------
+        ip_address : Address
+            The IP address for which to retrieve the ARP table entry.
+        mac_address : string
+            The MAC address for which to set the ARP table entry.
+
+        Returns
+        -------
+        bool
+            Returns `True` if the entry for the specified IP address was received successfully.
+            Else `False`
+
+        """
+        status = engine.set_arp_entry(
+            self.id, ip_address.get_addr(with_subnet=False), mac_address
+        )
+        logger.info(
+            "ARP entry set for IP address: %s and MAC address: %s",
+            ip_address.get_addr(with_subnet=False),
+            mac_address,
+        )
+        return status
 
     @ipv6_dad_check
     @input_validator
