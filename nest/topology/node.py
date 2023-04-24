@@ -614,6 +614,53 @@ class Node:
 
         return status
 
+    @input_validator
+    def mtr(
+        self,
+        destination_address: Address,
+        protocol: str = "",
+        max_ttl: int = 30,
+        count: int = 5,
+    ):
+        """
+        Performs Mytraceroute to the specified destination address
+
+        Parameters
+        ----------
+        destination_address: Address/str
+            The destination address to Mytraceroute to
+        protocol: str (Default is icmp)
+            The protocol(tcp/udp/icmp) to use for the Mytraceroute. Defaults to "" (uses ICMP).
+        max_ttl: int (Default is 30)
+            The maximum time to live (TTL) to use for the traceroute
+        count: int (Default is 5)
+            The number of packets sent to destination
+        Returns
+        ----------
+        bool
+            True if the Mytraceroute was successful.
+            Else `False`.
+        """
+
+        if protocol not in ["", "udp", "tcp"]:
+            raise ValueError(
+                f"Protocol parameter value is {protocol}. It should be udp, tcp."
+            )
+        # Convert the protocol to the appropriate flag for the `mtr` command.
+        if protocol == "udp":
+            protocol = "-u"
+        elif protocol == "tcp":
+            protocol = "-T"
+        status = engine.mtr(
+            self.id,
+            destination_address.get_addr(with_subnet=False),
+            protocol,
+            max_ttl,
+            count,
+        )
+
+        return status
+
     def enable_ip_forwarding(self, ipv4=True, ipv6=True):
         """
         Enable IP forwarding in `Node`.
