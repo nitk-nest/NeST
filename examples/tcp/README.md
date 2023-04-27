@@ -13,7 +13,26 @@ It can be installed on debian based systems as:
 sudo apt install ethtool
 ```
 
-## 1. tcp-bbr-point-to-point-3.py
+## 1. dctcp-point-to-point-3.py
+This program emulates point to point networks that connect two hosts `h1`
+and `h2` via two switches `s1` and `s2`. This program is similar to
+`udp-point-to-point-3.py` in `examples/udp`. One DCTCP flow
+is configured from `h1` to `h2`. The links between `h1` to `s1` and between
+`s2` to `h2` are edge links. The link between `s1` and `s2` is the bottleneck
+link with lesser bandwidth and higher propagation delays. `codel` queue
+discipline is enabled on the link from `s1` to `s2`, but not from `s2` to
+`s1` because data packets flow in one direction only (`h1` to `h2`) in this
+example.
+
+This program runs for 200 seconds and creates a new directory called
+`dctcp-point-to-point-3(date-timestamp)_dump`. It contains a `README` which
+provides details about the sub-directories and files within this directory.
+See the plots in `netperf`, `ping` and `ss` sub-directories for this program.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: dctcp-point-to-point-3.py -->
+
+## 2. tcp-bbr-point-to-point-3.py
 This program emulates point to point networks that connect two hosts `h1`
 and `h2` via two routers `r1` and `r2`. This program is similar to
 `udp-point-to-point-3.py` in `examples/udp`. Instead of UDP, one TCP BBR flow
@@ -32,7 +51,7 @@ See the plots in `netperf`, `ping` and `ss` sub-directories for this program.
 <!-- The below snippet will render example code in docs website -->
 <!-- #DOCS_INCLUDE: tcp-bbr-point-to-point-3.py -->
 
-## 2. tcp-cubic-parameters-point-to-point-3.py
+## 3. tcp-cubic-parameters-point-to-point-3.py
 This program emulates point to point networks that connect two hosts `h1`
 and `h2` via two routers `r1` and `r2`. This program is similar to
 `tcp-bbr-point-to-point-3.py` in `examples/tcp`. Instead of TCP BBR
@@ -49,7 +68,7 @@ and `ss` sub-directories for this program.
 <!-- The below snippet will render example code in docs website -->
 <!-- #DOCS_INCLUDE: tcp-cubic-parameters-point-to-point-3.py -->
 
-## 3. tcp-cubic-point-to-point-3.py
+## 4. tcp-cubic-point-to-point-3.py
 This program emulates point to point networks that connect two hosts `h1`
 and `h2` via two routers `r1` and `r2`. This program is similar to
 `udp-point-to-point-3.py` in `examples/udp`. Instead of UDP, one TCP CUBIC
@@ -69,7 +88,7 @@ this program.
 <!-- The below snippet will render example code in docs website -->
 <!-- #DOCS_INCLUDE: tcp-cubic-point-to-point-3.py -->
 
-## 4. tcp-cubic-ssr-point-to-point-3.py
+## 5. tcp-cubic-ssr-point-to-point-3.py
 This program emulates point to point networks that connect two hosts `h1`
 and `h2` via two routers `r1` and `r2`. This program is similar to
 `tcp-cubic-point-to-point-3.py` in `examples/tcp`. This example demonstrates
@@ -85,7 +104,7 @@ this program.
 <!-- The below snippet will render example code in docs website -->
 <!-- #DOCS_INCLUDE: tcp-cubic-ssr-point-to-point-3.py -->
 
-## 5. tcp-cubic-tfo-point-to-point-3.py
+## 6. tcp-cubic-tfo-point-to-point-3.py
 This program emulates point to point networks that connect two hosts `h1`
 and `h2` via two routers `r1` and `r2`. This program is similar to
 `tcp-cubic-point-to-point-3.py` in `examples/tcp`. This example demonstrates
@@ -101,7 +120,7 @@ this program.
 <!-- The below snippet will render example code in docs website -->
 <!-- #DOCS_INCLUDE: tcp-cubic-tfo-point-to-point-3.py -->
 
-## 6. tcp-cubic-wnd-scale-point-to-point-3.py
+## 7. tcp-cubic-wnd-scale-point-to-point-3.py
 This program emulates point to point networks that connect two hosts `h1`
 and `h2` via two routers `r1` and `r2`. This program is similar to
 `tcp-cubic-point-to-point-3.py` in `examples/tcp`. This example demonstrates
@@ -117,7 +136,7 @@ for this program.
 <!-- The below snippet will render example code in docs website -->
 <!-- #DOCS_INCLUDE: tcp-cubic-wnd-scale-point-to-point-3.py -->
 
-## 7. tcp-offloads-point-to-point.py
+## 8. tcp-offloads-point-to-point.py
 This program emulates point to point networks that connect two hosts `h1`
 and `h2` via two routers `r1` and `r2`. This program is similar to
 `tcp-cubic-point-to-point-3.py`. It demonstrates how to disable Generic
@@ -134,7 +153,7 @@ this program.
 <!-- The below snippet will render example code in docs website -->
 <!-- #DOCS_INCLUDE: tcp-offloads-point-to-point.py -->
 
-## 8. tcp-reno-point-to-point-3.py
+## 9. tcp-reno-point-to-point-3.py
 This program emulates point to point networks that connect two hosts `h1`
 and `h2` via two routers `r1` and `r2`. This program is similar to
 `udp-point-to-point-3.py` in `examples/udp`. Instead of UDP, one Reno flow
@@ -153,7 +172,7 @@ See the plots in `netperf`, `ping` and `ss` sub-directories for this program.
 <!-- The below snippet will render example code in docs website -->
 <!-- #DOCS_INCLUDE: tcp-reno-point-to-point-3.py -->
 
-## 9. tcp-udp-point-to-point.py
+## 10. tcp-udp-point-to-point.py
 This program emulates point to point networks that connect four hosts: `h1`
 - `h4` via two routers `r1` and `r2`. One TCP flow is configured from `h1` to
 `h3` and one UDP flow is configured from `h2` to `h4`.
