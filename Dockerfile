@@ -119,6 +119,24 @@ RUN pip install \
 RUN mkdir -p /run/frr
 RUN chown frr /run/frr
 
+# Install ethtool
+RUN apt install -y ethtool
+
+# Install iperf3
+RUN apt install -y iperf3
+
+# Installs lsmod and other kernel module utilites
+RUN apt install -y kmod
+
+# Install tcpdump
+RUN apt install -y tcpdump
+
+# Install tshark
+RUN DEBIAN_FRONTEND=noninteractive apt install -y tshark
+
+#Install MTR
+RUN apt install -y mtr
+
 # Install bird
 RUN git clone --depth 1 --branch v2.0.10 https://gitlab.nic.cz/labs/bird.git
 WORKDIR /bird
