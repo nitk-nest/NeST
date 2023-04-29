@@ -81,7 +81,8 @@ class Iperf3Runner(Runner):
             iperf3 client options configured by user
         """
 
-        default_client_options = {
+        # TOOD: Only iperf3 flags should be added here (without any default values)
+        client_option_flags = {
             "verbose": "-V",  # more detailed output as a log file
             "format": "-f ",  # format to report: Kbits, Mbits, Gbits, Tbits
             "logfile": "--logfile ",  # send output to a log file
@@ -89,9 +90,7 @@ class Iperf3Runner(Runner):
             "port_no": "-p ",  # # server port to connect to
             "cport": "--cport ",  # bind to a specific client port
             "interval": "-i ",  # Generate interim results every INTERVAL seconds
-            "n_flows": "-P 1",  # Number of parallel flows (NOTE: Default 1)
-            "testlen": "-t 10",  # Length of test (NOTE: Default 10s)
-            "cong_algo": "-C cubic",  # Congestion algorithm
+            "cong_algo": "-C ",  # Congestion algorithm
         }
 
         client_options = {"json": "--json"}
@@ -111,14 +110,11 @@ class Iperf3Runner(Runner):
                 options.update({"logfile": options["logfile"] + ".log"})
                 break
         for option in options:
-            if option in default_client_options:
-                option_value = default_client_options[option]
+            if option in client_option_flags:
+                option_value = client_option_flags[option]
                 if not isinstance(options[option], bool):
                     option_value += str(options[option])
                 client_options.update({option: option_value})
-
-        if self.protocol == "tcp":
-            client_options.update({"cong_algo": f"-C {self.options['cong_algo']}"})
 
         if self.protocol == "udp":
             client_options.update({"protocol": "--udp"})

@@ -191,9 +191,23 @@ class Iperf3Options(Options):
                 if Option[Option_key]:
                     self.selected_options.update({Option_key: Option[Option_key]})
 
-    # pylint: disable=missing-function-docstring
-    def getter(self):
-        return self.selected_options
+    def getter(self, protocol="tcp"):
+        """
+        Get Iperf3 command line options based on user selected options
+        """
+
+        if protocol == "tcp":
+            return self.selected_options
+        if protocol == "udp":
+            # TODO: Handling udp protocol a bit hackily here.
+            # Manually removing the "cong_algo" parameter
+            # for UDP flows since it's not related to UDP
+            selected_options = self.selected_options
+            if "cong_algo" in selected_options:
+                del selected_options["cong_algo"]
+            return selected_options
+
+        return None
 
     def __repr__(self):
         classname = self.__class__.__name__
