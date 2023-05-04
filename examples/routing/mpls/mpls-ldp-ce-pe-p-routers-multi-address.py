@@ -12,7 +12,8 @@ from nest.routing.routing_helper import RoutingHelper
 
 # This program demonstrates how to set up a MPLS network that connects two
 # customer edge (ce) routers `ce1` and `ce2` via two provider edge (pe) routers
-# `pe1` and `pe2`, which are further connected via a provider (p) router. Only
+# `pe1` and `pe2`, which are further connected via a provider (p) router. But
+# here both IPv4 and IPv6 addresses are assigned to the interfaces. Only
 # `pe` and `p` routers are MPLS enabled. `ce` routers do not use MPLS. The
 # labels are assigned automatically using the Label Distribution Protocol (LDP).
 # This program uses LDP from Free Range Routing (FRR) suite. Penultimate Hop
@@ -44,7 +45,7 @@ pe1 = Router("pe1")
 pe2 = Router("pe2")
 p = Router("p")
 
-# Set the IPv4 address for the networks.
+# Set the IPv6 address for the networks.
 # This example has four networks: one on the left of `pe1`, second between
 # `pe1` and `p`, third between `p` and `pe2`, and fourth on the right of `pe2`.
 n1 = Network("2001::1:0/122")  # network on the left of `pe1`
@@ -65,10 +66,10 @@ n4 = Network("2001::4:0/122")  # network on the right of `pe2`
 (etpb, etpe2a) = connect(p, pe2, network=n3)
 (etpe2b, etce2) = connect(pe2, ce2, network=n4)
 
-# Assign IPv4 addresses to all the interfaces in the network.
+# Assign IPv6 addresses to all the interfaces in the network.
 AddressHelper.assign_addresses()
 
-# Assign IPv6 addresses to all the interfaces in the network.
+# Assign IPv4 addresses to all the interfaces in the network.
 etce1.add_address("192.168.1.1/24")
 etpe1a.add_address("192.168.1.2/24")
 etpa.add_address("192.168.2.2/24")

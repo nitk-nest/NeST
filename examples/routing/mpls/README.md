@@ -68,6 +68,22 @@ sent from `ce1` to `ce2`, and the success/failure of these packets is reported.
 <!-- The below snippet will render example code in docs website -->
 <!-- #DOCS_INCLUDE: mpls-ldp-ce-pe-p-routers.py -->
 
+## 4. mpls-ldp-ce-pe-p-routers-multi-address.py
+This program demonstrates how to set up a MPLS network that connects two
+customer edge (ce) routers `ce1` and `ce2` via two provider edge (pe) routers
+`pe1` and `pe2`, which are further connected via a provider (p) router. But
+here both IPv4 and IPv6 addresses are assigned to the interfaces. Only `pe` and
+`p` routers are MPLS enabled. `ce` routers do not use MPLS. The labels are
+assigned automatically using the Label Distribution Protocol (LDP). This
+program uses LDP from Free Range Routing (FRR) suite. Penultimate Hop Popping
+(PHP) is used in this program. Address helper is used to assign the IPv6
+addresses to the interfaces, IPv4 addresses are added manually. Five ping
+packets are sent from `ce1` to `ce2`, and the success/failure of these packets
+is reported.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: mpls-ldp-ce-pe-p-routers-multi-address.py -->
+
 Once these programs are understood, and if MPLS modules are no longer needed,
 they can be disabled using:
 

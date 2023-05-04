@@ -8,15 +8,15 @@ from nest.topology import *
 from nest.experiment import Experiment, Flow
 from nest.experiment.tools import Iperf3
 
-# This program emulates configuration of iperf3 server on two
-# Local Area Networks (LANs) connected directly to
-# each other. LAN-1 consists three hosts `h1` to `h3` connected to switch `s1`,
-# and LAN-2 consists three hosts `h4` to `h6` connected to switch `s2`.
-# Switches `s1` and `s2` are connected to each other.
-# host 'h1' sends packets to 'h4' for 10 sec.
-# At 'h4' output is reported at an interval of 1 sec.
-# After 5 sec of the start of the program 'h2' starts sending packets to 'h4' for 10 sec
-# which is reported at an interval of 0.5 sec.
+# This program emulates configuration of iperf3 server on two Local Area
+# Networks (LANs) connected directly to each other. LAN-1 consists three hosts
+# `h1` to `h3` connected to switch `s1`, and LAN-2 consists three hosts `h4` to
+# `h6` connected to switch `s2`. Switches `s1` and `s2` are connected to each
+# other. Two UDP flows are created from `h1` to `h4` and one UDP flow is
+# created from `h2` to `h4`. Host `h1` sends packets to `h4` for 10 sec. At `h4`
+# output is reported at an interval of 1 sec. After 5 sec of the start of the
+# program `h2` starts sending packets to `h4` for 10 sec which is reported at an
+# interval of 0.5 sec.
 
 #########################################################
 #                    Network Topology                   #
