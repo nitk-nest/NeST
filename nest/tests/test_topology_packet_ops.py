@@ -103,16 +103,17 @@ class TestTopologyPacketOps(unittest.TestCase):
 
     def test_packet_capture(self):
         self.n0_n1.set_attributes("10mbit", "10ms")
-        initial_status = exists("packet_capture.pcap")
+        current_dir = os.getcwd()
+        initial_status = exists(f"{current_dir}/packet_capture/packet_capture.pcap")
         self.n1.capture_packets(
             interface=self.n1_n0, packet_count=10, output_file="packet_capture.pcap"
         )
         self.n0.ping("10.0.0.2", packets=10)
 
-        status = exists("packet_capture.pcap")
+        status = exists(f"{current_dir}/packet_capture/packet_capture.pcap")
         self.assertTrue(status)
         if initial_status is False and status is True:
-            os.remove("packet_capture.pcap")
+            os.remove(f"{current_dir}/packet_capture/packet_capture.pcap")
 
     def tearDown(self):
         delete_namespaces()
