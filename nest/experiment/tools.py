@@ -37,7 +37,6 @@ class Tools:
 
 
 class Options:
-
     # global variable
     user_options = {}
 
@@ -75,7 +74,7 @@ class Iperf3(Options):
 
         Returns:
             selected_option: dict
-                valid selected options for iperf3  server configuration
+                valid selected options for iperf3 server configuration
         """
         Iperf3.user_options = {}
         for option, val in locals().items():
@@ -123,38 +122,11 @@ class Iperf3Options(Options):
             A dictionary with correct options
     """
 
-    # server options
-    s_verbose: bool
-    s_interval: float
-    s_format: str
-    s_logfile: str
-    s_forceflush: bool
-    s_timestamps: str
-    port_no: int
-    one_off: bool
-    bitrate: str
-    daemon: bool
-
-    # client options
-    verbose: bool
-    interval: float
-    format: str
-    logfile: str
-    forceflush: bool
-    forceflush: bool
-    timestamps: str
-    cport: int
-    protocol: str
-    target_bw: str
-    cong_algo: str
-    kwargs: dict
-
     # pylint: disable= consider-using-dict-items
-    def __init__(self, kwargs: dict = None):
-
+    def __init__(self, protocol="tcp", kwargs: dict = None):
         super().__init__()
 
-        default_Options = {
+        default_options = {
             "default_server_options": {
                 "s_verbose": False,  # more detailed output as a log file
                 "s_interval": 0.2,  # Generate interim results every INTERVAL seconds
@@ -177,37 +149,36 @@ class Iperf3Options(Options):
                 "cport": None,  # bind to a specific client port
                 "protocol": None,  # protocol name which is going to be used
                 "target_bw": "1mbit",  # target bitrate in bits/sec at client side
-                "cong_algo": "cubic",  # set TCP congestion control algorithm
+                # "cong_algo": "cubic",  # set TCP congestion control algorithm
             },
         }
 
-        # Validate the dictionary passed and set the internal data members
-        for _, Option in default_Options.items():
-            for Option_key in Option:
-                if Option_key in kwargs:
-                    if kwargs[Option_key]:
-                        self.selected_options.update({Option_key: kwargs[Option_key]})
-                    continue
-                if Option[Option_key]:
-                    self.selected_options.update({Option_key: Option[Option_key]})
+        if protocol == "tcp":
+            # Add cong_algo only for tcp protocol
+            default_options["default_client_options"][
+                "cong_algo"
+            ] = "cubic"  # set TCP congestion control algorithm
+        elif protocol == "udp":
+            # Nothing specific to do as of now
+            pass
+        else:
+            raise ValueError("Invalid protocol string. It should be 'tcp' or 'udp'.")
 
-    def getter(self, protocol="tcp"):
+        # Validate the dictionary passed and set the internal data members
+        for _, option in default_options.items():
+            for option_key in option:
+                if option_key in kwargs:
+                    if kwargs[option_key]:
+                        self.selected_options.update({option_key: kwargs[option_key]})
+                    continue
+                if option[option_key]:
+                    self.selected_options.update({option_key: option[option_key]})
+
+    def getter(self):
         """
         Get Iperf3 command line options based on user selected options
         """
-
-        if protocol == "tcp":
-            return self.selected_options
-        if protocol == "udp":
-            # TODO: Handling udp protocol a bit hackily here.
-            # Manually removing the "cong_algo" parameter
-            # for UDP flows since it's not related to UDP
-            selected_options = self.selected_options
-            if "cong_algo" in selected_options:
-                del selected_options["cong_algo"]
-            return selected_options
-
-        return None
+        return self.selected_options
 
     def __repr__(self):
         classname = self.__class__.__name__

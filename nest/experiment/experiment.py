@@ -379,7 +379,7 @@ class Experiment:
         if client_options:
             user_options.update(client_options)
 
-        iperf3options = Iperf3Options(kwargs=user_options).getter(protocol="udp")
+        iperf3options = Iperf3Options(protocol="udp", kwargs=user_options).getter()
 
         if "port_no" not in iperf3options:
             iperf3options.update({"port_no": random.randrange(1024, 65536)})
