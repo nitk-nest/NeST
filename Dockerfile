@@ -167,6 +167,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt -y install easy-rsa
 #Install MTR
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt -y install mtr
 
+# Install traceroute
+RUN apt install -y traceroute
+
 FROM test as dev
 
 WORKDIR /home
