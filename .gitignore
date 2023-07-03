@@ -19,3 +19,8 @@ nest.egg-info/
 nitk_nest.egg-info/
 dist/
 build/
+
+# Ignore video files and MPEG-DASH encoded chunks
+*.mp4
+*.m4s
+*.mpd

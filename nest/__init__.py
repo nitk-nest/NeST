@@ -67,6 +67,7 @@ from nest import clean_up  # # pylint: disable=wrong-import-position, wrong-impo
 
 # On recieving Termination signal, execute the given function
 signal.signal(signal.SIGTERM, clean_up.delete_namespaces)
+signal.signal(signal.SIGTERM, clean_up.delete_encoded_mpeg_dash_chunks)
 
 # Load custom config values
 config.search_config_files()

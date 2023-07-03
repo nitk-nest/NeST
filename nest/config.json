@@ -9,5 +9,6 @@
     "show_progress_bar": true,
     "show_tcp_module_parameter_confirmation": true,
     "routing_suite": "frr",
-    "routing_logs": false
+    "routing_logs": false,
+    "mpeg_dash_delete_encoded_chunks_on_termination": false
 }

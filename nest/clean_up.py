@@ -8,7 +8,10 @@ and delete all namespaces after the experiment is complete.
 
 import atexit
 import logging
+import shutil
+from pathlib import Path
 from nest.network_utilities import ipv6_dad_check
+from nest.mpeg_dash_encoder import MpegDashEncoder
 from nest import engine
 from . import config
 
@@ -61,3 +64,16 @@ def delete_namespaces():
         logger.info("Cleaned up environment!")
     else:
         logger.info("Namespaces not deleted")
+
+
+@atexit.register
+def delete_encoded_mpeg_dash_chunks():
+    """
+    Delete the encoded MPEG-DASH chunks
+    """
+
+    if config.get_value("mpeg_dash_delete_encoded_chunks_on_termination"):
+        directory_to_delete = MpegDashEncoder.mpeg_dash_encoded_chunks_path
+        if Path(directory_to_delete).exists():
+            shutil.rmtree(directory_to_delete)
+            logger.info("Deleted encoded MPEG-DASH chunks!")
