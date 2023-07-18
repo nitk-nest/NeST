@@ -114,7 +114,6 @@ class SsRunner(Runner):
         # altogether based on the 'ato' parameter (which is present only in the
         # additional connection that we do not want to collect stats from).
         for raw_stat in raw_stats[:-1]:
-
             stats = raw_stat.strip().split("\n")
             timestamp = stats[0].split(":")[-1]
             ports_info = []
@@ -129,8 +128,10 @@ class SsRunner(Runner):
 
             for i in range(len(ports_info)):
                 # means that this is additional info entries and this data isn't required
-                if "ato" in statistics_data[i]:
-                    continue
+                # if "ato" in statistics_data[i]:
+                #     continue
+                # UPDATE: All the entries are needed in order to obtain
+                # ss plots for MpegDashApplication
                 each_ports_info = ports_info[i].split()
 
                 # means that this entry was not meant for this stat collection

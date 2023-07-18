@@ -339,3 +339,39 @@ class Iperf3ServerResults:
     def output_to_file():
         """Outputs the aggregated iperf3 stats to file"""
         Results.output_to_file(iperf3_server_results_q, "iperf3Server")
+
+
+mpeg_dash_results_q = Manager().Queue()
+mpeg_dash_results_q.put({})
+
+
+class MpegDashResults:
+    """This class aggregates the MPEG-DASH stats from the entire experiment environment"""
+
+    @staticmethod
+    def add_result(ns_id, result):
+        """Adds the MPEG-DASH stats parse from a process to the shared `mpeg_dash_results`
+
+        Parameters
+        ----------
+        ns_id : string
+            namespace id (internal name)
+        result : dict
+            parsed MPEG-DASH stats
+        """
+        Results.add_result(mpeg_dash_results_q, ns_id, result)
+
+    @staticmethod
+    def remove_all_results():
+        """Remove all results obtained from the experiment"""
+        Results.remove_all_results(mpeg_dash_results_q)
+
+    @staticmethod
+    def get_results():
+        """Get results obtained in the experiment so far"""
+        return Results.get_results(mpeg_dash_results_q)
+
+    @staticmethod
+    def output_to_file():
+        """Outputs the aggregated MPEG-DASH stats to file"""
+        Results.output_to_file(mpeg_dash_results_q, "mpeg_dash")

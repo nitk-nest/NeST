@@ -27,6 +27,7 @@ from .results import (
     TcResults,
     PingResults,
     CoAPResults,
+    MpegDashResults,
 )
 
 # Import parsers
@@ -36,6 +37,7 @@ from .parser.iperf3 import Iperf3Runner, Iperf3ServerRunner
 from .parser.tc import TcRunner
 from .parser.ping import PingRunner
 from .parser.coap import CoAPRunner
+from .parser.mpeg_dash import MpegDashRunner
 
 # Import plotters
 from .plotter.ss import plot_ss
@@ -43,6 +45,7 @@ from .plotter.netperf import plot_netperf
 from .plotter.iperf3 import plot_iperf3
 from .plotter.tc import plot_tc
 from .plotter.ping import plot_ping
+from .plotter.mpeg_dash import plot_mpeg_dash
 from ..engine.util import is_dependency_installed, is_package_installed
 
 logger = logging.getLogger(__name__)
@@ -51,6 +54,9 @@ if not any(isinstance(filter, DepedencyCheckFilter) for filter in logger.filters
     # messages incase any of the tools is not installed
     logger.addFilter(DepedencyCheckFilter())
 
+
+# TODO:Refactor code so as to not exceed 1000 lines
+# pylint: disable=too-many-lines
 # pylint: disable=too-many-locals, too-many-branches
 # pylint: disable=too-many-statements, invalid-name
 def run_experiment(exp):
@@ -64,15 +70,20 @@ def run_experiment(exp):
     """
 
     tcp_modules_helper(exp)
-    tools = ["netperf", "ss", "tc", "iperf3", "ping", "coap", "server"]
+    tools = ["netperf", "ss", "tc", "iperf3", "ping", "coap", "server", "mpeg_dash"]
     Runners = namedtuple("runners", tools)
     exp_runners = Runners(
-        netperf=[], ss=[], tc=[], iperf3=[], ping=[], coap=[], server=[]
+        netperf=[], ss=[], tc=[], iperf3=[], ping=[], coap=[], server=[], mpeg_dash=[]
     )  # Runner objects
 
     # Keep track of all destination nodes [to ensure netperf, iperf3 and
     # coap server is run at most once]
-    destination_nodes = {"netperf": set(), "iperf3": set(), "coap": set()}
+    destination_nodes = {
+        "netperf": set(),
+        "iperf3": set(),
+        "coap": set(),
+        "mpeg_dash": set(),
+    }
 
     # Contains start time and end time to run respective command
     # from a source netns to destination address (in destination netns)
@@ -193,6 +204,38 @@ def run_experiment(exp):
         exp_runners.coap.extend(coap_runners)
         destination_nodes["coap"].add(dst_ns)
 
+    for mpeg_dash_application in exp.mpeg_dash_applications:
+        [
+            _,
+            dst_ns,
+            _,
+            dst_addr,
+            port,
+            _,
+            duration,
+            _,
+            _,
+        ] = mpeg_dash_application._get_props()  # pylint: disable=protected-access
+
+        exp_end_t = max(exp_end_t, duration)
+
+        # Setup runners for emulating Mpeg-Dash traffic
+        (mpeg_dash_runners, ss_schedules) = setup_mpeg_dash_runners(
+            dependencies["mpeg_dash"],
+            mpeg_dash_application,
+            ss_schedules,
+            destination_nodes["mpeg_dash"],
+        )
+        exp_runners.mpeg_dash.extend(mpeg_dash_runners)
+        destination_nodes["mpeg_dash"].add((dst_ns, dst_addr, port))
+
+        if len(exp.mpeg_dash_applications) > 0:
+            if ss_filters == set():
+                ss_required = True
+                # Excluding some states from ss statistics which
+                # do not contain any internal TCP information.
+                ss_filters.add("exclude fin-wait-2 exclude time-wait exclude syn-recv")
+
     if ss_required:
         ss_filter = " and ".join(ss_filters)
         ss_runners = setup_ss_runners(dependencies["ss"], ss_schedules, ss_filter)
@@ -219,7 +262,7 @@ def run_experiment(exp):
         logger.info("Output results as JSON dump...")
 
         # Output results as JSON dumps
-        dump_json_ouputs()
+        dump_json_outputs()
 
         if config.get_value("readme_in_stats_folder"):
             # Copying README.txt to stats folder
@@ -344,11 +387,14 @@ def setup_plotter_workers():
     plotters.append(Process(target=plot_iperf3, args=(Iperf3Results.get_results(),)))
     plotters.append(Process(target=plot_tc, args=(TcResults.get_results(),)))
     plotters.append(Process(target=plot_ping, args=(PingResults.get_results(),)))
+    plotters.append(
+        Process(target=plot_mpeg_dash, args=(MpegDashResults.get_results(),))
+    )
 
     return plotters
 
 
-def dump_json_ouputs():
+def dump_json_outputs():
     """
     Outputs experiment results as json dumps
     """
@@ -359,6 +405,7 @@ def dump_json_ouputs():
     PingResults.output_to_file()
     CoAPResults.output_to_file()
     Iperf3ServerResults.output_to_file()
+    MpegDashResults.output_to_file()
 
 
 def setup_flow_workers(exp_runners, exp_stop_time):
@@ -426,6 +473,9 @@ def setup_parser_workers(exp_runners):
     for coap_runner in exp_runners.coap:
         parsers.append(Process(target=coap_runner.parse))
 
+    for mpeg_dash_runner in exp_runners.mpeg_dash:
+        parsers.append(Process(target=mpeg_dash_runner.parse))
+
     for server_runner in exp_runners.server:
         parsers.append(Process(target=server_runner.parse))
 
@@ -451,6 +501,15 @@ def get_dependency_status(tools):
         # Check for the availability of aiocoap for CoAP emulation
         if dependency == "coap":
             dependencies[dependency] = is_package_installed("aiocoap")
+            continue
+        # Check for the availability of vlc and gpac and
+        # Python package named 'requests' for MPEG-DASH video streaming.
+        if dependency == "mpeg_dash":
+            dependencies[dependency] = (
+                is_dependency_installed("vlc-wrapper")
+                and is_dependency_installed("gpac")
+                and is_package_installed("requests")
+            )
             continue
         dependencies[dependency] = is_dependency_installed(dependency)
     return dependencies
@@ -760,7 +819,6 @@ def setup_coap_runners(dependency, application, destination_nodes):
 
         # Run CoAP server if not already run before on given dst_node
         if dst_ns not in destination_nodes:
-
             # If user has not supplied the user options
             if user_options is not None:
                 # Creating the options string for running the CoAP server
@@ -788,6 +846,76 @@ def setup_coap_runners(dependency, application, destination_nodes):
 
     # Return the list of runners
     return runners
+
+
+def setup_mpeg_dash_runners(dependency, application, ss_schedules, destination_nodes):
+    """
+    Setup MpegDashRunner objects for generating Mpeg-Dash traffic
+
+    Parameters
+    ----------
+    dependency : int
+        Whether vlc-wrapper and gpac and requests are installed
+    application : MpegDashApplication
+        The MpegDashApplication object
+    destination_nodes:
+        Server nodes so far already running Mpeg-Dash server
+
+    Returns
+    -------
+    (runners,ss_schedules) : Tuple
+        runners : List[MpegDashRunner]
+            List of MpegDashRunner objects for the current flow object
+        ss_schedules: List
+            List containing ss schedule information
+    """
+    runners = []
+
+    # If vlc-wrapper and gpac and requests are installed
+    if dependency:
+        # Get flow attributes
+        [
+            src_ns,
+            dst_ns,
+            src_addr,
+            dst_addr,
+            port,
+            encoded_chunks_path,
+            duration,
+            player,
+            additional_player_options,
+        ] = application._get_props()  # pylint: disable=protected-access
+
+        # Run Mpeg-Dash server if not already run before on given dst_ns, dst_addr and port.
+        if (dst_ns, dst_addr, port) not in destination_nodes:
+            MpegDashRunner.run_server(dst_ns, port, encoded_chunks_path)
+
+        # Create the MpegDashRunner object
+        mpeg_dash_runner = MpegDashRunner(
+            src_ns,
+            dst_addr,
+            dst_ns,
+            port,
+            encoded_chunks_path,
+            duration,
+            player,
+            additional_player_options,
+        )
+        runners.append(mpeg_dash_runner)
+
+        ss_schedules = _get_start_stop_time_for_ss(
+            dst_ns, src_ns, src_addr, 0, duration, ss_schedules
+        )
+
+    # If vlc-wrapper or gpac or Python package 'requests' is not installed
+    else:
+        logger.warning(
+            """'vlc-wrapper' or 'gpac' or Python package 'requests'
+            not found for MPEG-DASH emulation."""
+        )
+
+    # Return the list of runners and ss schedules
+    return runners, ss_schedules
 
 
 def progress_bar(stop_time, precision=1):
@@ -829,6 +957,7 @@ def cleanup():
     CoAPResults.remove_all_results()
     Iperf3Results.remove_all_results()
     Iperf3ServerResults.remove_all_results()
+    MpegDashResults.remove_all_results()
 
     # Clean up the configured TCP modules and kill processes
     tcp_modules_clean_up()

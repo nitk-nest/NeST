@@ -9,4 +9,10 @@ Handles running network experiments on topologies built using
 `Topology` module
 """
 
-from .experiment import Experiment, Flow, Application, CoapApplication
+from .experiment import (
+    Experiment,
+    Flow,
+    Application,
+    CoapApplication,
+    MpegDashApplication,
+)

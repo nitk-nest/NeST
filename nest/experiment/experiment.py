@@ -6,6 +6,7 @@
 import copy
 import logging
 from collections import defaultdict
+from pathlib import Path
 import random
 from nest.input_validator.metric import Bandwidth
 from nest.network_utilities import ipv6_dad_check
@@ -17,6 +18,7 @@ from .pack import Pack
 from .tools import Iperf3Options
 
 logger = logging.getLogger(__name__)
+
 
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-few-public-methods
@@ -227,6 +229,95 @@ class CoapApplication(Application):
         )
 
 
+class MpegDashApplication(Application):
+    """Defines an MPEG DASH application in the topology"""
+
+    # pylint: disable=too-many-arguments
+    @input_validator
+    def __init__(
+        self,
+        source_node: Node,
+        destination_node: Node,
+        source_address: Address,
+        destination_address: Address,
+        port: int,
+        encoded_chunks_path: Path,
+        duration: int,
+        player: str,
+        additional_player_options=None,
+    ):
+        """
+        Application object representing MPEG-DASH applications in the topology.
+        Inherited from the `Application` class.
+
+        Parameters
+        ----------
+        source_node : Node
+            Node that behaves as MPEG-DASH client
+        destination_node : Node
+            Node that behaves as MPEG-DASH server
+        source_address : Address/str
+            Address of the MPEG-DASH client
+        destination_address : Address/str
+            Address of the MPEG-DASH server
+        port : int
+            Port number of the server at which MPEG-DASH application is running
+        encoded_chunks_path : Path
+            The path where the encoded chunks are stored.
+        duration : int
+            Number of seconds for which experiment has to be run
+        player: str
+            The media player to be used.
+        additional_player_options : list, optional
+            User specified options for the video player
+        """
+        self.source_address = source_address
+        self.port = port
+        self.encoded_chunks_path = encoded_chunks_path
+        self.duration = duration
+        self.player = player
+        self.additional_player_options = additional_player_options
+
+        super().__init__(source_node, destination_node, destination_address)
+
+        if self.player not in ("vlc", "gpac"):
+            logger.warning("Invalid player '%s'.", player)
+            logger.warning("Taking default player as gpac")
+            self.player = "gpac"
+
+        if self.additional_player_options is not None:
+            self.additional_player_options = " ".join(self.additional_player_options)
+        else:
+            self.additional_player_options = ""
+
+    def _get_props(self):
+        """
+        Get flow properties.
+
+        NOTE: To be used internally
+        """
+        return [
+            self.source_node.id,
+            self.destination_node.id,
+            self.source_address.get_addr(with_subnet=False),
+            self.destination_address.get_addr(with_subnet=False),
+            self.port,
+            self.encoded_chunks_path,
+            self.duration,
+            self.player,
+            self.additional_player_options,
+        ]
+
+    def __repr__(self):
+        classname = self.__class__.__name__
+        return (
+            f"{classname}({self.source_node!r}, {self.destination_node!r},"
+            f" {self.source_address!r}, {self.destination_address!r}, {self.port!r},"
+            f" {self.encoded_chunks_path!r}, {self.duration!r},"
+            f" {self.player!r}, {self.additional_player_options!r})"
+        )
+
+
 class Experiment:
     """Handles experiment to be run on topology"""
 
@@ -247,6 +338,7 @@ class Experiment:
         self.name = name
         self.flows = []
         self.coap_applications = []
+        self.mpeg_dash_applications = []
         self.node_stats = []
         self.qdisc_stats = []
         self.tcp_module_params = defaultdict(dict)
@@ -325,7 +417,6 @@ class Experiment:
             user_options = {}
 
             for params, value in kwargs.items():
-
                 if params == "server_options":
                     user_options.update(value)
 
@@ -401,6 +492,28 @@ class Experiment:
             The coap application to be added to experiment
         """
         self.coap_applications.append(copy.deepcopy(coap_application))
+
+    @input_validator
+    def add_mpeg_dash_application(self, mpeg_dash_applications):
+        """
+        Add an MPEG-DASH application to the experiment
+
+        Parameters
+        ----------
+        mpeg_dash_applications : Union[MpegDashApplication,list]
+            The MPEG-DASH application(s) to be added to experiment
+        """
+        if isinstance(mpeg_dash_applications, MpegDashApplication):
+            self.mpeg_dash_applications.append(copy.deepcopy(mpeg_dash_applications))
+
+        elif isinstance(mpeg_dash_applications, list):
+            self.mpeg_dash_applications.extend(copy.deepcopy(mpeg_dash_applications))
+
+        else:
+            raise Exception(
+                """The add_mpeg_dash_application function takes either
+                a MpegDashApplication object or a list of the same only."""
+            )
 
     @input_validator
     def require_qdisc_stats(self, interface: BaseInterface, stats=""):
