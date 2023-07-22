@@ -3,7 +3,7 @@
 
 # Dockerfile to build image with dependecies required for testing nest on CI.
 
-FROM ubuntu:20.04@sha256:b2339eee806d44d6a8adc0a790f824fb71f03366dd754d400316ae5a7e3ece3e as test
+FROM ubuntu:20.04@sha256:8c38f4ea0b178a98e4f9f831b29b7966d6654414c1dc008591c6ec77de3bf2c9 as test
 
 # Use bash by default instead of sh
 SHELL ["/bin/bash", "-c"]
@@ -84,7 +84,7 @@ RUN apt install -y tcpdump
 RUN DEBIAN_FRONTEND=noninteractive apt install -y tshark
 
 # Install bird
-RUN git clone --depth 1 --branch 2.0.10 https://gitlab.nic.cz/labs/bird.git
+RUN git clone --depth 1 --branch v2.0.10 https://gitlab.nic.cz/labs/bird.git
 WORKDIR /bird
 RUN apt install -y autoconf flex bison
 RUN autoreconf
