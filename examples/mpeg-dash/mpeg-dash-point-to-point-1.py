@@ -15,8 +15,7 @@ from nest.mpeg_dash_encoder import MpegDashEncoder
 from nest import config
 
 # IMPORTANT: It is strongly recommended that you run MPEG-DASH examples on systems
-# with Ubuntu version `22.04 or above`. MPEG-DASH examples are incompatible
-# with the NeST Docker image because the image uses Ubuntu Version 20.04.
+# with Ubuntu version `22.04 or above`.
 
 #################################
 #       Network Topology        #
@@ -29,8 +28,13 @@ from nest import config
 
 # The following lines enable NeST to accept video input from a file `video.mp4`.
 # This video file has to be placed in the same directory as this program.
+# If the video file specified in `VIDEO_PATH` is not present, the API will
+# automatically resort to downloading a sample 15-second video from the
+# Internet as a fallback mechanism.
+
 # The encoded chunks will be generated and dumped in a folder named
 # `mpeg-dash-encoded-chunks` in the same directory as this program.
+
 CURRENT_DIR = Path(os.path.abspath(__file__)).parent
 VIDEO_PATH = CURRENT_DIR / "video.mp4"
 OUTPUT_PATH = CURRENT_DIR / "mpeg-dash-encoded-chunks"
@@ -82,16 +86,15 @@ exp = Experiment("mpeg-dash-point-to-point-1")
 # In case you use GPAC MP4 Client for playback then NeST will
 # generate plots of the video streaming statistics and also
 # generate a JSON file of the same.
-# To set the media player as GPAC MP4 Client in this example,
-# set the `player` argument of `MpegDashApplication` to 'gpac'.
 
 # In case you use VLC Media Player, then NeST won't generate video
 # streaming statistics. In order to view video statistics, while
 # the video is playing you will have to navigate to `Tools >
 # Media Information > 'Statistics' Tab` (or use keyboard shortcut
 # `CTRL+I`).
-# To set the media player as VLC Media Player in this example,
-# set the `player` argument of `MpegDashApplication` to 'vlc'.
+
+# To set the media player as GPAC MP4 Client or VLC Media Player in this example,
+# set the `player` argument of `MpegDashApplication` to 'gpac' or 'vlc' respectively.
 
 # Create an MPEG-DASH application with a client node `h1` and a server node `h2`
 # using their respective network interfaces (`eth1` and `eth2`). The server is

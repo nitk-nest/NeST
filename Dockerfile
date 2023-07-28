@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2021 NITK Surathkal
+# Copyright (c) 2019-2024 NITK Surathkal
 
 # Dockerfile to build image with dependecies required for testing nest on CI.
 
@@ -37,7 +37,49 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y install \
         frr \
         autoconf \
         flex \
-        bison
+        bison \
+        vlc
+
+# Install prerequisite dependencies for building gpac
+# Reference: https://github.com/gpac/gpac/blob/master/build/docker/ubuntu-deps.Dockerfile
+RUN apt -yqq update
+RUN apt-get install -y --no-install-recommends \
+        fakeroot \
+        dpkg-dev \
+        devscripts \
+        debhelper \
+        ccache
+RUN apt install -y --no-install-recommends \
+        zlib1g-dev \
+        libfreetype6-dev \
+        libjpeg62-dev \
+        libpng-dev \
+        libmad0-dev \
+        libfaad-dev \
+        libogg-dev \
+        libvorbis-dev \
+        libtheora-dev \
+        liba52-0.7.4-dev \
+        libavcodec-dev \
+        libavformat-dev \
+        libavutil-dev \
+        libswscale-dev \
+        libavdevice-dev \
+        libnghttp2-dev \
+        libopenjp2-7-dev \
+        libcaca-dev \
+        libxv-dev \
+        x11proto-video-dev \
+        libgl1-mesa-dev \
+        libglu1-mesa-dev \
+        x11proto-gl-dev \
+        libxvidcore-dev \
+        libssl-dev \
+        libjack-jackd2-dev \
+        libasound2-dev \
+        libpulse-dev \
+        libsdl2-dev \
+        dvb-apps mesa-utils
 
 # Setup python virtual env
 RUN python -m venv venv && source venv/bin/activate
@@ -59,6 +101,13 @@ RUN chown frr /run/frr
 RUN git clone --depth 1 --branch v2.0.10 https://gitlab.nic.cz/labs/bird.git
 WORKDIR /bird
 RUN autoreconf
+RUN ./configure
+RUN make
+RUN make install
+
+WORKDIR /home
+RUN git clone https://github.com/gpac/gpac.git
+WORKDIR /home/gpac
 RUN ./configure
 RUN make
 RUN make install

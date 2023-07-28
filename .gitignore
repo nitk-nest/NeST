@@ -24,3 +24,4 @@ build/
 *.mp4
 *.m4s
 *.mpd
+*mpeg-dash-encoded-chunks*

@@ -21,4 +21,4 @@ repos:
     -   id: pylint
         name: Pylint code linter
         files: ^nest/
-        additional_dependencies: [matplotlib, numpy, tqdm, aiocoap, requests]
+        additional_dependencies: [matplotlib, numpy, tqdm, aiocoap]

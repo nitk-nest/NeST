@@ -1,16 +1,21 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2020 NITK Surathkal
+# Copyright (c) 2019-2024 NITK Surathkal
 
 """Test APIs from topology sub-package"""
 
+import os
+from pathlib import Path
 import unittest
+import sys
 from nest.topology import Node, Router, connect
 from nest.topology.network import Network
 from nest.topology.address_helper import AddressHelper
-from nest.experiment import Experiment, Flow, CoapApplication
-from nest.clean_up import delete_namespaces
+from nest.experiment import Experiment, Flow, CoapApplication, MpegDashApplication
+from nest.clean_up import delete_namespaces, delete_encoded_mpeg_dash_chunks
 from nest.topology_map import TopologyMap
+from nest.mpeg_dash_encoder import MpegDashEncoder
 from nest import config
+
 
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
@@ -186,6 +191,128 @@ class TestExperiment(unittest.TestCase):
         # Run the experiment
         exp.run()
 
+    # Test `MpegDashApplication` API by streaming MPEG-DASH video
+    # pylint: disable=too-many-locals,logging-not-lazy
+    def test_experiment_mpeg_dash_vlc(self):
+        current_dir = Path(os.path.abspath(__file__)).parent
+        video_path = current_dir / "video.mp4"
+        output_path = current_dir / "test-mpeg-dash-encoded-chunks-vlc"
+
+        mpeg_dash_encoder = MpegDashEncoder()
+        encoder_response = mpeg_dash_encoder.encode_video(
+            video_path, output_path, overwrite=False
+        )
+        if encoder_response != 0:
+            sys.exit(0)
+
+        config.set_value("mpeg_dash_delete_encoded_chunks_on_termination", True)
+
+        h1 = Node("h1")
+        h2 = Node("h2")
+        r = Router("r")
+
+        n1 = Network("192.168.1.0/24")
+        n2 = Network("192.168.2.0/24")
+
+        (eth1, etr1) = connect(h1, r, network=n1)
+        (etr2, eth2) = connect(r, h2, network=n2)
+
+        AddressHelper.assign_addresses()
+
+        eth1.set_attributes("10mbit", "10ms")
+        etr1.set_attributes("10mbit", "10ms")
+        etr2.set_attributes("5mbit", "5ms")
+        eth2.set_attributes("5mbit", "5ms")
+
+        eth1.set_packet_corruption("2%", "0.5%")
+        eth2.set_packet_corruption("2%", "0.5%")
+
+        eth1.set_packet_loss("2%")
+        eth2.set_packet_loss("2%")
+
+        h1.add_route("DEFAULT", eth1)
+        h2.add_route("DEFAULT", eth2)
+
+        exp = Experiment("test-experiment-mpeg-dash-vlc")
+
+        # Configure a video stream flow from `h1` to `h2`
+        mpegDashApplication = MpegDashApplication(
+            h1,
+            h2,
+            eth1.get_address(),
+            eth2.get_address(),
+            8000,
+            output_path,
+            40,
+            "vlc",
+        )
+
+        # Add the above application as an MPEG-DASH flow to the current experiment
+        exp.add_mpeg_dash_application(mpegDashApplication)
+
+        # Run the experiment
+        exp.run()
+
+    def test_experiment_mpeg_dash_gpac(self):
+        current_dir = Path(os.path.abspath(__file__)).parent
+        video_path = current_dir / "video.mp4"
+        output_path = current_dir / "test-mpeg-dash-encoded-chunks-gpac"
+
+        mpeg_dash_encoder = MpegDashEncoder()
+        encoder_response = mpeg_dash_encoder.encode_video(
+            video_path, output_path, overwrite=False
+        )
+        if encoder_response != 0:
+            sys.exit(0)
+
+        config.set_value("mpeg_dash_delete_encoded_chunks_on_termination", True)
+
+        h1 = Node("h1")
+        h2 = Node("h2")
+        r = Router("r")
+
+        n1 = Network("192.168.1.0/24")
+        n2 = Network("192.168.2.0/24")
+
+        (eth1, etr1) = connect(h1, r, network=n1)
+        (etr2, eth2) = connect(r, h2, network=n2)
+
+        AddressHelper.assign_addresses()
+
+        eth1.set_attributes("10mbit", "10ms")
+        etr1.set_attributes("10mbit", "10ms")
+        etr2.set_attributes("5mbit", "5ms")
+        eth2.set_attributes("5mbit", "5ms")
+
+        eth1.set_packet_corruption("2%", "0.5%")
+        eth2.set_packet_corruption("2%", "0.5%")
+
+        eth1.set_packet_loss("2%")
+        eth2.set_packet_loss("2%")
+
+        h1.add_route("DEFAULT", eth1)
+        h2.add_route("DEFAULT", eth2)
+
+        exp = Experiment("test-experiment-mpeg-dash-gpac")
+
+        # Configure a video stream flow from `h1` to `h2`
+        mpegDashApplication = MpegDashApplication(
+            h1,
+            h2,
+            eth1.get_address(),
+            eth2.get_address(),
+            8000,
+            output_path,
+            40,
+            "gpac",
+        )
+
+        # Add the above application as an MPEG-DASH flow to the current experiment
+        exp.add_mpeg_dash_application(mpegDashApplication)
+
+        # Run the experiment
+        exp.run()
+
     def test_experiment_ipv6(self):
         # Test IPv6 with Duplicate Address Detection (DAD) disabled
         n0 = Node("n0")
@@ -269,6 +396,7 @@ class TestExperiment(unittest.TestCase):
     def tearDown(self):
         delete_namespaces()
         TopologyMap.delete_all_mapping()
+        delete_encoded_mpeg_dash_chunks()
 
 
 if __name__ == "__main__":

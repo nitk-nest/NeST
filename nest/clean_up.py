@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2020 NITK Surathkal
+# Copyright (c) 2019-2024 NITK Surathkal
 
 """
 This module contains methods to kill any running processes in namespaces
@@ -73,7 +73,10 @@ def delete_encoded_mpeg_dash_chunks():
     """
 
     if config.get_value("mpeg_dash_delete_encoded_chunks_on_termination"):
-        directory_to_delete = MpegDashEncoder.mpeg_dash_encoded_chunks_path
-        if Path(directory_to_delete).exists():
-            shutil.rmtree(directory_to_delete)
-            logger.info("Deleted encoded MPEG-DASH chunks!")
+        dirs_to_delete = MpegDashEncoder.mpeg_dash_encoded_chunks_path_list
+        for directory in dirs_to_delete:
+            if Path(directory).exists():
+                shutil.rmtree(directory)
+                logger.info(
+                    "Deleted encoded MPEG-DASH chunks at path : %s !", directory
+                )

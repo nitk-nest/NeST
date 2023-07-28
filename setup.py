@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2020 NITK Surathkal
+# Copyright (c) 2019-2024 NITK Surathkal
 
 import pathlib
 import sys
@@ -58,7 +58,6 @@ setup(
         "packaging",
         "tqdm",
         "aiocoap",
-        "requests",
     ],
     project_urls={
         "Source": "https://gitlab.com/nitk-nest/nest",

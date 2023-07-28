@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2022 NITK Surathkal
+# Copyright (c) 2019-2024 NITK Surathkal
 
 """MPEG-DASH Encoder"""
 
@@ -7,21 +7,22 @@ from pathlib import Path
 import logging
 import re
 import shutil
-import requests
 
-from nest.engine.exec import exec_exp_commands
+from nest.engine.exec import exec_exp_commands, exec_subprocess_with_live_output
+from nest.engine.util import is_dependency_installed
 
 logger = logging.getLogger(__name__)
 
 
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-arguments
+# pylint: disable=too-few-public-methods
 class MpegDashEncoder:
     """
     Contains the configuration settings and script to encode a video.
     """
 
-    mpeg_dash_encoded_chunks_path = "/temp/mpeg-dash-encoded-chunks/"
+    mpeg_dash_encoded_chunks_path_list = []
 
     def __init__(
         self,
@@ -60,6 +61,8 @@ class MpegDashEncoder:
         video_stream_info: list
             List containing JSON objects that contain video resolution and bitrate.
         """
+        if not is_dependency_installed("gpac"):
+            raise RuntimeError("Encoding Failed! gpac is not installed!")
 
         if not isinstance(gop_size, int):
             raise ValueError("gop_size is supposed to be an integer value.")
@@ -145,22 +148,26 @@ class MpegDashEncoder:
             logger.warning("The path '%s' does not exist.", str(input_video_path))
             logger.warning("Using a sample video from the internet for encoding.")
 
+            if not is_dependency_installed("wget"):
+                raise RuntimeError(
+                    "Error downloading sample video! wget is not installed!"
+                )
+
             input_video_url = (
                 "https://commondatastorage.googleapis.com/"
                 "gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
             )
 
             download_dir = "/tmp/mpeg-dash-sample-video/"
-            Path(download_dir).mkdir(parents=True, exist_ok=True)
-            download_status = self.download_file(input_video_url, download_dir)
-            if download_status != 0:
-                return -1
+            exec_subprocess_with_live_output(
+                f"wget {input_video_url} -P {download_dir} -nc -q --show-progress"
+            )
 
             input_video_path = (
                 download_dir + input_video_url.rsplit("/", maxsplit=1)[-1]
             )
 
-        MpegDashEncoder.mpeg_dash_encoded_chunks_path = output_path
+        MpegDashEncoder.mpeg_dash_encoded_chunks_path_list.append(output_path)
 
         if Path.exists(output_path) and any(
             file.suffix == ".mpd" for file in output_path.iterdir()
@@ -220,37 +227,3 @@ class MpegDashEncoder:
             logger.error("Video encoding failed!")
 
         return status
-
-    def download_file(self, url: str, download_dir: str):
-        """
-        Download a file from the internet.
-
-        Parameters
-        ----------
-        url: str
-            URL of the file to download
-        download_dir: str
-            The local directory where the downloaded file should be stored.
-
-        Returns
-        -------
-        int
-            Return code recieved after the downloading completes. Returns 0 if successful
-            otherwise returns -1
-        """
-        try:
-            response = requests.get(url, stream=True, timeout=10)
-            response.raise_for_status()
-
-            filename = url.split("/")[-1]
-            filepath = download_dir + filename
-            with open(filepath, "wb") as file:
-                for chunk in response.iter_content(chunk_size=8192):
-                    file.write(chunk)
-
-            return 0
-
-        # pylint: disable=broad-except
-        except Exception as excp:
-            print(f"Error downloading file: {str(excp)}")
-            return -1

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2022 NITK Surathkal
+# Copyright (c) 2019-2024 NITK Surathkal
 
 """Script to be run for running experiments on topology"""
 
@@ -93,7 +93,7 @@ def run_experiment(exp):
     # Overall experiment stop time considering all flows
     exp_end_t = float("-inf")
 
-    dependencies = get_dependency_status(tools)
+    dependencies = get_dependency_status(exp, tools)
 
     ss_required = False
     ss_filters = set()
@@ -482,12 +482,14 @@ def setup_parser_workers(exp_runners):
     return parsers
 
 
-def get_dependency_status(tools):
+def get_dependency_status(exp, tools):
     """
     Checks for dependency
 
     Parameters
     ----------
+    exp : Experiment
+        The experiment attributes
     tools: List[str]
         list of tools to check for it's installation
 
@@ -502,14 +504,22 @@ def get_dependency_status(tools):
         if dependency == "coap":
             dependencies[dependency] = is_package_installed("aiocoap")
             continue
-        # Check for the availability of vlc and gpac and
-        # Python package named 'requests' for MPEG-DASH video streaming.
+        # Check for the availability of the media players for MPEG-DASH emulation
         if dependency == "mpeg_dash":
-            dependencies[dependency] = (
-                is_dependency_installed("vlc-wrapper")
-                and is_dependency_installed("gpac")
-                and is_package_installed("requests")
-            )
+            media_players_specified_in_exp = {
+                app.player for app in exp.mpeg_dash_applications
+            }
+            missing_media_players = [
+                media_player
+                for media_player in media_players_specified_in_exp
+                if not is_dependency_installed(media_player)
+            ]
+            if missing_media_players:
+                raise RuntimeError(
+                    "The following media player(s) are specified in ",
+                    f"the experiment but aren't installed: {', '.join(missing_media_players)}",
+                )
+            dependencies[dependency] = True
             continue
         dependencies[dependency] = is_dependency_installed(dependency)
     return dependencies
@@ -855,7 +865,7 @@ def setup_mpeg_dash_runners(dependency, application, ss_schedules, destination_n
     Parameters
     ----------
     dependency : int
-        Whether vlc-wrapper and gpac and requests are installed
+        Whether dependencies required for MPEG-DASH emulation are installed or not.
     application : MpegDashApplication
         The MpegDashApplication object
     destination_nodes:
@@ -871,7 +881,7 @@ def setup_mpeg_dash_runners(dependency, application, ss_schedules, destination_n
     """
     runners = []
 
-    # If vlc-wrapper and gpac and requests are installed
+    # If the required media players are installed
     if dependency:
         # Get flow attributes
         [
@@ -906,12 +916,9 @@ def setup_mpeg_dash_runners(dependency, application, ss_schedules, destination_n
         ss_schedules = _get_start_stop_time_for_ss(
             dst_ns, src_ns, src_addr, 0, duration, ss_schedules
         )
-
-    # If vlc-wrapper or gpac or Python package 'requests' is not installed
     else:
         logger.warning(
-            """'vlc-wrapper' or 'gpac' or Python package 'requests'
-            not found for MPEG-DASH emulation."""
+            """Dependencies required for MPEG-DASH emulation aren't installed. """
         )
 
     # Return the list of runners and ss schedules

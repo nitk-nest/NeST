@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2022 NITK Surathkal
+# Copyright (c) 2019-2024 NITK Surathkal
 
 """User API to setup and run experiments on a given topology"""
 
@@ -232,6 +232,8 @@ class CoapApplication(Application):
 class MpegDashApplication(Application):
     """Defines an MPEG DASH application in the topology"""
 
+    supported_media_players = ["gpac", "vlc"]
+
     # pylint: disable=too-many-arguments
     @input_validator
     def __init__(
@@ -280,10 +282,13 @@ class MpegDashApplication(Application):
 
         super().__init__(source_node, destination_node, destination_address)
 
-        if self.player not in ("vlc", "gpac"):
-            logger.warning("Invalid player '%s'.", player)
-            logger.warning("Taking default player as gpac")
-            self.player = "gpac"
+        if self.player not in self.supported_media_players:
+            raise RuntimeError(
+                f"Invalid media player {self.player}!",
+                "NeST currently supports the following media players:",
+                f"{self.supported_media_players}.",
+                "Please specify one of these.",
+            )
 
         if self.additional_player_options is not None:
             self.additional_player_options = " ".join(self.additional_player_options)

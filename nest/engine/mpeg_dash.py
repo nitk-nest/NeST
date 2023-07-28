@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2020 NITK Surathkal
+# Copyright (c) 2019-2024 NITK Surathkal
 
 """MPEG DASH commands"""
 
@@ -77,10 +77,21 @@ def run_mpeg_dash_client(
     # to work in a network namespace.
 
     # pylint: disable=consider-using-with
-    temp_file = tempfile.TemporaryFile()
-    exec_exp_commands("bash -c 'echo $SUDO_UID' ", stdout=temp_file)
-    temp_file.seek(0)
-    u_id = int(temp_file.read().decode())
+    try:
+        # If sudo has been invoked then the following statements are executed.
+        temp_file = tempfile.TemporaryFile()
+        # $SUDO_UID is the user ID of the user who invoked sudo
+        exec_exp_commands("bash -c 'echo $SUDO_UID' ", stdout=temp_file)
+        temp_file.seek(0)
+        u_id = int(temp_file.read().decode())
+        vlc_binary_prefix = "vlc-wrapper"
+    except ValueError:
+        # If sudo has not been invoked then the following statements are executed.
+        temp_file = tempfile.TemporaryFile()
+        exec_exp_commands("bash -c 'echo $UID' ", stdout=temp_file)
+        temp_file.seek(0)
+        u_id = int(temp_file.read().decode())
+        vlc_binary_prefix = "sed -i 's/geteuid/getppid/' /usr/bin/vlc; vlc"
 
     # Running the media player to stream MPEG-DASH video
     # and setting the quality adaptation logic based on the bandwidth.
@@ -91,7 +102,7 @@ def run_mpeg_dash_client(
         env PULSE_SERVER=/run/user/{u_id}/pulse/native \
             PULSE_COOKIE=/run/user/{u_id}/pulse/cookie \
         bash -c " \
-        vlc-wrapper \
+        {vlc_binary_prefix} \
         http://{destination_ip}:{port}/manifest.mpd \
         --adaptive-logic=rate \
         --loop \
@@ -107,8 +118,8 @@ def run_mpeg_dash_client(
         gpac -i \
         http://{destination_ip}:{port}/manifest.mpd"""
         cmd_string += f""":gpac:algo=grate:start_with=min_bw:debug_as=0,1 \
-        aout \
         vout:buffer=1000:mbuffer=5000:cache=none \
+        aout \
         -logs=all@info:ncl \
         -clean-cache \
         -sloop \

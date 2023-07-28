@@ -4,24 +4,55 @@ This directory contains the following example to understand how videos can be st
 
 
 `IMPORTANT`
-It is strongly recommended that you run these MPEG-DASH examples on systems with Ubuntu version `22.04 or above`. These MPEG-DASH examples are incompatible with the NeST Docker image because the image uses Ubuntu Version 20.04.
-All the examples listed below require `vlc` and `gpac` to be pre-installed in your machine.
-The installation command is as follows:
+It is strongly recommended that you run these MPEG-DASH examples on systems with Ubuntu version `22.04 or above`.
+All the examples listed below require GPAC MP4 Client to be pre-installed in your machine.
+
+GPAC MP4 Client can be installed as follows:
+```shell
+$ sudo apt -yqq update
+$ sudo apt install -y --no-install-recommends \
+fakeroot dpkg-dev devscripts debhelper ccache \
+zlib1g-dev libfreetype6-dev libjpeg62-dev \
+libpng-dev libmad0-dev libfaad-dev libogg-dev \
+libvorbis-dev libtheora-dev liba52-0.7.4-dev \
+libavcodec-dev libavformat-dev libavutil-dev \
+libswscale-dev libavdevice-dev libnghttp2-dev \
+libopenjp2-7-dev libcaca-dev libxv-dev \
+x11proto-video-dev libgl1-mesa-dev libglu1-mesa-dev \
+x11proto-gl-dev libxvidcore-dev libssl-dev \
+libjack-jackd2-dev libasound2-dev libpulse-dev \
+libsdl2-dev dvb-apps mesa-utils
+
+$ git clone https://github.com/gpac/gpac.git
+$ cd gpac/
+$ ./configure
+$ sudo make -j $(nproc)
+$ make -j $(nproc) install
+
+```
+Ensure that the installed `gpac` version is `2.2 or above`.
+
+In case you want to dive into the details of GPAC installation,
+feel free to read their documentation at [https://github.com/gpac/gpac/wiki/GPAC-Build-Guide-for-Linux](https://github.com/gpac/gpac/wiki/GPAC-Build-Guide-for-Linux)
+
+
+The installation command for VLC Media Player is as follows:
 
 ```shell
-sudo apt install vlc gpac
+$ sudo apt install vlc
 ```
 
-Ensure that the installed `gpac` version is `2.0 or above`.
-
 In case you use GPAC MP4 Client for playback then NeST will generate plots of the video streaming statistics and also generate a JSON file of the same.
-To set media player as GPAC MP4 Client in the below examples, set the `player` argument of `MpegDashApplication` to 'gpac'.
 
 In case you use VLC Media Player, then while the video is playing you will have to navigate to `Tools > Media Information > 'Statistics' Tab` (or use keyboard shortcut `CTRL+I`) in order to view the video statistics.
-To set media player as VLC Media Player in the below examples, set the `player` argument of `MpegDashApplication` to 'vlc'.
+
+To set the media player as GPAC MP4 Client or VLC Media Player in the MPEG-DASH examples, set the `player` argument of `MpegDashApplication` to 'gpac' or 'vlc' respectively.
 
 In all the examples below, NeST will accept video input from a file named `video.mp4`.
 This video file has to be placed in the same directory as the example program.
+If the video file specified above is not present, the API will automatically resort to
+downloading a sample 15-second video from the Internet as a fallback mechanism.
+
 The encoded chunks will be generated and dumped in a folder named `mpeg-dash-encoded-chunks` in the same directory as the example program.
 
 ## 1. mpeg-dash-point-to-point-1.py
