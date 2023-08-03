@@ -18,3 +18,4 @@ __pycache__
 nest.egg-info/
 nitk_nest.egg-info/
 dist/
+build/
