@@ -134,9 +134,6 @@ RUN apt install -y tcpdump
 # Install tshark
 RUN DEBIAN_FRONTEND=noninteractive apt install -y tshark
 
-#Install MTR
-RUN apt install -y mtr
-
 # Install bird
 RUN git clone --depth 1 --branch v2.0.10 https://gitlab.nic.cz/labs/bird.git
 WORKDIR /bird
@@ -166,6 +163,9 @@ RUN make install
 # Install OVPN
 RUN apt -y install openvpn
 RUN DEBIAN_FRONTEND=noninteractive apt -y install easy-rsa
+
+#Install MTR
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt -y install mtr
 
 FROM test as dev
 
