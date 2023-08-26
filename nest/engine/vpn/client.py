@@ -6,10 +6,16 @@
 from time import sleep
 from nest.engine.exec import exec_subprocess_in_background
 from nest.topology.address import Address
-from nest.engine.vpn.server import get_tun0_ip_address
+from nest.engine.vpn.server import get_tun_ip_address
 
 
-def run_ovpn_client(ns_name: str, client_name: str, server_ip: str) -> Address:
+def run_ovpn_client(
+    ns_name: str,
+    client_name: str,
+    server_ip: str,
+    proto: str,
+    port: int,
+) -> Address:
     """
     Starts an OpenVPN client in the specified namespace and connects it
     to the specified server.
@@ -22,6 +28,10 @@ def run_ovpn_client(ns_name: str, client_name: str, server_ip: str) -> Address:
         The name to assign to the OpenVPN client.
     server_ip : str
         The IP address of the OpenVPN server to which the client will connect.
+    proto : str
+        The protocol to be used (e.g., "udp" or "tcp").
+    port : int
+        The port number for the OpenVPN client.
 
     Returns
     -------
@@ -31,9 +41,10 @@ def run_ovpn_client(ns_name: str, client_name: str, server_ip: str) -> Address:
     # Construct the OpenVPN command to run in the namespace.
     cmd = f"""ip netns exec {ns_name} openvpn
         --client
-        --proto udp
+        --proto {proto}
         --remote {server_ip}
-        --port 1194 --dev tun
+        --port {port}
+        --dev tun{port}
         --nobind
         --ca pki/ca.crt
         --cert pki/issued/{client_name}.crt
@@ -46,7 +57,7 @@ def run_ovpn_client(ns_name: str, client_name: str, server_ip: str) -> Address:
     # Wait a few seconds for the client to start.
     sleep(5)
 
-    address = get_tun0_ip_address(ns_name)
+    address = get_tun_ip_address(ns_name, port)
 
     # Return the IP address as an Address object.
     return Address(address)

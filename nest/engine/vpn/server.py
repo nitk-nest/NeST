@@ -5,11 +5,35 @@
 
 from time import sleep
 import re
-from nest.engine.exec import exec_subprocess_in_background, exec_subprocess
+from nest.engine.exec import (
+    exec_subprocess_in_background,
+    exec_subprocess,
+)
 from nest.topology.address import Address
 
 
-def get_tun0_ip_address(ns_name):
+def is_port_free(ns_name: str, port: int) -> bool:
+    """
+    Checks if a port is free within a specified network namespace.
+
+    Parameters
+    ----------
+    ns_name : str
+        The name of the network namespace to check within.
+    port : int
+        The port number to check.
+
+    Returns
+    -------
+    bool
+        True if the port is free, False if the port is in use.
+    """
+    cmd = f"ip netns exec {ns_name} netstat -tuln | grep ':{port} '"
+    exit_status = exec_subprocess(cmd, shell=True)
+    return exit_status == 0  # Port is in use if the command finds a match
+
+
+def get_tun_ip_address(ns_name, port):
     """
     Retrieve the IP address assigned to the tun interface in
     the specified network namespace.
@@ -22,7 +46,7 @@ def get_tun0_ip_address(ns_name):
 
     """
     # Command to retrieve the IP address
-    cmd = f"ip netns exec {ns_name} ip addr show tun0"
+    cmd = f"ip netns exec {ns_name} ip addr show tun{port}"
 
     # Execute the command and capture the output
     output = exec_subprocess(cmd, shell=True, output=True)
@@ -32,15 +56,20 @@ def get_tun0_ip_address(ns_name):
 
     # Search the output for the IP address
     match = re.search(pattern, output)
-
     # Extract the IP address from the match object
     address = match.group(1)
 
     return address
 
 
+# pylint: disable=too-many-arguments
 def run_ovpn_server(
-    ns_name: str, server_name: str, network_address: str, subnet_mask: str
+    ns_name: str,
+    server_name: str,
+    network_address: str,
+    subnet_mask: str,
+    proto: str,
+    port: int,
 ):
     """
     Runs the OpenVPN server program in the specified network namespace.
@@ -55,6 +84,10 @@ def run_ovpn_server(
         The IP address of the OpenVPN server.
     subnet_mask : str
         The subnet mask for the virtual network.
+    proto : str
+        The protocol to be used (e.g., "udp" or "tcp").
+    port : int
+        The port number for the OpenVPN server.
 
     Returns
     -------
@@ -62,13 +95,18 @@ def run_ovpn_server(
         The IP address of the server's tun interface.
     """
 
+    if is_port_free(ns_name, port):
+        raise ValueError(
+            f"OpenVPN is already running on port {port}. Try using another port."
+        )
+
     # Run OpenVPN server program in the specified namespace,
     # with the given arguments.
     cmd = f"""ip netns exec {ns_name}
         openvpn
-        --proto udp
-        --port 1194
-        --dev tun
+        --proto {proto}
+        --port {port}
+        --dev tun{port}
         --server {network_address} {subnet_mask}
         --ca pki/ca.crt
         --cert pki/issued/{server_name}.crt
@@ -82,6 +120,6 @@ def run_ovpn_server(
     # Wait for the server to start by giving it a few seconds to initialize.
     sleep(5)
 
-    address = get_tun0_ip_address(ns_name)
+    address = get_tun_ip_address(ns_name, port)
 
     return Address(address)
