@@ -2,6 +2,7 @@
 # Copyright (c) 2019-2020 NITK Surathkal
 
 """Handle plotting results obtained"""
+from pathlib import Path
 import matplotlib
 from matplotlib import style
 
@@ -12,5 +13,7 @@ from matplotlib import style
 matplotlib.use("agg")
 
 # Set plot style
-style.use("seaborn-paper")
+plotter_folder = Path(__file__).resolve().parent
+seaborn_paper_config_path = plotter_folder / "seaborn-v0_8-paper.mplstyle"
+style.use(seaborn_paper_config_path)
 style.use("ggplot")
