@@ -48,6 +48,7 @@ setup(
     package_data={
         "nest.experiment": ["info/README.txt"],
         "nest.experiment.parser": ["iterators/*.sh"],
+        "nest.experiment.plotter": ["seaborn-v0_8-paper.mplstyle"],
         "nest": ["config.json"],
     },
     python_requires=">=3.6, <4",
