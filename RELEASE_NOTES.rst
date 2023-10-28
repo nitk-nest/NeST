@@ -3,6 +3,29 @@ NeST RELEASE NOTES
 
 This file contains NeST release notes (most recent release first).
 
+Release 0.4.3 (Oct 29, 2023)
+============================
+
+If available, the numbers below mark the issue numbers on GitLab (prefixed by '#'),
+or GitLab merge request number (prefixed by '!').
+
+New user-visible features
+-------------------------
+- `!309`_: Added ARP functionality
+- `!310`_: Added new DCTCP examples
+
+Bugs fixed
+----------
+- `!315`_, `!317`_: Load seaborn-paper style from custom file
+
+..
+   Links::
+.. _!309: https://gitlab.com/nitk-nest/nest/-/merge_requests/309
+.. _!310: https://gitlab.com/nitk-nest/nest/-/merge_requests/310
+.. _!315: https://gitlab.com/nitk-nest/nest/-/merge_requests/315
+.. _!317: https://gitlab.com/nitk-nest/nest/-/merge_requests/317
+
+
 Release 0.4.2 (Jun 03, 2023)
 ============================
 
