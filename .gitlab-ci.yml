@@ -59,7 +59,7 @@ build docker image:
     - apk add --no-cache docker-compose
     - docker login -u $CI_DEPLOY_USERNAME -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
     - docker pull $CONTAINER_TEST_DEFAULT_IMAGE || true
-    - docker-compose build $DOCKER_SERVICES
+    - docker-compose build --no-cache $DOCKER_SERVICES
     - docker images
     - docker push $CONTAINER_TEST_CI_IMAGE
     - if [ "$DOCKER_SERVICES" == "test dev" ]; then docker push $CONTAINER_DEV_IMAGE; fi
