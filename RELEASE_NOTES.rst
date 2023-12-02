@@ -3,6 +3,40 @@ NeST RELEASE NOTES
 
 This file contains NeST release notes (most recent release first).
 
+Release 0.4.4 (Jan 5, 2024)
+============================
+
+If available, the numbers below mark the issue numbers on GitLab (prefixed by '#'),
+or GitLab merge request number (prefixed by '!').
+
+New user-visible features
+-------------------------
+- `!305`_: Added MPTCP functionality
+- `!312`_, `!328`_, `#267`_, `#268`_, `#271`: Enabling video streaming (MPEG-DASH) support
+- `!329`_: Added SIP emulation support
+
+Bugs fixed
+----------
+- `!321`_: Dockerfile refactoring with no-cache
+- `!327`_: Deprecating Quagga, MPLS Support and update base image version in Dockerfile
+_ `!333`_, `#273`_: Replace Lock with RLock to avoid read race condition in TopologyMap
+_ `!338`_: Fix NeST pipeline, setting XDG_RUNTIME_DIR environment
+
+..
+   Links::
+.. _!305: https://gitlab.com/nitk-nest/nest/-/merge_requests/305
+.. _!312: https://gitlab.com/nitk-nest/nest/-/merge_requests/312
+.. _!321: https://gitlab.com/nitk-nest/nest/-/merge_requests/321
+.. _!327: https://gitlab.com/nitk-nest/nest/-/merge_requests/327
+.. _!328: https://gitlab.com/nitk-nest/nest/-/merge_requests/328
+.. _!329: https://gitlab.com/nitk-nest/nest/-/merge_requests/329
+.. _!333: https://gitlab.com/nitk-nest/nest/-/merge_requests/333
+.. _!338: https://gitlab.com/nitk-nest/nest/-/merge_requests/338
+.. _#267: https://gitlab.com/nitk-nest/nest/-/issues/267
+.. _#268: https://gitlab.com/nitk-nest/nest/-/issues/268
+.. _#271: https://gitlab.com/nitk-nest/nest/-/issues/271
+.. _#273: https://gitlab.com/nitk-nest/nest/-/issues/273
+
 Release 0.4.3 (Oct 29, 2023)
 ============================
 
