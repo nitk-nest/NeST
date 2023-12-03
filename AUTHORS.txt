@@ -4,6 +4,7 @@ Aditya Sohoni <adityasohoni@gmail.com>
 Ajay Hajare <ajayghajare@gmail.com>
 Akshay Dhayal <akshaydhayalkd99@gmail.com>
 Alan Tony <alantonye@gmail.com>
+Aman Kumar Dubey <amankumardubey.222cs006@nitk.edu.in>
 Ankush Chandra <ankushchandra.181co206@nitk.edu.in>
 Arnav Nair <arnavnair13@gmail.com>
 Ayushi Jain <ajain3765@gmail.com>
@@ -16,6 +17,7 @@ Dhanwin Rao <dhanwinrao18@gmail.com>
 Dheeraj Kumar Srivastava <dksri1996@gmail.com>
 Divya Meena <18divya06@gmail.com>
 Felipe Murakami <fhmurakami@gmail.com>
+Gaurav Bisen <gauravbisen.222cs014@nitk.edu.in>
 Himanshu Kashyap <himanshukashyap1122@gmail.com>
 Ikjot Singh Dhody <ikjotsd@gmail.com>
 Irfan Backer <irfanbacker@hotmail.com>
@@ -35,10 +37,12 @@ Pranab Nandy <nandypranab3@gmail.com>
 Pranav Joshi <pranavjoshixavierite@gmail.com>
 Pranav Kumar <pranavnkps@gmail.com>
 Priyanka G Pai <pgp.191cs236@nitk.edu.in>
+Radhika Suradkar <radhikasuradkar@gmail.com>
 Rahul Kumar <rahulkr.191cs239@nitk.edu.in>
 Rahul Roy <rahul741222@gmail.com>
 Raj Kumar Raj <ravishraj12@gmail.com>
 Rohan B. Rangari <rrangari94@gmail.com>
+Rohan Rathore <rohanrathore.222cs027@nitk.edu.in>
 Rohit M P <rohitmp99@gmail.com>
 Rohit Parihar <rohit.191cs245@nitk.edu.in>
 Sachin Shivaji Doddamani <ronhartforddelta19@gmail.com>
@@ -55,6 +59,7 @@ Shreesha Bharadwaj <bharadwajshreesha@gmail.com>
 Shreyash Waghmare <shreyash210299@gmail.com>
 Suhas K S <suhasks123@gmail.com>
 Swati Singh <swatikdma@gmail.com>
+Teesta Koch <teesta.222cs032@nitk.edu.in>
 Urvesh Rathod <urveshrathod25@gmail.com>
 Vanessa Fernandes <vanessafernandes.201it164@nitk.edu.in>
 Vashung Muilung <vashungm@gmail.com>
