@@ -34,7 +34,7 @@ from nest.routing.routing_helper import RoutingHelper
 
 # Configure the program to use BIRD suite and enable routing logs.
 # Routing logs are written to files in a dedicated `logs` directory.
-config.set_value("routing_suite", "bird")  # `quagga` is default in NeST.
+config.set_value("routing_suite", "bird")  # `frr` is default in NeST.
 config.set_value("routing_logs", True)  # By default, this is False.
 
 # Create two hosts `h1` and `h2`, and two routers `r1` and `r2`.

@@ -8,6 +8,6 @@
     "readme_in_stats_folder": true,
     "show_progress_bar": true,
     "show_tcp_module_parameter_confirmation": true,
-    "routing_suite": "quagga",
+    "routing_suite": "frr",
     "routing_logs": false
 }

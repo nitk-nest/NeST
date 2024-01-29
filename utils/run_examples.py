@@ -11,6 +11,7 @@ import sys
 UTILS_DIR = Path(os.path.abspath(__file__)).parent
 ROOT_DIR = UTILS_DIR.parent
 EXAMPLES_DIR = ROOT_DIR / "examples"
+IGNORED_EXAMPLE_DIRECTORIES = ["/quagga"]
 
 # Create a directory for all example dumps
 # and cd into that directory
@@ -67,11 +68,12 @@ abs_example_paths = []
 rel_example_paths = []
 
 for root, subdirs, files in os.walk(EXAMPLES_DIR):
-    for f in files:
-        path = os.path.join(root, f)
-        if path.endswith(".py"):
-            abs_example_paths.append(path)
-            rel_example_paths.append(os.path.relpath(path, EXAMPLES_DIR))
+    if not root.endswith(tuple(IGNORED_EXAMPLE_DIRECTORIES)):
+        for f in files:
+            path = os.path.join(root, f)
+            if path.endswith(".py"):
+                abs_example_paths.append(path)
+                rel_example_paths.append(os.path.relpath(path, EXAMPLES_DIR))
 
 
 # Main test method. The below command calls this function

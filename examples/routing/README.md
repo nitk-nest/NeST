@@ -13,10 +13,13 @@ Switching (MPLS) to provide the support of dynamic routing:
 - Multi Protocol Label Switching [[overview](https://en.wikipedia.org/wiki/Multiprotocol_Label_Switching)]
 
 `Note`: You can install either `Quagga` or `FRR` routing suite to use dynamic
-routing APIs in NeST, but both cannot be installed at the same time. If you
-want both `Quagga` and `FRR` suites to be installed, use the `docker` image
-of NeST. The steps to install the `docker` image are provided in [Installation
-instructions](https://gitlab.com/nitk-nest/nest/-/blob/master/docs/source/user/install.rst). There are no such constraints on the installation of `BIRD` and it can be simply used in conjunction with `Quagga` or `FRR`.
+routing APIs in NeST, but both cannot be installed at the same time.
+The steps to install the `docker` image are provided in [Installation
+instructions](https://gitlab.com/nitk-nest/nest/-/blob/master/docs/source/user/install.rst).
+There are no such constraints on the installation of `BIRD` and it can be simply used in conjunction with `Quagga` or `FRR`.
+
+**NeST passively supports quagga because it is no longer maintained by the quagga community.**
+**FRR is the default in NeST. The Dockerfile will not generate an image with a quagga installation.**
 
 There are six sub-directories inside this directory, one each for examples
 related to `quagga`, `frr`, `bird`, `mpls`, `static-routing` and `print_routes_to_file()`. The necessary instructions to install
