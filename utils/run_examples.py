@@ -11,7 +11,7 @@ import sys
 UTILS_DIR = Path(os.path.abspath(__file__)).parent
 ROOT_DIR = UTILS_DIR.parent
 EXAMPLES_DIR = ROOT_DIR / "examples"
-IGNORED_EXAMPLE_DIRECTORIES = ["/quagga"]
+IGNORED_EXAMPLE_DIRECTORIES = ["/bird", "/frr", "/mpls", "/quagga"]
 
 # Create a directory for all example dumps
 # and cd into that directory

@@ -1,13 +1,10 @@
 [run]
-command_line = -m pytest -v --junitxml=junit_report.xml -o junit_logging=all
+command_line = -m pytest -v --junitxml=junit_report.xml -o junit_logging=all --ignore-glob=nest/tests/test_routing*.py
 concurrency = multiprocessing
 parallel = True
 source = nest
 branch = True
 data_file = .coverage_dump
-omit = nest/tests/test_routing_quagga.py
-       nest/tests/test_routing_quagga_ipv6.py
-       nest/tests/test_routing_quagga_multi_address.py
 
 [report]
 omit = nest/tests/*
