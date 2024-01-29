@@ -3,15 +3,15 @@
 
 # Dockerfile to build image with dependecies required for testing nest on CI.
 
-FROM ubuntu:20.04@sha256:8c38f4ea0b178a98e4f9f831b29b7966d6654414c1dc008591c6ec77de3bf2c9 as test
+FROM ubuntu:22.04@sha256:bcc511d82482900604524a8e8d64bf4c53b2461868dac55f4d04d660e61983cb as test
 
 # Use bash by default instead of sh
 SHELL ["/bin/bash", "-c"]
 
-RUN apt update
+RUN apt-get update
 
 # Install basic dependencies
-RUN DEBIAN_FRONTEND=noninteractive apt -y install \
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y install \
         build-essential \
         git \
         wget \
@@ -50,45 +50,6 @@ RUN pip install \
         pre-commit \
         pylint \
         pytest
-
-RUN groupadd quagga
-RUN useradd -g quagga -s /bin/false quagga
-
-# Install quagga from source
-RUN wget https://github.com/Quagga/quagga/releases/download/quagga-1.2.4/quagga-1.2.4.tar.gz
-RUN tar -xzf quagga-1.2.4.tar.gz
-WORKDIR /quagga-1.2.4
-RUN ./configure \
-        --prefix=/usr \
-        --sbindir=/usr/bin \
-        --sysconfdir=/etc/quagga \
-        --localstatedir=/run/quagga \
-        --enable-exampledir=/usr/share/doc/quagga/examples \
-        --enable-vtysh \
-        --enable-isis-topology \
-        --enable-netlink \
-        --enable-snmp \
-        --enable-tcp-zebra \
-        --enable-irdp \
-        --enable-pcreposix \
-        --enable-multipath=64 \
-        --enable-user=quagga \
-        --enable-group=quagga \
-        --enable-configfile-mask=0640 \
-        --enable-logfile-mask=0640
-RUN make
-RUN make install
-WORKDIR /
-RUN mkdir -p /run/quagga
-RUN mkdir -p /etc/quagga
-RUN ldconfig
-RUN chown quagga:quagga /run/quagga
-RUN chown quagga:quagga /etc/quagga
-RUN echo $' \n\
-    zebra=yes \n\
-    ospfd=yes \n\
-    ripd=yes \n\
-    isisd=yes ' >> /etc/quagga/daemons
 
 # Configure FRR
 RUN mkdir -p /run/frr

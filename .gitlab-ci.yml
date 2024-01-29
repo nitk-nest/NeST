@@ -12,7 +12,7 @@ workflow:
 default:
   tags:
     - nest
-  image: docker:20.10.3
+  image: docker:25.0.1
 
 stages:
   - validate
@@ -53,7 +53,7 @@ build docker image:
   tags:
     - dind-runner
   services:
-    - docker:20.10.3-dind
+    - docker:25.0.1-dind
   stage: build
   script:
     - apk add --no-cache docker-compose
