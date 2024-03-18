@@ -26,11 +26,12 @@ from nest import config
 #                               #
 #################################
 
-# The following lines enable NeST to accept video input from a file `video.mp4`.
-# This video file has to be placed in the same directory as this program.
-# If the video file specified in `VIDEO_PATH` is not present, the API will
-# automatically resort to downloading a sample 15-second video from the
-# Internet as a fallback mechanism.
+# In the following lines below, NeST will require a video file which will be utilised for streaming.
+# The user is advised to perform any one of the following tasks:
+# i. Either copy a video file in the same directory as these examples and rename it as 'video.mp4', or
+# ii. Set the  'VIDEO_PATH' variable in the example to the path of the video file of the user's choice.
+# If the path specified by 'VIDEO_PATH' is invalid, then the API will automatically resort to downloading
+# a sample 15-second video from the Internet as a fallback mechanism.
 
 # The encoded chunks will be generated and dumped in a folder named
 # `mpeg-dash-encoded-chunks` in the same directory as this program.

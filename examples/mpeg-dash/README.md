@@ -30,7 +30,7 @@ $ sudo make -j $(nproc)
 $ make -j $(nproc) install
 
 ```
-Ensure that the installed `gpac` version is `2.2 or above`.
+Ensure that the installed `gpac` version is `2.2 or above` by simply typing `gpac` in the terminal.
 
 In case you want to dive into the details of GPAC installation,
 feel free to read their documentation at [https://github.com/gpac/gpac/wiki/GPAC-Build-Guide-for-Linux](https://github.com/gpac/gpac/wiki/GPAC-Build-Guide-for-Linux)
@@ -48,10 +48,14 @@ In case you use VLC Media Player, then while the video is playing you will have 
 
 To set the media player as GPAC MP4 Client or VLC Media Player in the MPEG-DASH examples, set the `player` argument of `MpegDashApplication` to 'gpac' or 'vlc' respectively.
 
-In all the examples below, NeST will accept video input from a file named `video.mp4`.
-This video file has to be placed in the same directory as the example program.
-If the video file specified above is not present, the API will automatically resort to
-downloading a sample 15-second video from the Internet as a fallback mechanism.
+
+
+In all the examples below, NeST will require a video file which will be utilised for streaming.
+The user is advised to perform any one of the following tasks:
+i. Either copy a video file in the same directory as these examples and rename it as 'video.mp4', or
+ii. Set the  'VIDEO_PATH' variable in the example to the path of the video file of the user's choice.
+
+If the path specified by 'VIDEO_PATH' is invalid, then the API will automatically resort to downloading a sample 15-second video from the Internet as a fallback mechanism.
 
 The encoded chunks will be generated and dumped in a folder named `mpeg-dash-encoded-chunks` in the same directory as the example program.
 
@@ -61,6 +65,9 @@ This program emulates a point to point network between two hosts `h1` and
 The results of this MPEG-DASH video streaming experiment will be documented in the `examples/mpeg-dash/mpeg-dash-point-to-point-1(date-timestamp)_dump` folder. It contains a `README` which provides details about the sub-directories and files within this directory.
 
 Additionally, Socket statistics (ss) will be gathered and stored in the same folder mentioned above. However, it's important to note that these socket statistics are collected as a formality and might not offer significant or useful information.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: mpeg-dash-point-to-point-1.py -->
 
 ## 2. mpeg-dash-two-lans-connected-via-router.py
 This program emulates two Local Area Network (LANs) connected via a router.
@@ -72,3 +79,6 @@ pairs: (`h1`,`h4`) , (`h6`,`h2`).
 The results of this MPEG-DASH video streaming experiment will be documented in the `examples/mpeg-dash/mpeg-dash-two-lans-connected-via-router(date-timestamp)_dump` folder. It  contains a `README` which provides details about the sub-directories and files within this directory.
 
 Additionally, Socket statistics (ss) will be gathered and stored in the same folder mentioned above. However, it's important to note that these socket statistics are collected as a formality and might not offer significant or useful information.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: mpeg-dash-two-lans-connected-via-router.py -->
