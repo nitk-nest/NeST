@@ -201,3 +201,46 @@ You can skip all the following steps if you are using the docker image of NeST.
 
             $ sudo mkdir /run/quagga
             $ sudo chown quagga /run/quagga
+
+6. Install dependencies for *MPEG-DASH video streaming* (optional)
+
+    These dependencies need to be installed if you want to use the
+    MPEG-DASH video streaming APIs in NeST. For using MPEG-DASH APIs,
+    GPAC MP4 Client is required for video encoding. This API supports
+    video playback via GPAC MP4 Client and VLC Media Player.
+
+    a) *GPAC MP4 Client*
+
+        To install GPAC on Ubuntu run::
+
+            $ sudo apt install -y --no-install-recommends \
+              fakeroot dpkg-dev devscripts debhelper ccache \
+              zlib1g-dev libfreetype6-dev libjpeg62-dev \
+              libpng-dev libmad0-dev libfaad-dev libogg-dev \
+              libvorbis-dev libtheora-dev liba52-0.7.4-dev \
+              libavcodec-dev libavformat-dev libavutil-dev \
+              libswscale-dev libavdevice-dev libnghttp2-dev \
+              libopenjp2-7-dev libcaca-dev libxv-dev \
+              x11proto-video-dev libgl1-mesa-dev libglu1-mesa-dev \
+              x11proto-gl-dev libxvidcore-dev libssl-dev \
+              libjack-jackd2-dev libasound2-dev libpulse-dev \
+              libsdl2-dev dvb-apps mesa-utils
+
+            $ git clone https://github.com/gpac/gpac.git
+            $ cd gpac/
+            $ ./configure
+            $ sudo make -j $(nproc)
+            $ sudo make -j $(nproc) install
+
+        **Note**: Ensure that the installed `gpac` version is `2.2 or above`
+        by simply typing `gpac` in the terminal.
+
+        In case you want to dive into the details of GPAC installation,
+        feel free to read their documentation at https://github.com/gpac/gpac/wiki/GPAC-Build-Guide-for-Linux
+
+
+    b) VLC Media Player
+
+        To install VLC on Ubuntu run::
+
+            $ sudo apt install vlc

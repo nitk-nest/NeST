@@ -49,6 +49,9 @@ Now, let's take a look at all the parameters that can be configured
 | **delete_namespaces_on_termination (true)** - When set to true, deletes all namespaces that were created by NeST, on termination
 | ``true, false``
 
+| **mpeg_dash_delete_encoded_chunks_on_termination (false)** - When set to true, deletes all encoded MPEG-DASH chunks that were created by NeST, on termination
+| ``true, false``
+
 | **disable_dad (true)** - When set to true, Duplicate Address Detection (DAD) in ipv6 is disabled
 | ``true, false``
 
