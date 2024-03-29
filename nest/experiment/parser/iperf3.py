@@ -133,7 +133,7 @@ class Iperf3Runner(Runner):
 
         self.options = client_options
 
-    def run(self, protocol=None):
+    def run(self):
         """
         calls engine method to run iperf client
         """
@@ -147,7 +147,7 @@ class Iperf3Runner(Runner):
         iperf3_options["n_flows"] = f"-P {self.n_flows}"
 
         # Set target bitrate
-        if protocol == "--udp":
+        if "protocol" in iperf3_options and iperf3_options["protocol"] == "--udp":
             iperf3_options["bitrate"] = (
                 f"-b {self.bandwidth}" if self.bandwidth else "-b 1mbit"
             )

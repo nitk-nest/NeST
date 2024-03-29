@@ -595,7 +595,7 @@ class BaseInterface:
 
     @input_validator
     def set_attributes(
-        self, bandwidth: Bandwidth, delay: Delay, qdisc: str|None = None, **kwargs
+        self, bandwidth: Bandwidth, delay: Delay, qdisc: str | None = None, **kwargs
     ):
         """
         Add attributes bandwidth, delay and qdisc to interface
@@ -712,7 +712,7 @@ class BaseInterface:
             raise ValueError(
                 "start_time is required and should be greater than or equal to 0"
             )
- 
+
         elif start_time >= 0.0 and end_time > 0.0:
             if start_time < end_time:
                 enable_process = multiprocessing.Process(

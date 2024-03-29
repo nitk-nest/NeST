@@ -34,6 +34,7 @@ def _plot_ping_flow(flow, node, dest):
     """
     # "meta" item will always be present, hence `<= 1`
     if len(flow) <= 1:
+        # pylint: disable=implicit-str-concat
         logger.warning(
             "Flow from %s to destination %s " "doesn't have any parsed ping result.",
             node,

@@ -27,6 +27,7 @@ def _extract_from_tc_stats(stats, node, interface):
         Interface from which results were obtained from
     """
     if len(stats) == 0:
+        # pylint: disable=implicit-str-concat
         logger.warning(
             "Qdisc at %s of %s doesn't have any " "parsed tc result.", interface, node
         )

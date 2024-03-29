@@ -103,6 +103,7 @@ def _extract_from_ss_flow(flow, node, dest_ip, dest_port):
     """
     # "meta" item will always be present, hence `<= 1`
     if len(flow) <= 1:
+        # pylint: disable=implicit-str-concat
         logger.warning(
             "Flow from %s to destination %s:%s " "doesn't have any parsed ss result.",
             node,
