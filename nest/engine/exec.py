@@ -85,7 +85,9 @@ def exec_subprocess_with_live_output(cmd):
         return process.poll()
 
 
-def exec_exp_commands(cmd, stdout=PIPE, stderr=PIPE, timeout=None):
+def exec_exp_commands(
+    cmd, stdout=PIPE, stderr=PIPE, timeout=None, signal_on_timeout=None
+):
     """
     executes experiment related commands like ss, tc and netperf
 
@@ -99,7 +101,9 @@ def exec_exp_commands(cmd, stdout=PIPE, stderr=PIPE, timeout=None):
         temp file(usually) to store errors, if any (Default value = subprocess.PIPE)
     timeout :
          (Default value = None)
-
+    signal_on_timeout : Signal
+        signal to send to process on timeout. (Default = None)
+        SIGKILL is sent by default if signal_on_timeout is not passed
     Returns
     -------
     int
@@ -110,7 +114,14 @@ def exec_exp_commands(cmd, stdout=PIPE, stderr=PIPE, timeout=None):
         try:
             proc.communicate(timeout=timeout)
         except subprocess.TimeoutExpired:
-            proc.kill()
+            if signal_on_timeout is not None:
+                proc.send_signal(signal_on_timeout)
+
+                # wait for the process to terminate so that,
+                # proc.returncode is set to return value
+                proc.wait()
+            else:
+                proc.kill()
             stderr.write(b"Connection timeout")
         return proc.returncode
 
