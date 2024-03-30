@@ -7,15 +7,22 @@ import os
 from pathlib import Path
 import unittest
 import sys
+import time
+import json
 from nest.topology import Node, Router, connect
 from nest.topology.network import Network
 from nest.topology.address_helper import AddressHelper
-from nest.experiment import Experiment, Flow, CoapApplication, MpegDashApplication
+from nest.experiment import (
+    Experiment,
+    Flow,
+    CoapApplication,
+    MpegDashApplication,
+    SipApplication,
+)
 from nest.clean_up import delete_namespaces, delete_encoded_mpeg_dash_chunks
 from nest.topology_map import TopologyMap
 from nest.mpeg_dash_encoder import MpegDashEncoder
 from nest import config
-
 
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
@@ -314,6 +321,112 @@ class TestExperiment(unittest.TestCase):
 
         # Run the experiment
         exp.run()
+
+    def test_experiment_sip(self):
+        n0 = Node("n0")
+        n1 = Node("n1")
+        r = Node("r")
+        r.enable_ip_forwarding()
+
+        (n0_r, r_n0) = connect(n0, r)
+        (r_n1, n1_r) = connect(r, n1)
+
+        n0_r.set_address("10.1.1.1/24")
+        r_n0.set_address("10.1.1.2/24")
+        r_n1.set_address("10.1.2.2/24")
+        n1_r.set_address("10.1.2.1/24")
+
+        n0.add_route("DEFAULT", n0_r)
+        n1.add_route("DEFAULT", n1_r)
+
+        n0_r.set_attributes("100mbit", "5ms")
+        r_n0.set_attributes("100mbit", "5ms")
+
+        r_n1.set_attributes("10mbit", "40ms")
+        n1_r.set_attributes("10mbit", "40ms")
+
+        exp_name = "test_experiment_sip_point_to_point_1"
+        exp = Experiment(exp_name)
+        duration = 60
+        # Configure a sip Application from `n0` to `n1`
+        sipApplication = SipApplication(
+            n0,
+            n1,
+            n0_r.get_address(),
+            n1_r.get_address(),
+            5050,
+            duration,
+            "basic",
+        )
+
+        # Add the above application as an SIP flow to the current experiment
+        exp.add_sip_application(sipApplication)
+        exp_start_time = time.localtime()
+        # Run the experiment
+        exp.run()
+
+        current_dir = os.getcwd()
+        timestamp = time.strftime("%d-%m-%Y-%H:%M:%S", exp_start_time)
+        dump_folder = f"{exp_name}({timestamp})_dump"
+        with open(os.path.join(current_dir, dump_folder, "sip.json")) as dump_file:
+            stats = json.load(dump_file)
+            self.assertNotEqual(stats["n0"][0]["SuccessfulCall(C)"], "0")
+
+            dump_file.close()
+
+    def test_experiment_sip_packet_loss(self):
+        n0 = Node("n0")
+        n1 = Node("n1")
+        r = Node("r")
+        r.enable_ip_forwarding()
+
+        (n0_r, r_n0) = connect(n0, r)
+        (r_n1, n1_r) = connect(r, n1)
+
+        n0_r.set_address("10.1.1.1/24")
+        r_n0.set_address("10.1.1.2/24")
+        r_n1.set_address("10.1.2.2/24")
+        n1_r.set_address("10.1.2.1/24")
+
+        n0.add_route("DEFAULT", n0_r)
+        n1.add_route("DEFAULT", n1_r)
+
+        n0_r.set_attributes("100mbit", "5ms")
+        r_n0.set_attributes("100mbit", "5ms")
+
+        r_n1.set_attributes("10mbit", "40ms")
+        n1_r.set_attributes("10mbit", "40ms")
+
+        exp_name = "test_experiment_sip_point_to_point_1"
+        exp = Experiment(exp_name)
+        duration = 60
+        # Configure a sip Application from `n0` to `n1`
+        sipApplication = SipApplication(
+            n0,
+            n1,
+            n0_r.get_address(),
+            n1_r.get_address(),
+            5050,
+            duration,
+            "basic",
+        )
+
+        # Add the above application as an SIP flow to the current experiment
+        exp.add_sip_application(sipApplication)
+        # Run the experiment again with 50% packet loss
+        n0_r.set_packet_loss("50%")
+        exp_start_time = time.localtime()
+
+        exp.run()
+
+        current_dir = os.getcwd()
+        timestamp = time.strftime("%d-%m-%Y-%H:%M:%S", exp_start_time)
+        dump_folder = f"{exp_name}({timestamp})_dump"
+        with open(os.path.join(current_dir, dump_folder, "sip.json")) as dump_file:
+            stats = json.load(dump_file)
+            self.assertNotEqual(stats["n0"][0]["FailedCall(C)"], "0")
+
+            dump_file.close()
 
     def test_experiment_ipv6(self):
         # Test IPv6 with Duplicate Address Detection (DAD) disabled

@@ -85,6 +85,22 @@ RUN apt install -y --no-install-recommends \
 # Set XDG_RUNTIME_DIR to /tmp to avoid permission issues
 ENV XDG_RUNTIME_DIR=/tmp
 
+# Install prerequisite dependencies for building SIPp
+RUN apt install -y --no-install-recommends \
+        pkg-config \
+        g++ \
+        gcc \
+        dh-autoreconf \
+        ncurses-dev \
+        build-essential \
+        libssl-dev \
+        libpcap-dev \
+        libncurses5-dev \
+        libsctp-dev \
+        lksctp-tools \
+        libgsl-dev \
+        cmake
+
 # Setup python virtual env
 RUN python -m venv venv && source venv/bin/activate
 
@@ -117,6 +133,19 @@ WORKDIR /home/gpac
 RUN ./configure
 RUN make
 RUN make install
+
+
+# Install SIPp
+WORKDIR /home
+RUN git clone https://github.com/SIPp/sipp.git
+WORKDIR /home/sipp
+
+# Run cmake to configure the build with necessary options
+RUN cmake . -DUSE_SSL=1 -DUSE_SCTP=1 -DUSE_PCAP=1 -DUSE_GSL=1
+
+RUN cmake . -DUSE_SSL=1 -DUSE_SCTP=1 -DUSE_PCAP=1 -DUSE_GSL=1 && \
+    make all
+RUN cp sipp /usr/local/bin
 
 FROM test as dev
 
