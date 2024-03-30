@@ -30,6 +30,7 @@ from .results import (
     PingResults,
     CoAPResults,
     MpegDashResults,
+    SipResults,
 )
 
 # Import parsers
@@ -49,6 +50,7 @@ from .plotter.tc import plot_tc
 from .plotter.ping import plot_ping
 from .plotter.mpeg_dash import plot_mpeg_dash
 from ..engine.util import is_dependency_installed, is_package_installed
+from .parser.sip import SipRunner
 
 logger = logging.getLogger(__name__)
 if not any(isinstance(filter, DepedencyCheckFilter) for filter in logger.filters):
@@ -73,10 +75,28 @@ def run_experiment(exp):
 
     tcp_modules_helper(exp)
     additional_tools = ["mptcpize"]
-    tools = ["netperf", "ss", "tc", "iperf3", "ping", "coap", "server", "mpeg_dash"]
+    tools = [
+        "netperf",
+        "ss",
+        "tc",
+        "iperf3",
+        "ping",
+        "coap",
+        "server",
+        "mpeg_dash",
+        "sip",
+    ]
     Runners = namedtuple("runners", tools)
     exp_runners = Runners(
-        netperf=[], ss=[], tc=[], iperf3=[], ping=[], coap=[], server=[], mpeg_dash=[]
+        netperf=[],
+        ss=[],
+        tc=[],
+        iperf3=[],
+        ping=[],
+        coap=[],
+        server=[],
+        mpeg_dash=[],
+        sip=[],
     )  # Runner objects
 
     # Keep track of all destination nodes [to ensure netperf, iperf3 and
@@ -86,6 +106,7 @@ def run_experiment(exp):
         "iperf3": set(),
         "coap": set(),
         "mpeg_dash": set(),
+        "sip": set(),
     }
 
     # Contains start time and end time to run respective command
@@ -258,6 +279,31 @@ def run_experiment(exp):
                 # do not contain any internal TCP information.
                 ss_filters.add("exclude fin-wait-2 exclude time-wait exclude syn-recv")
 
+    for sip_application in exp.sip_applications:
+        [
+            src_ns,
+            dst_ns,
+            _,
+            dst_addr,
+            port,
+            duration,
+            _,
+            _,
+            _,
+            _,
+        ] = sip_application._get_props()  # pylint: disable=protected-access
+
+        exp_end_t = max(exp_end_t, duration)
+
+        # Setup runners for emulating Sip traffic
+        sip_runners = setup_sip_runners(
+            dependencies["sip"],
+            sip_application,
+            destination_nodes["sip"],
+        )
+        exp_runners.sip.extend(sip_runners)
+        destination_nodes["sip"].add((dst_ns, dst_addr, port))
+
     if ss_required:
         ss_filter = " and ".join(ss_filters)
         ss_runners = setup_ss_runners(dependencies["ss"], ss_schedules, ss_filter)
@@ -428,6 +474,7 @@ def dump_json_outputs():
     CoAPResults.output_to_file()
     Iperf3ServerResults.output_to_file()
     MpegDashResults.output_to_file()
+    SipResults.output_to_file()
 
 
 def setup_flow_workers(exp_runners, exp_stop_time):
@@ -501,6 +548,9 @@ def setup_parser_workers(exp_runners):
     for server_runner in exp_runners.server:
         parsers.append(Process(target=server_runner.parse))
 
+    for sip_runner in exp_runners.sip:
+        parsers.append(Process(target=sip_runner.parse))
+
     return parsers
 
 
@@ -542,6 +592,10 @@ def get_dependency_status(exp, tools):
                     f"the experiment but aren't installed: {', '.join(missing_media_players)}",
                 )
             dependencies[dependency] = True
+            continue
+        # Check for the availability of sipp for SIP emulation
+        if dependency == "sip":
+            dependencies[dependency] = is_dependency_installed("sipp")
             continue
         dependencies[dependency] = is_dependency_installed(dependency)
     return dependencies
@@ -999,6 +1053,65 @@ def setup_mpeg_dash_runners(dependency, application, ss_schedules, destination_n
     return runners, ss_schedules
 
 
+def setup_sip_runners(dependency, application, destination_nodes):
+    """
+    Setup SipRunner objects for generating Sip traffic
+
+    Parameters
+    ----------
+    dependency : int
+        Whether dependencies required for SIP emulation are installed or not.
+    application : SipApplication
+        The SipApplication object
+    destination_nodes:
+        Server nodes so far already running SIP server
+
+    Returns
+    -------
+    runners : List[SipRunner]
+        List of SipRunner objects for the current flow object
+    """
+    runners = []
+    if dependency:
+        # Get flow attributes
+        [
+            src_ns,
+            dst_ns,
+            _,
+            dst_addr,
+            port,
+            duration,
+            scenario,
+            server_xml_file,
+            client_xml_file,
+            callrate,
+        ] = application._get_props()  # pylint: disable=protected-access
+
+        # Create the SipRunner object
+        sip_runner = SipRunner(
+            src_ns,
+            dst_addr,
+            dst_ns,
+            port,
+            duration,
+            scenario,
+            server_xml_file,
+            client_xml_file,
+            callrate=callrate,
+        )
+
+        # Run SIP server if not already run before on given dst_ns, dst_addr and port.
+        if (dst_ns, dst_addr, port) not in destination_nodes:
+            sip_runner.run_server(dst_ns, port, scenario, server_xml_file)
+
+        runners.append(sip_runner)
+    else:
+        logger.warning("""Dependencies required for SIP emulation aren't installed. """)
+
+    # Return the list of runners
+    return runners
+
+
 def progress_bar(stop_time, precision=1):
     """
     Show a progress bar from from 0 `units` to `stop_time`
@@ -1039,6 +1152,7 @@ def cleanup():
     Iperf3Results.remove_all_results()
     Iperf3ServerResults.remove_all_results()
     MpegDashResults.remove_all_results()
+    SipResults.remove_all_results()
 
     # Clean up the configured TCP modules and kill processes
     tcp_modules_clean_up()

@@ -15,4 +15,5 @@ from .experiment import (
     Application,
     CoapApplication,
     MpegDashApplication,
+    SipApplication,
 )

@@ -448,6 +448,93 @@ class MpegDashApplication(Application):
         )
 
 
+class SipApplication(Application):
+    """Defines an SIP application in the topology"""
+
+    # pylint: disable=too-many-arguments
+    @input_validator
+    def __init__(
+        self,
+        source_node: Node,
+        destination_node: Node,
+        source_address: Address,
+        destination_address: Address,
+        port: int,
+        duration: int,
+        scenario,
+        server_xml=None,
+        client_xml=None,
+        callrate=None,
+    ):
+        """
+        Application object representing SIP applications in the topology.
+        Inherited from the `Application` class.
+
+        Parameters
+        ----------
+        source_node : Node
+            Node that behaves as SIP client
+        destination_node : Node
+            Node that behaves as SIP server
+        source_address : Address/str
+            Address of the SIP client
+        destination_address : Address/str
+            Address of the SIP server
+        port : int
+            Port number of the server at which SIP application is running
+        duration:
+            Duration of experiment
+        scenario:
+            The integrated scenario to run.
+            ("basic", "basic_with_audio", "branch" or "xml")
+        server_xml:
+            Custom XML file for running sipp server instance,
+            should be passed only when scenario is "xml"
+        client_xml:
+            Custom XML file for running sipp client instance,
+            should be passed only when scenario is "xml"
+        callrate:
+            Number of calls client will try per second(default is 10)
+
+        """
+        self.source_address = source_address
+        self.port = port
+        self.duration = duration
+        self.scenario = scenario
+        self.server_xml = server_xml
+        self.client_xml = client_xml
+        self.callrate = callrate
+
+        super().__init__(source_node, destination_node, destination_address)
+
+    def _get_props(self):
+        """
+        Get flow properties.
+
+        NOTE: To be used internally
+        """
+        return [
+            self.source_node.id,
+            self.destination_node.id,
+            self.source_address.get_addr(with_subnet=False),
+            self.destination_address.get_addr(with_subnet=False),
+            self.port,
+            self.duration,
+            self.scenario,
+            self.server_xml,
+            self.client_xml,
+            self.callrate,
+        ]
+
+    def __repr__(self):
+        classname = self.__class__.__name__
+        return (
+            f"{classname}({self.source_node!r}, {self.destination_node!r},"
+            f" {self.source_address!r}, {self.destination_address!r}"
+            f"{self.port!r}, {self.duration!r}"
+        )
+
+
 class Experiment:
     """Handles experiment to be run on topology"""
 
@@ -469,6 +556,7 @@ class Experiment:
         self.flows = []
         self.coap_applications = []
         self.mpeg_dash_applications = []
+        self.sip_applications = []
         self.node_stats = []
         self.qdisc_stats = []
         self.tcp_module_params = defaultdict(dict)
@@ -687,6 +775,26 @@ class Experiment:
             raise Exception(
                 """The add_mpeg_dash_application function takes either
                 a MpegDashApplication object or a list of the same only."""
+            )
+
+    @input_validator
+    def add_sip_application(self, sip_applications):
+        """
+        Add an SIP application to the experiment
+
+        Parameters
+        ----------
+        sip_applications : Union[SipApplication,list]
+            The SIP application(s) to be added to experiment
+        """
+        if isinstance(sip_applications, SipApplication):
+            self.sip_applications.append(copy.deepcopy(sip_applications))
+        elif isinstance(sip_applications, list):
+            self.sip_applications.extend(copy.deepcopy(sip_applications))
+        else:
+            raise Exception(
+                """The add_sip_application function takes either
+                a SipApplication object or a list of the same only."""
             )
 
     @input_validator
