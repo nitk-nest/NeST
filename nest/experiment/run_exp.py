@@ -295,7 +295,7 @@ def run_experiment(exp):
 
         exp_end_t = max(exp_end_t, duration)
 
-        # Setup runners for emulating Sip traffic
+        # Setup runners for emulating SIP traffic
         sip_runners = setup_sip_runners(
             dependencies["sip"],
             sip_application,
@@ -1055,7 +1055,7 @@ def setup_mpeg_dash_runners(dependency, application, ss_schedules, destination_n
 
 def setup_sip_runners(dependency, application, destination_nodes):
     """
-    Setup SipRunner objects for generating Sip traffic
+    Setup SipRunner objects for generating SIP traffic
 
     Parameters
     ----------

@@ -142,10 +142,8 @@ WORKDIR /home/sipp
 
 # Run cmake to configure the build with necessary options
 RUN cmake . -DUSE_SSL=1 -DUSE_SCTP=1 -DUSE_PCAP=1 -DUSE_GSL=1
-
-RUN cmake . -DUSE_SSL=1 -DUSE_SCTP=1 -DUSE_PCAP=1 -DUSE_GSL=1 && \
-    make all
-RUN cp sipp /usr/local/bin
+RUN make all
+RUN make install
 
 FROM test as dev
 

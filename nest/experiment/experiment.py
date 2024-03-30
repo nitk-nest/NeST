@@ -449,7 +449,7 @@ class MpegDashApplication(Application):
 
 
 class SipApplication(Application):
-    """Defines an SIP application in the topology"""
+    """Defines a SIP application in the topology"""
 
     # pylint: disable=too-many-arguments
     @input_validator
@@ -494,7 +494,7 @@ class SipApplication(Application):
             Custom XML file for running sipp client instance,
             should be passed only when scenario is "xml"
         callrate:
-            Number of calls client will try per second(default is 10)
+            Number of calls client will try per second (default is 10)
 
         """
         self.source_address = source_address
@@ -530,8 +530,9 @@ class SipApplication(Application):
         classname = self.__class__.__name__
         return (
             f"{classname}({self.source_node!r}, {self.destination_node!r},"
-            f" {self.source_address!r}, {self.destination_address!r}"
-            f"{self.port!r}, {self.duration!r}"
+            f" {self.source_address!r}, {self.destination_address!r},"
+            f" {self.port!r}, {self.duration!r}, {self.scenario!r},"
+            f" {self.server_xml!r}, {self.client_xml!r}, {self.callrate!r}"
         )
 
 
@@ -780,7 +781,7 @@ class Experiment:
     @input_validator
     def add_sip_application(self, sip_applications):
         """
-        Add an SIP application to the experiment
+        Add a SIP application to the experiment
 
         Parameters
         ----------

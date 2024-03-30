@@ -325,8 +325,7 @@ class TestExperiment(unittest.TestCase):
     def test_experiment_sip(self):
         n0 = Node("n0")
         n1 = Node("n1")
-        r = Node("r")
-        r.enable_ip_forwarding()
+        r = Router("r")
 
         (n0_r, r_n0) = connect(n0, r)
         (r_n1, n1_r) = connect(r, n1)
@@ -345,10 +344,10 @@ class TestExperiment(unittest.TestCase):
         r_n1.set_attributes("10mbit", "40ms")
         n1_r.set_attributes("10mbit", "40ms")
 
-        exp_name = "test_experiment_sip_point_to_point_1"
+        exp_name = "test_experiment_sip"
         exp = Experiment(exp_name)
         duration = 60
-        # Configure a sip Application from `n0` to `n1`
+        # Configure a SIP Application from `n0` to `n1`
         sipApplication = SipApplication(
             n0,
             n1,
@@ -359,7 +358,7 @@ class TestExperiment(unittest.TestCase):
             "basic",
         )
 
-        # Add the above application as an SIP flow to the current experiment
+        # Add the above application as a SIP flow to the current experiment
         exp.add_sip_application(sipApplication)
         exp_start_time = time.localtime()
         # Run the experiment
@@ -377,8 +376,7 @@ class TestExperiment(unittest.TestCase):
     def test_experiment_sip_packet_loss(self):
         n0 = Node("n0")
         n1 = Node("n1")
-        r = Node("r")
-        r.enable_ip_forwarding()
+        r = Router("r")
 
         (n0_r, r_n0) = connect(n0, r)
         (r_n1, n1_r) = connect(r, n1)
@@ -397,10 +395,10 @@ class TestExperiment(unittest.TestCase):
         r_n1.set_attributes("10mbit", "40ms")
         n1_r.set_attributes("10mbit", "40ms")
 
-        exp_name = "test_experiment_sip_point_to_point_1"
+        exp_name = "test_experiment_sip_packet_loss"
         exp = Experiment(exp_name)
         duration = 60
-        # Configure a sip Application from `n0` to `n1`
+        # Configure a SIP Application from `n0` to `n1`
         sipApplication = SipApplication(
             n0,
             n1,
@@ -411,7 +409,7 @@ class TestExperiment(unittest.TestCase):
             "basic",
         )
 
-        # Add the above application as an SIP flow to the current experiment
+        # Add the above application as a SIP flow to the current experiment
         exp.add_sip_application(sipApplication)
         # Run the experiment again with 50% packet loss
         n0_r.set_packet_loss("50%")

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2023 NITK Surathkal
+# Copyright (c) 2019-2024 NITK Surathkal
 
 """
 Runs commands to setup SIP experiment and collect data
@@ -127,6 +127,7 @@ class SipRunner(Runner):
 
         for line in lines[1:]:
             values = line.decode().split(";")
+            values.remove("\n")
             data.append(dict(zip(headers, values)))
 
         SipResults.add_result(
