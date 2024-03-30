@@ -375,3 +375,39 @@ class MpegDashResults:
     def output_to_file():
         """Outputs the aggregated MPEG-DASH stats to file"""
         Results.output_to_file(mpeg_dash_results_q, "mpeg_dash")
+
+
+sip_results_q = Manager().Queue()
+sip_results_q.put({})
+
+
+class SipResults:
+    """This class aggregates the SIP stats from the entire experiment environment"""
+
+    @staticmethod
+    def add_result(ns_id, result):
+        """Adds the SIP stats parse from a process to the shared `sip_results`
+
+        Parameters
+        ----------
+        ns_id : string
+            namespace id (internal name)
+        result : dict
+            parsed SIP stats
+        """
+        Results.add_result(sip_results_q, ns_id, result)
+
+    @staticmethod
+    def remove_all_results():
+        """Remove all results obtained from the experiment"""
+        Results.remove_all_results(sip_results_q)
+
+    @staticmethod
+    def get_results():
+        """Get results obtained in the experiment so far"""
+        return Results.get_results(sip_results_q)
+
+    @staticmethod
+    def output_to_file():
+        """Outputs the aggregated SIP stats to file"""
+        Results.output_to_file(sip_results_q, "sip")

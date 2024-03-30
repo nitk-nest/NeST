@@ -31,7 +31,15 @@ class Runner:
     """
 
     # pylint: disable=too-many-arguments
-    def __init__(self, ns_id, start_time, run_time, destination_ip="::1", dst_ns=None):
+    def __init__(
+        self,
+        ns_id,
+        start_time,
+        run_time,
+        destination_ip="::1",
+        dst_ns=None,
+        use_named_out_file=False,
+    ):
         """
         Parameters
         ----------
@@ -44,7 +52,10 @@ class Runner:
             or monitors traffic that is going from `ns_id` to `dst_ns`
         """
         # pylint: disable=consider-using-with
-        self.out = tempfile.TemporaryFile()
+        if use_named_out_file:
+            self.out = tempfile.NamedTemporaryFile()
+        else:
+            self.out = tempfile.TemporaryFile()
         self.err = tempfile.TemporaryFile()
 
         self.logger = logging.getLogger(__name__)
