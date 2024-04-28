@@ -66,7 +66,7 @@ class Runner:
         """
         try:
             return_code = engine_func(out=self.out, err=self.err)
-            if return_code != 0:
+            if return_code != 0 and return_code is not None:
                 self.print_error(error_string_prefix)
         except KeyboardInterrupt:
             ns_name = TopologyMap.get_node(self.ns_id).name

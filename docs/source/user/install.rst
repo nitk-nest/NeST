@@ -229,11 +229,11 @@ You can skip all the following steps if you are using the docker image of NeST.
             $ git clone https://github.com/gpac/gpac.git
             $ cd gpac/
             $ ./configure
-            $ sudo make -j $(nproc)
-            $ sudo make -j $(nproc) install
+            $ sudo make
+            $ sudo make install
 
         **Note**: Ensure that the installed `gpac` version is `2.2 or above`
-        by simply typing `gpac` in the terminal.
+        by typing `gpac` in the terminal.
 
         In case you want to dive into the details of GPAC installation,
         feel free to read their documentation at https://github.com/gpac/gpac/wiki/GPAC-Build-Guide-for-Linux

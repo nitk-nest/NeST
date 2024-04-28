@@ -366,6 +366,7 @@ class MpegDashApplication(Application):
         encoded_chunks_path: Path,
         duration: int,
         player: str,
+        enable_audio_playback: bool = False,
         additional_player_options=None,
     ):
         """
@@ -390,6 +391,8 @@ class MpegDashApplication(Application):
             Number of seconds for which experiment has to be run
         player: str
             The media player to be used.
+        enable_audio_playback: bool, Default is False (i.e. no audio)
+            Enable/disable audio playback
         additional_player_options : list, optional
             User specified options for the video player
         """
@@ -398,6 +401,7 @@ class MpegDashApplication(Application):
         self.encoded_chunks_path = encoded_chunks_path
         self.duration = duration
         self.player = player
+        self.enable_audio_playback = enable_audio_playback
         self.additional_player_options = additional_player_options
 
         super().__init__(source_node, destination_node, destination_address)
@@ -430,6 +434,7 @@ class MpegDashApplication(Application):
             self.encoded_chunks_path,
             self.duration,
             self.player,
+            self.enable_audio_playback,
             self.additional_player_options,
         ]
 
@@ -439,7 +444,7 @@ class MpegDashApplication(Application):
             f"{classname}({self.source_node!r}, {self.destination_node!r},"
             f" {self.source_address!r}, {self.destination_address!r}, {self.port!r},"
             f" {self.encoded_chunks_path!r}, {self.duration!r},"
-            f" {self.player!r}, {self.additional_player_options!r})"
+            f" {self.player!r}, {self.enable_audio_playback !r} {self.additional_player_options!r})"
         )
 
 

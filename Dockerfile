@@ -41,7 +41,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y install \
         mptcpize \
         vlc
 
-# Install prerequisite dependencies for building gpac
+# Install prerequisite dependencies for building GPAC (Media Player and Encoder for MPEG-DASH streams)
 # Reference: https://github.com/gpac/gpac/blob/master/build/docker/ubuntu-deps.Dockerfile
 RUN apt -yqq update
 RUN apt-get install -y --no-install-recommends \
@@ -107,6 +107,7 @@ RUN ./configure
 RUN make
 RUN make install
 
+# Install GPAC (Media Player and Encoder for MPEG-DASH streams)
 WORKDIR /home
 RUN git clone https://github.com/gpac/gpac.git
 WORKDIR /home/gpac

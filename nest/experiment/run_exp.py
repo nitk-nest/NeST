@@ -236,6 +236,7 @@ def run_experiment(exp):
             duration,
             _,
             _,
+            _,
         ] = mpeg_dash_application._get_props()  # pylint: disable=protected-access
 
         exp_end_t = max(exp_end_t, duration)
@@ -964,6 +965,7 @@ def setup_mpeg_dash_runners(dependency, application, ss_schedules, destination_n
             encoded_chunks_path,
             duration,
             player,
+            enable_audio_playback,
             additional_player_options,
         ] = application._get_props()  # pylint: disable=protected-access
 
@@ -980,6 +982,7 @@ def setup_mpeg_dash_runners(dependency, application, ss_schedules, destination_n
             encoded_chunks_path,
             duration,
             player,
+            enable_audio_playback,
             additional_player_options,
         )
         runners.append(mpeg_dash_runner)

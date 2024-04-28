@@ -245,6 +245,7 @@ class TestExperiment(unittest.TestCase):
             output_path,
             40,
             "vlc",
+            enable_audio_playback=False,
         )
 
         # Add the above application as an MPEG-DASH flow to the current experiment
@@ -305,6 +306,7 @@ class TestExperiment(unittest.TestCase):
             output_path,
             40,
             "gpac",
+            enable_audio_playback=False,
         )
 
         # Add the above application as an MPEG-DASH flow to the current experiment

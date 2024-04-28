@@ -46,6 +46,7 @@ def run_mpeg_dash_client(
     out,
     err,
     player,
+    enable_audio_playback,
     additional_player_options,
 ):
     """
@@ -63,6 +64,8 @@ def run_mpeg_dash_client(
         Number of seconds for which experiment has to be run
     player: str, optional
         The media player to be used.
+    enable_audio_playback: bool
+        Enable/disable audio playback
     additional_player_options : string
         User specified options for the video player
 
@@ -97,6 +100,8 @@ def run_mpeg_dash_client(
     # and setting the quality adaptation logic based on the bandwidth.
 
     if player == "vlc":
+        audio_playback_flag_str = "--no-audio" if not enable_audio_playback else ""
+
         cmd_string = f"""ip netns exec \
         {ns_name} \
         env PULSE_SERVER=/run/user/{u_id}/pulse/native \
@@ -106,10 +111,13 @@ def run_mpeg_dash_client(
         http://{destination_ip}:{port}/manifest.mpd \
         --adaptive-logic=rate \
         --loop \
+        {audio_playback_flag_str} \
         {additional_player_options}"
         """
 
     if player == "gpac":
+        audio_playback_filter_str = "aout" if enable_audio_playback else ""
+
         cmd_string = f"""ip netns exec \
         {ns_name} \
         env PULSE_SERVER=/run/user/{u_id}/pulse/native \
@@ -119,7 +127,7 @@ def run_mpeg_dash_client(
         http://{destination_ip}:{port}/manifest.mpd"""
         cmd_string += f""":gpac:algo=grate:start_with=min_bw:debug_as=0,1 \
         vout:buffer=1000:mbuffer=5000:cache=none \
-        aout \
+        {audio_playback_filter_str} \
         -logs=all@info:ncl \
         -clean-cache \
         -sloop \

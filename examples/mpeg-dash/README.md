@@ -26,11 +26,11 @@ libsdl2-dev dvb-apps mesa-utils
 $ git clone https://github.com/gpac/gpac.git
 $ cd gpac/
 $ ./configure
-$ sudo make -j $(nproc)
-$ make -j $(nproc) install
+$ sudo make
+$ sudo make install
 
 ```
-Ensure that the installed `gpac` version is `2.2 or above` by simply typing `gpac` in the terminal.
+Ensure that the installed `gpac` version is `2.2 or above` by typing `gpac` in the terminal.
 
 In case you want to dive into the details of GPAC installation,
 feel free to read their documentation at [https://github.com/gpac/gpac/wiki/GPAC-Build-Guide-for-Linux](https://github.com/gpac/gpac/wiki/GPAC-Build-Guide-for-Linux)
@@ -53,9 +53,9 @@ To set the media player as GPAC MP4 Client or VLC Media Player in the MPEG-DASH 
 In all the examples below, NeST will require a video file which will be utilised for streaming.
 The user is advised to perform any one of the following tasks:
 i. Either copy a video file in the same directory as these examples and rename it as 'video.mp4', or
-ii. Set the  'VIDEO_PATH' variable in the example to the path of the video file of the user's choice.
+ii. Set the 'VIDEO_PATH' variable in the example to the path of the video file of the user's choice.
 
-If the path specified by 'VIDEO_PATH' is invalid, then the API will automatically resort to downloading a sample 15-second video from the Internet as a fallback mechanism.
+If the path specified by 'VIDEO_PATH' is invalid, then the API will automatically resort to downloading a sample 15-second video from the Internet as a fallback mechanism. The sample video will be downloaded from https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4 .
 
 The encoded chunks will be generated and dumped in a folder named `mpeg-dash-encoded-chunks` in the same directory as the example program.
 
@@ -73,9 +73,8 @@ Additionally, Socket statistics (ss) will be gathered and stored in the same fol
 This program emulates two Local Area Network (LANs) connected via a router.
 LAN-1 consists three hosts `h1` to `h3` connected to switch `s1`, and
 LAN-2 consists three hosts `h4` to `h6` connected to switch `s2`. Switches
-`s1` and `s2` are connected to each other via a router `r1`.
-MPEG-DASH applications have been configured between the following client,server
-pairs: (`h1`,`h4`) , (`h6`,`h2`).
+`s1` and `s2` are connected to each other via a router `r1`. Here, `h4`
+acts as the MPEG-DASH streaming server and `h1` acts as the MPEG-DASH client.
 The results of this MPEG-DASH video streaming experiment will be documented in the `examples/mpeg-dash/mpeg-dash-two-lans-connected-via-router(date-timestamp)_dump` folder. It  contains a `README` which provides details about the sub-directories and files within this directory.
 
 Additionally, Socket statistics (ss) will be gathered and stored in the same folder mentioned above. However, it's important to note that these socket statistics are collected as a formality and might not offer significant or useful information.

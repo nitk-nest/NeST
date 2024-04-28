@@ -29,9 +29,10 @@ from nest import config
 # In the following lines below, NeST will require a video file which will be utilised for streaming.
 # The user is advised to perform any one of the following tasks:
 # i. Either copy a video file in the same directory as these examples and rename it as 'video.mp4', or
-# ii. Set the  'VIDEO_PATH' variable in the example to the path of the video file of the user's choice.
-# If the path specified by 'VIDEO_PATH' is invalid, then the API will automatically resort to downloading
-# a sample 15-second video from the Internet as a fallback mechanism.
+# ii. Set the 'VIDEO_PATH' variable in the example to the path of the video file of the user's choice.
+# If the path specified by 'VIDEO_PATH' is invalid, then the API will automatically resort to
+# downloading a sample 15-second video from the Internet as a fallback mechanism. The sample video
+# will be downloaded from https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4 .
 
 # The encoded chunks will be generated and dumped in a folder named
 # `mpeg-dash-encoded-chunks` in the same directory as this program.
@@ -102,7 +103,9 @@ exp = Experiment("mpeg-dash-point-to-point-1")
 # listening on port 8000. The path specified by `OUTPUT_PATH` contains the encoded
 # video chunks. The experiment duration is set to 100 seconds (It is recommended
 # to set the experiment duration less or equal to the video duration).
-# The media player to be used is set to 'gpac'.
+# The media player to be used is set to 'gpac'. The audio playback, which is disabled
+# by default, can be enabled by setting `enable_audio_playback` to `True`.
+
 app = MpegDashApplication(
     h1,
     h2,
@@ -112,6 +115,7 @@ app = MpegDashApplication(
     OUTPUT_PATH,
     100,
     player="gpac",
+    enable_audio_playback=False,
 )
 
 exp.add_mpeg_dash_application(app)

@@ -5,7 +5,7 @@
 
 import logging
 import matplotlib.pyplot as plt
-from nest.experiment.interrupts import handle_keyboard_interrupt
+from ..interrupts import handle_keyboard_interrupt
 from ..pack import Pack
 from .common import simple_plot
 
@@ -66,7 +66,7 @@ def _get_ylabel(param):
     return ylabel
 
 
-def _extract_from_mpeg_dash(flow, node, server_ip):
+def _extract_from_mpeg_dash(flow, node, server_ip, stats_type):
     """
     Extract information from flow data and convert it to
     conveniently plottable data format
@@ -79,6 +79,8 @@ def _extract_from_mpeg_dash(flow, node, server_ip):
         The MPEG-DASH client node.
     server_ip : string
         IP Address of the MPEG-DASH server
+    stats_type : string
+        The type of stats for which plots are required. Can be 'Audio' or 'Video'.
 
     Returns
     -------
@@ -88,9 +90,10 @@ def _extract_from_mpeg_dash(flow, node, server_ip):
     # "meta" item will always be present, hence `<= 1`
     if len(flow) <= 1:
         logger.warning(
-            "MPEG-DASH application from server %s to  client %s doesn't have any parsed result.",
+            "MPEG-DASH application from server %s to client %s doesn't have any parsed %s result.",
             server_ip,
             node,
+            stats_type.lower(),
         )
         return None
 
@@ -129,11 +132,11 @@ def _plot_mpeg_dash(flow, node, server_ip, stats_type):
     stats_type : string
         The type of stats for which plots are required. Can be 'Audio' or 'Video'.
     """
-    data = _extract_from_mpeg_dash(flow, node, server_ip)
+    data = _extract_from_mpeg_dash(flow, node, server_ip, stats_type)
+    if data is None or data["values"] is None:
+        return
 
     server_node = data["server_node"]
-    if data["values"] is None:
-        return None
     (chunk_numbers, flow_params) = data["values"]
 
     legend_string = f"Server {server_node} to client {node}"
@@ -150,6 +153,7 @@ def _plot_mpeg_dash(flow, node, server_ip, stats_type):
         filename = f"{stats_type.lower()}_{param}_{server_node}_to_{node}.png"
         Pack.dump_plot("mpeg_dash", filename, fig)
         plt.close(fig)
+    return 0
 
 
 # pylint: disable=too-many-locals
@@ -170,49 +174,19 @@ def plot_mpeg_dash(parsed_data):
         for connection in node_data:
             for server_ip in connection:
                 flow_data = connection[server_ip]
-
                 video_stats = flow_data["video"]
-                audio_stats = flow_data["audio"]
-                video_stats_summary = flow_data["video_summary"]
-                audio_stats_summary = flow_data["audio_summary"]
-
-                log_string = "### Video Stream Information ### \n"
-                log_string += "\t Number of bitrate switches: "
-                log_string += f"{video_stats_summary['number_of_bitrate_switches']} \n"
-                log_string += "\t Average Bitrate: "
-                log_string += f"{video_stats_summary['average_bitrate']:.2f} Kbps \n"
-                log_string += "\t Average Throughput: "
-                log_string += f"{video_stats_summary['average_throughput']:.2f} Kbps \n"
-                log_string += "\t Average Buffer: "
-                log_string += f"{video_stats_summary['average_buffer']:.2f} ms \n"
-                log_string += "\t Average RTT: "
-                log_string += f"{video_stats_summary['average_rtt']:.2f} s \n\n"
-
-                log_string += "\t ### Audio Stream Information ### \n"
-                log_string += "\t Number of bitrate switches: "
-                log_string += f"{audio_stats_summary['number_of_bitrate_switches']} \n"
-                log_string += "\t Average Bitrate: "
-                log_string += f"{audio_stats_summary['average_bitrate']:.2f} Kbps \n"
-                log_string += "\t Average Throughput: "
-                log_string += f"{audio_stats_summary['average_throughput']:.2f} Kbps \n"
-                log_string += "\t Average Buffer: "
-                log_string += f"{audio_stats_summary['average_buffer']:.2f} ms \n"
-                log_string += "\t Average RTT: "
-                log_string += f"{audio_stats_summary['average_rtt']:.2f} s \n"
-
-                logger.info(log_string)
                 try:
                     _plot_mpeg_dash(video_stats, node, server_ip, "Video")
-                except TypeError:
+                except Exception as excp:  # pylint: disable=broad-except
                     logger.error(
-                        "Error generating plots for video statistics. "
-                        "No statistics have been received!"
+                        "Error generating plots for video statistics: %s", excp
                     )
 
-                try:
-                    _plot_mpeg_dash(audio_stats, node, server_ip, "Audio")
-                except TypeError:
-                    logger.error(
-                        "Error generating plots for audio statistics. "
-                        "No statistics have been received!"
-                    )
+                if flow_data["audio"][0]["audio_enabled"] is True:
+                    audio_stats = flow_data["audio"]
+                    try:
+                        _plot_mpeg_dash(audio_stats, node, server_ip, "Audio")
+                    except Exception as excp:  # pylint: disable=broad-except
+                        logger.error(
+                            "Error generating plots for audio statistics: %s", excp
+                        )

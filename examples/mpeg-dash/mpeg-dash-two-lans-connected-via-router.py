@@ -21,8 +21,8 @@ from nest import config
 # LAN-1 consists three hosts `h1` to `h3` connected to switch `s1`, and
 # LAN-2 consists three hosts `h4` to `h6` connected to switch `s2`. Switches
 # `s1` and `s2` are connected to each other via a router `r1`.
-# MPEG-DASH applications have been configured between the following client,server
-# pairs: (`h1`,`h4`) , (`h6`,`h2`)
+# An MPEG-DASH application has been configured to stream between `h1` (client)
+# and `h4` (server).
 
 ##################################################################
 #                       Network Topology                         #
@@ -39,9 +39,10 @@ from nest import config
 # In the following lines below, NeST will require a video file which will be utilised for streaming.
 # The user is advised to perform any one of the following tasks:
 # i. Either copy a video file in the same directory as these examples and rename it as 'video.mp4', or
-# ii. Set the  'VIDEO_PATH' variable in the example to the path of the video file of the user's choice.
-# If the path specified by 'VIDEO_PATH' is invalid, then the API will automatically resort to downloading
-# a sample 15-second video from the Internet as a fallback mechanism.
+# ii. Set the 'VIDEO_PATH' variable in the example to the path of the video file of the user's choice.
+# If the path specified by 'VIDEO_PATH' is invalid, then the API will automatically resort to
+# downloading a sample 15-second video from the Internet as a fallback mechanism. The sample video
+# will be downloaded from https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4 .
 
 # The encoded chunks will be generated and dumped in a folder named
 # `mpeg-dash-encoded-chunks` in the same directory as this program.
@@ -143,13 +144,15 @@ exp = Experiment("mpeg-dash-two-lans-connected-via-router")
 # To set the media player as GPAC MP4 Client or VLC Media Player in this example,
 # set the `player` argument of `MpegDashApplication` to 'gpac' or 'vlc' respectively.
 
-# Create an MPEG-DASH application `app1` with a client node `h1` and a server node `h4`
+# Create an MPEG-DASH application `app` with a client node `h1` and a server node `h4`
 # using their respective network interfaces (`eth1` and `eth4`). The server is
 # listening on port 9000. The path specified by `OUTPUT_PATH` contains the encoded
 # video chunks. The experiment duration is set to 100 seconds (It is recommended
 # to set the experiment duration less or equal to the video duration).
-# The media player to be used is set to 'gpac'.
-app1 = MpegDashApplication(
+# The media player to be used is set to 'gpac'. The audio playback, which is disabled
+# by default, can be enabled by setting `enable_audio_playback` to `True`.
+
+app = MpegDashApplication(
     h1,
     h4,
     eth1.get_address(),
@@ -158,25 +161,8 @@ app1 = MpegDashApplication(
     OUTPUT_PATH,
     100,
     player="gpac",
+    enable_audio_playback=False,
 )
 
-# Create an MPEG-DASH application `app2` with a client node `h6` and a server node `h2`
-# using their respective network interfaces (`eth6` and `eth2`). The server is
-# listening on port 8888. The path specified by `OUTPUT_PATH` contains the encoded
-# video chunks. The experiment duration is set to 100 seconds (It is recommended
-# to set the experiment duration less or equal to the video duration).
-# The media player to be used is set to 'gpac'.
-app2 = MpegDashApplication(
-    h6,
-    h2,
-    eth6.get_address(),
-    eth2.get_address(),
-    8888,
-    OUTPUT_PATH,
-    100,
-    player="gpac",
-)
-
-
-exp.add_mpeg_dash_application([app1, app2])
+exp.add_mpeg_dash_application(app)
 exp.run()
