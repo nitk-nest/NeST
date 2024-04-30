@@ -9,7 +9,7 @@ generated internally by NeST.
 
 import json
 import logging
-from threading import Lock
+from threading import RLock
 
 logger = logging.getLogger(__name__)
 
@@ -35,9 +35,7 @@ class TopologyMap:
     routers = []
     networks = []
     orphan_interfaces = 0
-    lock = Lock()
-
-    # Setters
+    lock = RLock()
 
     @staticmethod
     def add_node(ns_id, node):
@@ -144,10 +142,6 @@ class TopologyMap:
         with TopologyMap.lock:
             TopologyMap.networks.append(network)
 
-    # End of Setters
-
-    # Getters
-
     @staticmethod
     def get_topology_map():
         """
@@ -157,12 +151,13 @@ class TopologyMap:
         -------
         Dict
         """
-        topology_map = {
-            "nodes": TopologyMap.nodes,
-            "devices": TopologyMap.devices,
-            "hosts": TopologyMap.hosts,
-            "routers": TopologyMap.routers,
-        }
+        with TopologyMap.lock:
+            topology_map = {
+                "nodes": TopologyMap.nodes,
+                "devices": TopologyMap.devices,
+                "hosts": TopologyMap.hosts,
+                "routers": TopologyMap.routers,
+            }
 
         return topology_map
 
@@ -175,8 +170,10 @@ class TopologyMap:
         ------
         Dict
         """
+        with TopologyMap.lock:
+            nodes = TopologyMap.nodes
 
-        return TopologyMap.nodes
+        return nodes
 
     @staticmethod
     def get_devices(ns_id):
@@ -192,13 +189,18 @@ class TopologyMap:
         -------
         Dict
         """
-        if ns_id is None:
-            return TopologyMap.devices[DEFAULT_NAMESPACE_ID]
+        with TopologyMap.lock:
+            if ns_id is None:
+                return TopologyMap.devices[DEFAULT_NAMESPACE_ID]
 
-        if ns_id not in TopologyMap.devices:
-            raise ValueError(f"Namespace with id {ns_id} doesn't exist in TopologyMap")
+            if ns_id not in TopologyMap.devices:
+                raise ValueError(
+                    f"Namespace with id {ns_id} doesn't exist in TopologyMap"
+                )
 
-        return TopologyMap.devices[ns_id]
+            devices = TopologyMap.devices[ns_id]
+
+        return devices
 
     @staticmethod
     def get_routers():
@@ -209,7 +211,10 @@ class TopologyMap:
         -------
         List
         """
-        return TopologyMap.routers
+        with TopologyMap.lock:
+            routers = TopologyMap.routers
+
+        return routers
 
     @staticmethod
     def get_hosts():
@@ -220,7 +225,10 @@ class TopologyMap:
         -------
         List
         """
-        return TopologyMap.hosts
+        with TopologyMap.lock:
+            hosts = TopologyMap.hosts
+
+        return hosts
 
     @staticmethod
     def get_networks():
@@ -231,8 +239,10 @@ class TopologyMap:
         -------
         List
         """
+        with TopologyMap.lock:
+            networks = TopologyMap.networks
 
-        return TopologyMap.networks
+        return networks
 
     @staticmethod
     def get_node(ns_id):
@@ -248,10 +258,15 @@ class TopologyMap:
         -------
         Node Object
         """
-        if ns_id not in TopologyMap.nodes:
-            raise ValueError(f"Namespace with id {ns_id} doesn't exist in TopologyMap")
+        with TopologyMap.lock:
+            if ns_id not in TopologyMap.nodes:
+                raise ValueError(
+                    f"Namespace with id {ns_id} doesn't exist in TopologyMap"
+                )
 
-        return TopologyMap.nodes[ns_id]
+            node = TopologyMap.nodes[ns_id]
+
+        return node
 
     @staticmethod
     def get_device(ns_id, dev_id):
@@ -269,23 +284,28 @@ class TopologyMap:
         -------
         Device Object
         """
-        if ns_id is None:
-            if dev_id not in TopologyMap.devices[DEFAULT_NAMESPACE_ID]:
+        with TopologyMap.lock:
+            if ns_id is None:
+                if dev_id not in TopologyMap.devices[DEFAULT_NAMESPACE_ID]:
+                    raise ValueError(
+                        f"Device with id {dev_id} not present in default namespace"
+                    )
+
+                return TopologyMap.devices[DEFAULT_NAMESPACE_ID][dev_id]
+
+            if ns_id not in TopologyMap.nodes:
                 raise ValueError(
-                    f"Device with id {dev_id} not present in default namespace"
+                    f"Namespace with id {ns_id} doesn't exist in TopologyMap"
                 )
 
-            return TopologyMap.devices[DEFAULT_NAMESPACE_ID][dev_id]
+            if dev_id not in TopologyMap.devices[ns_id]:
+                raise ValueError(
+                    f"Device with id {dev_id} doesn't exist in namespace {ns_id}"
+                )
 
-        if ns_id not in TopologyMap.nodes:
-            raise ValueError(f"Namespace with id {ns_id} doesn't exist in TopologyMap")
+            device = TopologyMap.devices[ns_id][dev_id]
 
-        if dev_id not in TopologyMap.devices[ns_id]:
-            raise ValueError(
-                f"Device with id {dev_id} doesn't exist in namespace {ns_id}"
-            )
-
-        return TopologyMap.devices[ns_id][dev_id]
+        return device
 
     @staticmethod
     def get_qdiscs(ns_id, dev_id):
@@ -303,12 +323,10 @@ class TopologyMap:
         -------
         List
         """
-        device = TopologyMap.get_device(ns_id, dev_id)
+        with TopologyMap.lock:
+            device = TopologyMap.get_device(ns_id, dev_id)
+
         return device.qdisc_list
-
-    # End of Getters
-
-    # Miscellaneous
 
     @staticmethod
     def delete_all_mapping():
@@ -316,12 +334,13 @@ class TopologyMap:
         Delete all mapppings stored in TopologyMap
 
         """
-        TopologyMap.nodes = {}
-        TopologyMap.devices = {DEFAULT_NAMESPACE_ID: {}}
-        TopologyMap.hosts = []
-        TopologyMap.routers = []
-        TopologyMap.networks = []
-        TopologyMap.orphan_interfaces = 0
+        with TopologyMap.lock:
+            TopologyMap.nodes = {}
+            TopologyMap.devices = {DEFAULT_NAMESPACE_ID: {}}
+            TopologyMap.hosts = []
+            TopologyMap.routers = []
+            TopologyMap.networks = []
+            TopologyMap.orphan_interfaces = 0
 
     @staticmethod
     def dump():
@@ -329,10 +348,11 @@ class TopologyMap:
         Dump the TopologyMap. (for debugging purpose)
 
         """
-        topology_map = TopologyMap.get_topology_map()
-        logger.debug("Config")
-        logger.debug("------")
-        logger.debug(json.dumps(topology_map, indent=4))
+        with TopologyMap.lock:
+            topology_map = TopologyMap.get_topology_map()
+            logger.debug("Config")
+            logger.debug("------")
+            logger.debug(json.dumps(topology_map, indent=4))
 
     @staticmethod
     def decrement_orphan_interfaces():
@@ -340,7 +360,8 @@ class TopologyMap:
         Reduce the orphan interface in the topology
 
         """
-        TopologyMap.orphan_interfaces = TopologyMap.orphan_interfaces - 1
+        with TopologyMap.lock:
+            TopologyMap.orphan_interfaces = TopologyMap.orphan_interfaces - 1
 
     @staticmethod
     def delete_device(ns_id, dev_id):
@@ -386,5 +407,6 @@ class TopologyMap:
         dev_id : str
             Device id which is moved
         """
-        device = TopologyMap.delete_device(src_ns_id, dev_id)
-        TopologyMap.add_device(dst_ns_id, dev_id, device)
+        with TopologyMap.lock:
+            device = TopologyMap.delete_device(src_ns_id, dev_id)
+            TopologyMap.add_device(dst_ns_id, dev_id, device)
