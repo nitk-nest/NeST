@@ -41,7 +41,7 @@ def simple_plot(title, x_list, y_list, x_label, y_label, legend_string=None):
     ax.set_title(title)
 
     if legend_string is not None:
-        ax.legend([legend_string])
+        ax.legend([legend_string], loc="best")
 
     return fig
 
@@ -96,7 +96,7 @@ def mix_plot(title, data, x_label, y_label, with_sum=False):
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
     ax.set_title(title)
-    ax.legend()
+    ax.legend(loc="best")
 
     return fig
 
