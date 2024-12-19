@@ -82,6 +82,9 @@ RUN apt install -y --no-install-recommends \
         libsdl2-dev \
         dvb-apps mesa-utils
 
+# Set XDG_RUNTIME_DIR to /tmp to avoid permission issues
+ENV XDG_RUNTIME_DIR=/tmp
+
 # Setup python virtual env
 RUN python -m venv venv && source venv/bin/activate
 
