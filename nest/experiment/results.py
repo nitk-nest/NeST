@@ -411,3 +411,39 @@ class SipResults:
     def output_to_file():
         """Outputs the aggregated SIP stats to file"""
         Results.output_to_file(sip_results_q, "sip")
+
+
+http_results_q = Manager().Queue()
+http_results_q.put({})
+
+
+class HTTPResults:
+    """This class aggregates the HTTP stats from the entire experiment environment"""
+
+    @staticmethod
+    def add_result(ns_id, result):
+        """Adds the HTTP stats parse from a process to the shared `http_results`
+
+        Parameters
+        ----------
+        ns_id : string
+            namespace id (internal name)
+        result : dict
+            parsed HTTP stats
+        """
+        Results.add_result(http_results_q, ns_id, result)
+
+    @staticmethod
+    def remove_all_results():
+        """Remove all results obtained from the experiment"""
+        Results.remove_all_results(http_results_q)
+
+    @staticmethod
+    def get_results():
+        """Get results obtained in the experiment so far"""
+        return Results.get_results(http_results_q)
+
+    @staticmethod
+    def output_to_file():
+        """Outputs the aggregated HTTP stats to file"""
+        Results.output_to_file(http_results_q, "http")

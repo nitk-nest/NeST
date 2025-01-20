@@ -536,6 +536,84 @@ class SipApplication(Application):
         )
 
 
+class HttpApplication(Application):
+    """Defines a HTTP application in the topology"""
+
+    # pylint: disable=too-many-arguments
+    @input_validator
+    def __init__(
+        self,
+        source_node: Node,
+        destination_node: Node,
+        destination_address: Address,
+        port: int,
+        num_conns: int,
+        rate: int,
+        http_application_options=None,
+    ):
+        """
+        Application object representing HTTP applications in the topology.
+        Inherited from the `Application` class.
+
+        Parameters
+        ----------
+        source_node : Node
+            Source node of flow
+        destination_node : Node
+            Destination node of flow
+        destination_address : Address/str
+            Destination address of flow
+        port : num
+            port number of the server at which the it is running
+        num_conns : int
+            Number of connections to be made from the client to the server totally
+        rate : int
+            Number of connections to be made by the client to the server per second
+        http_application_options: dict, optional
+            Other options to customize the HTTP application bw client and server
+        """
+        self.source_node = source_node
+        self.destination_node = destination_node
+        self.destination_address = destination_address
+        self.port = port
+        self.num_conns = num_conns
+        self.rate = rate
+        self.http_application_options = http_application_options
+
+        # Since start time, stop time and number of streams are needed for
+        # initializing the parent class, we need to provide dummy values
+        # for these members.
+        super().__init__(source_node, destination_node, destination_address)
+
+    # Destination address getter and setter are implemented
+    # in the Flow class which is the superclass of HttpApplication class
+
+    def _get_props(self):
+        """
+        Get flow properties.
+
+        NOTE: To be used internally
+        """
+
+        return [
+            self.source_node.id,
+            self.destination_node.id,
+            self.destination_address.get_addr(with_subnet=False),
+            self.port,
+            self.num_conns,
+            self.rate,
+            self.http_application_options,
+        ]
+
+    def __repr__(self):
+        classname = self.__class__.__name__
+        return (
+            f"{classname}({self.source_node!r}, {self.destination_node!r},"
+            f" {self.destination_address!r}, {self.port!r}),"
+            f" {self.num_conns!r}, {self.rate!r}, {self.http_application_options!r})"
+        )
+
+
 class Experiment:
     """Handles experiment to be run on topology"""
 
@@ -558,6 +636,7 @@ class Experiment:
         self.coap_applications = []
         self.mpeg_dash_applications = []
         self.sip_applications = []
+        self.http_applications = []
         self.node_stats = []
         self.qdisc_stats = []
         self.tcp_module_params = defaultdict(dict)
@@ -796,6 +875,29 @@ class Experiment:
             raise Exception(
                 """The add_sip_application function takes either
                 a SipApplication object or a list of the same only."""
+            )
+
+    @input_validator
+    def add_http_application(self, http_applications):
+        """
+        Add a HTTP application to experiment
+
+        Parameters
+        ----------
+        http_applications : Union[HttpApplication,list]
+            The HTTP application(s) to be added to experiment
+        """
+        if isinstance(http_applications, HttpApplication):
+            self.http_applications.append(copy.deepcopy(http_applications))
+
+        elif isinstance(http_applications, list):
+            for http_application in http_applications:
+                self.http_applications.append(copy.deepcopy(http_application))
+
+        else:
+            raise Exception(
+                """The add_http_application function takes either
+                a HttpApplication object or a list of the same only."""
             )
 
     @input_validator

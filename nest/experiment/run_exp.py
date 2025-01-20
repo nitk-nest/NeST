@@ -10,9 +10,10 @@ import os
 import sys
 from time import sleep
 import copy
+from math import floor
 from tqdm import tqdm
-from nest.engine.mptcp import add_mptcp_monitor
 
+from nest.engine.mptcp import add_mptcp_monitor
 from nest.logging_helper import DepedencyCheckFilter
 from nest import config
 from nest.topology_map import TopologyMap
@@ -31,6 +32,7 @@ from .results import (
     CoAPResults,
     MpegDashResults,
     SipResults,
+    HTTPResults,
 )
 
 # Import parsers
@@ -41,6 +43,7 @@ from .parser.tc import TcRunner
 from .parser.ping import PingRunner
 from .parser.coap import CoAPRunner
 from .parser.mpeg_dash import MpegDashRunner
+from .parser.httperf import HTTPRunner
 
 # Import plotters
 from .plotter.ss import plot_ss
@@ -51,6 +54,7 @@ from .plotter.ping import plot_ping
 from .plotter.mpeg_dash import plot_mpeg_dash
 from ..engine.util import is_dependency_installed, is_package_installed
 from .parser.sip import SipRunner
+from .plotter.httperf import plot_httperf
 
 logger = logging.getLogger(__name__)
 if not any(isinstance(filter, DepedencyCheckFilter) for filter in logger.filters):
@@ -85,6 +89,7 @@ def run_experiment(exp):
         "server",
         "mpeg_dash",
         "sip",
+        "http",
     ]
     Runners = namedtuple("runners", tools)
     exp_runners = Runners(
@@ -97,6 +102,7 @@ def run_experiment(exp):
         server=[],
         mpeg_dash=[],
         sip=[],
+        http=[],
     )  # Runner objects
 
     # Keep track of all destination nodes [to ensure netperf, iperf3 and
@@ -107,6 +113,7 @@ def run_experiment(exp):
         "coap": set(),
         "mpeg_dash": set(),
         "sip": set(),
+        "http": set(),
     }
 
     # Contains start time and end time to run respective command
@@ -304,6 +311,25 @@ def run_experiment(exp):
         exp_runners.sip.extend(sip_runners)
         destination_nodes["sip"].add((dst_ns, dst_addr, port))
 
+    for http_application in exp.http_applications:
+        [
+            src_ns,
+            dst_ns,
+            dst_addr,
+            _,
+            num_conns,
+            rate,
+            _,
+        ] = http_application._get_props()  # pylint: disable=protected-access
+
+        # Setup runners for emulating HTTP traffic
+        http_runners = setup_http_runners(
+            dependencies["http"], http_application, destination_nodes["http"]
+        )
+        exp_runners.http.extend(http_runners)
+        destination_nodes["http"].add(dst_ns)
+        exp_end_t = max(exp_end_t, floor(num_conns / rate))
+
     if ss_required:
         ss_filter = " and ".join(ss_filters)
         ss_runners = setup_ss_runners(dependencies["ss"], ss_schedules, ss_filter)
@@ -458,6 +484,7 @@ def setup_plotter_workers():
     plotters.append(
         Process(target=plot_mpeg_dash, args=(MpegDashResults.get_results(),))
     )
+    plotters.append(Process(target=plot_httperf, args=(HTTPResults.get_results(),)))
 
     return plotters
 
@@ -475,6 +502,7 @@ def dump_json_outputs():
     Iperf3ServerResults.output_to_file()
     MpegDashResults.output_to_file()
     SipResults.output_to_file()
+    HTTPResults.output_to_file()
 
 
 def setup_flow_workers(exp_runners, exp_stop_time):
@@ -551,6 +579,9 @@ def setup_parser_workers(exp_runners):
     for sip_runner in exp_runners.sip:
         parsers.append(Process(target=sip_runner.parse))
 
+    for http_runner in exp_runners.http:
+        parsers.append(Process(target=http_runner.parse))
+
     return parsers
 
 
@@ -598,6 +629,11 @@ def get_dependency_status(exp, tools):
             dependencies[dependency] = is_dependency_installed("sipp")
             continue
         dependencies[dependency] = is_dependency_installed(dependency)
+        # Check for the availability of httperf for HTTP emulation
+        if dependency == "http":
+            dependencies[dependency] = is_dependency_installed("httperf")
+            continue
+
     return dependencies
 
 
@@ -984,6 +1020,63 @@ def setup_coap_runners(dependency, application, destination_nodes):
     return runners
 
 
+def setup_http_runners(dependency, application, destination_nodes):
+    """
+    Setup HTTPRunner objects for generating HTTP traffic
+
+    Parameters
+    ----------
+    dependency : int
+        Whether httperf is installed
+    application : HttpApplication
+        The HttpApplication object
+    destination_nodes:
+        Destination nodes so far already running HTTP server
+
+    Returns
+    -------
+    runners : List[HTTPRunner]
+        List of HTTPRunner objects for the current flow object
+    """
+    runners = []
+
+    # If httperf is installed
+    if dependency:
+        # Get flow attributes
+        [
+            src_ns,
+            dst_ns,
+            dst_addr,
+            port,
+            _,
+            _,
+            _,
+        ] = application._get_props()  # pylint: disable=protected-access
+
+        # Run HTTP server if not already run before on given dst_node
+        if dst_ns not in destination_nodes:
+            # Running the server
+            HTTPRunner.run_http_server(dst_ns, port)
+
+        # Create the HTTPRunner object
+        http_runner = HTTPRunner(
+            src_ns,
+            dst_addr,
+            port,
+            application.num_conns,
+            application.rate,
+            application.http_application_options,
+        )
+        runners.append(http_runner)
+
+    # If httperf is not installed
+    else:
+        logger.warning("httperf not found for HTTP emulation.")
+
+    # Return the list of runners
+    return runners
+
+
 def setup_mpeg_dash_runners(dependency, application, ss_schedules, destination_nodes):
     """
     Setup MpegDashRunner objects for generating Mpeg-Dash traffic
@@ -1153,6 +1246,7 @@ def cleanup():
     Iperf3ServerResults.remove_all_results()
     MpegDashResults.remove_all_results()
     SipResults.remove_all_results()
+    HTTPResults.remove_all_results()
 
     # Clean up the configured TCP modules and kill processes
     tcp_modules_clean_up()

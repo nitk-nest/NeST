@@ -16,4 +16,5 @@ from .experiment import (
     CoapApplication,
     MpegDashApplication,
     SipApplication,
+    HttpApplication,
 )
