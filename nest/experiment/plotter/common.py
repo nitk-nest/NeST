@@ -99,3 +99,72 @@ def mix_plot(title, data, x_label, y_label, with_sum=False):
     ax.legend()
 
     return fig
+
+
+def bar_plot(title, x_list, y_list, x_label, y_label, legend_string=None):
+    """
+    Plot values
+
+    Parameters
+    ----------
+    title : str
+        Title for the plot
+    x_list : List
+        List of x values
+    y_list : List
+        List of y values
+    x_label : str
+        Label for x values
+    y_label : str
+        Label for y values
+    legend_string : None/str
+        If a string, then have a legend in the plot
+
+    Returns
+    -------
+    matplotlib.plt.fig
+        fig of plot
+    """
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    ax.bar(x_list, y_list, width=0.3)
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    ax.set_title(title)
+
+    if legend_string is not None:
+        ax.legend([legend_string])
+
+    return fig
+
+
+def html_table(rowLabels, colLabels, tableData):
+    """
+    Table values
+
+    Parameters
+    ----------
+    rowLables : str
+        Labels for the rows of the table
+    colLables : List
+        Labels for the columns of the table
+    tableData : List
+        Data to be filled in the table
+
+    Returns
+    -------
+    HTML markup for table using provided
+    labels and data.
+    """
+    table_html = "<html><table><caption>Comparison Plot</caption><tr><td></td>"
+    for colLabel in colLabels:
+        table_html += f"<th>{colLabel}</th>"
+    table_html += "</tr>"
+    for row_index in range(len(rowLabels)):
+        table_html += "<tr>"
+        table_html += f"<th>{rowLabels[row_index]}</th>"
+        for col_index in range(len(colLabels)):
+            table_html += f"<td>{tableData[row_index][col_index]}</td>"
+        table_html += "</tr>"
+    table_html += "</table></html>"
+    return table_html
