@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2024 NITK Surathkal
+# Copyright (c) 2019-2025 NITK Surathkal
 
 """Test APIs from topology sub-package"""
 
@@ -18,6 +18,7 @@ from nest.experiment import (
     CoapApplication,
     MpegDashApplication,
     SipApplication,
+    HttpApplication,
 )
 from nest.clean_up import delete_namespaces, delete_encoded_mpeg_dash_chunks
 from nest.topology_map import TopologyMap
@@ -425,6 +426,46 @@ class TestExperiment(unittest.TestCase):
             self.assertNotEqual(stats["n0"][0]["FailedCall(C)"], "0")
 
             dump_file.close()
+
+    # Test `HTTPApplication` API by generating HTTP traffic
+    def test_experiment_http(self):
+        h1 = Node("h1")
+        h2 = Node("h2")
+        r = Router("r")
+
+        n1 = Network("192.168.1.0/24")
+        n2 = Network("192.168.3.0/24")
+
+        (eth1, etr1) = connect(h1, r, network=n1)
+        (etr2, eth2) = connect(r, h2, network=n2)
+
+        AddressHelper.assign_addresses()
+
+        eth1.set_attributes("100mbit", "10ms")
+        etr1.set_attributes("100mbit", "10ms")
+        etr2.set_attributes("50mbit", "5ms")
+        eth2.set_attributes("50mbit", "5ms")
+
+        h1.add_route("DEFAULT", eth1)
+        h2.add_route("DEFAULT", eth2)
+
+        exp = Experiment("test-experiment-http")
+
+        # Port, rate and num_conns
+        port = 4004
+        rate = 100
+        num_conns = 1000
+
+        # Configure a flow from `h1` to `h2`.
+        httpApplication = HttpApplication(
+            h1, h2, eth2.get_address(), port, num_conns, rate
+        )
+
+        # Add the above applications as HTTP flows to the current experiment
+        exp.add_http_application(httpApplication)
+
+        # Run the experiment
+        exp.run()
 
     def test_experiment_ipv6(self):
         # Test IPv6 with Duplicate Address Detection (DAD) disabled

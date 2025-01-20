@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2022-2023 NITK Surathkal
+# Copyright (c) 2022-2025 NITK Surathkal
 
 """Plot httperf results"""
 import logging
