@@ -44,8 +44,7 @@ def _plot_httperf_flow(stat, stat_data):
         "",
         clients,
         metric_data,
-        "Clients",
-        stat,
+        ["Clients", stat],
     )
 
     current_timestamp = time.time()
@@ -88,7 +87,6 @@ def plot_httperf_stats_table(all_flow_data: dict):
     Pack.dump_file("httperf.html", result_html_table)
 
 
-# pylint: disable=too-many-branches
 @handle_keyboard_interrupt
 def plot_httperf(parsed_data):
     """
@@ -111,37 +109,31 @@ def plot_httperf(parsed_data):
                     dest_output = None
                 # Tracking total connection metrics like number of connections, requests and replies
                 if "total" in dest_output and "connections" in dest_output["total"]:
-                    if "connections" not in all_flow_data:
-                        all_flow_data["connections"] = {}
-                    all_flow_data["connections"][node] = int(
+                    all_flow_data.setdefault("connections", {})[node] = int(
                         dest_output["total"]["connections"]
                     )
-
-                    if "requests" not in all_flow_data:
-                        all_flow_data["requests"] = {}
-                    all_flow_data["requests"][node] = int(
+                    all_flow_data.setdefault("requests", {})[node] = int(
                         dest_output["total"]["requests"]
                     )
-
-                    if "replies" not in all_flow_data:
-                        all_flow_data["replies"] = {}
-                    all_flow_data["replies"][node] = int(
+                    all_flow_data.setdefault("replies", {})[node] = int(
                         dest_output["total"]["replies"]
+                    )
+
+                # Tracking errors for error comparison plot, if available
+                if "Errors" in dest_output and "total" in dest_output["Errors"]:
+                    all_flow_data.setdefault("Errors", {})[node] = int(
+                        dest_output["Errors"]["total"]
                     )
 
                 # Tracking request rate if available
                 if "request_rate" in dest_output:
-                    if "request_rate" not in all_flow_data:
-                        all_flow_data["request_rate"] = {}
-                    all_flow_data["request_rate"][node] = float(
+                    all_flow_data.setdefault("request_rate", {})[node] = float(
                         dest_output["request_rate"]
                     )
 
                 # Tracking request size, if available
                 if "request_size" in dest_output:
-                    if "request_size" not in all_flow_data:
-                        all_flow_data["request_size"] = {}
-                    all_flow_data["request_size"][node] = float(
+                    all_flow_data.setdefault("request_size", {})[node] = float(
                         dest_output["request_size"]
                     )
 
@@ -150,17 +142,9 @@ def plot_httperf(parsed_data):
                     "connection" in dest_output
                     and "connection_rate" in dest_output["connection"]
                 ):
-                    if "connection_rate" not in all_flow_data:
-                        all_flow_data["connection_rate"] = {}
-                    all_flow_data["connection_rate"][node] = float(
+                    all_flow_data.setdefault("connection_rate", {})[node] = float(
                         dest_output["connection"]["connection_rate"]
                     )
-
-                # Tracking errors for error comparison plot, if available
-                if "Errors" in dest_output and "total" in dest_output["Errors"]:
-                    if "Errors" not in all_flow_data:
-                        all_flow_data["Errors"] = {}
-                    all_flow_data["Errors"][node] = int(dest_output["Errors"]["total"])
 
     for item in all_flow_data.items():
         _plot_httperf_flow(item[0], item[1])

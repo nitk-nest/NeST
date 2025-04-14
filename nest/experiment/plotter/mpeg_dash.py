@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2024 NITK Surathkal
+# Copyright (c) 2019-2025 NITK Surathkal
 
 """Plot MPEG-DASH results"""
 
@@ -145,8 +145,7 @@ def _plot_mpeg_dash(flow, node, server_ip, stats_type):
             f"MPEG-DASH {stats_type} Statistics",
             chunk_numbers,
             flow_params[param],
-            "Number of chunks",
-            _get_ylabel(param),
+            ["Number of chunks", _get_ylabel(param)],
             legend_string=legend_string,
         )
 
@@ -156,7 +155,6 @@ def _plot_mpeg_dash(flow, node, server_ip, stats_type):
     return 0
 
 
-# pylint: disable=too-many-locals
 @handle_keyboard_interrupt
 def plot_mpeg_dash(parsed_data):
     """
@@ -168,7 +166,6 @@ def plot_mpeg_dash(parsed_data):
         JSON data parsed from MPEG-DASH application
     """
 
-    # pylint: disable=too-many-nested-blocks
     for node in parsed_data:
         node_data = parsed_data[node]
         for connection in node_data:
@@ -177,16 +174,26 @@ def plot_mpeg_dash(parsed_data):
                 video_stats = flow_data["video"]
                 try:
                     _plot_mpeg_dash(video_stats, node, server_ip, "Video")
-                except Exception as excp:  # pylint: disable=broad-except
+                except (KeyError, TypeError, ValueError, RuntimeError, IOError) as excp:
                     logger.error(
-                        "Error generating plots for video statistics: %s", excp
+                        "Error generating plots for video statistics: %s",
+                        excp,
+                        exc_info=True,
                     )
 
                 if flow_data["audio"][0]["audio_enabled"] is True:
                     audio_stats = flow_data["audio"]
                     try:
                         _plot_mpeg_dash(audio_stats, node, server_ip, "Audio")
-                    except Exception as excp:  # pylint: disable=broad-except
+                    except (
+                        KeyError,
+                        TypeError,
+                        ValueError,
+                        RuntimeError,
+                        IOError,
+                    ) as excp:
                         logger.error(
-                            "Error generating plots for audio statistics: %s", excp
+                            "Error generating plots for audio statistics: %s",
+                            excp,
+                            exc_info=True,
                         )

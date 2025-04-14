@@ -1,18 +1,18 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2020 NITK Surathkal
+# Copyright (c) 2019-2025 NITK Surathkal
 
 """Plot tc results"""
 
 import logging
 import matplotlib.pyplot as plt
-import pandas as pd  # pylint: disable=import-error
+import pandas as pd
 from nest import config
 from .common import simple_plot, simple_gnu_plot
 from ..pack import Pack
 
 logger = logging.getLogger(__name__)
 
-# pylint: disable=too-many-locals
+
 def _extract_from_tc_stats(stats, node, interface):
     """
     Extract information from tc stats and convert it to
@@ -28,9 +28,8 @@ def _extract_from_tc_stats(stats, node, interface):
         Interface from which results were obtained from
     """
     if len(stats) == 0:
-        # pylint: disable=implicit-str-concat
         logger.warning(
-            "Qdisc at %s of %s doesn't have any " "parsed tc result.", interface, node
+            "Qdisc at %s of %s doesn't have any parsed tc result.", interface, node
         )
         return None
 
@@ -78,30 +77,28 @@ def _plot_tc_stats(stats, node, interface):
             "Traffic Control (tc) Statistics",
             timestamp,
             stats_params[param],
-            "Time (Seconds)",
-            param,
+            ["Time (Seconds)", param],
             legend_string=f"Interface {interface} in {node}",
         )
-        filename = f"{node}_{interface}_{qdisc}_{param}.png"
-        Pack.dump_plot("tc", filename, fig)
+        base_filename = f"{node}_{interface}_{qdisc}_{param}"
+        Pack.dump_plot("tc", f"{base_filename}.png", fig)
         plt.close(fig)
+
         if config.get_value("enable_gnuplot"):
-            data_tuples = list(zip(timestamp, stats_params[param]))
-            data_frame = pd.DataFrame(data_tuples)
-            filename_dat = f"{node}_{interface}_{qdisc}_{param}.dat"
-            Pack.dump_datfile("tc", filename_dat, data_frame)
-            filename_eps = f"{node}_{interface}_{qdisc}_{param}.eps"
-            filename_plt = f"{node}_{interface}_{qdisc}_{param}.plt"
-            path_dat = Pack.get_path("tc", filename_dat)
-            path_eps = Pack.get_path("tc", filename_eps)
-            path_plt = Pack.get_path("tc", filename_plt)
+            data_frame = pd.DataFrame(list(zip(timestamp, stats_params[param])))
+            Pack.dump_datfile("tc", f"{base_filename}.dat", data_frame)
+
+            # Store paths in a dict for .dat, .eps and .plt
+            paths = {
+                "dat": Pack.get_path("tc", f"{base_filename}.dat"),
+                "eps": Pack.get_path("tc", f"{base_filename}.eps"),
+                "plt": Pack.get_path("tc", f"{base_filename}.plt"),
+            }
+
             legend_string = f"Interface {interface} in {node}"
             simple_gnu_plot(
-                path_dat,
-                path_plt,
-                path_eps,
-                "Time (Seconds)",
-                param,
+                paths,
+                ["Time (Seconds)", param],
                 legend_string,
                 "Traffic Control (tc) Statistics",
             )

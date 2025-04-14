@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2020 NITK Surathkal
+# Copyright (c) 2019-2025 NITK Surathkal
 
 """Plot netperf results"""
 
 import logging
 import matplotlib.pyplot as plt
-import pandas as pd  # pylint: disable=import-error
+import pandas as pd
 from nest import config
 from nest.experiment.interrupts import handle_keyboard_interrupt
 from ..pack import Pack
@@ -13,8 +13,8 @@ from .common import simple_plot, mix_plot, simple_gnu_plot, mix_gnu_plot
 
 logger = logging.getLogger(__name__)
 
-# pylint: disable=too-many-locals
-def _plot_netperf_flow(flow, node, dest, dat_list_flows):
+
+def _plot_netperf_flow(flow, node, dest, dat_list_flows=None):
     """
     Plot netperf stats of the flow
 
@@ -36,9 +36,11 @@ def _plot_netperf_flow(flow, node, dest, dat_list_flows):
     tuple/None
         Timestamped sending_rate values
     """
+    if dat_list_flows is None:
+        dat_list_flows = []
+
     # "meta" item will always be present, hence `<= 1`
     if len(flow) <= 1:
-        # pylint: disable=implicit-str-concat
         logger.warning(
             "Flow from %s to destination %s " "doesn't have any parsed netperf result.",
             node,
@@ -47,19 +49,18 @@ def _plot_netperf_flow(flow, node, dest, dat_list_flows):
         return None
 
     # First item is the "meta" item with user given information
-    user_given_start_time = float(flow[0]["start_time"])
     destination_node = flow[0]["destination_node"]
 
     # "Bias" actual start_time in experiment with user given start time
-    start_time = float(flow[1]["timestamp"]) - user_given_start_time
+    start_time = float(flow[1]["timestamp"]) - float(flow[0]["start_time"])
 
     timestamp = []
     sending_rate = []
 
     for data in flow[1:]:
         sending_rate.append(float(data["sending_rate"]))
-        relative_time = float(data["timestamp"]) - start_time
-        timestamp.append(relative_time)
+        # add relative time in timestamp
+        timestamp.append(float(data["timestamp"]) - start_time)
 
     legend_string = f"{node} to {destination_node} ({dest})"
 
@@ -68,33 +69,29 @@ def _plot_netperf_flow(flow, node, dest, dat_list_flows):
         "",
         timestamp,
         sending_rate,
-        "Time (Seconds)",
-        "Sending Rate (Mbps)",
+        ["Time (Seconds)", "Sending Rate (Mbps)"],
         legend_string=legend_string,
     )
 
-    filename = f"sending_rate_{node}_to_{destination_node}({dest}).png"
-    Pack.dump_plot("netperf", filename, fig)
+    base_filename = f"sending_rate_{node}_to_{destination_node}({dest})"
+    Pack.dump_plot("netperf", f"{base_filename}.png", fig)
     plt.close(fig)
     if config.get_value("enable_gnuplot"):
-        data_tuples = list(zip(timestamp, sending_rate))
-        data_frame = pd.DataFrame(data_tuples)
-        filename_dat = f"sending_rate_{node}_to_{destination_node}({dest}).dat"
-        Pack.dump_datfile("netperf", filename_dat, data_frame)
-        filename_eps = f"sending_rate_{node}_to_{destination_node}({dest}).eps"
-        filename_plt = f"sending_rate_{node}_to_{destination_node}({dest}).plt"
-        path_plt = Pack.get_path("netperf", filename_plt)
-        path_dat = Pack.get_path("netperf", filename_dat)
-        path_eps = Pack.get_path("netperf", filename_eps)
+        data_frame = pd.DataFrame(list(zip(timestamp, sending_rate)))
+        Pack.dump_datfile("netperf", f"{base_filename}.dat", data_frame)
+
+        # Store paths in a dict for .dat, .eps and .plt
+        paths = {
+            "dat": Pack.get_path("netperf", f"{base_filename}.dat"),
+            "eps": Pack.get_path("netperf", f"{base_filename}.eps"),
+            "plt": Pack.get_path("netperf", f"{base_filename}.plt"),
+        }
         simple_gnu_plot(
-            path_dat,
-            path_plt,
-            path_eps,
-            "Time (Seconds)",
-            "Sending Rate (Mbps)",
+            paths,
+            ["Time (Seconds)", "Sending Rate (Mbps)"],
             legend_string,
         )
-        dat_list_flows.append(path_dat)
+        dat_list_flows.append(paths["dat"])
 
     return {"label": legend_string, "values": (timestamp, sending_rate)}
 
@@ -120,7 +117,10 @@ def plot_netperf(parsed_data):
         for connection in node_data:
             for dest in connection:
                 flow = connection[dest]
-                plotted_data = _plot_netperf_flow(flow, node, dest, dat_list_flows)
+                if config.get_value("enable_gnuplot"):
+                    plotted_data = _plot_netperf_flow(flow, node, dest, dat_list_flows)
+                else:
+                    plotted_data = _plot_netperf_flow(flow, node, dest)
                 if plotted_data is not None:
                     all_flow_data.append(plotted_data)
 
@@ -128,27 +128,24 @@ def plot_netperf(parsed_data):
             fig = mix_plot(
                 "",
                 all_flow_data,
-                "Time (Seconds)",
-                "Sending Rate (Mbps)",
+                ["Time (Seconds)", "Sending Rate (Mbps)"],
                 with_sum=True,
             )
-            filename = f"sending_rate_{node}.png"
-            Pack.dump_plot("netperf", filename, fig)
+            base_filename = f"sending_rate_{node}"
+            Pack.dump_plot("netperf", f"{base_filename}.png", fig)
             plt.close(fig)
 
             if config.get_value("enable_gnuplot"):
-                filename_eps = f"sending_rate_{node}.eps"
-                path_eps = Pack.get_path("netperf", filename_eps)
-                filename_plt = f"sending_rate_{node}.plt"
-                path_plt = Pack.get_path("netperf", filename_plt)
+                paths = {
+                    "eps": Pack.get_path("netperf", f"{base_filename}.eps"),
+                    "plt": Pack.get_path("netperf", f"{base_filename}.plt"),
+                }
                 legend_list = []
                 for chunk in all_flow_data:
                     legend_list.append(chunk["label"])
                 mix_gnu_plot(
                     dat_list_flows,
-                    path_plt,
-                    path_eps,
-                    "Time (Seconds)",
-                    "Sending Rate (Mbps)",
+                    paths,
+                    ["Time (Seconds)", "Sending Rate (Mbps)"],
                     legend_list,
                 )

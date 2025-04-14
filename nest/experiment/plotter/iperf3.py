@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2021 NITK Surathkal
+# Copyright (c) 2019-2025 NITK Surathkal
 
 """Plot ss results"""
 
 import logging
-import pandas as pd  # pylint: disable=import-error
+import pandas as pd
 import matplotlib.pyplot as plt
 from nest import config
 from nest.experiment.interrupts import handle_keyboard_interrupt
@@ -13,7 +13,7 @@ from .common import simple_plot, simple_gnu_plot
 
 logger = logging.getLogger(__name__)
 
-# pylint: disable-msg=too-many-locals
+
 def _extract_from_iperf3_flow(flow, node, dest_ip, local_port):
     """
     Extract information from flow data and convert it to
@@ -46,19 +46,18 @@ def _extract_from_iperf3_flow(flow, node, dest_ip, local_port):
         return None
 
     # First item is the "meta" item with user given information
-    user_given_start_time = float(flow[0]["start_time"])
     destination_node = flow[0]["destination_node"]
 
     # "Bias" actual start_time in experiment with user given start time
-    start_time = float(flow[1]["timestamp"]) - user_given_start_time
+    start_time = float(flow[1]["timestamp"]) - float(flow[0]["start_time"])
 
     timestamp = []
     sending_rate = []
 
     for data in flow[1:]:
         sending_rate.append(float(data["sending_rate"]))
-        relative_time = float(data["timestamp"]) - start_time
-        timestamp.append(relative_time)
+        # add relative time to timestamp
+        timestamp.append(float(data["timestamp"]) - start_time)
 
     return {"destination_node": destination_node, "values": (timestamp, sending_rate)}
 
@@ -88,42 +87,39 @@ def _plot_iperf3_flow(flow, node, dest_ip, local_port):
         return
     (timestamp, sending_rate) = values
 
+    legend_string = f"{node} from port {local_port} to {destination_node} ({dest_ip})"
+
     fig = simple_plot(
         "",
         timestamp,
         sending_rate,
-        "Time (Seconds)",
-        "Sending Rate (Mbps)",
-        legend_string=f"{node} from port {local_port} to {destination_node} ({dest_ip})",
+        ["Time (Seconds)", "Sending Rate (Mbps)"],
+        legend_string,
     )
 
-    filename = f"sending_rate_{node}({local_port})_to_{destination_node}({dest_ip}).png"
-    Pack.dump_plot("iperf3", filename, fig)
+    base_filename = (
+        f"sending_rate_{node}({local_port})_to_{destination_node}({dest_ip})"
+    )
+    Pack.dump_plot("iperf3", f"{base_filename}.png", fig)
     plt.close(fig)
     if config.get_value("enable_gnuplot"):
-        data_tuples = list(zip(timestamp, sending_rate))
-        data_frame = pd.DataFrame(data_tuples)
-        filename_dat = f"sending_rate_{node}_to_{destination_node}({dest_ip}).dat"
-        Pack.dump_datfile("iperf3", filename_dat, data_frame)
-        filename_eps = f"sending_rate_{node}_to_{destination_node}({dest_ip}).eps"
-        path_dat = Pack.get_path("iperf3", filename_dat)
-        path_eps = Pack.get_path("iperf3", filename_eps)
-        filename_plt = f"sending_rate_{node}_to_{destination_node}({dest_ip}).plt"
-        path_plt = Pack.get_path("iperf3", filename_plt)
-        legend_string = (
-            f"{node} from port {local_port} to {destination_node} ({dest_ip})"
-        )
+        data_frame = pd.DataFrame(list(zip(timestamp, sending_rate)))
+        Pack.dump_datfile("iperf3", f"{base_filename}.dat", data_frame)
+
+        # Store paths in a dict for .dat, .eps and .plt
+        paths = {
+            "dat": Pack.get_path("iperf3", f"{base_filename}.dat"),
+            "eps": Pack.get_path("iperf3", f"{base_filename}.eps"),
+            "plt": Pack.get_path("iperf3", f"{base_filename}.plt"),
+        }
+
         simple_gnu_plot(
-            path_dat,
-            path_plt,
-            path_eps,
-            "Time (Seconds)",
-            "Sending Rate (Mbps)",
+            paths,
+            ["Time (Seconds)", "Sending Rate (Mbps)"],
             legend_string,
         )
 
 
-# pylint: disable=too-many-locals
 @handle_keyboard_interrupt
 def plot_iperf3(parsed_data):
     """
@@ -137,12 +133,10 @@ def plot_iperf3(parsed_data):
         JSON data parsed from iperf3
     """
 
-    # pylint: disable=too-many-nested-blocks
     for node in parsed_data:
         node_data = parsed_data[node]
         for connection in node_data:
             for dest_ip in connection:
-
                 flow_data = connection[dest_ip]
                 for local_port in flow_data:
                     flow = flow_data[local_port]

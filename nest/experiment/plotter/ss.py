@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2020 NITK Surathkal
+# Copyright (c) 2019-2025 NITK Surathkal
 
 """Plot ss results"""
 
 import logging
 from collections import defaultdict
 import matplotlib.pyplot as plt
-import pandas as pd  # pylint: disable=import-error
+import pandas as pd
 from nest import config
 from nest.experiment.interrupts import handle_keyboard_interrupt
 from ..pack import Pack
@@ -14,8 +14,6 @@ from .common import simple_plot, mix_plot, simple_gnu_plot, mix_gnu_plot
 
 logger = logging.getLogger(__name__)
 
-
-# pylint: disable=too-many-locals
 # pylint: disable=too-many-branches
 def _get_list_of_ss_params():
     """
@@ -108,7 +106,6 @@ def _extract_from_ss_flow(flow, node, dest_ip, dest_port):
     """
     # "meta" item will always be present, hence `<= 1`
     if len(flow) <= 1:
-        # pylint: disable=implicit-str-concat
         logger.warning(
             "Flow from %s to destination %s:%s " "doesn't have any parsed ss result.",
             node,
@@ -118,11 +115,10 @@ def _extract_from_ss_flow(flow, node, dest_ip, dest_port):
         return None
 
     # First item is the "meta" item with user given information
-    user_given_start_time = float(flow[0]["start_time"])
     destination_node = flow[0]["destination_node"]
 
     # "Bias" actual start_time in experiment with user given start time
-    start_time = float(flow[1]["timestamp"]) - user_given_start_time
+    start_time = float(flow[1]["timestamp"]) - float(flow[0]["start_time"])
 
     timestamp = []
     flow_params = {}
@@ -136,84 +132,75 @@ def _extract_from_ss_flow(flow, node, dest_ip, dest_port):
                 stat_data.append(float(data[stat]))
             else:
                 stat_data.append(None)
-        relative_time = float(data["timestamp"]) - start_time
-        timestamp.append(relative_time)
+        # add relative time in timestamp
+        timestamp.append(float(data["timestamp"]) - start_time)
 
     return {"destination_node": destination_node, "values": (timestamp, flow_params)}
 
 
 def _plot_ss_flow(flow, node, dest_ip, dest_port, dat_tuple_flows):
     """
-    Plot ss stats of the flow
+    Plot ss stats of the flow with optimized variable usage.
 
     Parameters
     ----------
-    exp_name : string
-        Name of experiment for which results were obtained
     flow : List
         List with timestamps and stats
     node : string
-        Node from which ss results were obtained from
+        Source node
     dest_ip : string
-        Destination ip address of the flow
+        Destination IP
     dest_port : string
-        Destination port of the flow
+        Destination port
+    dat_tuple_flows : List
+        List for storing (param, dat_path) tuples
+
+    Returns
+    -------
+    dict
+        Contains label, destination_node, and values
     """
     data = _extract_from_ss_flow(flow, node, dest_ip, dest_port)
-    destination_node = data["destination_node"]
-    values = data["values"]
-
-    if values is None:
+    if data["values"] is None:
         return None
-    (timestamp, flow_params) = values
 
+    destination_node = data["destination_node"]
+    timestamp, flow_params = data["values"]
     legend_string = f"{node} to {destination_node} ({dest_ip}:{dest_port})"
+
     for param in flow_params:
+        # Filter None values and prepare data
+        filtered_data = [
+            (x, y) for x, y in zip(timestamp, flow_params[param]) if y is not None
+        ]
+
         fig = simple_plot(
             "Socket Statistics",
-            timestamp,
-            flow_params[param],
-            "Time (Seconds)",
-            _get_ylabel(param),
+            [x for x, _ in filtered_data],
+            [y for _, y in filtered_data],
+            ["Time (Seconds)", _get_ylabel(param)],
             legend_string=legend_string,
         )
 
-        filename = f"{param}_{node}_to_{destination_node}({dest_ip}:{dest_port}).png"
-        Pack.dump_plot("ss", filename, fig)
+        base_filename = f"{param}_{node}_to_{destination_node}({dest_ip}:{dest_port})"
+        Pack.dump_plot("ss", f"{base_filename}.png", fig)
         plt.close(fig)
+
         if config.get_value("enable_gnuplot"):
-            xlist = []
-            ylist = []
-            for xvalue, yvalue in zip(timestamp, flow_params[param]):
-                if yvalue is None:
-                    continue
-                xlist.append(xvalue)
-                ylist.append(yvalue)
-            data_tuples = list(zip(xlist, ylist))
-            data_frame = pd.DataFrame(data_tuples)
-            filename_dat = (
-                f"{param}_{node}_to_{destination_node}({dest_ip}:{dest_port}).dat"
-            )
-            Pack.dump_datfile("ss", filename_dat, data_frame)
-            filename_eps = (
-                f"{param}_{node}_to_{destination_node}({dest_ip}:{dest_port}).eps"
-            )
-            filename_plt = (
-                f"{param}_{node}_to_{destination_node}({dest_ip}:{dest_port}).plt"
-            )
-            path_dat = Pack.get_path("ss", filename_dat)
-            path_eps = Pack.get_path("ss", filename_eps)
-            path_plt = Pack.get_path("ss", filename_plt)
+            Pack.dump_datfile("ss", f"{base_filename}.dat", pd.DataFrame(filtered_data))
+            paths = {
+                "dat": Pack.get_path("ss", f"{base_filename}.dat"),
+                "eps": Pack.get_path("ss", f"{base_filename}.eps"),
+                "plt": Pack.get_path("ss", f"{base_filename}.plt"),
+            }
+
             simple_gnu_plot(
-                path_dat,
-                path_plt,
-                path_eps,
-                "Time (Seconds)",
-                _get_ylabel(param),
+                paths,
+                ["Time (Seconds)", _get_ylabel(param)],
                 legend_string,
                 "Socket Statistics",
             )
-            dat_tuple_flows.append((param, path_dat))
+            dat_tuple_flows.append((param, paths["dat"]))
 
     return {
         "label": legend_string,
@@ -302,29 +289,25 @@ def plot_ss(parsed_data):
                         fig = mix_plot(
                             "Socket Statistics",
                             data,
-                            "Time (Seconds)",
-                            _get_ylabel(param),
+                            ["Time (Seconds)", _get_ylabel(param)],
                         )
-                        filename = (
-                            f"{param}_{node}_to_{destination_node}({dest_ip}).png"
+
+                        base_filename = (
+                            f"{param}_{node}_to_{destination_node}({dest_ip})"
                         )
-                        Pack.dump_plot("ss", filename, fig)
+                        Pack.dump_plot("ss", f"{base_filename}.png", fig)
                         plt.close(fig)
+
                         if config.get_value("enable_gnuplot"):
-                            filename_eps = (
-                                f"{param}_{node}_to_{destination_node}({dest_ip}).eps"
-                            )
-                            filename_plt = (
-                                f"{param}_{node}_to_{destination_node}({dest_ip}).plt"
-                            )
-                            path_eps = Pack.get_path("ss", filename_eps)
-                            path_plt = Pack.get_path("ss", filename_plt)
+                            paths = {
+                                "eps": Pack.get_path("ss", f"{base_filename}.eps"),
+                                "plt": Pack.get_path("ss", f"{base_filename}.plt"),
+                                "dat": Pack.get_path("ss", f"{base_filename}.dat"),
+                            }
                             mix_gnu_plot(
                                 dat_dictionary[param],
-                                path_plt,
-                                path_eps,
-                                "Time (Seconds)",
-                                _get_ylabel(param),
+                                paths,
+                                ["Time (Seconds)", _get_ylabel(param)],
                                 labels,
                                 "Socket Statistics",
                             )
