@@ -7,6 +7,7 @@ import logging
 import shlex
 import subprocess
 from subprocess import Popen, PIPE
+import time
 
 
 logger = logging.getLogger(__name__)
@@ -126,7 +127,9 @@ def exec_exp_commands(
         return proc.returncode
 
 
-def exec_subprocess_in_background(cmd, shell=False, wait_for_exit_code=False):
+def exec_subprocess_in_background(
+    cmd, shell=False, wait_for_exit_code=False, exit_text=None, timeout=5
+):
     """
     Executes a command in the background. This is mainly for
     commands or programs that have an event loop running,
@@ -156,6 +159,12 @@ def exec_subprocess_in_background(cmd, shell=False, wait_for_exit_code=False):
     wait_for_exit_code: boolean
         To wait or not to wait for a success message from
         the subprocess
+    wait_text: str
+        The text to look for in the output of the command
+        (Default value = None)
+    timeout: int
+        The maximum time to wait for the process to complete
+        (Default value = 5)
 
     Returns
     -------
@@ -173,14 +182,22 @@ def exec_subprocess_in_background(cmd, shell=False, wait_for_exit_code=False):
     # pylint:disable=consider-using-with
     proc = Popen(temp_cmd, stdout=PIPE, stderr=PIPE, shell=shell)
 
-    # If wait_for_exit_code is set to True
-    if wait_for_exit_code:
+    start_time = time.time()
+    # While wait_for_exit_code is set to True
+    while wait_for_exit_code:
         # Continuously read from the stdout buffer till newline
         # is encountered
+        line_str = ""
+
         line_in_bytes = proc.stdout.readline()
         line_str = line_in_bytes.decode("utf-8")
-        if line_str == "Process successful\n":
+        print(time.time() - start_time, line_str)
+        if exit_text in line_str or line_str == "Process successful\n":
             return 0
-        return 1
 
+        if time.time() - start_time > timeout:
+            # If the process takes too long, kill it
+            logger.error("Process timed out")
+            proc.kill()
+            return -1
     return 0

@@ -3,7 +3,6 @@
 
 """Client side of a many-clients <-> one-server OpenVPN configuration"""
 
-from time import sleep
 from nest.engine.exec import exec_subprocess_in_background
 from nest.topology.address import Address
 from nest.engine.vpn.server import get_tun_ip_address
@@ -52,10 +51,9 @@ def run_ovpn_client(
         --float"""
 
     # Start the OpenVPN client in the namespace.
-    exec_subprocess_in_background(cmd, wait_for_exit_code=True)
-
-    # Wait a few seconds for the client to start.
-    sleep(5)
+    exec_subprocess_in_background(
+        cmd, wait_for_exit_code=True, exit_text="Initialization Sequence Completed"
+    )
 
     address = get_tun_ip_address(ns_name, port)
 

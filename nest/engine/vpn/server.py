@@ -115,7 +115,9 @@ def run_ovpn_server(
         --keepalive 10 60"""
 
     # Start the OpenVPN server in the namespace.
-    exec_subprocess_in_background(cmd, wait_for_exit_code=True)
+    exec_subprocess_in_background(
+        cmd, wait_for_exit_code=True, exit_text="Initialization Sequence Completed"
+    )
 
     # Wait for the server to start by giving it a few seconds to initialize.
     sleep(5)

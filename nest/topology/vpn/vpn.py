@@ -81,8 +81,8 @@ def start_server(
     tun_ip = run_ovpn_server(
         server_node.id, server_name, network_address, subnet_mask, protocol, port
     )
-    if tun_ip != "":
-        log.info("Server running")
+
+    assert tun_ip != "", "Failed to start OpenVPN server"
 
     # Create a BaseInterface object pointing to the tun device created
     # by the VPN
@@ -124,8 +124,8 @@ def start_client(
 
     # Start OpenVPN client and get tun interface IP
     tun_ip = run_ovpn_client(client_node.id, client_name, server_ip, protocol, port)
-    if tun_ip != "":
-        log.info("Client running")
+
+    assert tun_ip != "", "Failed to start OpenVPN client"
 
     # Create BaseInterface object pointing to tun device
     tun_interface = BaseInterface("tun", Device(client_node.name, client_node.id))
@@ -171,7 +171,7 @@ def connect_vpn(
         raise ValueError("Invalid port number")
 
     # Check if the required tools are installed
-    required_tools = ["openvpn"]
+    required_tools = ["openvpn", "/usr/share/easy-rsa/easyrsa"]
     for tool in required_tools:
         if not is_dependency_installed(tool):
             raise ValueError(
