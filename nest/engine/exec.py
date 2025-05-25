@@ -191,7 +191,6 @@ def exec_subprocess_in_background(
 
         line_in_bytes = proc.stdout.readline()
         line_str = line_in_bytes.decode("utf-8")
-        print(time.time() - start_time, line_str)
         if exit_text in line_str or line_str == "Process successful\n":
             return 0
 

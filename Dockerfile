@@ -39,7 +39,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y install \
         flex \
         bison \
         mptcpize \
-        vlc
+        vlc \
+        gnuplot
 
 # Install prerequisite dependencies for building GPAC (Media Player and Encoder for MPEG-DASH streams)
 # Reference: https://github.com/gpac/gpac/blob/master/build/docker/ubuntu-deps.Dockerfile
