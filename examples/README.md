@@ -20,6 +20,10 @@ to quickly learn and use NeST APIs and its features.
 10. [coap](./coap/README.md) (optional)
 11. [mpeg-dash](./mpeg-dash/README.md) (optional)
 12. [mptcp](./mptcp/README.md) (optional)
+13. [http](./http/README.md) (optional)
+14. [sip](./sip/README.md) (optional)
+15. [vpn](./vpn/README.md) (optional)
+
 
 | Examples          | Basic APIs         | Address Helpers    | Routing Helpers    | Ping Application   | UDP Flows          | TCP Flows          |
 |-------------------|--------------------|--------------------|--------------------|--------------------|--------------------|--------------------|
@@ -35,3 +39,6 @@ to quickly learn and use NeST APIs and its features.
 |coap               | :white_check_mark: | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
 |mpeg-dash         | :white_check_mark: | :white_check_mark: | :x:                | :x:                | :x:                | :white_check_mark: |
 | mptcp             | :white_check_mark: | :white_check_mark: | :x:                | :x:                | :x:                | :white_check_mark: |
+| http             | :white_check_mark: | :x:                |  :x:              |:x:             | :x:             | :x: |
+| sip             | :white_check_mark: | :x:                | :x:                  |:x:             | :x:                  | :x:                |
+| vpn           | :white_check_mark:  | :white_check_mark:  | :x:                  |:white_check_mark: | :x:               | :x:                |
