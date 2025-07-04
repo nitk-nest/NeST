@@ -72,63 +72,28 @@ s2 = Switch("s2")
 # Create a router 'r1'
 r1 = Router("r1")
 
-# Create LAN-1: Connect hosts `h1`, `h2`, `h3` and `h4` to switch `s1`
-# `eth1` to `eth4` are the interfaces at `h1` to `h4`, respectively.
-# `ets1a` is the first interface at `s1` which connects it with `h1`
-# `ets1b` is the second interface at `s1` which connects it with `h2`
-# `ets1c` is the third interface at `s1` which connects it with `h3`
-# `ets1d` is the fourth interface at `s1` which connects it with `h4`
-(eth1, ets1a) = connect(h1, s1)
-(eth2, ets1b) = connect(h2, s1)
-(eth3, ets1c) = connect(h3, s1)
-(eth4, ets1d) = connect(h4, s1)
+# Define the networks (subnets)
+n1 = Network("192.168.1.0/24")
+n2 = Network("192.168.2.0/24")
 
-# Create LAN-2: Connect hosts `h5`, `h6`, `h7` and `h8` to switch `s2`
-# `eth5` to `eth8` are the interfaces at `h5` to `h8`, respectively.
-# `ets2a` is the first interface at `s2` which connects it with `h5`
-# `ets2b` is the second interface at `s2` which connects it with `h6`
-# `ets2c` is the third interface at `s2` which connects it with `h7`
-# `ets2d` is the fourth interface at `s2` which connects it with `h8`
-(eth5, ets2a) = connect(h5, s2)
-(eth6, ets2b) = connect(h6, s2)
-(eth7, ets2c) = connect(h7, s2)
-(eth8, ets2d) = connect(h8, s2)
+# Connect LAN-1 hosts (h1 to h4) to switch s1 on network n1
+(eth1, est1a) = connect(h1, s1, network=n1)
+(eth2, est1b) = connect(h2, s1, network=n1)
+(eth3, est1c) = connect(h3, s1, network=n1)
+(eth4, est1d) = connect(h4, s1, network=n1)
 
-# Connect switches `s1` and `s2` to router `r1`
-# `ets1e` is the fifth interface at `s1` which connects it with `r1`
-# `ets2e` is the fifth interface at `s2` which connects it with `r1`
-# `etr1a` is the first interface at `r1` which connects it with `s1`
-# `etr1b` is the second interface at `r1` which connects it with `s2`
-(ets1e, etr1a) = connect(s1, r1)
-(ets2e, etr1b) = connect(s2, r1)
+# Connect LAN-2 hosts (h5 to h8) to switch s2 on network n2
+(eth5, est2a) = connect(h5, s2, network=n2)
+(eth6, est2b) = connect(h6, s2, network=n2)
+(eth7, est2c) = connect(h7, s2, network=n2)
+(eth8, est2d) = connect(h8, s2, network=n2)
 
-# Assign IPv4 addresses to all the interfaces of network on the left of `r1`
-# We assume that the IPv4 address of this network is `192.168.1.0/24`.
-# Assign IPv4 addresses to the hosts
-eth1.set_address("192.168.1.1/24")
-eth2.set_address("192.168.1.2/24")
-eth3.set_address("192.168.1.3/24")
-eth4.set_address("192.168.1.4/24")
+# Connect switches to router r1
+(est1e, etr1a) = connect(s1, r1, network=n1)
+(est2e, etr1b) = connect(s2, r1, network=n2)
 
-# Assign IPv4 address to the switch `s1` on the left of `r1`
-s1.set_address("192.168.1.5/24")
-
-# Assign IPv4 address to the left interface of `r1`
-etr1a.set_address("192.168.1.6/24")
-
-# Assign IPv4 addresses to all the interfaces of network on the right of `r1`
-# We assume that the IPv4 address of this network is `192.168.2.0/24`.
-# Assign IPv4 addresses to the hosts
-eth5.set_address("192.168.2.1/24")
-eth6.set_address("192.168.2.2/24")
-eth7.set_address("192.168.2.3/24")
-eth8.set_address("192.168.2.4/24")
-
-# Assign IPv4 address to the switch `s2` on the right of `r1`
-s2.set_address("192.168.2.5/24")
-
-# Assign IPv4 address to the right interface of `r1`
-etr1b.set_address("192.168.2.6/24")
+# Automatically assign all addresses using helper
+AddressHelper.assign_addresses()
 
 # Set the attributes of the links between hosts and switches
 eth1.set_attributes("100mbit", "1ms")
