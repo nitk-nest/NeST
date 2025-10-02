@@ -5,9 +5,11 @@
 
 import logging
 import matplotlib.pyplot as plt
+import pandas as pd
+from nest import config
 from ..interrupts import handle_keyboard_interrupt
 from ..pack import Pack
-from .common import simple_plot
+from .common import simple_plot, simple_gnu_plot
 
 logger = logging.getLogger(__name__)
 
@@ -132,26 +134,45 @@ def _plot_mpeg_dash(flow, node, server_ip, stats_type):
     stats_type : string
         The type of stats for which plots are required. Can be 'Audio' or 'Video'.
     """
+
     data = _extract_from_mpeg_dash(flow, node, server_ip, stats_type)
     if data is None or data["values"] is None:
         return
 
     server_node = data["server_node"]
     (chunk_numbers, flow_params) = data["values"]
-
     legend_string = f"Server {server_node} to client {node}"
     for param in flow_params:
-        fig = simple_plot(
-            f"MPEG-DASH {stats_type} Statistics",
-            chunk_numbers,
-            flow_params[param],
-            ["Number of chunks", _get_ylabel(param)],
-            legend_string=legend_string,
-        )
+        base_filename = f"{stats_type.lower()}_{param}_{server_node}_to_{node}"
+        # Always generate data files
+        data_frame = pd.DataFrame(list(zip(chunk_numbers, flow_params[param])))
+        Pack.dump_datfile("mpeg_dash", f"{base_filename}.dat", data_frame)
 
-        filename = f"{stats_type.lower()}_{param}_{server_node}_to_{node}.png"
-        Pack.dump_plot("mpeg_dash", filename, fig)
-        plt.close(fig)
+        # Generate plot using matplotlib
+        if config.get_value("enable_matplot"):
+            fig = simple_plot(
+                f"MPEG-DASH {stats_type} Statistics",
+                chunk_numbers,
+                flow_params[param],
+                ["Number of chunks", _get_ylabel(param)],
+                legend_string=legend_string,
+            )
+            Pack.dump_plot("mpeg_dash", f"{base_filename}.png", fig)
+            plt.close(fig)
+
+        # Generate plot using gnuplot
+        if config.get_value("enable_gnuplot"):
+            paths = {
+                "dat": Pack.get_path("mpeg_dash", f"{base_filename}.dat"),
+                "eps": Pack.get_path("mpeg_dash", f"{base_filename}.eps"),
+                "plt": Pack.get_path("mpeg_dash", f"{base_filename}.plt"),
+            }
+            simple_gnu_plot(
+                paths,
+                ["Number of chunks", _get_ylabel(param)],
+                legend_string,
+                f"MPEG-DASH {stats_type} Statistics",
+            )
     return 0
 
 

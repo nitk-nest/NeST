@@ -174,20 +174,25 @@ def _plot_ss_flow(flow, node, dest_ip, dest_port, dat_tuple_flows):
             (x, y) for x, y in zip(timestamp, flow_params[param]) if y is not None
         ]
 
-        fig = simple_plot(
-            "Socket Statistics",
-            [x for x, _ in filtered_data],
-            [y for _, y in filtered_data],
-            ["Time (Seconds)", _get_ylabel(param)],
-            legend_string=legend_string,
-        )
-
         base_filename = f"{param}_{node}_to_{destination_node}({dest_ip}:{dest_port})"
-        Pack.dump_plot("ss", f"{base_filename}.png", fig)
-        plt.close(fig)
 
+        # Always generate data files
+        Pack.dump_datfile("ss", f"{base_filename}.dat", pd.DataFrame(filtered_data))
+
+        # Generate plot using matplotlib
+        if config.get_value("enable_matplot"):
+            fig = simple_plot(
+                "Socket Statistics",
+                [x for x, _ in filtered_data],
+                [y for _, y in filtered_data],
+                ["Time (Seconds)", _get_ylabel(param)],
+                legend_string=legend_string,
+            )
+            Pack.dump_plot("ss", f"{base_filename}.png", fig)
+            plt.close(fig)
+
+        # Generate plot using gnuplot
         if config.get_value("enable_gnuplot"):
-            Pack.dump_datfile("ss", f"{base_filename}.dat", pd.DataFrame(filtered_data))
             paths = {
                 "dat": Pack.get_path("ss", f"{base_filename}.dat"),
                 "eps": Pack.get_path("ss", f"{base_filename}.eps"),
@@ -286,18 +291,21 @@ def plot_ss(parsed_data):
                                 {"values": (x_vals[i], y_vals[i]), "label": labels[i]}
                             )
 
-                        fig = mix_plot(
-                            "Socket Statistics",
-                            data,
-                            ["Time (Seconds)", _get_ylabel(param)],
-                        )
-
                         base_filename = (
                             f"{param}_{node}_to_{destination_node}({dest_ip})"
                         )
-                        Pack.dump_plot("ss", f"{base_filename}.png", fig)
-                        plt.close(fig)
 
+                        # Generate aggregate plot using matplotlib
+                        if config.get_value("enable_matplot"):
+                            fig = mix_plot(
+                                "Socket Statistics",
+                                data,
+                                ["Time (Seconds)", _get_ylabel(param)],
+                            )
+                            Pack.dump_plot("ss", f"{base_filename}.png", fig)
+                            plt.close(fig)
+
+                        # Generate aggregate plot using gnuplot
                         if config.get_value("enable_gnuplot"):
                             paths = {
                                 "eps": Pack.get_path("ss", f"{base_filename}.eps"),

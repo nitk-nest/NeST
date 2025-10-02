@@ -57,20 +57,27 @@ def _plot_ping_flow(flow, node, dest):
         # add relative time in timestamp
         timestamp.append(float(data["timestamp"]) - start_time)
 
-    fig = simple_plot(
-        "",
-        timestamp,
-        rtt,
-        ["Time (Seconds)", "Ping Latency (ms)"],
-        legend_string=f"{node} to {destination_node} ({dest})",
-    )
     base_filename = f"ping_{node}_to_{destination_node}({dest})"
-    Pack.dump_plot("ping", f"{base_filename}.png", fig)
-    plt.close(fig)
-    if config.get_value("enable_gnuplot"):
-        data_frame = pd.DataFrame(list(zip(timestamp, rtt)))
-        Pack.dump_datfile("ping", base_filename + ".dat", data_frame)
+    legend_string = f"{node} to {destination_node} ({dest})"
 
+    # Always generate data files
+    data_frame = pd.DataFrame(list(zip(timestamp, rtt)))
+    Pack.dump_datfile("ping", f"{base_filename}.dat", data_frame)
+
+    # Generate plot using matplotlib
+    if config.get_value("enable_matplot"):
+        fig = simple_plot(
+            "",
+            timestamp,
+            rtt,
+            ["Time (Seconds)", "Ping Latency (ms)"],
+            legend_string=legend_string,
+        )
+        Pack.dump_plot("ping", f"{base_filename}.png", fig)
+        plt.close(fig)
+
+    # Generate plot using gnuplot
+    if config.get_value("enable_gnuplot"):
         # Store paths in a dict for .dat, .eps and .plt
         paths = {
             "dat": Pack.get_path("ping", f"{base_filename}.dat"),
@@ -78,7 +85,6 @@ def _plot_ping_flow(flow, node, dest):
             "plt": Pack.get_path("ping", f"{base_filename}.plt"),
         }
 
-        legend_string = f"{node} to {destination_node} ({dest})"
         simple_gnu_plot(
             paths,
             ["Time (Seconds)", "Ping Latency (ms)"],

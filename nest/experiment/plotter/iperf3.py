@@ -80,32 +80,35 @@ def _plot_iperf3_flow(flow, node, dest_ip, local_port):
         Local port of the flow
     """
     data = _extract_from_iperf3_flow(flow, node, dest_ip, local_port)
-    destination_node = data["destination_node"]
-    values = data["values"]
-
-    if values is None:
+    if data is None or data["values"] is None:
         return
-    (timestamp, sending_rate) = values
 
-    legend_string = f"{node} from port {local_port} to {destination_node} ({dest_ip})"
-
-    fig = simple_plot(
-        "",
-        timestamp,
-        sending_rate,
-        ["Time (Seconds)", "Sending Rate (Mbps)"],
-        legend_string,
-    )
+    destination_node = data["destination_node"]
+    (timestamp, sending_rate) = data["values"]
 
     base_filename = (
         f"sending_rate_{node}({local_port})_to_{destination_node}({dest_ip})"
     )
-    Pack.dump_plot("iperf3", f"{base_filename}.png", fig)
-    plt.close(fig)
-    if config.get_value("enable_gnuplot"):
-        data_frame = pd.DataFrame(list(zip(timestamp, sending_rate)))
-        Pack.dump_datfile("iperf3", f"{base_filename}.dat", data_frame)
+    # Always generate data files
+    data_frame = pd.DataFrame(list(zip(timestamp, sending_rate)))
+    Pack.dump_datfile("iperf3", f"{base_filename}.dat", data_frame)
 
+    legend_string = f"{node} from port {local_port} to {destination_node} ({dest_ip})"
+
+    # Generate plot using matplotlib
+    if config.get_value("enable_matplot"):
+        fig = simple_plot(
+            "",
+            timestamp,
+            sending_rate,
+            ["Time (Seconds)", "Sending Rate (Mbps)"],
+            legend_string,
+        )
+        Pack.dump_plot("iperf3", f"{base_filename}.png", fig)
+        plt.close(fig)
+
+    # Generate plot using gnuplot
+    if config.get_value("enable_gnuplot"):
         # Store paths in a dict for .dat, .eps and .plt
         paths = {
             "dat": Pack.get_path("iperf3", f"{base_filename}.dat"),

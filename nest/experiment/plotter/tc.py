@@ -73,21 +73,27 @@ def _plot_tc_stats(stats, node, interface):
     (qdisc, timestamp, stats_params) = values
 
     for param in stats_params:
-        fig = simple_plot(
-            "Traffic Control (tc) Statistics",
-            timestamp,
-            stats_params[param],
-            ["Time (Seconds)", param],
-            legend_string=f"Interface {interface} in {node}",
-        )
         base_filename = f"{node}_{interface}_{qdisc}_{param}"
-        Pack.dump_plot("tc", f"{base_filename}.png", fig)
-        plt.close(fig)
+        legend_string = f"Interface {interface} in {node}"
 
+        # Always generate data files
+        data_frame = pd.DataFrame(list(zip(timestamp, stats_params[param])))
+        Pack.dump_datfile("tc", f"{base_filename}.dat", data_frame)
+
+        # Generate plot using matplotlib
+        if config.get_value("enable_matplot"):
+            fig = simple_plot(
+                "Traffic Control (tc) Statistics",
+                timestamp,
+                stats_params[param],
+                ["Time (Seconds)", param],
+                legend_string=legend_string,
+            )
+            Pack.dump_plot("tc", f"{base_filename}.png", fig)
+            plt.close(fig)
+
+        # Generate plot using gnuplot
         if config.get_value("enable_gnuplot"):
-            data_frame = pd.DataFrame(list(zip(timestamp, stats_params[param])))
-            Pack.dump_datfile("tc", f"{base_filename}.dat", data_frame)
-
             # Store paths in a dict for .dat, .eps and .plt
             paths = {
                 "dat": Pack.get_path("tc", f"{base_filename}.dat"),
@@ -95,7 +101,6 @@ def _plot_tc_stats(stats, node, interface):
                 "plt": Pack.get_path("tc", f"{base_filename}.plt"),
             }
 
-            legend_string = f"Interface {interface} in {node}"
             simple_gnu_plot(
                 paths,
                 ["Time (Seconds)", param],

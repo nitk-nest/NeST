@@ -43,6 +43,7 @@ import nest.config as config
 # program.
 
 config.set_value("enable_gnuplot", True)
+config.set_value("enable_matplot", False)
 
 # Create four hosts `h1` to `h4`, and two routers `r1` and `r2`
 h1 = Node("h1")

@@ -272,3 +272,44 @@ def mix_gnu_plot(dat_list, paths, labels, legend_list, title=""):
     build_gnuplot(directory, paths["plt"], pltline)
     Pack.set_owner(paths["plt"])
     Pack.set_owner(paths["eps"])
+
+
+def bar_gnu_plot(paths, labels, title="", legend_string=None):
+    """Plot Gnuplot
+
+    Parameters
+    ----------
+    paths : Dict[str, str]
+        Dictionary containing file paths ('dat', 'plt', 'eps').
+    labels : list
+       Labels for the axes, as [x_label, y_label].
+    title : str
+        Title for the plot.
+    legend_string : None/str
+        If it is a string, it is used as the legend for the bars.
+    """
+    directory = os.getcwd() + "/"
+    pltline = (
+        f"set term postscript eps enhanced color blacktext 'Arial'\n"
+        f"set output '{directory}{paths['eps']}'\n"
+        f"set title '{title}'\n"
+        f"set xlabel '{labels[0]}'\n"
+        f"set ylabel '{labels[1]}'\n"
+        f"set style data histograms\n"
+        f"set style fill solid 1.0 border -1\n"
+        f"set boxwidth 0.8\n"
+        f"set xtics rotate by -45\n"
+    )
+    plot_cmd = f"plot '{directory}{paths['dat']}' using 2:xtic(1)"
+
+    if legend_string:
+        pltline += "set key top right\n"
+        plot_cmd += f" title '{legend_string}'"
+    else:
+        pltline += "set key off\n"
+
+    pltline += plot_cmd + "\n"
+
+    build_gnuplot(directory, paths["plt"], pltline)
+    Pack.set_owner(paths["plt"])
+    Pack.set_owner(paths["eps"])

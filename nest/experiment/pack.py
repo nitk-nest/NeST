@@ -160,6 +160,7 @@ class Pack:
         filename_dat : str
         data_frame:pandas Dataframe
         """
+        Pack.create_subfolder(subfolder)
         path_dat = os.path.join(Pack.FOLDER, subfolder, filename_dat)
         data_frame.to_csv(path_dat, index=False, sep=" ", header=False)
         Pack.set_owner(path_dat)

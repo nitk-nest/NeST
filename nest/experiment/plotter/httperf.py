@@ -5,9 +5,11 @@
 import logging
 import time
 import matplotlib.pyplot as plt
+import pandas as pd
+from nest import config
 from nest.experiment.interrupts import handle_keyboard_interrupt
 from ..pack import Pack
-from .common import html_table, bar_plot
+from .common import html_table, bar_plot, bar_gnu_plot
 
 logger = logging.getLogger(__name__)
 
@@ -39,18 +41,33 @@ def _plot_httperf_flow(stat, stat_data):
     metric_data = []
     for client in clients:
         metric_data.append(stat_data[client])
-
-    fig = bar_plot(
-        "",
-        clients,
-        metric_data,
-        ["Clients", stat],
-    )
-
     current_timestamp = time.time()
-    filename = f"comparison_plot_for_{stat}_httperf_{current_timestamp}.png"
-    Pack.dump_plot("httperf", filename, fig)
-    plt.close(fig)
+    base_filename = f"comparison_plot_for_{stat}_httperf_{current_timestamp}"
+    legend_string = f"Comparison plot for {stat}"
+
+    # Always generate data files
+    data_frame = pd.DataFrame(list(zip(clients, metric_data)))
+    Pack.dump_datfile("httperf", f"{base_filename}.dat", data_frame)
+
+    # Generate plot using matplotlib
+    if config.get_value("enable_matplot"):
+        fig = bar_plot(
+            "",
+            clients,
+            metric_data,
+            ["Clients", stat],
+        )
+        Pack.dump_plot("httperf", f"{base_filename}.png", fig)
+        plt.close(fig)
+
+    # Generate plot using gnuplot
+    if config.get_value("enable_gnuplot"):
+        paths = {
+            "dat": Pack.get_path("httperf", f"{base_filename}.dat"),
+            "eps": Pack.get_path("httperf", f"{base_filename}.eps"),
+            "plt": Pack.get_path("httperf", f"{base_filename}.plt"),
+        }
+        bar_gnu_plot(paths, ["Clients", stat], legend_string)
 
     return {"label": stat, "values": (clients, metric_data)}
 

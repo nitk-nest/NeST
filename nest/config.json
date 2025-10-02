@@ -12,5 +12,6 @@
     "routing_logs": false,
     "mpeg_dash_delete_encoded_chunks_on_termination": false,
     "show_mptcp_checklist": false,
-    "enable_gnuplot": false
+    "enable_gnuplot": false,
+    "enable_matplot": true
 }

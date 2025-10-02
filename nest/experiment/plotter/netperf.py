@@ -62,24 +62,26 @@ def _plot_netperf_flow(flow, node, dest, dat_list_flows=None):
         # add relative time in timestamp
         timestamp.append(float(data["timestamp"]) - start_time)
 
-    legend_string = f"{node} to {destination_node} ({dest})"
-
-    # TODO: Check if sending_rate is always in Mbps
-    fig = simple_plot(
-        "",
-        timestamp,
-        sending_rate,
-        ["Time (Seconds)", "Sending Rate (Mbps)"],
-        legend_string=legend_string,
-    )
-
     base_filename = f"sending_rate_{node}_to_{destination_node}({dest})"
-    Pack.dump_plot("netperf", f"{base_filename}.png", fig)
-    plt.close(fig)
-    if config.get_value("enable_gnuplot"):
-        data_frame = pd.DataFrame(list(zip(timestamp, sending_rate)))
-        Pack.dump_datfile("netperf", f"{base_filename}.dat", data_frame)
+    # Always generate data files
+    data_frame = pd.DataFrame(list(zip(timestamp, sending_rate)))
+    Pack.dump_datfile("netperf", f"{base_filename}.dat", data_frame)
+    legend_string = f"{node} to {destination_node} ({dest})"
+    # Generate plot using matplotlib
+    if config.get_value("enable_matplot"):
+        # TODO: Check if sending_rate is always in Mbps
+        fig = simple_plot(
+            "",
+            timestamp,
+            sending_rate,
+            ["Time (Seconds)", "Sending Rate (Mbps)"],
+            legend_string=legend_string,
+        )
+        Pack.dump_plot("netperf", f"{base_filename}.png", fig)
+        plt.close(fig)
 
+    # Generate plot using gnuplot
+    if config.get_value("enable_gnuplot"):
         # Store paths in a dict for .dat, .eps and .plt
         paths = {
             "dat": Pack.get_path("netperf", f"{base_filename}.dat"),
@@ -125,16 +127,19 @@ def plot_netperf(parsed_data):
                     all_flow_data.append(plotted_data)
 
         if len(all_flow_data) > 1:
-            fig = mix_plot(
-                "",
-                all_flow_data,
-                ["Time (Seconds)", "Sending Rate (Mbps)"],
-                with_sum=True,
-            )
-            base_filename = f"sending_rate_{node}"
-            Pack.dump_plot("netperf", f"{base_filename}.png", fig)
-            plt.close(fig)
+            # Generate aggregate plot using matplotlib
+            if config.get_value("enable_matplot"):
+                fig = mix_plot(
+                    "",
+                    all_flow_data,
+                    ["Time (Seconds)", "Sending Rate (Mbps)"],
+                    with_sum=True,
+                )
+                base_filename = f"sending_rate_{node}"
+                Pack.dump_plot("netperf", f"{base_filename}.png", fig)
+                plt.close(fig)
 
+            # Generate aggregate plot using gnuplot
             if config.get_value("enable_gnuplot"):
                 paths = {
                     "eps": Pack.get_path("netperf", f"{base_filename}.eps"),
