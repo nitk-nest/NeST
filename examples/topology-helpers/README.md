@@ -38,3 +38,30 @@ qdisc (along with qdisc parameters) can be changed. Note that three packages:
 
 <!-- The below snippet will render example code in docs website -->
 <!-- #DOCS_INCLUDE: dumbbell-custom-config.py -->
+
+## 3. gfc1-basic-example.py
+This program uses the GFC-1 topology helper to create GFC-1 topology with 6 sender
+nodes (`A`, `B`, `C`, `D`, `E`, `F`), 6 receiver nodes (`A`, `B`, `C`, `D`, `E`, `F`)
+and 5 routers (`R1`, `R2`, `R3`, `R4`, `R5`). The flows are set up between the senders
+and receivers as per the GFC-1 topology, the diagram of which is provided in the code
+comments. The program demonstrates how to use the Gfc1Helper class to create the topology
+with default configuration and collect qdisc statistics on specific router interfaces.
+Note that two packages: `Experiment` and `Gfc1Helper` are used in this program.  
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: gfc1-basic-example.py -->
+
+## 4. gfc1-custom-config.py
+This program uses the GFC-1 topology helper to create GFC-1 topology with 6 sender
+nodes (`A`, `B`, `C`, `D`, `E`, `F`), 6 receiver nodes (`A`, `B`, `C`, `D`, `E`, `F`)
+and 5 routers (`R1`, `R2`, `R3`, `R4`, `R5`). The flows are set up between the senders
+and receivers according to the GFC-1 topology, as depicted in the code comments.
+This program is similar to `gfc1-basic-example.py` available in `examples/topology-helpers`,
+but demonstrates how to use custom configuration options provided by the Gfc1Helper class.
+The example shows how to customise the number and type of flows between sender and
+receiver nodes, adjust flow duration, set custom qdisc and its parameters at router interfaces,
+configure link attributes at interfaces, use IPv4 addressing instead of the default
+IPv6 addressing, and enable routing logs.
+
+<!-- The below snippet will render example code in docs website -->
+<!-- #DOCS_INCLUDE: gfc1-custom-config.py -->
