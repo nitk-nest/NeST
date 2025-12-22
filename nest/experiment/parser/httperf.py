@@ -71,21 +71,14 @@ class HTTPRunner(Runner):
         """
         Calls engine method to run http client
         """
-        # If user has not supplied the http flow options
+        # If user has supplied the http flow options
         if self.http_flow_options is not None:
-            # Creating the options string for running the HTTP client
-            if (
-                "num-calls" in self.http_flow_options.keys()
-                and self.http_flow_options["num-calls"] != ""
-            ):
-                client_content = self.http_flow_options["num-calls"]
-                client_options = f"--num-calls={client_content}"
-            if (
-                "timeout" in self.http_flow_options.keys()
-                and self.http_flow_options["timeout"] != ""
-            ):
-                client_content = self.http_flow_options["timeout"]
-                client_options = client_options + f" --timeout={client_content}"
+            client_options = ""
+            for key in self.http_flow_options:
+                if self.http_flow_options[key] != "":
+                    client_options = (
+                        client_options + f"--{key}={self.http_flow_options[key]} "
+                    )
         else:
             client_options = ""
         # Run HTTP client
