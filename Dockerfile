@@ -152,7 +152,7 @@ RUN make install
 
 # Install SIPp
 WORKDIR /home
-RUN git clone https://github.com/SIPp/sipp.git
+RUN git clone -b v3.7.7 --depth 1 https://github.com/SIPp/sipp.git
 WORKDIR /home/sipp
 
 # Run cmake to configure the build with necessary options
