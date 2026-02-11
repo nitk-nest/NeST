@@ -381,7 +381,10 @@ def run_experiment(exp):
             exp.name,
         )
     finally:
+        results = get_results() if exp.return_results else None
         cleanup()
+
+    return results
 
 
 def tcp_modules_helper(exp):
@@ -504,6 +507,33 @@ def dump_json_outputs():
     MpegDashResults.output_to_file()
     SipResults.output_to_file()
     HTTPResults.output_to_file()
+
+
+def get_results():
+    """
+    Get all results obtained from the experiment.
+
+    Returns
+    -------
+    dict
+        Dictionary containing all results obtained from the experiment.
+    """
+
+    results = {}
+    results["ss"] = SsResults.get_results()
+    results["netperf"] = NetperfResults.get_results()
+    results["iperf3"] = Iperf3Results.get_results()
+    results["tc"] = TcResults.get_results()
+    results["ping"] = PingResults.get_results()
+    results["coap"] = CoAPResults.get_results()
+    results["iperf3_server"] = Iperf3ServerResults.get_results()
+    results["mpeg_dash"] = MpegDashResults.get_results()
+    results["sip"] = SipResults.get_results()
+    results["http"] = HTTPResults.get_results()
+
+    results = {key: value for key, value in results.items() if value}
+
+    return results
 
 
 def setup_flow_workers(exp_runners, exp_stop_time):

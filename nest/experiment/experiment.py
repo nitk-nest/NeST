@@ -627,7 +627,7 @@ class Experiment:
     new_cong_algos = []
 
     @input_validator
-    def __init__(self, name: str, save_path: str = None):
+    def __init__(self, name: str, save_path: str = None, return_results: bool = False):
         """
         Create experiment
 
@@ -640,6 +640,7 @@ class Experiment:
         """
         self.name = name
         self.save_path = save_path
+        self.return_results = return_results
         self.flows = []
         self.coap_applications = []
         self.mpeg_dash_applications = []
