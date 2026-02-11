@@ -627,7 +627,7 @@ class Experiment:
     new_cong_algos = []
 
     @input_validator
-    def __init__(self, name: str):
+    def __init__(self, name: str, save_path: str = None):
         """
         Create experiment
 
@@ -635,8 +635,11 @@ class Experiment:
         ----------
         name : str
             Name of experiment
+        save_path : str, optional
+            Path to experiment dump
         """
         self.name = name
+        self.save_path = save_path
         self.flows = []
         self.coap_applications = []
         self.mpeg_dash_applications = []
@@ -955,10 +958,12 @@ class Experiment:
         """Run the experiment"""
         print()
         logger.info("Running experiment %s ", self.name)
-        Pack.init(self.name)
+        self.save_path = Pack.init(self.name, self.save_path)
+        if self.save_path is None:
+            return None
         if config.get_value("show_mptcp_checklist"):
             tcp_validator.verify_mptcp_setup(self)
-        run_experiment(self)
+        return run_experiment(self)
 
     def __repr__(self):
         classname = self.__class__.__name__

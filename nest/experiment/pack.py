@@ -1,13 +1,16 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2025 NITK Surathkal
+# Copyright (c) 2019-2026 NITK Surathkal
 
 """Package all results into a folder"""
 
 import os
 import time
 import shutil
+import logging
 
 from nest.user import User
+
+logger = logging.getLogger(__name__)
 
 
 class Pack:
@@ -16,7 +19,7 @@ class Pack:
     FOLDER = ""
 
     @staticmethod
-    def init(exp_name):
+    def init(exp_name, save_path):
         """
         Create a folder with format 'testname(time)_dump'
 
@@ -24,11 +27,24 @@ class Pack:
         ----------
         exp_name : str
             Name of experiment
+        save_path : str
+            Path to experiment dump
         """
         timestamp = time.strftime("%d-%m-%Y-%H:%M:%S")
-        Pack.FOLDER = f"{exp_name}({timestamp})_dump"
-        os.mkdir(Pack.FOLDER)
+        Pack.FOLDER = os.path.join(
+            save_path if save_path else ".", f"{exp_name}({timestamp})_dump"
+        )
+        try:
+            os.mkdir(Pack.FOLDER)
+        except OSError:
+            logger.error(
+                "Failed to create experimental dump folder. Please check your dump path provided."
+            )
+            return None
+
         Pack.set_owner(Pack.FOLDER)
+
+        return Pack.FOLDER
 
     @staticmethod
     def dump_file(filename, content):
