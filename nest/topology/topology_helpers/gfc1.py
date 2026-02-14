@@ -11,6 +11,11 @@ from nest.topology.address_helper import AddressHelper
 from nest.routing.routing_helper import RoutingHelper
 
 # This is a topology helper for the GFC-1 topology.
+# The design for this GFC (Generic Fairness Configuration) is derived from the
+# test configurations described in:
+# Robert J. Simcoe,"Test configurations for fairness and other tests",
+# ATM Forum/94-0557, July 1994.
+
 # The network topology consists of 6 sender nodes (A, B, C, D, E, F),
 # 6 receiver nodes (A, B, C, D, E, F) and 5 routers (R1, R2, R3, R4, R5).
 #
@@ -362,23 +367,17 @@ class Gfc1Helper:
         """
 
         # Creating network addresses based on the addressing scheme
+        count = (
+            self.num_nodes["senders"]
+            + self.num_nodes["receivers"]
+            + self.num_nodes["routers"]
+            - 1
+        )
         if self.use_ipv6:
-            count = (
-                self.num_nodes["senders"]
-                + self.num_nodes["receivers"]
-                + self.num_nodes["routers"]
-                - 1
-            )
             self.network_list = [
                 Network(f"2001:{i}::/120") for i in range(1, count + 1)
             ]
         else:
-            count = (
-                self.num_nodes["senders"]
-                + self.num_nodes["receivers"]
-                + self.num_nodes["routers"]
-                - 1
-            )
             self.network_list = [
                 Network(f"192.168.{i}.0/24") for i in range(1, count + 1)
             ]
@@ -390,173 +389,70 @@ class Gfc1Helper:
         """
         Connects sender nodes to the routers
         """
-        # Connecting interface of sender A (eths1) to the interface of router R1 (etr1a)
-        [sender_interface, router_interface] = connect(
-            self.nodes["senders"][0],
-            self.nodes["routers"][0],
-            network=self.network_list[self.net_count],
-        )
-        self.interfaces["senders"].append(sender_interface)
-        self.interfaces["routers"][0].append(router_interface)
-        self.net_count += 1
-
-        # Connecting interface of sender B (eths2) to the interface of router R2 (etr2a)
-        [sender_interface, router_interface] = connect(
-            self.nodes["senders"][1],
-            self.nodes["routers"][1],
-            network=self.network_list[self.net_count],
-        )
-        self.interfaces["senders"].append(sender_interface)
-        self.interfaces["routers"][1].append(router_interface)
-        self.net_count += 1
-
-        # Connecting interface of sender C (eths3) to the interface of router R3 (etr3a)
-        [sender_interface, router_interface] = connect(
-            self.nodes["senders"][2],
-            self.nodes["routers"][2],
-            network=self.network_list[self.net_count],
-        )
-        self.interfaces["senders"].append(sender_interface)
-        self.interfaces["routers"][2].append(router_interface)
-        self.net_count += 1
-
-        # Connecting interface of sender D (eths4) to the interface of router R1 (etr1b)
-        [sender_interface, router_interface] = connect(
-            self.nodes["senders"][3],
-            self.nodes["routers"][0],
-            network=self.network_list[self.net_count],
-        )
-        self.interfaces["senders"].append(sender_interface)
-        self.interfaces["routers"][0].append(router_interface)
-        self.net_count += 1
-
-        # Connecting interface of sender E (eths5) to the interface of router R4 (etr4a)
-        [sender_interface, router_interface] = connect(
-            self.nodes["senders"][4],
-            self.nodes["routers"][3],
-            network=self.network_list[self.net_count],
-        )
-        self.interfaces["senders"].append(sender_interface)
-        self.interfaces["routers"][3].append(router_interface)
-        self.net_count += 1
-
-        # Connecting interface of sender F (eths6) to the interface of router R2 (etr2b)
-        [sender_interface, router_interface] = connect(
-            self.nodes["senders"][5],
-            self.nodes["routers"][1],
-            network=self.network_list[self.net_count],
-        )
-        self.interfaces["senders"].append(sender_interface)
-        self.interfaces["routers"][1].append(router_interface)
-        self.net_count += 1
+        # sender_router_map defines the sender-to-router connectivity
+        sender_router_map = [
+            (0, 0),
+            (1, 1),
+            (2, 2),
+            (3, 0),
+            (4, 3),
+            (5, 1),
+        ]
+        for sender_id, router_id in sender_router_map:
+            sender_interface, router_interface = connect(
+                self.nodes["senders"][sender_id],
+                self.nodes["routers"][router_id],
+                network=self.network_list[self.net_count],
+            )
+            self.interfaces["senders"].append(sender_interface)
+            self.interfaces["routers"][router_id].append(router_interface)
+            self.net_count += 1
 
     def _connect_routers(self):
         """
         Connects routers to each other
         """
-        # Connecting interface of router R1 (etr1c) to the interface of router R2 (etr2c)
-        [router1_interface, router2_interface] = connect(
-            self.nodes["routers"][0],
-            self.nodes["routers"][1],
-            network=self.network_list[self.net_count],
-        )
-        self.interfaces["routers"][0].append(router1_interface)
-        self.interfaces["routers"][1].append(router2_interface)
-        self.net_count += 1
+        # router_router_map defines the router-to-router connectivity
+        router_router_map = [
+            (0, 1),
+            (1, 2),
+            (2, 3),
+            (3, 4),
+        ]
 
-        # Connecting interface of router R2 (etr2d) to the interface of router R3 (etr3b)
-        [router2_interface, router3_interface] = connect(
-            self.nodes["routers"][1],
-            self.nodes["routers"][2],
-            network=self.network_list[self.net_count],
-        )
-        self.interfaces["routers"][1].append(router2_interface)
-        self.interfaces["routers"][2].append(router3_interface)
-        self.net_count += 1
-
-        # Connecting interface of router R3 (etr3c) to the interface of router R4 (etr4b)
-        [router3_interface, router4_interface] = connect(
-            self.nodes["routers"][2],
-            self.nodes["routers"][3],
-            network=self.network_list[self.net_count],
-        )
-        self.interfaces["routers"][2].append(router3_interface)
-        self.interfaces["routers"][3].append(router4_interface)
-        self.net_count += 1
-
-        # Connecting interface of router R4 (etr4c) to the interface of router R5 (etr5a)
-        [router4_interface, router5_interface] = connect(
-            self.nodes["routers"][3],
-            self.nodes["routers"][4],
-            network=self.network_list[self.net_count],
-        )
-        self.interfaces["routers"][3].append(router4_interface)
-        self.interfaces["routers"][4].append(router5_interface)
-        self.net_count += 1
+        for router1_id, router2_id in router_router_map:
+            router1_interface, router2_interface = connect(
+                self.nodes["routers"][router1_id],
+                self.nodes["routers"][router2_id],
+                network=self.network_list[self.net_count],
+            )
+            self.interfaces["routers"][router1_id].append(router1_interface)
+            self.interfaces["routers"][router2_id].append(router2_interface)
+            self.net_count += 1
 
     def _connect_receivers(self):
         """
         Connects receiver nodes to the routers
         """
-        # Connecting interface of receiver A (ethr1) to the interface of router R4 (etr4d)
-        [receiver_interface, router_interface] = connect(
-            self.nodes["receivers"][0],
-            self.nodes["routers"][3],
-            network=self.network_list[self.net_count],
-        )
-        self.interfaces["receivers"].append(receiver_interface)
-        self.interfaces["routers"][3].append(router_interface)
-        self.net_count += 1
+        # receiver_router_map defines the receiver-to-router connectivity
+        receiver_router_map = [
+            (0, 3),
+            (1, 4),
+            (2, 3),
+            (3, 1),
+            (4, 4),
+            (5, 2),
+        ]
 
-        # Connecting interface of receiver B (ethr2) to the interface of router R5 (etr5b)
-        [receiver_interface, router_interface] = connect(
-            self.nodes["receivers"][1],
-            self.nodes["routers"][4],
-            network=self.network_list[self.net_count],
-        )
-        self.interfaces["receivers"].append(receiver_interface)
-        self.interfaces["routers"][4].append(router_interface)
-        self.net_count += 1
-
-        # Connecting interface of receiver C (ethr3) to the interface of router R4 (etr4e)
-        [receiver_interface, router_interface] = connect(
-            self.nodes["receivers"][2],
-            self.nodes["routers"][3],
-            network=self.network_list[self.net_count],
-        )
-        self.interfaces["receivers"].append(receiver_interface)
-        self.interfaces["routers"][3].append(router_interface)
-        self.net_count += 1
-
-        # Connecting interface of receiver D (ethr4) to the interface of router R2 (etr2e)
-        [receiver_interface, router_interface] = connect(
-            self.nodes["receivers"][3],
-            self.nodes["routers"][1],
-            network=self.network_list[self.net_count],
-        )
-        self.interfaces["receivers"].append(receiver_interface)
-        self.interfaces["routers"][1].append(router_interface)
-        self.net_count += 1
-
-        # Connecting interface of receiver E (ethr5) to the interface of router R5 (etr5c)
-        [receiver_interface, router_interface] = connect(
-            self.nodes["receivers"][4],
-            self.nodes["routers"][4],
-            network=self.network_list[self.net_count],
-        )
-        self.interfaces["receivers"].append(receiver_interface)
-        self.interfaces["routers"][4].append(router_interface)
-        self.net_count += 1
-
-        # Connecting interface of receiver F (ethr6) to the interface of router R3 (etr3d)
-        [receiver_interface, router_interface] = connect(
-            self.nodes["receivers"][5],
-            self.nodes["routers"][2],
-            network=self.network_list[self.net_count],
-        )
-        self.interfaces["receivers"].append(receiver_interface)
-        self.interfaces["routers"][2].append(router_interface)
-        self.net_count += 1
+        for receiver_id, router_id in receiver_router_map:
+            receiver_interface, router_interface = connect(
+                self.nodes["receivers"][receiver_id],
+                self.nodes["routers"][router_id],
+                network=self.network_list[self.net_count],
+            )
+            self.interfaces["receivers"].append(receiver_interface)
+            self.interfaces["routers"][router_id].append(router_interface)
+            self.net_count += 1
 
     def _assign_addresses_and_default_routes(self):
         """
@@ -590,11 +486,11 @@ class Gfc1Helper:
         qdisc = "pfifo"
 
         # Setting default attributes for interfaces of senders
-        for _, iface in enumerate(self.interfaces["senders"]):
+        for iface in self.interfaces["senders"]:
             iface.set_attributes(link_bandwidth, link_latency, qdisc)
 
         # Setting default attributes for interfaces of receivers
-        for _, iface in enumerate(self.interfaces["receivers"]):
+        for iface in self.interfaces["receivers"]:
             iface.set_attributes(link_bandwidth, link_latency)
 
         # Setting default attributes for interfaces of routers
@@ -603,14 +499,21 @@ class Gfc1Helper:
                 interface.set_attributes(link_bandwidth, link_latency, qdisc)
 
         # Setting default attributes for inter-router links
-        self.interfaces["routers"][0][2].set_attributes("50mbit", "12ms", qdisc)
-        self.interfaces["routers"][1][2].set_attributes("50mbit", "12ms", qdisc)
-        self.interfaces["routers"][1][3].set_attributes("150mbit", "12ms", qdisc)
-        self.interfaces["routers"][2][1].set_attributes("150mbit", "12ms", qdisc)
-        self.interfaces["routers"][2][2].set_attributes("150mbit", "12ms", qdisc)
-        self.interfaces["routers"][3][1].set_attributes("150mbit", "12ms", qdisc)
-        self.interfaces["routers"][3][2].set_attributes("100mbit", "12ms", qdisc)
-        self.interfaces["routers"][4][0].set_attributes("100mbit", "12ms", qdisc)
+        router_config = [
+            (0, 2, "50mbit", "12ms"),
+            (1, 2, "50mbit", "12ms"),
+            (1, 3, "150mbit", "12ms"),
+            (2, 1, "150mbit", "12ms"),
+            (2, 2, "150mbit", "12ms"),
+            (3, 1, "150mbit", "12ms"),
+            (3, 2, "100mbit", "12ms"),
+            (4, 0, "100mbit", "12ms"),
+        ]
+
+        for router_id, interface_id, bandwidth, delay in router_config:
+            self.interfaces["routers"][router_id][interface_id].set_attributes(
+                bandwidth, delay, qdisc
+            )
 
     def _setup_flows(self, exp, flows):
         """
