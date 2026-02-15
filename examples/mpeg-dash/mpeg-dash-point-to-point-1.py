@@ -31,8 +31,8 @@ from nest import config
 # i. Either copy a video file in the same directory as these examples and rename it as 'video.mp4', or
 # ii. Set the 'VIDEO_PATH' variable in the example to the path of the video file of the user's choice.
 # If the path specified by 'VIDEO_PATH' is invalid, then the API will automatically resort to
-# downloading a sample 15-second video from the Internet as a fallback mechanism. The sample video
-# will be downloaded from https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4 .
+# downloading a sample 1-minute video from the Internet as a fallback mechanism. The sample video
+# will be downloaded from https://download.blender.org/durian/trailer/sintel_trailer-1080p.mp4 .
 
 # The encoded chunks will be generated and dumped in a folder named
 # `mpeg-dash-encoded-chunks` in the same directory as this program.
