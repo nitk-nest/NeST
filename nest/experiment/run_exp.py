@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2025 NITK Surathkal
+# Copyright (c) 2019-2026 NITK Surathkal
 
 """Script to be run for running experiments on topology"""
 
@@ -262,6 +262,7 @@ def run_experiment(exp):
             port,
             _,
             duration,
+            _,
             _,
             _,
             _,
@@ -1113,6 +1114,7 @@ def setup_mpeg_dash_runners(dependency, application, ss_schedules, destination_n
             duration,
             player,
             enable_audio_playback,
+            enable_video_playback,
             additional_player_options,
         ] = application._get_props()  # pylint: disable=protected-access
 
@@ -1130,6 +1132,7 @@ def setup_mpeg_dash_runners(dependency, application, ss_schedules, destination_n
             duration,
             player,
             enable_audio_playback,
+            enable_video_playback,
             additional_player_options,
         )
         runners.append(mpeg_dash_runner)

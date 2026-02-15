@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2025 NITK Surathkal
+# Copyright (c) 2019-2026 NITK Surathkal
 
 """User API to setup and run experiments on a given topology"""
 
@@ -367,6 +367,7 @@ class MpegDashApplication(Application):
         duration: int,
         player: str,
         enable_audio_playback: bool = False,
+        enable_video_playback: bool = True,
         additional_player_options=None,
     ):
         """
@@ -393,6 +394,8 @@ class MpegDashApplication(Application):
             The media player to be used.
         enable_audio_playback: bool, Default is False (i.e. no audio)
             Enable/disable audio playback
+        enable_video_playback: bool, Default is True (i.e. video enabled)
+            Enable/disable video playback
         additional_player_options : list, optional
             User specified options for the video player
         """
@@ -402,6 +405,7 @@ class MpegDashApplication(Application):
         self.duration = duration
         self.player = player
         self.enable_audio_playback = enable_audio_playback
+        self.enable_video_playback = enable_video_playback
         self.additional_player_options = additional_player_options
 
         super().__init__(source_node, destination_node, destination_address)
@@ -435,6 +439,7 @@ class MpegDashApplication(Application):
             self.duration,
             self.player,
             self.enable_audio_playback,
+            self.enable_video_playback,
             self.additional_player_options,
         ]
 

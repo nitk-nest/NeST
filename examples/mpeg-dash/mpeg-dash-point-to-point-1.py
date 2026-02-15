@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2023 NITK Surathkal
+# Copyright (c) 2019-2026 NITK Surathkal
 
 ########################
 # SHOULD BE RUN AS ROOT
@@ -105,6 +105,8 @@ exp = Experiment("mpeg-dash-point-to-point-1")
 # to set the experiment duration less or equal to the video duration).
 # The media player to be used is set to 'gpac'. The audio playback, which is disabled
 # by default, can be enabled by setting `enable_audio_playback` to `True`.
+# The video playback, which is enabled by default,
+# can be disabled by setting `enable_video_playback` to `False`.
 
 app = MpegDashApplication(
     h1,
@@ -116,6 +118,7 @@ app = MpegDashApplication(
     100,
     player="gpac",
     enable_audio_playback=False,
+    enable_video_playback=True,
 )
 
 exp.add_mpeg_dash_application(app)

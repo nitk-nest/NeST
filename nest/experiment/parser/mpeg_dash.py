@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2023 NITK Surathkal
+# Copyright (c) 2019-2026 NITK Surathkal
 
 """
 Runs commands to setup MPEG-DASH experiment and collect data
@@ -108,6 +108,7 @@ class MpegDashRunner(Runner):
         duration,
         player,
         enable_audio_playback,
+        enable_video_playback,
         additional_player_options,
     ):
         """
@@ -131,6 +132,8 @@ class MpegDashRunner(Runner):
             The media player to be used.
         enable_audio_playback: bool
             Enable/disable audio playback
+        enable_video_playback: bool
+            Enable/disable video playback
         additional_player_options : string
             User specified options for the video player
         """
@@ -139,6 +142,7 @@ class MpegDashRunner(Runner):
         self.duration = duration
         self.player = player
         self.enable_audio_playback = enable_audio_playback
+        self.enable_video_playback = enable_video_playback
         self.additional_player_options = additional_player_options
         super().__init__(
             ns_id,
@@ -195,13 +199,20 @@ class MpegDashRunner(Runner):
         super().run(
             partial(
                 run_mpeg_dash_client,
-                self.ns_id,
-                self.destination_address.get_addr(with_subnet=False),
-                self.port,
-                self.duration,
-                player=self.player,
-                enable_audio_playback=self.enable_audio_playback,
-                additional_player_options=self.additional_player_options,
+                client_config={
+                    "ns_name": self.ns_id,
+                    "destination_ip": self.destination_address.get_addr(
+                        with_subnet=False
+                    ),
+                    "port": self.port,
+                    "duration": self.duration,
+                },
+                player_config={
+                    "player": self.player,
+                    "enable_audio_playback": self.enable_audio_playback,
+                    "enable_video_playback": self.enable_video_playback,
+                    "additional_player_options": self.additional_player_options,
+                },
             ),
             error_string_prefix="Running MPEG-DASH",
         )
