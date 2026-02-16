@@ -154,8 +154,8 @@ class MpegDashEncoder:
                 )
 
             input_video_url = (
-                "https://commondatastorage.googleapis.com/"
-                "gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+                "https://download.blender.org/"
+                "durian/trailer/sintel_trailer-1080p.mp4"
             )
 
             download_dir = "/tmp/mpeg-dash-sample-video/"
@@ -166,6 +166,11 @@ class MpegDashEncoder:
             input_video_path = (
                 download_dir + input_video_url.rsplit("/", maxsplit=1)[-1]
             )
+
+            video_path = Path(input_video_path)
+            min_size = 13 * 1024 * 1024  # 13MB
+            if not video_path.exists() or video_path.stat().st_size < min_size:
+                raise RuntimeError("Sample video download failed or incomplete!")
 
         MpegDashEncoder.mpeg_dash_encoded_chunks_path_list.append(output_path)
 
