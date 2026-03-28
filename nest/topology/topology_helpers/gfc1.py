@@ -23,17 +23,25 @@ from nest.routing.routing_helper import RoutingHelper
 #   * the number of flows between the senders and receivers
 #   * the choice of qdiscs and its configurable attributes.
 #
-# This helper expects four parameters:
+# This helper expects three parameters:
 #   * exp = An Experiment object that should be created before this helper is used (mandatory)
 #   * flows = A dictionary specifying the number and the kind of flows that the senders should send,
 #             along with the flow duration (via the key "flow_duration").
 #     (optional; if not provided, default values in the default_flows dictionary with TCP CUBIC will
 #                be used)
-#   * use_ipv6: A boolean flag indicating whether IPv6 addressing should be used (default: True).
-#     (optional; if not provided, IPv6 addresses will be used by default,
+#   * topology_config = A dictionary containing configuration options for the topology,
+#     which includes:
+#       - use_ipv6: A boolean flag indicating whether IPv6 addressing should be used
+#           (default: True).
+#           (optional; if not provided, IPv6 addresses will be used by default,
 #                and if set to False, IPv4 addresses are used)
-#   * enable_routing_logs: A boolean flag to enable or disable routing logs (default: False).
-#     (optional; if not provided, routing logs are disabled by default)
+#       - enable_routing_logs: A boolean flag to enable or disable routing logs
+#         (default: False).
+#           (optional; if not provided, routing logs are disabled by default)
+#       - use_dynamic_routing: A boolean flag to indicate whether to use dynamic routing (OSPF)
+#                          or static routing (default: False)
+#           (optional; if not provided, static routing is used by default, and if set to True,
+#                OSPF is used for routing)
 #
 # If use_ipv6 flag is set to True, the following address type is used: 2001:i::/120
 #   where i is the flow index (1, 2, 3, ...)
@@ -47,7 +55,11 @@ from nest.routing.routing_helper import RoutingHelper
 # - Each /24 subnet provides 256 addresses (2^8 host bits)
 # - Usable for up to 254 nodes (excluding network/broadcast)
 #
-# The OSPF routing protocol from the FRR suite is used for setting up the routes in the network.
+# If use_dynamic_routing flag is set to True,
+#    OSPF routing protocol is used for routing between the routers.
+#
+# If use_dynamic_routing flag is set to False,
+#    static routes are set up between the nodes and routers.
 #
 # Example of flows dictionary:
 #   flows = {
@@ -236,18 +248,26 @@ class Gfc1Helper:
                        }
         Dictionary containing all interfaces created in the topology
 
-    use_ipv6 : bool
-        Flag indicating whether IPv6 addressing is used
+    topology_config : dict {
+                    "use_ipv6": bool,
+                    "enable_routing_logs": bool,
+                    "use_dynamic_routing": bool
+                    }
+            use_ipv6 : bool
+                Flag indicating whether IPv6 addressing is used
 
-    enable_routing_logs : bool
-        Flag indicating whether routing logs are enabled
+            enable_routing_logs : bool
+                Flag indicating whether routing logs are enabled
+
+            use_dynamic_routing : bool
+                Flag indicating whether dynamic routing (OSPF) is used or static routing is used
 
     net_count : int
         Counter to track the current network index while assigning addresses
 
     Methods
     -------
-    __init__(exp, flows=None, use_ipv6=True, enable_routing_logs=False)
+    __init__(exp, flows=None, use_ipv6=True, enable_routing_logs=False, use_dynamic_routing=False)
         Creates the GFC-1 topology with the given parameters
 
     _configure_globals()
@@ -271,6 +291,9 @@ class Gfc1Helper:
     _assign_addresses_and_default_routes()
         Assigns IP addresses and default routes to all nodes and routers
 
+    _setup_static_routes(use_ipv6)
+        Sets up static routes for all senders, receivers and routers
+
     _configure_links()
         Configures link attributes for all interfaces
 
@@ -279,7 +302,7 @@ class Gfc1Helper:
 
     """
 
-    def __init__(self, exp, flows=None, use_ipv6=True, enable_routing_logs=False):
+    def __init__(self, exp, flows=None, topology_config=None):
         """
         Creates the GFC-1 topology with the given parameters:
 
@@ -292,16 +315,34 @@ class Gfc1Helper:
             along with the duration of the flows
             (default: None, in which case all senders send TCP flows with CUBIC congestion control
              for 300 seconds each)
-        use_ipv6 : bool, optional
-            A boolean flag indicating whether IPv6 addressing should be used
-            (default: True)
-        enable_routing_logs : bool, optional
-            A boolean flag to enable or disable routing logs
-            (default: False)
+        topology_config : dict, optional
+            A dictionary containing configuration options for the topology
+            (default: None, in which case uses:
+            {"use_ipv6": True, "enable_routing_logs": False, "use_dynamic_routing": False})
+            - use_ipv6 : bool, optional
+                A boolean flag indicating whether IPv6 addressing should be used (default: True).
+            - enable_routing_logs : bool, optional
+                A boolean flag to enable or disable routing logs
+                (default: False, in which case routing logs are disabled)
+            - use_dynamic_routing : bool, optional
+                A boolean flag to indicate whether to use dynamic routing (OSPF) or static routing
+                (default: False, in which case static routes are used instead of OSPF)
         """
 
         if flows is None:
             flows = {}
+
+        if topology_config is None:
+            topology_config = {
+                "use_ipv6": True,
+                "enable_routing_logs": False,
+                "use_dynamic_routing": False,
+            }
+        else:
+            # Set default values for any missing keys in topology_config
+            topology_config.setdefault("use_ipv6", True)
+            topology_config.setdefault("enable_routing_logs", False)
+            topology_config.setdefault("use_dynamic_routing", False)
 
         self.nodes = {
             "senders": [],
@@ -309,8 +350,7 @@ class Gfc1Helper:
             "routers": [],
         }
 
-        self.use_ipv6 = use_ipv6
-        self.enable_routing_logs = enable_routing_logs
+        self.topology_config = topology_config
         self._configure_globals()
         self._create_nodes_and_routers()
         self._create_networks()
@@ -326,10 +366,14 @@ class Gfc1Helper:
         Configures global settings for the topology
         """
 
-        # Using FRR (Free Range Routing) as the routing suite,
-        # to be able to use routing protocols like OSPF
-        config.set_value("routing_suite", "frr")
-        config.set_value("routing_logs", self.enable_routing_logs)
+        # Setting the routing suite and routing logs based on the use_dynamic_routing flag
+        if self.topology_config["use_dynamic_routing"]:
+            # Using FRR (Free Range Routing) as the routing suite,
+            # to be able to use routing protocols like OSPF
+            config.set_value("routing_suite", "frr")
+            config.set_value(
+                "routing_logs", self.topology_config["enable_routing_logs"]
+            )
 
     def _create_nodes_and_routers(self):
         """
@@ -373,7 +417,7 @@ class Gfc1Helper:
             + self.num_nodes["routers"]
             - 1
         )
-        if self.use_ipv6:
+        if self.topology_config["use_ipv6"]:
             self.network_list = [
                 Network(f"2001:{i}::/120") for i in range(1, count + 1)
             ]
@@ -472,10 +516,110 @@ class Gfc1Helper:
                 "DEFAULT", self.interfaces["receivers"][i]
             )
 
-        # Using OSPF routing protocol for setting the routes on the routers
-        RoutingHelper(
-            protocol="ospf", ipv6_routing=self.use_ipv6
-        ).populate_routing_tables()
+        if self.topology_config["use_dynamic_routing"]:
+            # Using OSPF routing protocol for setting the routes on the routers
+            RoutingHelper(
+                protocol="ospf", ipv6_routing=self.topology_config["use_ipv6"]
+            ).populate_routing_tables()
+        else:
+            self._setup_static_routes(self.topology_config["use_ipv6"])
+
+    def _setup_static_routes(self, use_ipv6):
+        """
+        Sets up static routes for all senders, receivers and routers
+
+        Sender networks (net indices 1-6):
+          net 1  : sA  <-> R1   (sender_router_map index 0)
+          net 2  : sB  <-> R2   (sender_router_map index 1)
+          net 3  : sC  <-> R3   (sender_router_map index 2)
+          net 4  : sD  <-> R1   (sender_router_map index 3)
+          net 5  : sE  <-> R4   (sender_router_map index 4)
+          net 6  : sF  <-> R2   (sender_router_map index 5)
+
+        Router-router networks (net indices 7-10):
+          net 7  : R1  <-> R2
+          net 8  : R2  <-> R3
+          net 9  : R3  <-> R4
+          net 10 : R4  <-> R5
+
+        Receiver networks (net indices 11-16):
+          net 11 : rA  <-> R4   (receiver_router_map index 0)
+          net 12 : rB  <-> R5   (receiver_router_map index 1)
+          net 13 : rC  <-> R4   (receiver_router_map index 2)
+          net 14 : rD  <-> R2   (receiver_router_map index 3)
+          net 15 : rE  <-> R5   (receiver_router_map index 4)
+          net 16 : rF  <-> R3   (receiver_router_map index 5)
+        """
+
+        def net(index):
+            """Returns the network address string for the given 1-based network index."""
+            if use_ipv6:
+                return f"2001:{index}::/120"
+            return f"192.168.{index}.0/24"
+
+        # Convenience aliases for router interface lists
+        r_1 = self.interfaces["routers"][0]  # [0:→sA,  1:→sD,  2:→R2]
+        r_2 = self.interfaces["routers"][1]  # [0:→sB,  1:→sF,  2:→R1,  3:→R3, 4:→rD]
+        r_3 = self.interfaces["routers"][2]  # [0:→sC,  1:→R2,  2:→R4,  3:→rF]
+        r_4 = self.interfaces["routers"][3]  # [0:→sE,  1:→R3,  2:→R5,  3:→rA, 4:→rC]
+        r_5 = self.interfaces["routers"][4]  # [0:→R4,  1:→rB,  2:→rE]
+
+        # Attach Routes to R1
+        # Directly attached sender networks — use local interfaces
+        self.nodes["routers"][0].add_route(net(1), r_1[0])  # sA  via etr1a
+        self.nodes["routers"][0].add_route(net(4), r_1[1])  # sD  via etr1b
+        # All other networks (sB, sC, sF, sE, all receivers) go via R2
+        for idx in [2, 3, 5, 6, 11, 12, 13, 14, 15, 16]:
+            self.nodes["routers"][0].add_route(net(idx), r_1[2])
+
+        # Attach Routes to R2
+        # Directly attached sender networks — use local interfaces
+        self.nodes["routers"][1].add_route(net(2), r_2[0])  # sB  via etr2a
+        self.nodes["routers"][1].add_route(net(6), r_2[1])  # sF  via etr2b
+        # Directly attached receiver network — use local interface
+        self.nodes["routers"][1].add_route(net(14), r_2[4])  # rD  via etr2e
+        # sA, sD are behind R1 — go back via R1
+        for idx in [1, 4]:
+            self.nodes["routers"][1].add_route(net(idx), r_2[2])
+        # sC, sE and receivers rA, rB, rC, rE, rF are ahead — go forward via R3
+        for idx in [3, 5, 11, 12, 13, 15, 16]:
+            self.nodes["routers"][1].add_route(net(idx), r_2[3])
+
+        # Attach Routes to R3
+        # Directly attached sender network — use local interface
+        self.nodes["routers"][2].add_route(net(3), r_3[0])  # sC  via etr3a
+        # Directly attached receiver network — use local interface
+        self.nodes["routers"][2].add_route(net(16), r_3[3])  # rF  via etr3d
+        # sA, sB, sD, sF, rD are behind R2 — go back via R2
+        for idx in [1, 2, 4, 6, 14]:
+            self.nodes["routers"][2].add_route(net(idx), r_3[1])
+        # sE and receivers rA, rB, rC, rE are ahead — go forward via R4
+        for idx in [5, 11, 12, 13, 15]:
+            self.nodes["routers"][2].add_route(net(idx), r_3[2])
+
+        # Attach Routes to R4
+        # Directly attached sender network — use local interface
+        self.nodes["routers"][3].add_route(net(5), r_4[0])  # sE  via etr4a
+        # Directly attached receiver networks — use local interfaces
+        self.nodes["routers"][3].add_route(net(11), r_4[3])  # rA  via etr4d
+        self.nodes["routers"][3].add_route(net(13), r_4[4])  # rC  via etr4e
+        # All sender networks (except sE) are behind R3 — go back via R3
+        for idx in [1, 2, 3, 4, 6]:
+            self.nodes["routers"][3].add_route(net(idx), r_4[1])
+        # rD (at R2) and rF (at R3) are also behind R3
+        for idx in [14, 16]:
+            self.nodes["routers"][3].add_route(net(idx), r_4[1])
+        # rB, rE are ahead at R5 — go forward via R5
+        for idx in [12, 15]:
+            self.nodes["routers"][3].add_route(net(idx), r_4[2])
+
+        # Attach Routes to R5
+        # Directly attached receiver networks — use local interfaces
+        self.nodes["routers"][4].add_route(net(12), r_5[1])  # rB  via etr5b
+        self.nodes["routers"][4].add_route(net(15), r_5[2])  # rE  via etr5c
+        # Everything else (all senders, rA, rC, rD, rF) is behind R4
+        for idx in [1, 2, 3, 4, 5, 6, 11, 13, 14, 16]:
+            self.nodes["routers"][4].add_route(net(idx), r_5[0])
 
     def _configure_links(self):
         """
