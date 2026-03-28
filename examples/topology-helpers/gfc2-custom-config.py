@@ -18,23 +18,32 @@ from nest.topology.topology_helpers.gfc2 import Gfc2Helper
 # 4) configuring attributes at interfaces.
 # 5) setting use_ipv6 flag to False, thus enabling IPv4 addresses to be used
 # 6) setting enable_routing_logs to True to enable routing logs
+# 7) setting use_dynamic_routing to True to use OSPF for routing instead of static routing
 #
 # The network considered in this example has:
 # 12 sender nodes (A1, A2, A3, B1, B2, B3, C, D, E, F, G, H),
 # 8 receiver nodes (A, B, C, D, E, F, G, H) and
 # 7 routers (R1, R2, R3, R4, R5, R6, R7).
 #
-# This helper expects four parameters:
+# This helper expects three parameters:
 #   * exp = An Experiment object that should be created before this helper is used (mandatory)
 #   * flows = A dictionary specifying the number and the kind of flows that the senders should send,
 #             along with the duration of the flows (via the key "flow_duration")
 #     (optional; if not provided,
 #     all senders send TCP flows with cubic congestion control for 300 seconds each)
-#   * use_ipv6: A boolean flag indicating whether IPv6 addressing should be used (default: True).
-#     (optional; if not provided, IPv6 addresses will be used by default,
+#   * topology_config = A dictionary containing configuration options for the topology,
+#     which includes:
+#       - use_ipv6: A boolean flag indicating whether IPv6 addressing should be used
+#           (default: True).
+#           (optional; if not provided, IPv6 addresses will be used by default,
 #                and if set to False, IPv4 addresses are used)
-#   * enable_routing_logs: A boolean flag to enable or disable routing logs (default: False).
-#     (optional; if not provided, routing logs are disabled by default)
+#       - enable_routing_logs: A boolean flag to enable or disable routing logs
+#         (default: False).
+#           (optional; if not provided, routing logs are disabled by default)
+#       - use_dynamic_routing: A boolean flag to indicate whether to use dynamic routing (OSPF)
+#                          or static routing (default: False)
+#           (optional; if not provided, static routing is used by default, and if set to True,
+#                OSPF is used for routing)
 #
 # Example of flows dictionary:
 #   flows = {
@@ -213,10 +222,18 @@ flows = {
 # where all the results and logs of the experiment are stored.
 exp = Experiment("gfc2-custom-config")
 
-# Creates the above GFC2 topology
+# Define the topology configuration in a dictionary.
 # use_ipv6 flag is set to False to enable IPv4 addressing
 # enable_routing_logs is set to True to enable routing logs
-topology = Gfc2Helper(exp, flows, use_ipv6=False, enable_routing_logs=True)
+# use_dynamic_routing is set to True to use OSPF for routing instead of static routing
+topology_config = {
+    "use_ipv6": False,
+    "enable_routing_logs": True,
+    "use_dynamic_routing": True,
+}
+
+# Creates the GFC-2 topology
+topology = Gfc2Helper(exp, flows, topology_config)
 
 # Configure the parameters of `fq_codel` qdisc.
 # This is an example of how to set a custom qdisc and its parameters

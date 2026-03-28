@@ -19,17 +19,25 @@ from nest.topology.topology_helpers.gfc1 import Gfc1Helper
 #   * the number of flows between the senders and receivers
 #   * the choice of qdiscs and its configurable attributes.
 #
-# This helper expects four parameters:
+# This helper expects three parameters:
 #   * exp = An Experiment object that should be created before this helper is used (mandatory)
 #   * flows = A dictionary specifying the number and the kind of flows that the senders should send,
 #             along with the flow duration (via the key "flow_duration").
 #     (optional; if not provided, default values in the default_flows dictionary with TCP CUBIC will
 #                be used)
-#   * use_ipv6: A boolean flag indicating whether IPv6 addressing should be used (default: True).
-#     (optional; if not provided, IPv6 addresses will be used by default,
+#   * topology_config = A dictionary containing configuration options for the topology,
+#     which includes:
+#       - use_ipv6: A boolean flag indicating whether IPv6 addressing should be used
+#           (default: True).
+#           (optional; if not provided, IPv6 addresses will be used by default,
 #                and if set to False, IPv4 addresses are used)
-#   * enable_routing_logs: A boolean flag to enable or disable routing logs (default: False).
-#     (optional; if not provided, routing logs are disabled by default)
+#       - enable_routing_logs: A boolean flag to enable or disable routing logs
+#         (default: False).
+#           (optional; if not provided, routing logs are disabled by default)
+#       - use_dynamic_routing: A boolean flag to indicate whether to use dynamic routing (OSPF)
+#                          or static routing (default: False)
+#           (optional; if not provided, static routing is used by default, and if set to True,
+#                OSPF is used for routing)
 #
 # The example uses the getter method provided by the helper to access the router interfaces
 # Note: The naming conventions are as per the diagram provided below.
@@ -68,7 +76,7 @@ from nest.topology.topology_helpers.gfc1 import Gfc1Helper
 # - (3) indicates 3 parallel flows
 # - (s) denotes a sender node
 # - (r) denotes a receiver node
-# - IPv6 addressing is used
+# - IPv6 addressing is used by default
 #
 # Naming Conventions:
 # - Sender interfaces are named as 'ethsX', where X is the sender node number
