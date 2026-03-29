@@ -1,10 +1,10 @@
 [general]
-ignore=title-trailing-punctuation, body-min-length, body-is-missing, body-trailing-whitespace
+ignore=title-trailing-punctuation, body-min-length, body-max-line-length, body-is-missing, body-trailing-whitespace
 contrib=contrib-body-requires-signed-off-by
 extra-path=utils/gitlint_rules/
 
 [title-max-length]
 line-length=50
 
-[body-max-line-length]
+[custom-body-max-line-length]
 line-length=72

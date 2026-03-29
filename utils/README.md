@@ -34,3 +34,7 @@ $ gitlint -- debug
 ### valid_signoff.py
 
 This rule validates sign-off and co-author lines in a commit.
+
+### custom_max_line_length.py
+
+This rule replaces predefined `body-max-line-length` with a custom rule that skips raising violation for sign-off or co-author lines.
