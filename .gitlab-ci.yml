@@ -243,7 +243,7 @@ push to gitlab registry:
   script:
    - docker login -u $CI_DEPLOY_USERNAME -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
    - |
-     if git diff --name-only $CI_COMMIT_BEFORE_SHA $CI_COMMIT_SHA | grep -q Dockerfile.base || [ "$CI_COMMIT_TAG" ]; then
+     if [ "$PUSH_BASE_IMAGE" = "true" ]; then
        docker pull $CONTAINER_TEST_BASE_CI_IMAGE
        docker tag $CONTAINER_TEST_BASE_CI_IMAGE $CONTAINER_TEST_BASE_DEFAULT_IMAGE
        docker push $CONTAINER_TEST_BASE_DEFAULT_IMAGE
@@ -254,9 +254,15 @@ push to gitlab registry:
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       changes:
-        - "Dockerfile"
         - "Dockerfile.base"
+      variables:
+        PUSH_BASE_IMAGE: "true"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - "Dockerfile"
     - if: $CI_COMMIT_TAG
+      variables:
+        PUSH_BASE_IMAGE: "true"
 
 push to docker hub:
   rules:
