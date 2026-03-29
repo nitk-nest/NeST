@@ -25,6 +25,9 @@ variables:
   CONTAINER_TEST_CI_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG   # Image to used for running tests on CI
   CONTAINER_TEST_DEFAULT_IMAGE: $CI_REGISTRY_IMAGE:$CI_DEFAULT_BRANCH   # Image used for running tests on default branch
   CONTAINER_DEV_IMAGE: $CI_REGISTRY_IMAGE:dev  # Image to be uploaded to docker hub
+  NEST_BASE_IMAGE: $CI_REGISTRY_IMAGE/base
+  CONTAINER_TEST_BASE_DEFAULT_IMAGE: "$NEST_BASE_IMAGE:$CI_DEFAULT_BRANCH" # Base image to be uploaded
+  CONTAINER_TEST_BASE_CI_IMAGE: "$NEST_BASE_IMAGE:$CI_COMMIT_REF_SLUG" # Base image to be built for CI (if needed)
   DOCKERHUB_REPO: nestnitk/nest-docker
   DOCKER_TLS_CERTDIR: "/certs"
   FORK_PIPELINE_RUN: "false"  # If pipeline runs should be allowed in fork repos
@@ -41,6 +44,26 @@ validate mr:
   rules:
     - if: $CI_MERGE_REQUEST_IID
 
+build base image:
+  stage: build
+  tags:
+    - dind-runner
+  services:
+    - docker:25.0.1-dind
+  script:
+    - docker login -u $CI_DEPLOY_USERNAME -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
+    # Pull '$CI_DEFAULT_BRANCH' to act as a cache to speed up the build if only minor changes were made
+    - docker pull $CONTAINER_TEST_BASE_DEFAULT_IMAGE || true
+    # Build using the branch name as the tag
+    - docker build --cache-from $CONTAINER_TEST_BASE_DEFAULT_IMAGE -f Dockerfile.base -t $CONTAINER_TEST_BASE_CI_IMAGE .
+    - docker push $CONTAINER_TEST_BASE_CI_IMAGE
+  rules:
+    # Only run this expensive job if Dockerfile.base was actually modified
+    - if: $CI_MERGE_REQUEST_IID || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - Dockerfile.base
+    - if: $CI_COMMIT_TAG
+
 # https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#making-docker-in-docker-builds-faster-with-docker-layer-caching
 build docker image:
   rules:
@@ -54,12 +77,20 @@ build docker image:
     - dind-runner
   services:
     - docker:25.0.1-dind
+  needs:
+    - job: build base image
+      optional: true
   stage: build
   script:
     - apk add --no-cache docker-compose
     - docker login -u $CI_DEPLOY_USERNAME -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
+    # Try to pull a branch-specific base image. If it doesn't exist (because Dockerfile.base
+    # wasn't changed in this MR), fallback to using '$CI_DEFAULT_BRANCH'
+    - docker pull $CONTAINER_TEST_BASE_CI_IMAGE || export BASE_TAG=$CI_DEFAULT_BRANCH
+    - export BASE_IMAGE_TAG=${BASE_TAG:-$CI_COMMIT_REF_SLUG}
+    - echo "Using base image tag -> $BASE_IMAGE_TAG"
     - docker pull $CONTAINER_TEST_DEFAULT_IMAGE || true
-    - docker-compose build --no-cache $DOCKER_SERVICES
+    - docker-compose build --build-arg BASE_IMAGE_TAG=$BASE_IMAGE_TAG --build-arg REGISTRY_WITH_IMAGE=$NEST_BASE_IMAGE --no-cache $DOCKER_SERVICES
     - docker images
     - docker push $CONTAINER_TEST_CI_IMAGE
     - if [ "$DOCKER_SERVICES" == "test dev" ]; then docker push $CONTAINER_DEV_IMAGE; fi
@@ -211,6 +242,12 @@ push to gitlab registry:
   stage: release
   script:
    - docker login -u $CI_DEPLOY_USERNAME -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
+   - |
+     if git diff --name-only $CI_COMMIT_BEFORE_SHA $CI_COMMIT_SHA | grep -q Dockerfile.base || [ "$CI_COMMIT_TAG" ]; then
+       docker pull $CONTAINER_TEST_BASE_CI_IMAGE
+       docker tag $CONTAINER_TEST_BASE_CI_IMAGE $CONTAINER_TEST_BASE_DEFAULT_IMAGE
+       docker push $CONTAINER_TEST_BASE_DEFAULT_IMAGE
+     fi
    - docker pull $CONTAINER_TEST_CI_IMAGE
    - docker tag $CONTAINER_TEST_CI_IMAGE $CONTAINER_TEST_DEFAULT_IMAGE
    - docker push $CONTAINER_TEST_DEFAULT_IMAGE
@@ -218,6 +255,7 @@ push to gitlab registry:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       changes:
         - "Dockerfile"
+        - "Dockerfile.base"
     - if: $CI_COMMIT_TAG
 
 push to docker hub:

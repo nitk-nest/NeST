@@ -1,0 +1,58 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Copyright (c) 2019-2026 NITK Surathkal
+
+# Dockerfile.base
+# Compiles all heavy dependencies and source libraries.
+# Given the static nature of this image, it is separated out
+# to ensure fast build times by caching the image unless modified.
+
+FROM ubuntu:22.04@sha256:bcc511d82482900604524a8e8d64bf4c53b2461868dac55f4d04d660e61983cb
+
+SHELL ["/bin/bash", "-c"]
+
+ENV XDG_RUNTIME_DIR=/tmp
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install all system packages and clean apt cache
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential git wget gawk libreadline6-dev iproute2 iputils-ping \
+        python3 python3-pip python3-venv python-is-python3 netperf iperf3 \
+        ethtool kmod tcpdump tshark libc-ares-dev pkg-config snmpd snmp \
+        libsnmp-dev frr autoconf flex bison mptcpize vlc gnuplot \
+        openvpn easy-rsa mtr traceroute \
+        fakeroot dpkg-dev devscripts debhelper ccache zlib1g-dev libfreetype6-dev \
+        libjpeg62-dev libpng-dev libmad0-dev libfaad-dev libogg-dev libvorbis-dev \
+        libtheora-dev liba52-0.7.4-dev libavcodec-dev libavformat-dev libavutil-dev \
+        libswscale-dev libavdevice-dev libnghttp2-dev libopenjp2-7-dev libcaca-dev \
+        libxv-dev x11proto-video-dev libgl1-mesa-dev libglu1-mesa-dev x11proto-gl-dev \
+        libxvidcore-dev libssl-dev libjack-jackd2-dev libasound2-dev libpulse-dev \
+        libsdl2-dev dvb-apps mesa-utils \
+        g++ gcc dh-autoreconf ncurses-dev libpcap-dev libncurses5-dev libsctp-dev \
+        lksctp-tools libgsl-dev cmake \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
+
+# Compile and clean Bird
+RUN git clone --depth 1 --branch v2.0.10 https://gitlab.nic.cz/labs/bird.git && \
+    cd bird && autoreconf && ./configure && make && make install && \
+    cd /src && rm -rf bird
+
+# Compile and clean GPAC
+RUN git clone --depth 1 https://github.com/gpac/gpac.git && \
+    cd gpac && ./configure && make && make install && \
+    cd /src && rm -rf gpac
+
+# Compile and clean SIPp
+RUN git clone -b v3.7.7 --depth 1 https://github.com/SIPp/sipp.git && \
+    cd sipp && cmake . -DUSE_SSL=1 -DUSE_SCTP=1 -DUSE_PCAP=1 -DUSE_GSL=1 && make all && make install && \
+    cd /src && rm -rf sipp
+
+# Setup python virtual environment and set PATH
+ENV VIRTUAL_ENV=/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# Install python dependencies without cache
+RUN pip install --no-cache-dir \
+        junit2html coverage gitlint pre-commit pylint pytest colorama
