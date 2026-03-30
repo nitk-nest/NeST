@@ -16,12 +16,10 @@ from nest.routing.routing_helper import RoutingHelper
 # nodes, while those connected to the right-most router are called as the right side nodes.
 # This helper expects a dictionary consisting of the number of left side nodes, the number of
 # right side nodes and the number of routers, a flag to denote whether IPv6 addresses should
-# be used or not, and a flag to enable FRR logging as input parameters. This helper creates the
-# nodes and the routers, assigns appropriate network addresses to the sub-networks, adds default
-# routes for each of the devices and sets default attributes (bandwidth: 10mbit,
-# delay: 4ms, qdisc: pfifo) to the interfaces.
-
-# The OSPF routing protocol from the FRR suite is used for setting up the routes in the network.
+# be used or not, a flag to enable FRR logging and a flag to enable dynamic routing as input
+# parameters. This helper creates the nodes and the routers, assigns appropriate network
+# addresses to the sub-networks, adds default routes for each of the devices and sets default
+# attributes (bandwidth: 10mbit, delay: 4ms, qdisc: pfifo) to the interfaces.
 
 # By default, the networks created in this helper use IPv6 addresses of the form: 2001:i::/120,
 # where i is the network index (for example, 2001:1::/120, 2001:2::/120, etc.). If the IPv6
@@ -30,6 +28,9 @@ from nest.routing.routing_helper import RoutingHelper
 # Each of these represent subnets providing 256 addresses (from 2^8 host bits). In the case
 # of IPv4, only 254 of these addresses can be assigned to nodes after excluding the
 # network address and the broadcast address.
+
+# When dynamic routing is enabled, the OSPF routing protocol from the FRR suite is used for
+# setting up the routes in the network (on the routers).
 
 # This helper maintains the following lists grouped in the dictionaries "nodes" and "interfaces" for
 # easy external access to all of the objects created in this helper:
@@ -119,6 +120,7 @@ class DumbbellHelper:
         num_nodes: dict,
         use_ipv6=True,
         enable_frr_logging=False,
+        use_dynamic_routing=True,
     ):
         """
         Create a dumbbell network with the given number of left and right side nodes and routers.
@@ -133,6 +135,9 @@ class DumbbellHelper:
 
         enable_frr_logging: boolean
             Flag to enable FRR logging
+
+        use_dynamic_routing: boolean
+            Flag to enable dynamic routing
         """
 
         if num_nodes["left"] < 1:
@@ -157,16 +162,16 @@ class DumbbellHelper:
         self.interfaces["router_interfaces"] = [[]]
 
         # Creating the topology
-        self._configure_globals(enable_frr_logging)
+        self._configure_globals(enable_frr_logging, use_dynamic_routing)
         self._create_nodes_and_routers()
         self._create_networks(use_ipv6)
         self._connect_senders()
         self._connect_routers()
         self._connect_receivers()
-        self._assign_addresses_and_default_routes(use_ipv6)
+        self._assign_addresses_and_default_routes(use_ipv6, use_dynamic_routing)
         self._configure_links()
 
-    def _configure_globals(self, enable_frr_logging):
+    def _configure_globals(self, enable_frr_logging, use_dynamic_routing):
         """
         Configure the routing suite and enable/disable the logging
 
@@ -174,11 +179,16 @@ class DumbbellHelper:
         ----------
         enable_frr_logging: boolean
             Flag to indicate whether FRR logging must be enabled or not
+
+        use_dynamic_routing: boolean
+            Flag to indicate whether the OSPF protocol should be used to determine
+            routes instead of static routing
         """
-        # Using FRR (Free Range Routing) as the routing suite
-        # to be able to use routing protocols like OSPF
-        config.set_value("routing_suite", "frr")
-        config.set_value("routing_logs", enable_frr_logging)
+        # If use_dynamic_routing is True, use FRR (Free Range Routing) as the routing
+        # suite to be able to use routing protocols like OSPF
+        if use_dynamic_routing:
+            config.set_value("routing_suite", "frr")
+            config.set_value("routing_logs", enable_frr_logging)
 
     def _create_nodes_and_routers(self):
         """
@@ -313,14 +323,18 @@ class DumbbellHelper:
 
             self.net_count += 1
 
-    def _assign_addresses_and_default_routes(self, use_ipv6):
+    def _assign_addresses_and_default_routes(self, use_ipv6, use_dynamic_routing):
         """
-        Assign addresses, add default routes for the nodes and use OSPF routing for the routers
+        Assign addresses, add default routes for the end nodes and set routes up
+        on the routers
 
         Parameters
         ----------
         use_ipv6: boolean
             If 'True', use IPv6 addresses, else use IPv4 addresses
+
+        use_dynamic_routing: boolean
+            If 'True', use OSPF on the routers, else use static routes
         """
         # Assigning addresses
         AddressHelper.assign_addresses()
@@ -335,8 +349,158 @@ class DumbbellHelper:
         for i, interface in enumerate(self.interfaces["right_interfaces"]):
             self.nodes["right_node_list"][i].add_route("DEFAULT", interface)
 
-        # Using OSPF routing protocol for setting the routes on the routers
-        RoutingHelper(protocol="ospf", ipv6_routing=use_ipv6).populate_routing_tables()
+        if use_dynamic_routing:
+            # Using OSPF routing protocol for setting the routes on the routers
+            RoutingHelper(
+                protocol="ospf", ipv6_routing=use_ipv6
+            ).populate_routing_tables()
+        else:
+            self._setup_static_routes(use_ipv6)
+
+    def _setup_static_routes(self, use_ipv6):
+        """
+        Set up static routes on the routers when dynamic routing is not enabled
+
+        Parameters
+        ----------
+        use_ipv6: boolean
+            If 'True', use IPv6 addresses, else use IPv4 addresses
+        """
+        num_left_nodes = self.num_nodes["left"]
+        num_right_nodes = self.num_nodes["right"]
+        num_routers = self.num_nodes["routers"]
+
+        self._setup_static_routes_on_left_most_router(
+            num_left_nodes, num_right_nodes, num_routers, use_ipv6
+        )
+        self._setup_static_routes_on_intermediate_routers(
+            num_left_nodes, num_right_nodes, num_routers, use_ipv6
+        )
+        self._setup_static_routes_on_right_most_router(
+            num_left_nodes, num_right_nodes, num_routers, use_ipv6
+        )
+
+    def _setup_static_routes_on_left_most_router(
+        self, num_left_nodes, num_right_nodes, num_routers, use_ipv6
+    ):
+        """
+        Set up static routes on the left-most router when dynamic routing is not enabled
+
+        Parameters
+        ----------
+        num_left_nodes: int
+            Number of left side nodes
+
+        num_right_nodes: int
+            Number of right side nodes
+
+        num_routers: int
+            Number of routers
+
+        use_ipv6: boolean
+            If 'True', use IPv6 addresses, else use IPv4 addresses
+        """
+        ip_string = ""
+        for j in range(num_left_nodes):
+            if use_ipv6:
+                ip_string = "2001:" + str(j + 1) + "::/120"
+            else:
+                ip_string = "192.168." + str(j + 1) + ".0/24"
+            self.nodes["router_list"][0].add_route(
+                ip_string, self.interfaces["router_interfaces"][0][j]
+            )
+
+        for j in range(num_right_nodes):
+            if use_ipv6:
+                ip_string = "2001:" + str(num_left_nodes + num_routers + j) + "::/120"
+            else:
+                ip_string = "192.168." + str(num_left_nodes + num_routers + j) + ".0/24"
+            self.nodes["router_list"][0].add_route(
+                ip_string, self.interfaces["router_interfaces"][0][-1]
+            )
+
+    def _setup_static_routes_on_intermediate_routers(
+        self, num_left_nodes, num_right_nodes, num_routers, use_ipv6
+    ):
+        """
+        Set up static routes on the intermediate routers when dynamic
+        routing is not enabled
+
+        Parameters
+        ----------
+        num_left_nodes: int
+            Number of left side nodes
+
+        num_right_nodes: int
+            Number of right side nodes
+
+        num_routers: int
+            Number of routers
+
+        use_ipv6: boolean
+            If 'True', use IPv6 addresses, else use IPv4 addresses
+        """
+        ip_string = ""
+        for i in range(1, num_routers - 1):
+            for j in range(num_left_nodes):
+                if use_ipv6:
+                    ip_string = "2001:" + str(j + 1) + "::/120"
+                else:
+                    ip_string = "192.168." + str(j + 1) + ".0/24"
+                self.nodes["router_list"][i].add_route(
+                    ip_string, self.interfaces["router_interfaces"][i][0]
+                )
+            for j in range(num_right_nodes):
+                if use_ipv6:
+                    ip_string = (
+                        "2001:" + str(num_left_nodes + num_routers + j) + "::/120"
+                    )
+                else:
+                    ip_string = (
+                        "192.168." + str(num_left_nodes + num_routers + j) + ".0/24"
+                    )
+                self.nodes["router_list"][i].add_route(
+                    ip_string, self.interfaces["router_interfaces"][i][1]
+                )
+
+    def _setup_static_routes_on_right_most_router(
+        self, num_left_nodes, num_right_nodes, num_routers, use_ipv6
+    ):
+        """
+        Set up static routes on the right-most router when dynamic
+        routing is not enabled
+
+        Parameters
+        ----------
+        num_left_nodes: int
+            Number of left side nodes
+
+        num_right_nodes: int
+            Number of right side nodes
+
+        num_routers: int
+            Number of routers
+
+        use_ipv6: boolean
+            If 'True', use IPv6 addresses, else use IPv4 addresses
+        """
+        ip_string = ""
+        for j in range(num_left_nodes):
+            if use_ipv6:
+                ip_string = "2001:" + str(j + 1) + "::/120"
+            else:
+                ip_string = "192.168." + str(j + 1) + ".0/24"
+            self.nodes["router_list"][-1].add_route(
+                ip_string, self.interfaces["router_interfaces"][-1][0]
+            )
+        for j in range(num_right_nodes):
+            if use_ipv6:
+                ip_string = "2001:" + str(num_left_nodes + num_routers + j) + "::/120"
+            else:
+                ip_string = "192.168." + str(num_left_nodes + num_routers + j) + ".0/24"
+            self.nodes["router_list"][-1].add_route(
+                ip_string, self.interfaces["router_interfaces"][-1][j + 1]
+            )
 
     def _configure_links(self):
         """
