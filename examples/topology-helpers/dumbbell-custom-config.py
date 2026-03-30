@@ -29,6 +29,7 @@ from nest.topology.topology_helpers.dumbbell import DumbbellHelper
 # The following modifications have been shown in this file:
 #   * The address family used is IPv4, instead of the default setting of IPv6.
 #   * FRR logging has been enabled (disabled by default).
+#   * Dynamic routing on the routers using OSPF has been disabled (enabled by default).
 #   * The qdisc on the left-most router (on the interface towards r2) has been changed
 #     from the default pfifo setting to the fq-codel qdisc (with a queue capacity
 #     of 100 packets, a target queue delay of 2ms, an interval of 24ms
@@ -59,8 +60,9 @@ from nest.topology.topology_helpers.dumbbell import DumbbellHelper
 ################################################################################
 
 # Create a dumbbell topology with 3 left side nodes, 4 right side nodes and 2 routers,
-# with IPv4 addresses (as the IPv6 flag is False) and FRR logging enabled (as the flag is True)
-topology = DumbbellHelper({"left": 3, "right": 4, "routers": 2}, False, True)
+# with IPv4 addresses (as the IPv6 flag is False), FRR logging enabled (as the flag is True)
+# and static routing on the routers (as the dynamic routing flag is False).
+topology = DumbbellHelper({"left": 3, "right": 4, "routers": 2}, False, True, False)
 
 # Configure the parameters of `fq_codel` qdisc
 qdisc = "fq_codel"

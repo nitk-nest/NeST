@@ -32,9 +32,10 @@ flows are set up: one TCP flow from `lh1` to `rh1`, one TCP flow from `lh2` to
 This program is similar to `dumbbell-basic-example.py` available in
 `examples/topology-helpers`, the only difference is that we have shown how the
 address family used can be changed from the default of IPv6 to IPv4, how FRR
-logging can be enabled, and how interface attributes like bandwidth, delay and
-qdisc (along with qdisc parameters) can be changed. Note that three packages:
-`Experiment`, `Flow` and `DumbbellHelper` are imported in this program.
+logging can be enabled, how OSPF dynamic routing on the routers can be disabled,
+and how interface attributes like bandwidth, delay and qdisc (along with qdisc
+parameters) can be changed. Note that three packages: `Experiment`, `Flow` and
+`DumbbellHelper` are imported in this program.
 
 <!-- The below snippet will render example code in docs website -->
 <!-- #DOCS_INCLUDE: dumbbell-custom-config.py -->
@@ -61,7 +62,8 @@ but demonstrates how to use custom configuration options provided by the Gfc1Hel
 The example shows how to customise the number and type of flows between sender and
 receiver nodes, adjust flow duration, set custom qdisc and its parameters at router interfaces,
 configure link attributes at interfaces, use IPv4 addressing instead of the default
-IPv6 addressing, and enable routing logs.
+IPv6 addressing, enable routing logs and use OSPF for dynamic routing instead of the default
+static routing.
 
 <!-- The below snippet will render example code in docs website -->
 <!-- #DOCS_INCLUDE: gfc1-custom-config.py -->
@@ -90,7 +92,8 @@ demonstrates how to use custom configuration options provided by the Gfc2Helper 
 The example shows how to customise the number and type of flows between sender and
 receiver nodes, adjust flow duration, set custom qdisc and its parameters at router
 interfaces, configure link attributes at interfaces, use IPv4 addressing instead of
-the default IPv6 addressing, and enable routing logs.
+the default IPv6 addressing, enable routing logs and use OSPF for dynamic routing
+instead of the default static routing.
 
 <!-- The below snippet will render example code in docs website -->
 <!-- #DOCS_INCLUDE: gfc2-custom-config.py -->

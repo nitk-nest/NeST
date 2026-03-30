@@ -31,9 +31,9 @@ from nest.topology.topology_helpers.dumbbell import DumbbellHelper
 # The link between the routers r1 <--> r2 is the bottleneck link with
 # lesser bandwidth and higher propagation delay.
 #
-# This example uses the default settings of the dumbbell helper, namely
-# the pfifo qdisc, 10mbit as the bandwidth and 4ms as the delay for
-# all of the interfaces.
+# This example uses the default settings of the dumbbell helper, namely IPv6
+# addressing, no FRR logging, dynamic routing on the routers using OSPF, the
+# pfifo qdisc, 10mbit as the bandwidth and 4ms as the delay for all of the interfaces.
 #
 ################################################################################
 #                              Network Topology                                #
