@@ -49,7 +49,7 @@ class TestTopologyPacketOps(unittest.TestCase):
         self.assertTrue(checker, "packets are not being corrupted")
 
     def test_packet_loss_state(self):
-        self.n0_n1.set_packet_loss_state("20%", "4%", "5%", "4%", "3%", True)
+        self.n0_n1.set_packet_loss_state("1%", "80%", "5%", "4%", "3%", True)
         status = self.n0.ping("10.0.0.2")
 
         self.assertTrue(status)

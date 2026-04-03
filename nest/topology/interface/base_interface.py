@@ -431,7 +431,7 @@ class BaseInterface:
         if p31 is not None:
             probabilities += f"{p31.string_value} "
         else:
-            probabilities = "0% "
+            probabilities += "0% "
 
         if p32 is not None:
             probabilities += f"{p32.string_value} "
