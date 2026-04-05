@@ -12,6 +12,7 @@ congestion_algo_list = [
     "highspeed",
     "htcp",
     "illinois",
+    "lp",
     "reno",
     "scalable",
     "vegas",
