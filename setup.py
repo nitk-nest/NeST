@@ -16,8 +16,8 @@ with open("nest/version.py") as fp:
 long_description = (here / "README.md").read_text(encoding="utf-8")
 
 # Check for pip versions below 9.0.0
-if sys.version_info < (3, 6) or sys.version_info >= (4, 0):
-    raise RuntimeError("This package requires Python version >=3.6 and <4")
+if sys.version_info < (3, 12) or sys.version_info >= (4, 0):
+    raise RuntimeError("This package requires Python version >=3.12 and <4")
 
 setup(
     name="nest",
@@ -51,7 +51,7 @@ setup(
         "nest.experiment.plotter": ["seaborn-v0_8-paper.mplstyle"],
         "nest": ["config.json"],
     },
-    python_requires=">=3.6, <4",
+    python_requires=">=3.12, <4",
     install_requires=[
         "matplotlib",
         "numpy",

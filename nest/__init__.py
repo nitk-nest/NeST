@@ -9,10 +9,11 @@ This is the entry point of NeST package.
 
 Following actions are performed as part of setup, when
 nest is imported:
-1. Check if nest is run with root privileges
+1. Check if nest can manage network namespace
 2. Store SUDO user and group id information
 """
 
+import errno
 import logging
 import os
 import sys
@@ -27,8 +28,44 @@ from . import config
 nest_logger = logging.getLogger(__name__)
 nest_logger.setLevel(logging.CRITICAL)
 
-if os.geteuid() != 0:
-    print("nest: python package requires root access", file=sys.stderr)
+
+def _test_netns_creation() -> bool:
+    """
+    Attempt to create a new network namespace in a forked process.
+
+    This function uses unshare(2) in a forked process to verify sufficient privileges.
+    """
+    if (pid := os.fork()) == 0:
+        try:
+            # move child into freshly created network namespace
+            os.unshare(os.CLONE_NEWNET)  # unshare(2)
+        except OSError as err:
+            # no manual created OSError without errno
+            assert isinstance(err.errno, int), "OSError collected by Python with errno"
+            os._exit(err.errno)  # pylint: disable=protected-access
+        else:
+            os._exit(0)  # pylint: disable=protected-access
+
+    # collect result of child
+    _, status = os.waitpid(pid, 0)
+    if not os.WIFEXITED(status):
+        raise RuntimeError("Testing creation of new network namespace failed")
+
+    exit_code = os.WEXITSTATUS(status)
+    # new network namespace created successfully
+    if exit_code == 0:
+        return True
+    # no permission to create network namespace
+    if exit_code == errno.EPERM:
+        return False
+
+    # child returned unexpected error
+    raise OSError(exit_code, os.strerror(exit_code))
+
+
+if not _test_netns_creation():
+    print("nest: Unable to create network namespaces", file=sys.stderr)
+    print("nest: Python package requires root access or CAP_SYS_ADMIN", file=sys.stderr)
     sys.exit(1)
 
 # Load default config values
