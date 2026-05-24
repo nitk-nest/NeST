@@ -37,10 +37,14 @@ async def get_req(context, uri, mtype, non_timeout):
     # Choosing between confirmable(CON) and non-confirmable(NON) message
     if mtype == "CON":
         # pylint: disable=no-member
-        request = aiocoap.Message(code=aiocoap.GET, mtype=aiocoap.Type.CON, uri=uri)
+        request = aiocoap.Message(
+            code=aiocoap.GET, transport_tuning=aiocoap.Reliable, uri=uri
+        )
     elif mtype == "NON":
         # pylint: disable=no-member
-        request = aiocoap.Message(code=aiocoap.GET, mtype=aiocoap.Type.NON, uri=uri)
+        request = aiocoap.Message(
+            code=aiocoap.GET, transport_tuning=aiocoap.Unreliable, uri=uri
+        )
 
     try:
         # Start time for measuring RTT
@@ -114,12 +118,18 @@ async def put_req(context, uri, message_payload, mtype, non_timeout):
     if mtype == "CON":
         # pylint: disable=no-member
         request = aiocoap.Message(
-            code=aiocoap.PUT, mtype=aiocoap.Type.CON, payload=payload, uri=uri
+            code=aiocoap.PUT,
+            transport_tuning=aiocoap.Reliable,
+            payload=payload,
+            uri=uri,
         )
     elif mtype == "NON":
         # pylint: disable=no-member
         request = aiocoap.Message(
-            code=aiocoap.PUT, mtype=aiocoap.Type.NON, payload=payload, uri=uri
+            code=aiocoap.PUT,
+            transport_tuning=aiocoap.Unreliable,
+            payload=payload,
+            uri=uri,
         )
 
     try:

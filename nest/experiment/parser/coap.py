@@ -177,26 +177,44 @@ class CoAPRunner(Runner):
         self.err.seek(0)
         raw_stats_err = self.err.read().decode()
 
-        # Errors that occur outside the usual error
-        # control systems are caught here. Since those
-        # errors are still written to `stderr`, `json.loads`
-        # would throw an exception for them not being in the
-        # JSON format.
-        #
-        # Hence the exception is `JSONDecodeError`.
-        try:
-            # Parse outputs
-            parsed_stats_out = {}
-            if raw_stats_out != "":
+        # Parse outputs
+        parsed_stats_out = {}
+        if raw_stats_out != "":
+            try:
                 parsed_stats_out = json.loads(raw_stats_out)
+            except json.decoder.JSONDecodeError:
+                lines = raw_stats_out.strip().split("\n")
+                for line in reversed(lines):
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        parsed_stats_out = json.loads(line)
+                        break
+                    except json.decoder.JSONDecodeError:
+                        continue
+                else:
+                    logger.error(
+                        "Unexpected JSON Error. Output dump: %s", raw_stats_out
+                    )
 
-            # Parse errors
-            parsed_stats_err = {}
-            if raw_stats_err != "":
-                parsed_stats_err = json.loads(raw_stats_err)
-
-        except json.decoder.JSONDecodeError:
-            logger.error("Unexpected JSON Error. Error dump: %s", raw_stats_err)
+        # Parse errors
+        parsed_stats_err = {}
+        if raw_stats_err != "":
+            # Try to find a line that is valid JSON, starting from the bottom.
+            # This is robust to Python warnings and deprecation notices printed to stderr.
+            lines = raw_stats_err.strip().split("\n")
+            for line in reversed(lines):
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    parsed_stats_err = json.loads(line)
+                    break
+                except json.decoder.JSONDecodeError:
+                    continue
+            else:
+                logger.error("Unexpected JSON Error. Error dump: %s", raw_stats_err)
 
         # Get Destination IP address and add results to runner
         destination_ip = self.destination_address.get_addr(with_subnet=False)
