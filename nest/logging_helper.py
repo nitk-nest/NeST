@@ -94,6 +94,20 @@ def update_nest_logger(level):
         nest_logger.addHandler(get_trace_filehandler())
 
 
+class SafeStreamHandler(logging.StreamHandler):
+    """
+    A StreamHandler that silently ignores ValueError raised when the
+    underlying stream is closed (e.g. during interpreter shutdown when
+    atexit handlers run after sys.stderr has been closed).
+    """
+
+    def emit(self, record):
+        try:
+            super().emit(record)
+        except ValueError:
+            pass  # Stream already closed during interpreter shutdown
+
+
 # pylint: disable=too-few-public-methods
 class DuplicateFilter(logging.Filter):
     """

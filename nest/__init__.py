@@ -18,7 +18,7 @@ import os
 import sys
 import signal
 
-from .logging_helper import add_logging_level, get_trace_filehandler
+from .logging_helper import add_logging_level, get_trace_filehandler, SafeStreamHandler
 from .user import User
 from . import config
 
@@ -47,7 +47,7 @@ log_level = config.get_value("log_level")
 add_logging_level("TRACE", logging.DEBUG - 1, "trace")
 
 nest_logger.setLevel(log_level)
-ch = logging.StreamHandler()  # Logger output will be output to stderr
+ch = SafeStreamHandler()  # Logger output will be output to stderr
 ch.setLevel(log_level)
 formatter = logging.Formatter("[%(levelname)s] : %(message)s")
 ch.setFormatter(formatter)
