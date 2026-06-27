@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2022 NITK Surathkal
+# Copyright (c) 2019-2026 NITK Surathkal
 
 """
 NeST internally uses auto-generated unique ids to name topologies.
@@ -327,6 +327,37 @@ class TopologyMap:
             device = TopologyMap.get_device(ns_id, dev_id)
 
         return device.qdisc_list
+
+    @staticmethod
+    def get_node_from_address(address):
+        """
+        Get a node, given an address
+
+        Parameters
+        ----------
+        address : Address
+            address of device in required node
+
+        Returns
+        -------
+        Node Object
+        """
+        node = None
+        with TopologyMap.lock:
+            for ns_id in TopologyMap.get_nodes():
+                if any(
+                    address in device.get_address(as_list=True)
+                    for device in TopologyMap.get_devices(ns_id).values()
+                ):
+                    node = TopologyMap.get_node(ns_id)
+                    break
+
+        if node is None:
+            raise ValueError(
+                f"Address {address.get_addr(with_subnet=False)} doesn't exist in TopologyMap"
+            )
+
+        return node
 
     @staticmethod
     def delete_all_mapping():
