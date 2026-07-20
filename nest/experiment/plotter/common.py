@@ -69,7 +69,7 @@ def mix_plot(title, data, labels, with_sum=False):
     fig, axis = plt.subplots()
 
     for chunk in data:
-        (x_list, y_list) = chunk["values"]
+        x_list, y_list = chunk["values"]
         label = chunk["label"]
         axis.plot(x_list, y_list, label=label)
 
@@ -77,7 +77,7 @@ def mix_plot(title, data, labels, with_sum=False):
 
         x_values = []
         for chunk in data:
-            (x_list, _) = chunk["values"]
+            x_list, _ = chunk["values"]
             x_values.append(x_list)
 
         # Get sorted list of all x values
@@ -85,7 +85,7 @@ def mix_plot(title, data, labels, with_sum=False):
 
         total = np.array([0.0] * len(x_values))
         for chunk in data:
-            (x_list, y_list) = chunk["values"]
+            x_list, y_list = chunk["values"]
             # Interpolate y values on the combined x values
             y_value = np.interp(x_values, x_list, y_list, left=0, right=0)
             total += y_value
@@ -154,8 +154,7 @@ def html_table(row_labels, col_labels, table_data):
     labels and data.
     """
     table_html = "<html><table><caption>Comparison Plot</caption><tr><td></td>"
-    for col_label in col_labels:
-        table_html += f"<th>{col_label}</th>"
+    table_html += "".join(f"<th>{col_label}</th>" for col_label in col_labels)
     table_html += "</tr>"
     for row_index in range(len(row_labels)):
         table_html += "<tr>"

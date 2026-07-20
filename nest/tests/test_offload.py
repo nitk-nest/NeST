@@ -22,7 +22,7 @@ class TestOffloads(unittest.TestCase):
         n2 = Node("n2")
         n1 = Node("n1")
 
-        (n1_n2, n2_n1) = connect(n1, n2)
+        n1_n2, n2_n1 = connect(n1, n2)
 
         # Enable TSO offload on n1_n2 interface
         n1_n2.enable_offload("tso")
@@ -32,7 +32,7 @@ class TestOffloads(unittest.TestCase):
                 shell=True,
                 stdout=subprocess.PIPE,
             )
-            (output, _) = proc.communicate()
+            output, _ = proc.communicate()
             self.assertTrue("tcp-segmentation-offload: on" in output.decode())
 
         # Enable offloads GSO, GRO on n2_n1 interface
@@ -43,7 +43,7 @@ class TestOffloads(unittest.TestCase):
                 shell=True,
                 stdout=subprocess.PIPE,
             )
-            (output, _) = proc.communicate()
+            output, _ = proc.communicate()
             self.assertTrue("generic-segmentation-offload: on" in output.decode())
             self.assertTrue("generic-receive-offload: on" in output.decode())
 
@@ -51,7 +51,7 @@ class TestOffloads(unittest.TestCase):
         n2 = Node("n2")
         n1 = Node("n1")
 
-        (n1_n2, n2_n1) = connect(n1, n2)
+        n1_n2, n2_n1 = connect(n1, n2)
 
         # Disable TSO offload on n1_n2 interface
         n1_n2.disable_offload("tso")
@@ -61,7 +61,7 @@ class TestOffloads(unittest.TestCase):
                 shell=True,
                 stdout=subprocess.PIPE,
             )
-            (output, _) = proc.communicate()
+            output, _ = proc.communicate()
             self.assertTrue("tcp-segmentation-offload: off" in output.decode())
 
         # Disable offloads GSO, GRO on n2_n1 interface
@@ -72,7 +72,7 @@ class TestOffloads(unittest.TestCase):
                 shell=True,
                 stdout=subprocess.PIPE,
             )
-            (output, _) = proc.communicate()
+            output, _ = proc.communicate()
             self.assertTrue("generic-segmentation-offload: off" in output.decode())
             self.assertTrue("generic-receive-offload: off" in output.decode())
 

@@ -38,7 +38,7 @@ class TestIPv4AddressHelper(unittest.TestCase):
         TopologyMap.delete_all_mapping()
 
     def test_p2p(self):
-        (n0_n1, n1_n0) = connect(self.n0, self.n1, network=self.net1)
+        n0_n1, n1_n0 = connect(self.n0, self.n1, network=self.net1)
 
         AddressHelper.assign_addresses()
 
@@ -46,7 +46,7 @@ class TestIPv4AddressHelper(unittest.TestCase):
         self.assertTrue(status)
 
     def test_p2p_ipv6(self):
-        (n0_n1, n1_n0) = connect(self.n0, self.n1, network=self.net3)
+        n0_n1, n1_n0 = connect(self.n0, self.n1, network=self.net3)
 
         AddressHelper.assign_addresses()
 
@@ -59,10 +59,10 @@ class TestIPv4AddressHelper(unittest.TestCase):
         r.enable_ip_forwarding()
 
         with self.net1:
-            (n0_r, r_n0) = connect(self.n0, r)
+            n0_r, r_n0 = connect(self.n0, r)
 
         with self.net2:
-            (r_n1, n1_r) = connect(r, self.n1, network=self.net2)
+            r_n1, n1_r = connect(r, self.n1, network=self.net2)
 
         AddressHelper.assign_addresses()
 
@@ -79,10 +79,10 @@ class TestIPv4AddressHelper(unittest.TestCase):
         r.enable_ip_forwarding()
 
         with self.net3:
-            (n0_r, r_n0) = connect(self.n0, r)
+            n0_r, r_n0 = connect(self.n0, r)
 
         with self.net4:
-            (r_n1, n1_r) = connect(r, self.n1, network=self.net4)
+            r_n1, n1_r = connect(r, self.n1, network=self.net4)
 
         AddressHelper.assign_addresses()
 
@@ -101,10 +101,10 @@ class TestIPv4AddressHelper(unittest.TestCase):
         r2.enable_ip_forwarding()
 
         with self.net1:
-            (n0_r1, r1_n0) = connect(self.n0, r1)
+            n0_r1, r1_n0 = connect(self.n0, r1)
 
-        (r1_r2, r2_r1) = connect(r1, r2, network=self.net2)
-        (r2_n1, n1_r2) = connect(r2, self.n1)
+        r1_r2, r2_r1 = connect(r1, r2, network=self.net2)
+        r2_n1, n1_r2 = connect(r2, self.n1)
 
         AddressHelper.assign_addresses()
         r2_n1.set_address("10.1.3.2/24")
@@ -124,10 +124,10 @@ class TestIPv4AddressHelper(unittest.TestCase):
         r2.enable_ip_forwarding()
 
         with self.net3:
-            (n0_r1, r1_n0) = connect(self.n0, r1)
+            n0_r1, r1_n0 = connect(self.n0, r1)
 
-        (r1_r2, r2_r1) = connect(r1, r2, network=self.net4)
-        (r2_n1, n1_r2) = connect(r2, self.n1)
+        r1_r2, r2_r1 = connect(r1, r2, network=self.net4)
+        r2_n1, n1_r2 = connect(r2, self.n1)
 
         AddressHelper.assign_addresses()
         r2_n1.set_address("2003:101::10:1/122")
@@ -145,7 +145,7 @@ class TestIPv4AddressHelper(unittest.TestCase):
         self.assertEqual(ecn, "1")
 
     def test_run_inside_node(self):
-        (n0_n1, n1_n0) = connect(self.n0, self.n1, network=self.net1)
+        n0_n1, n1_n0 = connect(self.n0, self.n1, network=self.net1)
 
         AddressHelper.assign_addresses()
 
@@ -155,7 +155,7 @@ class TestIPv4AddressHelper(unittest.TestCase):
             proc = subprocess.Popen(
                 command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE
             )
-            (stdout, _) = proc.communicate()
+            stdout, _ = proc.communicate()
 
         self.assertEqual(stdout[:4], b"PING", "Invalid ping output")
 
@@ -166,16 +166,16 @@ class TestIPv4AddressHelper(unittest.TestCase):
         r1 = Router("r1")
 
         with self.net1:
-            (n0_s1, s1_n0) = connect(self.n0, s1)
-            (n1_s1, s1_n1) = connect(self.n1, s1)
-            (n2_s1, s1_n2) = connect(self.n2, s1)
-            (s1_r1, r1_s1) = connect(s1, r1)
+            n0_s1, s1_n0 = connect(self.n0, s1)
+            n1_s1, s1_n1 = connect(self.n1, s1)
+            n2_s1, s1_n2 = connect(self.n2, s1)
+            s1_r1, r1_s1 = connect(s1, r1)
 
         with self.net2:
-            (n3_s2, s2_n3) = connect(self.n3, s2)
-            (n4_s2, s2_n4) = connect(self.n4, s2)
-            (n5_s2, s2_n5) = connect(self.n5, s2)
-            (s2_r1, r1_s2) = connect(s2, r1)
+            n3_s2, s2_n3 = connect(self.n3, s2)
+            n4_s2, s2_n4 = connect(self.n4, s2)
+            n5_s2, s2_n5 = connect(self.n5, s2)
+            s2_r1, r1_s2 = connect(s2, r1)
 
         AddressHelper.assign_addresses()
 

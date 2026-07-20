@@ -119,9 +119,9 @@ def set_arp_entry(ns_name, ip_addr, mac_addr):
     mac_address_pattern = "^([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})$"
     # regular expression pattern matches a MAC address
     if re.match(mac_address_pattern, mac_addr):
-        status = exec_subprocess_with_live_output(
+        return exec_subprocess_with_live_output(
             f"ip netns exec {ns_name} arp -s {ip_addr} {mac_addr}"
         )
-    else:
-        logger.info("%s is not a valid Mac address", mac_addr)
-    return status
+
+    logger.info("%s is not a valid Mac address", mac_addr)
+    return None

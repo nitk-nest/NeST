@@ -27,9 +27,9 @@ class TestQuagga(unittest.TestCase):
 
         ### Create interfaces and connect nodes and routers ###
 
-        (eth_p1r1, eth_r1p1) = connect(self.n0, self.r0, "eth-n1r1-0", "eth-r1n1-0")
-        (eth_r1r2, eth_r2r1) = connect(self.r0, self.r1, "eth-r1r2-0", "eth-r2r1-0")
-        (eth_r2p2, eth_p2r2) = connect(self.r1, self.n1, "eth-r2n2-0", "eth-n2r2-0")
+        eth_p1r1, eth_r1p1 = connect(self.n0, self.r0, "eth-n1r1-0", "eth-r1n1-0")
+        eth_r1r2, eth_r2r1 = connect(self.r0, self.r1, "eth-r1r2-0", "eth-r2r1-0")
+        eth_r2p2, eth_p2r2 = connect(self.r1, self.n1, "eth-r2n2-0", "eth-n2r2-0")
 
         ### Assign addresses to interfaces ###
 

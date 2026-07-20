@@ -32,10 +32,8 @@ def build_ca():
     """
     # Execute the build-ca command in and return
     #  whether it was successful.
-    status = exec_subprocess(
-        """/usr/share/easy-rsa/easyrsa --batch build-ca
-        nopass"""
-    )
+    status = exec_subprocess("""/usr/share/easy-rsa/easyrsa --batch build-ca
+        nopass""")
     return status == 0
 
 
@@ -70,10 +68,8 @@ def build_client_keypair(client_name: str):
     """
     # Execute the build-client-full command for the given
     # client name and return whether it was successful.
-    status = exec_subprocess(
-        f"""/usr/share/easy-rsa/easyrsa --batch build-client-full
-        {client_name} nopass"""
-    )
+    status = exec_subprocess(f"""/usr/share/easy-rsa/easyrsa --batch build-client-full
+        {client_name} nopass""")
     return status == 0
 
 
@@ -93,8 +89,6 @@ def build_server_keypair(server_name: str):
     """
     # Execute the build-server-full command for the given
     # server name and return whether it was successful.
-    status = exec_subprocess(
-        f"""/usr/share/easy-rsa/easyrsa --batch build-server-full
-        {server_name} nopass"""
-    )
+    status = exec_subprocess(f"""/usr/share/easy-rsa/easyrsa --batch build-server-full
+        {server_name} nopass""")
     return status == 0

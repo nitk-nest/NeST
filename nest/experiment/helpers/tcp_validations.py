@@ -2,6 +2,7 @@
 # Copyright (c) 2019-2023 NITK Surathkal
 
 """Validation helper for TCP Flows and Experiments"""
+
 from colorama import Fore, Style
 from nest.experiment.constants.tcp_congestion_control_algorithms import (
     congestion_algo_list,
@@ -13,9 +14,9 @@ class TCPValidations:
     Validates vaious aspects of TCP experiments
     """
 
-    SUCCESS_LOG = Fore.GREEN + "\N{check mark}"
-    FAILURE_LOG = Fore.RED + "\N{cross mark}"
-    NEUTRAL_LOG = Style.RESET_ALL + "\N{bullet}"
+    SUCCESS_LOG = Fore.GREEN + "\N{CHECK MARK}"
+    FAILURE_LOG = Fore.RED + "\N{CROSS MARK}"
+    NEUTRAL_LOG = Style.RESET_ALL + "\N{BULLET}"
 
     def __log_success(self, msg: str):
         print(self.SUCCESS_LOG, msg)

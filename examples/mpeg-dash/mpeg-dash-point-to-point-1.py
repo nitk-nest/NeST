@@ -65,7 +65,7 @@ n1 = Network("192.168.1.0/24")
 # this program takes `network` as an additional parameter. The following line
 # implies that `eth1` and `eth2` interfaces on `h1` and `h2`, respectively are
 # in the same network `n1`.
-(eth1, eth2) = connect(h1, h2, network=n1)
+eth1, eth2 = connect(h1, h2, network=n1)
 
 # Assign IPv4 addresses to all the interfaces in the network.
 AddressHelper.assign_addresses()

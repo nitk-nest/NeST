@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2022 NITK Surathkal
 
-""" Sets up a CoAP server with a sample resource """
+"""Sets up a CoAP server with a sample resource"""
 
 # Below implementation is based on the examples from:
 # https://aiocoap.readthedocs.io/en/latest/examples.html

@@ -21,6 +21,7 @@ from .id_generator import IdGen
 
 logger = logging.getLogger(__name__)
 
+
 # pylint: disable=too-many-public-methods
 class Node:
     """
@@ -668,7 +669,7 @@ class Node:
         After this method runs, the `Node` can be used as a router.
         """
         if not ipv4 and not ipv6:
-            raise Exception(
+            raise NotImplementedError(
                 "IP Forwarding cannot be false for both IPv4 and IPv6 addresses"
             )
 

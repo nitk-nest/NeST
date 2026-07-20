@@ -19,6 +19,10 @@ from ...engine.tc import get_tc_version
 from ...engine.iterators import run_tc
 
 
+class TcVersionError(Exception):
+    """Raised when an unsupported version of tc is used in NeST"""
+
+
 class TcRunner(Runner):
     """
     Runs tc command and stores and parses the output
@@ -95,7 +99,7 @@ class TcRunner(Runner):
                 version = "iproute2-ss" + strftime(
                     "%y%m%d", TcRunner.MINIMUM_SUPPORTED_VERSION
                 )
-                raise Exception(
+                raise TcVersionError(
                     f"NeST does not support qdisc parsing for tc version below "
                     f"{version}"
                 )
@@ -106,7 +110,7 @@ class TcRunner(Runner):
                     version = "iproute2-ss" + strftime(
                         "%y%m%d", TcRunner.JSON_SUPPORTED_VERSION
                     )
-                    raise Exception(
+                    raise TcVersionError(
                         f"NeST does not support {self.qdisc} qdisc parsing for tc "
                         f"version below {version}. Supported "
                         f"qdiscs are {TcRunner.PRIOR_JSON_QDISCS_SUPPORTED}"

@@ -44,9 +44,9 @@ n3 = Network("192.168.3.0/24")  # network on the right of `r2`
 # `etr1b` is the second interface at `r1` which connects it with `r2`
 # `etr2a` is the first interface at `r2` which connects it with `r1`
 # `etr2b` is the second interface at `r2` which connects it with `h2`
-(eth1, etr1a) = connect(h1, r1, network=n1)
-(etr1b, etr2a) = connect(r1, r2, network=n2)
-(etr2b, eth2) = connect(r2, h2, network=n3)
+eth1, etr1a = connect(h1, r1, network=n1)
+etr1b, etr2a = connect(r1, r2, network=n2)
+etr2b, eth2 = connect(r2, h2, network=n3)
 
 # Assign IPv4 addresses to all the interfaces in the network.
 AddressHelper.assign_addresses()
@@ -89,7 +89,7 @@ vpn_network = Network("10.200.0.0/24")
 # Now, we establish the VPN connection between `h1` (VPN server) and `h2` (VPN client)
 # using the `connect_vpn` API.
 # The `connect_vpn` API returns the tunnel endpoints for `h1` (h1tun) and `h2` (h2tun).
-(h1tun, h2tun) = connect_vpn(h1, h2, network=vpn_network)
+h1tun, h2tun = connect_vpn(h1, h2, network=vpn_network)
 
 # Once the VPN is established, we have created a secure alternate path between the nodes.
 # This path is addressed using the tunnel endpoints which belongs to same private network.

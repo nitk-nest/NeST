@@ -90,7 +90,6 @@ from nest.routing.routing_helper import RoutingHelper
 
 
 class DumbbellHelper:
-
     """
     Helper to create dumbbell topologies.
 
@@ -266,7 +265,7 @@ class DumbbellHelper:
         for i in range(num_routers - 1):
 
             if i == 0:
-                (vars()["etr1" + chr(97 + num_left_nodes)], etr2a) = connect(
+                vars()["etr1" + chr(97 + num_left_nodes)], etr2a = connect(
                     self.nodes["router_list"][0],
                     self.nodes["router_list"][1],
                     network=self.network_list[self.net_count],

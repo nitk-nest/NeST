@@ -6,6 +6,7 @@
 import logging
 import re
 
+
 # See: https://stackoverflow.com/a/35804945
 def add_logging_level(level_name, level_num, method_name=None):
     """

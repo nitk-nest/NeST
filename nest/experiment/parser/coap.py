@@ -132,9 +132,9 @@ class CoAPRunner(Runner):
                     coap_message_payload = (
                         '"' + self.user_options["coap_message_payload"] + '"'
                     )
-                    coap_client_options[
-                        "coap_message_payload"
-                    ] = f"-m {coap_message_payload}"
+                    coap_client_options["coap_message_payload"] = (
+                        f"-m {coap_message_payload}"
+                    )
 
             # Message payload should not be sent for GET request
             else:

@@ -25,7 +25,7 @@ class TestTopologyMap(unittest.TestCase):
         self.ns_name2 = ns2.name
 
         # Create veth pairs (interfaces)
-        (eth1, eth2) = connect(ns1, ns2)
+        eth1, eth2 = connect(ns1, ns2)
 
         # Get their corresponding ids and names
         self.int_id1 = eth1.id

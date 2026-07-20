@@ -25,6 +25,7 @@ from nest.topology_map import TopologyMap
 from nest.mpeg_dash_encoder import MpegDashEncoder
 from nest import config
 
+
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
 class TestExperiment(unittest.TestCase):
@@ -34,8 +35,8 @@ class TestExperiment(unittest.TestCase):
         r = Node("r")
         r.enable_ip_forwarding()
 
-        (n0_r, r_n0) = connect(n0, r)
-        (r_n1, n1_r) = connect(r, n1)
+        n0_r, r_n0 = connect(n0, r)
+        r_n1, n1_r = connect(r, n1)
 
         n0_r.set_address("10.1.1.1/24")
         r_n0.set_address("10.1.1.2/24")
@@ -66,8 +67,8 @@ class TestExperiment(unittest.TestCase):
         r = Node("r")
         r.enable_ip_forwarding()
 
-        (n0_r, r_n0) = connect(n0, r)
-        (r_n1, n1_r) = connect(r, n1)
+        n0_r, r_n0 = connect(n0, r)
+        r_n1, n1_r = connect(r, n1)
 
         n0_r.set_address("10.1.1.1/24")
         r_n0.set_address("10.1.1.2/24")
@@ -97,8 +98,8 @@ class TestExperiment(unittest.TestCase):
         r = Node("r")
         r.enable_ip_forwarding()
 
-        (n1_r, r_n1) = connect(n1, r)
-        (r_n2, n2_r) = connect(r, n2)
+        n1_r, r_n1 = connect(n1, r)
+        r_n2, n2_r = connect(r, n2)
 
         n1_r.set_address("10.1.1.1/24")
         r_n1.set_address("10.1.1.2/24")
@@ -133,8 +134,8 @@ class TestExperiment(unittest.TestCase):
         r = Node("r")
         r.enable_ip_forwarding()
 
-        (n0_r, r_n0) = connect(n0, r)
-        (r_n1, n1_r) = connect(r, n1)
+        n0_r, r_n0 = connect(n0, r)
+        r_n1, n1_r = connect(r, n1)
 
         n0_r.set_address("10.1.1.1/24")
         r_n0.set_address("10.1.1.2/24")
@@ -165,8 +166,8 @@ class TestExperiment(unittest.TestCase):
         n1 = Network("192.168.1.0/24")
         n2 = Network("192.168.3.0/24")
 
-        (eth1, etr1) = connect(h1, r, network=n1)
-        (etr2, eth2) = connect(r, h2, network=n2)
+        eth1, etr1 = connect(h1, r, network=n1)
+        etr2, eth2 = connect(r, h2, network=n2)
 
         AddressHelper.assign_addresses()
 
@@ -222,8 +223,8 @@ class TestExperiment(unittest.TestCase):
         n1 = Network("192.168.1.0/24")
         n2 = Network("192.168.2.0/24")
 
-        (eth1, etr1) = connect(h1, r, network=n1)
-        (etr2, eth2) = connect(r, h2, network=n2)
+        eth1, etr1 = connect(h1, r, network=n1)
+        etr2, eth2 = connect(r, h2, network=n2)
 
         AddressHelper.assign_addresses()
 
@@ -283,8 +284,8 @@ class TestExperiment(unittest.TestCase):
         n1 = Network("192.168.1.0/24")
         n2 = Network("192.168.2.0/24")
 
-        (eth1, etr1) = connect(h1, r, network=n1)
-        (etr2, eth2) = connect(r, h2, network=n2)
+        eth1, etr1 = connect(h1, r, network=n1)
+        etr2, eth2 = connect(r, h2, network=n2)
 
         AddressHelper.assign_addresses()
 
@@ -328,8 +329,8 @@ class TestExperiment(unittest.TestCase):
         n1 = Node("n1")
         r = Router("r")
 
-        (n0_r, r_n0) = connect(n0, r)
-        (r_n1, n1_r) = connect(r, n1)
+        n0_r, r_n0 = connect(n0, r)
+        r_n1, n1_r = connect(r, n1)
 
         n0_r.set_address("10.1.1.1/24")
         r_n0.set_address("10.1.1.2/24")
@@ -379,8 +380,8 @@ class TestExperiment(unittest.TestCase):
         n1 = Node("n1")
         r = Router("r")
 
-        (n0_r, r_n0) = connect(n0, r)
-        (r_n1, n1_r) = connect(r, n1)
+        n0_r, r_n0 = connect(n0, r)
+        r_n1, n1_r = connect(r, n1)
 
         n0_r.set_address("10.1.1.1/24")
         r_n0.set_address("10.1.1.2/24")
@@ -436,8 +437,8 @@ class TestExperiment(unittest.TestCase):
         n1 = Network("192.168.1.0/24")
         n2 = Network("192.168.3.0/24")
 
-        (eth1, etr1) = connect(h1, r, network=n1)
-        (etr2, eth2) = connect(r, h2, network=n2)
+        eth1, etr1 = connect(h1, r, network=n1)
+        etr2, eth2 = connect(r, h2, network=n2)
 
         AddressHelper.assign_addresses()
 
@@ -474,8 +475,8 @@ class TestExperiment(unittest.TestCase):
         r = Node("r")
         r.enable_ip_forwarding()
 
-        (n0_r, r_n0) = connect(n0, r)
-        (r_n1, n1_r) = connect(r, n1)
+        n0_r, r_n0 = connect(n0, r)
+        r_n1, n1_r = connect(r, n1)
 
         n0_r.set_address("10::1:1/122")
         r_n0.set_address("10::1:2/122")
@@ -506,8 +507,8 @@ class TestExperiment(unittest.TestCase):
         r = Node("r")
         r.enable_ip_forwarding()
 
-        (n0_r, r_n0) = connect(n0, r)
-        (r_n1, n1_r) = connect(r, n1)
+        n0_r, r_n0 = connect(n0, r)
+        r_n1, n1_r = connect(r, n1)
 
         n0_r.set_address("10::1:1/122")
         r_n0.set_address("10::1:2/122")

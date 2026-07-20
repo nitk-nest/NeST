@@ -66,11 +66,11 @@ n5 = Network("192.168.5.0/24")  # network consisting `r2` and `h4`
 # with `h1`, `h2` and `r2`, respectively.
 # `etr2a`, `etr2b` and `etr2c` are three interfaces at `r2` that connect it
 # with `r1`, `h3` and `h4`, respectively.
-(eth1, etr1a) = connect(h1, r1, network=n1)
-(eth2, etr1b) = connect(h2, r1, network=n2)
-(etr1c, etr2a) = connect(r1, r2, network=n3)
-(etr2b, eth3) = connect(r2, h3, network=n4)
-(etr2c, eth4) = connect(r2, h4, network=n5)
+eth1, etr1a = connect(h1, r1, network=n1)
+eth2, etr1b = connect(h2, r1, network=n2)
+etr1c, etr2a = connect(r1, r2, network=n3)
+etr2b, eth3 = connect(r2, h3, network=n4)
+etr2c, eth4 = connect(r2, h4, network=n5)
 
 # Assign IPv4 addresses to all the interfaces in the network.
 AddressHelper.assign_addresses()

@@ -68,7 +68,7 @@ def connect(
         interface2_name = _autogenerate_interface_name(node2, node1, connections)
 
     # Create 2 interfaces
-    (interface1, interface2) = create_veth_pair(interface1_name, interface2_name)
+    interface1, interface2 = create_veth_pair(interface1_name, interface2_name)
 
     # pylint: disable=protected-access
     node1._add_interface(interface1)

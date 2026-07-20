@@ -25,6 +25,10 @@ logger = logging.getLogger(__name__)
 tcp_validator = TCPValidations()
 
 
+class ApplicationError(Exception):
+    """Raised when an starting an application fails"""
+
+
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-few-public-methods
 class Flow:
@@ -861,7 +865,7 @@ class Experiment:
             self.mpeg_dash_applications.extend(copy.deepcopy(mpeg_dash_applications))
 
         else:
-            raise Exception(
+            raise ApplicationError(
                 """The add_mpeg_dash_application function takes either
                 a MpegDashApplication object or a list of the same only."""
             )
@@ -881,10 +885,8 @@ class Experiment:
         elif isinstance(sip_applications, list):
             self.sip_applications.extend(copy.deepcopy(sip_applications))
         else:
-            raise Exception(
-                """The add_sip_application function takes either
-                a SipApplication object or a list of the same only."""
-            )
+            raise ApplicationError("""The add_sip_application function takes either
+                a SipApplication object or a list of the same only.""")
 
     @input_validator
     def add_http_application(self, http_applications):
@@ -904,10 +906,8 @@ class Experiment:
                 self.http_applications.append(copy.deepcopy(http_application))
 
         else:
-            raise Exception(
-                """The add_http_application function takes either
-                a HttpApplication object or a list of the same only."""
-            )
+            raise ApplicationError("""The add_http_application function takes either
+                a HttpApplication object or a list of the same only.""")
 
     @input_validator
     def require_qdisc_stats(self, interface: BaseInterface, stats=""):

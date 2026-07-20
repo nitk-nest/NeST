@@ -14,6 +14,7 @@ from .common import simple_plot, mix_plot, simple_gnu_plot, mix_gnu_plot
 
 logger = logging.getLogger(__name__)
 
+
 # pylint: disable=too-many-branches
 def _get_list_of_ss_params():
     """
@@ -107,7 +108,7 @@ def _extract_from_ss_flow(flow, node, dest_ip, dest_port):
     # "meta" item will always be present, hence `<= 1`
     if len(flow) <= 1:
         logger.warning(
-            "Flow from %s to destination %s:%s " "doesn't have any parsed ss result.",
+            "Flow from %s to destination %s:%s doesn't have any parsed ss result.",
             node,
             dest_ip,
             dest_port,
@@ -260,7 +261,7 @@ def plot_ss(parsed_data):
                         if destination_node is None:
                             destination_node = plotted_data["destination_node"]
                         elif destination_node != plotted_data["destination_node"]:
-                            raise Exception(
+                            raise RuntimeError(
                                 "Error in plotting ss stats. Unexpected "
                                 "destination node in ss.json"
                             )

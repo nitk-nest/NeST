@@ -7,6 +7,7 @@ import os
 
 from .exec import exec_exp_commands, exec_subprocess_in_background
 
+
 # pylint: disable=too-many-arguments
 def run_coap_client(ns_name, destination_ip, ipv6, coap_options, out, err):
     """

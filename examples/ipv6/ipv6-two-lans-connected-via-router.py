@@ -48,26 +48,26 @@ r1 = Router("r1")
 # `ets1a` is the first interface at `s1` which connects it with `h1`
 # `ets1b` is the second interface at `s1` which connects it with `h2`
 # `ets1c` is the third interface at `s1` which connects it with `h3`
-(eth1, ets1a) = connect(h1, s1)
-(eth2, ets1b) = connect(h2, s1)
-(eth3, ets1c) = connect(h3, s1)
+eth1, ets1a = connect(h1, s1)
+eth2, ets1b = connect(h2, s1)
+eth3, ets1c = connect(h3, s1)
 
 # Create LAN-2: Connect hosts `h4`, `h5` and `h6` to switch `s2`
 # `eth4` to `eth6` are the interfaces at `h4` to `h6`, respectively.
 # `ets2a` is the first interface at `s2` which connects it with `h4`
 # `ets2b` is the second interface at `s2` which connects it with `h5`
 # `ets2c` is the third interface at `s2` which connects it with `h6`
-(eth4, ets2a) = connect(h4, s2)
-(eth5, ets2b) = connect(h5, s2)
-(eth6, ets2c) = connect(h6, s2)
+eth4, ets2a = connect(h4, s2)
+eth5, ets2b = connect(h5, s2)
+eth6, ets2c = connect(h6, s2)
 
 # Connect switches `s1` and `s2` to router `r1`
 # `ets1d` is the fourth interface at `s1` which connects it with `r1`
 # `ets2d` is the fourth interface at `s2` which connects it with `r1`
 # `etr1a` is the first interface at `r1` which connects it with `s1`
 # `etr1b` is the second interface at `r1` which connects it with `s2`
-(ets1d, etr1a) = connect(s1, r1)
-(ets2d, etr1b) = connect(s2, r1)
+ets1d, etr1a = connect(s1, r1)
+ets2d, etr1b = connect(s2, r1)
 
 # Assign IPv6 addresses to all the interfaces of network on the left of `r1`
 # We assume that the IPv6 address of this network is `2001::1/122`.

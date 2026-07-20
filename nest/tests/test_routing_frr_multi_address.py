@@ -2,6 +2,7 @@
 # Copyright (c) 2019-2020 NITK Surathkal
 
 """Test APIs from routing sub-package"""
+
 import unittest
 from os.path import isfile
 from nest import config
@@ -9,6 +10,7 @@ from nest.topology_map import TopologyMap
 from nest.topology import Node, connect
 from nest.routing.routing_helper import RoutingHelper
 from nest.clean_up import delete_namespaces
+
 
 # pylint: disable=missing-docstring
 class TestFrr(unittest.TestCase):
@@ -27,9 +29,9 @@ class TestFrr(unittest.TestCase):
 
         ### Create interfaces and connect nodes and routers ###
 
-        (eth_p1r1, eth_r1p1) = connect(self.n0, self.r0, "eth-n1r1-0", "eth-r1n1-0")
-        (eth_r1r2, eth_r2r1) = connect(self.r0, self.r1, "eth-r1r2-0", "eth-r2r1-0")
-        (eth_r2p2, eth_p2r2) = connect(self.r1, self.n1, "eth-r2n2-0", "eth-n2r2-0")
+        eth_p1r1, eth_r1p1 = connect(self.n0, self.r0, "eth-n1r1-0", "eth-r1n1-0")
+        eth_r1r2, eth_r2r1 = connect(self.r0, self.r1, "eth-r1r2-0", "eth-r2r1-0")
+        eth_r2p2, eth_p2r2 = connect(self.r1, self.n1, "eth-r2n2-0", "eth-n2r2-0")
 
         ### Assign addresses to interfaces ###
 

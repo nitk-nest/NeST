@@ -48,9 +48,9 @@ n3 = Network("192.168.3.0/24")  # network on the right of `pe2`
 # `etpe1b` is the second interface at `pe1` which connects it with `pe2`
 # `etpe2a` is the first interface at `pe2` which connects it with `pe1`
 # `etpe2b` is the second interface at `pe2` which connects it with `ce2`
-(etce1, etpe1a) = connect(ce1, pe1, network=n1)
-(etpe1b, etpe2a) = connect(pe1, pe2, network=n2)
-(etpe2b, etce2) = connect(pe2, ce2, network=n3)
+etce1, etpe1a = connect(ce1, pe1, network=n1)
+etpe1b, etpe2a = connect(pe1, pe2, network=n2)
+etpe2b, etce2 = connect(pe2, ce2, network=n3)
 
 # Assign IPv4 addresses to all the interfaces in the network.
 AddressHelper.assign_addresses()

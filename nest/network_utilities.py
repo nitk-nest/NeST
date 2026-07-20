@@ -51,7 +51,7 @@ def ipv6_dad_check(func):
 
                 # IPv6 state will be both in tentative and dadfailed together
                 if status["dadfailed"][0] is True:
-                    raise Exception(
+                    raise RuntimeError(
                         "Duplicate address found "
                         f"at interface of node {status['dadfailed'][1]}."
                         "\nExiting ...."

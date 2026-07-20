@@ -34,9 +34,9 @@ r2 = Router("r2")
 # `etr1b` is the second interface at `r1` which connects it with `r2`
 # `etr2a` is the first interface at `r2` which connects it with `r1`
 # `etr2b` is the second interface at `r2` which connects it with `h2`
-(eth1, etr1a) = connect(h1, r1)
-(etr1b, etr2a) = connect(r1, r2)
-(etr2b, eth2) = connect(r2, h2)
+eth1, etr1a = connect(h1, r1)
+etr1b, etr2a = connect(r1, r2)
+etr2b, eth2 = connect(r2, h2)
 
 # Assign IPv4 and IPv6 addresses to all the interfaces.
 # Note: this example has three networks: one on the left of `r1`, second

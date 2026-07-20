@@ -2,6 +2,7 @@
 # Copyright (c) 2019-2020 NITK Surathkal
 
 """IP link commands"""
+
 import logging
 from .exec import exec_subprocess
 

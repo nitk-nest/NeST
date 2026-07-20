@@ -33,9 +33,9 @@ class TestStaticMPLS(unittest.TestCase):
         ### Create interfaces and connect nodes and routers ###
 
     def test_routing(self):
-        (eth_n0_r0, eth_r0_n0) = connect(self.n0, self.r0, "eth-n0_r0", "eth-r0_n0")
-        (eth_r0_r1, eth_r1_r0) = connect(self.r0, self.r1, "eth-r0r1-0", "eth-r1r0-0")
-        (eth_r1_n1, eth_n1_r1) = connect(self.r1, self.n1, "eth-r1n1-0", "eth-n1r1-0")
+        eth_n0_r0, eth_r0_n0 = connect(self.n0, self.r0, "eth-n0_r0", "eth-r0_n0")
+        eth_r0_r1, eth_r1_r0 = connect(self.r0, self.r1, "eth-r0r1-0", "eth-r1r0-0")
+        eth_r1_n1, eth_n1_r1 = connect(self.r1, self.n1, "eth-r1n1-0", "eth-n1r1-0")
 
         ### Assign addresses to interfaces ###
         eth_n0_r0.set_address("10.0.1.1/24")

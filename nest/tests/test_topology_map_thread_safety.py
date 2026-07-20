@@ -25,7 +25,7 @@ class TestThreadSafety(unittest.TestCase):
         node_2 = Node("n" + str(id2))
         self.nodes.extend([node_1, node_2])
 
-        (eth0, eth1) = connect(node_1, node_2)
+        eth0, eth1 = connect(node_1, node_2)
         self.interfaces.extend([eth0, eth1])
 
     def test_thread_safety_of_nodes(self):

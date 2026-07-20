@@ -25,8 +25,8 @@ class TestMPTCP(unittest.TestCase):
         # Connect `h1` to `h2`
         # `eth1a` and `eth2a` are the interfaces at `h1` and `h2`, respectively, for 1st connection.
         # `eth1b` and `eth2b` are the interfaces at `h1` and `h2`, respectively, for 2nd connection.
-        (eth1a, eth2a) = connect(h1, h2)
-        (eth1b, eth2b) = connect(h1, h2)
+        eth1a, eth2a = connect(h1, h2)
+        eth1b, eth2b = connect(h1, h2)
 
         # Assign IPv4 addresses to all the interfaces.
         eth1a.set_address("10.10.0.1/24")

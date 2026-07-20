@@ -28,7 +28,6 @@ from .switch import Switch
 # pylint: disable=cyclic-import
 from .connect import connect
 
-
 # Generate unique topology id for the *to be created* topology
 TOPOLOGY_ID = uuid.uuid4().hex[:10]  # TODO: First 10 seems hacky
 id_generator.IdGen(TOPOLOGY_ID)

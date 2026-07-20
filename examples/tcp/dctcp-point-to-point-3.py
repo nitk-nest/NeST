@@ -9,7 +9,6 @@ from nest.experiment import *
 from nest.topology.network import Network
 from nest.topology.address_helper import AddressHelper
 
-
 # This program emulates point to point networks that connect two hosts `h1`
 # and `h2` via two switches `s1` and `s2`. This program is similar to
 # `udp-point-to-point-3.py` in `examples/udp`. One DCTCP flow
@@ -51,9 +50,9 @@ n1 = Network("192.168.1.0/24")
 # `ets1b` is the second interface at `s1` which connects it with `s2`
 # `ets2a` is the first interface at `s2` which connects it with `s1`
 # `ets2b` is the second interface at `s2` which connects it with `h2`
-(eth1, ets1a) = connect(h1, s1, network=n1)
-(ets1b, ets2a) = connect(s1, s2, network=n1)
-(ets2b, eth2) = connect(s2, h2, network=n1)
+eth1, ets1a = connect(h1, s1, network=n1)
+ets1b, ets2a = connect(s1, s2, network=n1)
+ets2b, eth2 = connect(s2, h2, network=n1)
 
 # Assign IPv4 addresses to all the interfaces in the network.
 AddressHelper.assign_addresses()

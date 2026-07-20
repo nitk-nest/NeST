@@ -42,7 +42,7 @@ def _plot_netperf_flow(flow, node, dest, dat_list_flows=None):
     # "meta" item will always be present, hence `<= 1`
     if len(flow) <= 1:
         logger.warning(
-            "Flow from %s to destination %s " "doesn't have any parsed netperf result.",
+            "Flow from %s to destination %s doesn't have any parsed netperf result.",
             node,
             dest,
         )

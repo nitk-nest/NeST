@@ -2,6 +2,7 @@
 # Copyright (c) 2022-2025 NITK Surathkal
 
 """Plot httperf results"""
+
 import logging
 import time
 import matplotlib.pyplot as plt

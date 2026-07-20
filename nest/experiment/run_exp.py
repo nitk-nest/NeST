@@ -147,7 +147,7 @@ def run_experiment(exp):
 
         exp_end_t = max(exp_end_t, stop_t)
 
-        (min_start, max_stop) = ping_schedules[(src_ns, dst_ns, dst_addr)]
+        min_start, max_stop = ping_schedules[(src_ns, dst_ns, dst_addr)]
         ping_schedules[(src_ns, dst_ns, dst_addr)] = (
             min(min_start, start_t),
             max(max_stop, stop_t),
@@ -165,7 +165,10 @@ def run_experiment(exp):
                 #   connection also we must ignore.
                 ss_filters.add("sport != 12865 and dport != 12865")
 
-                (tcp_runners, ss_schedules,) = setup_tcp_flows(
+                (
+                    tcp_runners,
+                    ss_schedules,
+                ) = setup_tcp_flows(
                     {
                         k: v
                         for k, v in dependencies.items()
@@ -182,7 +185,10 @@ def run_experiment(exp):
 
             elif options["tool"] == "iperf3":
                 ss_filters.add("sport != 5201 and dport != 5201")
-                (tcp_runners, ss_schedules,) = setup_tcp_flows(
+                (
+                    tcp_runners,
+                    ss_schedules,
+                ) = setup_tcp_flows(
                     {
                         k: v
                         for k, v in dependencies.items()
@@ -271,7 +277,7 @@ def run_experiment(exp):
         exp_end_t = max(exp_end_t, duration)
 
         # Setup runners for emulating Mpeg-Dash traffic
-        (mpeg_dash_runners, ss_schedules) = setup_mpeg_dash_runners(
+        mpeg_dash_runners, ss_schedules = setup_mpeg_dash_runners(
             dependencies["mpeg_dash"],
             mpeg_dash_application,
             ss_schedules,
@@ -1317,7 +1323,7 @@ def _get_start_stop_time_for_ss(
     if (src_ns, dst_ns, dst_addr) not in ss_schedules:
         ss_schedules[(src_ns, dst_ns, dst_addr)] = (start_t, stop_t)
     else:
-        (min_start, max_stop) = ss_schedules[(src_ns, dst_ns, dst_addr)]
+        min_start, max_stop = ss_schedules[(src_ns, dst_ns, dst_addr)]
         ss_schedules[(src_ns, dst_ns, dst_addr)] = (
             min(min_start, start_t),
             max(max_stop, stop_t),

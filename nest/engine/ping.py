@@ -5,6 +5,7 @@
 
 from .exec import exec_exp_commands, exec_subprocess, exec_subprocess_with_live_output
 
+
 # pylint: disable=too-many-arguments
 def ping(ns_name, dest_addr, preload=1, packets=1, ipv6=False, live_output=True):
     """

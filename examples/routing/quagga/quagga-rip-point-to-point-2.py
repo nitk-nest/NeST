@@ -52,8 +52,8 @@ n2 = Network("192.168.2.0/24")  # network on the right side of `r1`
 # `eth1` and `eth2` are the interfaces at `h1` and `h2`, respectively.
 # `etr1a` is the first interface at `r1` which connects it with `h1`
 # `etr1b` is the second interface at `r1` which connects it with `h2`
-(eth1, etr1a) = connect(h1, r1, network=n1)
-(etr1b, eth2) = connect(r1, h2, network=n2)
+eth1, etr1a = connect(h1, r1, network=n1)
+etr1b, eth2 = connect(r1, h2, network=n2)
 
 # Assign IPv4 addresses to all the interfaces in the network.
 AddressHelper.assign_addresses()

@@ -77,20 +77,20 @@ n1 = Network("192.168.1.0/24")
 n2 = Network("192.168.2.0/24")
 
 # Connect LAN-1 hosts (h1 to h4) to switch s1 on network n1
-(eth1, est1a) = connect(h1, s1, network=n1)
-(eth2, est1b) = connect(h2, s1, network=n1)
-(eth3, est1c) = connect(h3, s1, network=n1)
-(eth4, est1d) = connect(h4, s1, network=n1)
+eth1, est1a = connect(h1, s1, network=n1)
+eth2, est1b = connect(h2, s1, network=n1)
+eth3, est1c = connect(h3, s1, network=n1)
+eth4, est1d = connect(h4, s1, network=n1)
 
 # Connect LAN-2 hosts (h5 to h8) to switch s2 on network n2
-(eth5, est2a) = connect(h5, s2, network=n2)
-(eth6, est2b) = connect(h6, s2, network=n2)
-(eth7, est2c) = connect(h7, s2, network=n2)
-(eth8, est2d) = connect(h8, s2, network=n2)
+eth5, est2a = connect(h5, s2, network=n2)
+eth6, est2b = connect(h6, s2, network=n2)
+eth7, est2c = connect(h7, s2, network=n2)
+eth8, est2d = connect(h8, s2, network=n2)
 
 # Connect switches to router r1
-(est1e, etr1a) = connect(s1, r1, network=n1)
-(est2e, etr1b) = connect(s2, r1, network=n2)
+est1e, etr1a = connect(s1, r1, network=n1)
+est2e, etr1b = connect(s2, r1, network=n2)
 
 # Automatically assign all addresses using helper
 AddressHelper.assign_addresses()

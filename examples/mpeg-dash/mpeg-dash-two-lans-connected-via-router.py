@@ -83,18 +83,18 @@ n1 = Network("192.168.1.0/24")  # network on the left of `r1`
 n2 = Network("192.168.2.0/24")  # network on the right of `r1`
 
 # Create LAN-1: Connect hosts `h1`, `h2` and `h3` to switch `s1`
-(eth1, ets1a) = connect(h1, s1, network=n1)
-(eth2, ets1b) = connect(h2, s1, network=n1)
-(eth3, ets1c) = connect(h3, s1, network=n1)
+eth1, ets1a = connect(h1, s1, network=n1)
+eth2, ets1b = connect(h2, s1, network=n1)
+eth3, ets1c = connect(h3, s1, network=n1)
 
 # Create LAN-2: Connect hosts `h4`, `h5` and `h6` to switch `s2`
-(eth4, ets2a) = connect(h4, s2, network=n2)
-(eth5, ets2b) = connect(h5, s2, network=n2)
-(eth6, ets2c) = connect(h6, s2, network=n2)
+eth4, ets2a = connect(h4, s2, network=n2)
+eth5, ets2b = connect(h5, s2, network=n2)
+eth6, ets2c = connect(h6, s2, network=n2)
 
 # Connect switches `s1` and `s2` to router `r1`
-(ets1d, etr1a) = connect(s1, r1, network=n1)
-(ets2d, etr1b) = connect(s2, r1, network=n2)
+ets1d, etr1a = connect(s1, r1, network=n1)
+ets2d, etr1b = connect(s2, r1, network=n2)
 
 # Assign IPv4 addresses to all the interfaces and switches in the network.
 AddressHelper.assign_addresses()

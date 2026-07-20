@@ -34,9 +34,9 @@ n3 = Network("192.168.3.0/24")  # network between r2 and h2
 
 # Connect hosts and routers using the networks defined above
 # Returns two interface for each link: one for each connected device
-(eth1, etr1a) = connect(h1, r1, network=n1)  # h1 <-> r1
-(etr1b, etr2a) = connect(r1, r2, network=n2)  # r1 <-> r2
-(etr2b, eth2) = connect(r2, h2, network=n3)  # r2 <-> h2
+eth1, etr1a = connect(h1, r1, network=n1)  # h1 <-> r1
+etr1b, etr2a = connect(r1, r2, network=n2)  # r1 <-> r2
+etr2b, eth2 = connect(r2, h2, network=n3)  # r2 <-> h2
 
 # Automatically assign IP addresses to all interfaces in the networks
 AddressHelper.assign_addresses()

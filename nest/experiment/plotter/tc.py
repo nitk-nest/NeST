@@ -70,7 +70,7 @@ def _plot_tc_stats(stats, node, interface):
     values = _extract_from_tc_stats(stats, node, interface)
     if values is None:
         return
-    (qdisc, timestamp, stats_params) = values
+    qdisc, timestamp, stats_params = values
 
     for param in stats_params:
         base_filename = f"{node}_{interface}_{qdisc}_{param}"

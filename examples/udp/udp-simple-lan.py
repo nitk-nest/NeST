@@ -48,10 +48,10 @@ n1 = Network("192.168.1.0/24")
 # `ets1c` is the third interface at `s1` which connects it with `h3`
 # `ets1d` is the fourth interface at `s1` which connects it with `h4`
 with n1:
-    (eth1, ets1a) = connect(h1, s1)
-    (eth2, ets1b) = connect(h2, s1)
-    (eth3, ets1c) = connect(h3, s1)
-    (eth4, ets1d) = connect(h4, s1)
+    eth1, ets1a = connect(h1, s1)
+    eth2, ets1b = connect(h2, s1)
+    eth3, ets1c = connect(h3, s1)
+    eth4, ets1d = connect(h4, s1)
 
 # Assign IPv4 addresses to all the interfaces in the network.
 AddressHelper.assign_addresses()

@@ -81,7 +81,7 @@ class Address:
     def get_subnet(self):
         """Get the subnet of the given address"""
         if self.ip_addr == "default":
-            raise Exception("default address cannot have a subnet")
+            raise RuntimeError("default address cannot have a subnet")
         interface = ipaddress.ip_interface(self.ip_addr)
         return interface.network.compressed
 

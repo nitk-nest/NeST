@@ -28,8 +28,8 @@ r1 = Router("r1")  # Internally, `Router` API enables IP forwarding in `r1`
 # `eth1` and `eth2` are the interfaces at `h1` and `h2`, respectively.
 # `etr1a` is the first interface at `r1` which connects it with `h1`
 # `etr1b` is the second interface at `r1` which connects it with `h2`
-(eth1, etr1a) = connect(h1, r1)
-(etr1b, eth2) = connect(r1, h2)
+eth1, etr1a = connect(h1, r1)
+etr1b, eth2 = connect(r1, h2)
 
 # Assign IPv4 addresses to all the interfaces.
 # Note: this example has two networks, one each on either side of `r1`.

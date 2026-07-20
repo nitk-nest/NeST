@@ -23,7 +23,7 @@ class TestTopologyPingPreload(unittest.TestCase):
         TopologyMap.delete_all_mapping()
 
     def test_p2p_ping_preload(self):
-        (n0_n1, n1_n0) = connect(self.n0, self.n1)
+        n0_n1, n1_n0 = connect(self.n0, self.n1)
 
         n0_n1.set_address("10.0.0.1/24")
         n1_n0.set_address("10.0.0.2/24")

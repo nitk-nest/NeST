@@ -3,6 +3,7 @@
 
 """Stores user information"""
 
+
 # pylint: disable=too-few-public-methods
 class User:
     """

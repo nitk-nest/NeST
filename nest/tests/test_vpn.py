@@ -40,9 +40,9 @@ class TestVPN(unittest.TestCase):
         self.net3 = Network("192.168.3.0/24")
         self.vpn_network = Network("10.200.0.0/24")
 
-        (eth1, etr1a) = connect(self.h1, self.r1, network=self.net1)
-        (etr1b, etr2a) = connect(self.r1, self.r2, network=self.net2)
-        (etr2b, eth2) = connect(self.r2, self.h2, network=self.net3)
+        eth1, etr1a = connect(self.h1, self.r1, network=self.net1)
+        etr1b, etr2a = connect(self.r1, self.r2, network=self.net2)
+        etr2b, eth2 = connect(self.r2, self.h2, network=self.net3)
 
         AddressHelper.assign_addresses()
 
@@ -62,7 +62,7 @@ class TestVPN(unittest.TestCase):
         """
         Test the VPN API.
         """
-        (h1tun, h2tun) = connect_vpn(self.h1, self.h2, network=self.vpn_network)
+        h1tun, h2tun = connect_vpn(self.h1, self.h2, network=self.vpn_network)
         status = self.h2.ping(h1tun.get_address(), verbose=0)
         self.assertTrue(status)
 

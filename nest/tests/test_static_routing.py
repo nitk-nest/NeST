@@ -43,13 +43,13 @@ class TestStaticRouting(unittest.TestCase):
         # to be used for pairwise ping tests
         self.nodes_addresses = []
 
-        (eth_n0_r0, eth_r0_n0) = connect(self.n0, self.r0, "eth-n0_r0", "eth-r0_n0")
-        (eth_n1_r0, eth_r0_n1) = connect(self.n1, self.r0, "eth-n1_r0", "eth-r0_n1")
+        eth_n0_r0, eth_r0_n0 = connect(self.n0, self.r0, "eth-n0_r0", "eth-r0_n0")
+        eth_n1_r0, eth_r0_n1 = connect(self.n1, self.r0, "eth-n1_r0", "eth-r0_n1")
 
-        (eth_r0_r1, eth_r1_r0) = connect(self.r0, self.r1, "eth-r0_r1", "eth-r1_r0")
+        eth_r0_r1, eth_r1_r0 = connect(self.r0, self.r1, "eth-r0_r1", "eth-r1_r0")
 
-        (eth_n2_r1, eth_r1_n2) = connect(self.n2, self.r1, "eth-n2_r1", "eth-r1_n2")
-        (eth_n3_r1, eth_r1_n3) = connect(self.n3, self.r1, "eth-n3_r1", "eth-r1_n3")
+        eth_n2_r1, eth_r1_n2 = connect(self.n2, self.r1, "eth-n2_r1", "eth-r1_n2")
+        eth_n3_r1, eth_r1_n3 = connect(self.n3, self.r1, "eth-n3_r1", "eth-r1_n3")
 
         ### Assign addresses to interfaces ###
         eth_n0_r0.set_address("10.0.1.1/24")

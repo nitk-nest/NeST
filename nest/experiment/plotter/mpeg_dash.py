@@ -140,7 +140,7 @@ def _plot_mpeg_dash(flow, node, server_ip, stats_type):
         return
 
     server_node = data["server_node"]
-    (chunk_numbers, flow_params) = data["values"]
+    chunk_numbers, flow_params = data["values"]
     legend_string = f"Server {server_node} to client {node}"
     for param in flow_params:
         base_filename = f"{stats_type.lower()}_{param}_{server_node}_to_{node}"

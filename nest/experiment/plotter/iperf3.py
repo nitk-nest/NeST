@@ -84,7 +84,7 @@ def _plot_iperf3_flow(flow, node, dest_ip, local_port):
         return
 
     destination_node = data["destination_node"]
-    (timestamp, sending_rate) = data["values"]
+    timestamp, sending_rate = data["values"]
 
     base_filename = (
         f"sending_rate_{node}({local_port})_to_{destination_node}({dest_ip})"

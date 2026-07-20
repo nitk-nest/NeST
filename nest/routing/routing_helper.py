@@ -4,6 +4,7 @@
 """
 Helper class for routing
 """
+
 import os
 import pwd
 import time
@@ -321,7 +322,7 @@ class RoutingHelper:
             if interface.is_mpls_enabled():
                 mpls_interfaces.append(interface)
         if len(mpls_interfaces) == 0:
-            raise Exception("MPLS isn't enabled in any interface!")
+            raise RuntimeError("MPLS isn't enabled in any interface!")
         ldp = Ldp(
             router.id,
             self.ipv6_routing,

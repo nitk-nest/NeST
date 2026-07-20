@@ -11,7 +11,6 @@ from nest.topology import Node, connect
 from nest.clean_up import delete_namespaces
 from nest.topology_map import TopologyMap
 
-
 # pylint: disable=invalid-name
 # pylint: disable=missing-docstring
 
@@ -21,7 +20,7 @@ class TestTopologyPacketOps(unittest.TestCase):
         self.n0 = Node("n0")
         self.n1 = Node("n1")
 
-        (self.n0_n1, self.n1_n0) = connect(self.n0, self.n1)
+        self.n0_n1, self.n1_n0 = connect(self.n0, self.n1)
 
         self.n0_n1.set_address("10.0.0.1/24")
         self.n1_n0.set_address("10.0.0.2/24")
@@ -90,7 +89,7 @@ class TestTopologyPacketOps(unittest.TestCase):
         self.assertTrue(status)
 
     def test_delay_distribution(self):
-        (n0_n1, n1_n0) = connect(self.n0, self.n1)
+        n0_n1, n1_n0 = connect(self.n0, self.n1)
 
         n0_n1.set_attributes("10mbit", "10ms")
         n1_n0.set_attributes("10mbit", "5ms")

@@ -5,7 +5,6 @@
 API implementation of `connect_vpn`.
 """
 
-
 import logging
 from ipaddress import ip_network
 from nest.engine.vpn import (

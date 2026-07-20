@@ -63,10 +63,10 @@ r1 = Router("r1")
 r2 = Router("r2")
 
 # Connect `h1` to `h2` via `r1` and `r2` as per topology
-(eth1a, etr1a) = connect(h1, r1, network=network1)
-(etr1b, etr2a) = connect(r1, r2, network=network2)
-(etr2b, eth2a) = connect(r2, h2, network=network3)
-(etr2c, eth2b) = connect(r2, h2, network=network4)
+eth1a, etr1a = connect(h1, r1, network=network1)
+etr1b, etr2a = connect(r1, r2, network=network2)
+etr2b, eth2a = connect(r2, h2, network=network3)
+etr2c, eth2b = connect(r2, h2, network=network4)
 
 # Assign IPv4 addresses to all the interfaces in the network.
 AddressHelper.assign_addresses()

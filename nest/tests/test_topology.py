@@ -12,6 +12,7 @@ from nest.topology_map import TopologyMap
 from nest.topology.interface import Interface
 from nest import config
 
+
 # pylint: disable=too-many-public-methods
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
@@ -29,7 +30,7 @@ class TestTopology(unittest.TestCase):
         TopologyMap.delete_all_mapping()
 
     def test_p2p(self):
-        (n0_n1, n1_n0) = connect(self.n0, self.n1)
+        n0_n1, n1_n0 = connect(self.n0, self.n1)
 
         n0_n1.set_address("10.0.0.1/24")
         n1_n0.set_address("10.0.0.2/24")
@@ -39,7 +40,7 @@ class TestTopology(unittest.TestCase):
         self.assertTrue(status)
 
     def test_p2p_ipv6(self):
-        (n0_n1, n1_n0) = connect(self.n0, self.n1)
+        n0_n1, n1_n0 = connect(self.n0, self.n1)
 
         self.n0.disable_ip_dad()
         self.n1.disable_ip_dad()
@@ -56,8 +57,8 @@ class TestTopology(unittest.TestCase):
         r = Node("r")
         r.enable_ip_forwarding()
 
-        (n0_r, r_n0) = connect(self.n0, r)
-        (r_n1, n1_r) = connect(r, self.n1)
+        n0_r, r_n0 = connect(self.n0, r)
+        r_n1, n1_r = connect(r, self.n1)
 
         n0_r.set_address("10.1.1.1/24")
         r_n0.set_address("10.1.1.2/24")
@@ -76,8 +77,8 @@ class TestTopology(unittest.TestCase):
         r = Node("r")
         r.enable_ip_forwarding(ipv6=True)
 
-        (n0_r, r_n0) = connect(self.n0, r)
-        (r_n1, n1_r) = connect(r, self.n1)
+        n0_r, r_n0 = connect(self.n0, r)
+        r_n1, n1_r = connect(r, self.n1)
 
         self.n0.disable_ip_dad()
         self.n1.disable_ip_dad()
@@ -95,7 +96,7 @@ class TestTopology(unittest.TestCase):
         self.assertTrue(status)
 
     def test_p2p_multiple_set_address(self):
-        (n0_n1, n1_n0) = connect(self.n0, self.n1)
+        n0_n1, n1_n0 = connect(self.n0, self.n1)
 
         self.n0.disable_ip_dad()
         self.n1.disable_ip_dad()
@@ -120,7 +121,7 @@ class TestTopology(unittest.TestCase):
         self.assertTrue(status_6)
 
     def test_add_addr(self):
-        (n0_n1, n1_n0) = connect(self.n0, self.n1)
+        n0_n1, n1_n0 = connect(self.n0, self.n1)
 
         self.n0.disable_ip_dad()
         self.n1.disable_ip_dad()
@@ -141,7 +142,7 @@ class TestTopology(unittest.TestCase):
         self.assertTrue(status_4)
 
     def test_get_addr(self):
-        (n0_n1, n1_n0) = connect(self.n0, self.n1)
+        n0_n1, n1_n0 = connect(self.n0, self.n1)
 
         self.n0.disable_ip_dad()
         self.n1.disable_ip_dad()
@@ -214,7 +215,7 @@ class TestTopology(unittest.TestCase):
         )
 
     def test_del_addr(self):
-        (n0_n1, n1_n0) = connect(self.n0, self.n1)
+        n0_n1, n1_n0 = connect(self.n0, self.n1)
 
         n0_n1.set_address(["10.1.1.1/24", "2001:1:1:1443::411/122"])
         n1_n0.set_address(["10.1.1.2/24", "10.1.1.3/24", "2001:1:1:1443::412/122"])
@@ -265,10 +266,10 @@ class TestTopology(unittest.TestCase):
         n3 = Node("n3")
         s0 = Switch("s0")
 
-        (n0_s0, _) = connect(n0, s0)
-        (n1_s0, _) = connect(n1, s0)
-        (n2_s0, _) = connect(n2, s0)
-        (n3_s0, _) = connect(n3, s0)
+        n0_s0, _ = connect(n0, s0)
+        n1_s0, _ = connect(n1, s0)
+        n2_s0, _ = connect(n2, s0)
+        n3_s0, _ = connect(n3, s0)
 
         nodes = [n0, n1, n2, n3]
         interface = [n0_s0, n1_s0, n2_s0, n3_s0]
@@ -295,10 +296,10 @@ class TestTopology(unittest.TestCase):
         s0 = Switch("s0")
         s1 = Switch("s1")
 
-        (n0_s0, _) = connect(n0, s0)
-        (n1_s0, _) = connect(n1, s0)
-        (n2_s1, _) = connect(n2, s1)
-        (n3_s1, _) = connect(n3, s1)
+        n0_s0, _ = connect(n0, s0)
+        n1_s0, _ = connect(n1, s0)
+        n2_s1, _ = connect(n2, s1)
+        n3_s1, _ = connect(n3, s1)
 
         connect(s0, s1)
 
@@ -410,7 +411,7 @@ class TestTopology(unittest.TestCase):
         config.set_value("assign_random_names", True)
 
     def test_run_inside_node(self):
-        (n0_n1, n1_n0) = connect(self.n0, self.n1)
+        n0_n1, n1_n0 = connect(self.n0, self.n1)
 
         n0_n1.set_address("10.0.0.1/24")
         n1_n0.set_address("10.0.0.2/24")
@@ -421,7 +422,7 @@ class TestTopology(unittest.TestCase):
             with subprocess.Popen(
                 command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE
             ) as proc:
-                (stdout, _) = proc.communicate()
+                stdout, _ = proc.communicate()
 
         self.assertEqual(stdout[:4], b"PING", "Invalid ping output")
 
@@ -429,8 +430,8 @@ class TestTopology(unittest.TestCase):
         # pylint: disable=invalid-name
         r = Router("r")
 
-        (n0_r, r_n0) = connect(self.n0, r)
-        (r_n1, n1_r) = connect(r, self.n1)
+        n0_r, r_n0 = connect(self.n0, r)
+        r_n1, n1_r = connect(r, self.n1)
 
         n0_r.set_address("10.1.1.1/24")
         r_n0.set_address("10.1.1.2/24")
@@ -453,8 +454,8 @@ class TestTopology(unittest.TestCase):
         r1.enable_ip_forwarding(ipv6=False)
         r1.enable_ip_forwarding(ipv4=False)
 
-        (eth1, etr1a) = connect(h1, r1)
-        (etr1b, eth2) = connect(r1, h2)
+        eth1, etr1a = connect(h1, r1)
+        etr1b, eth2 = connect(r1, h2)
 
         eth1.set_address("192.168.1.1/24")
         etr1a.set_address("192.168.1.2/24")
@@ -495,7 +496,7 @@ class TestTopology(unittest.TestCase):
         self.assertTrue(status)
 
     def test_enable_disable_interfaces(self):
-        (n0_n1, n1_n0) = connect(self.n0, self.n1)
+        n0_n1, n1_n0 = connect(self.n0, self.n1)
 
         n0_n1.set_address("10.0.0.1/24")
         n1_n0.set_address("10.0.0.2/24")
@@ -566,14 +567,14 @@ class TestTopology(unittest.TestCase):
         s2 = Switch("s2")
         r1 = Router("r1")
 
-        (n0_s1, _) = connect(self.n0, s1)
-        (n1_s1, _) = connect(self.n1, s1)
-        (n2_s1, _) = connect(self.n2, s1)
-        (n3_s2, _) = connect(self.n3, s2)
-        (n4_s2, _) = connect(self.n4, s2)
-        (n5_s2, _) = connect(self.n5, s2)
-        (_, r1_s1) = connect(s1, r1)
-        (_, r1_s2) = connect(s2, r1)
+        n0_s1, _ = connect(self.n0, s1)
+        n1_s1, _ = connect(self.n1, s1)
+        n2_s1, _ = connect(self.n2, s1)
+        n3_s2, _ = connect(self.n3, s2)
+        n4_s2, _ = connect(self.n4, s2)
+        n5_s2, _ = connect(self.n5, s2)
+        _, r1_s1 = connect(s1, r1)
+        _, r1_s2 = connect(s2, r1)
 
         n0_s1.set_address("192.168.1.1/24")
         n1_s1.set_address("192.168.1.2/24")

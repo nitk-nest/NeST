@@ -2,6 +2,7 @@
 # Copyright (c) 2019-2020 NITK Surathkal
 
 """Routing commands"""
+
 from os import path
 from nest.engine.util import is_dependency_installed
 from .. import config
@@ -52,8 +53,10 @@ def run_ripd(ns_id, conf_file, pid_file, ipv6, **kwargs):
             cmd = f"ip netns exec {ns_id} {FRR_DAEMONPATH}ripngd --config_file {conf_file} \
                     --pid_file {pid_file} --daemon -N {ns_id}"
         else:
-            cmd = f"ip netns exec {ns_id} {FRR_DAEMONPATH}ripd --config_file {conf_file} \
+            cmd = (
+                f"ip netns exec {ns_id} {FRR_DAEMONPATH}ripd --config_file {conf_file} \
                     --pid_file {pid_file} --daemon -N {ns_id}"
+            )
     elif config.get_value("routing_suite") == "bird":
         if config.get_value("routing_logs"):
             cmd = f"ip netns exec {ns_id} bird -c {conf_file} -P {pid_file} \
@@ -149,7 +152,7 @@ def run_ldpd(ns_id, conf_file, pid_file):
             --pid_file {pid_file} --daemon -N {ns_id}"
         exec_subprocess(cmd)
     else:
-        raise Exception("Ldp requires Frrouting")
+        raise RuntimeError("Ldp requires Frrouting")
 
 
 def supports_dynamic_routing(daemon):

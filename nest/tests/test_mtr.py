@@ -35,9 +35,9 @@ class TestTopologyMTR(unittest.TestCase):
         n2 = Network("192.168.2.0/24")
         n3 = Network("192.168.3.0/24")
 
-        (_, _) = connect(self.h1, self.r1, network=n1)
-        (_, _) = connect(self.r1, self.r2, network=n2)
-        (_, eth2) = connect(self.r2, self.h2, network=n3)
+        _, _ = connect(self.h1, self.r1, network=n1)
+        _, _ = connect(self.r1, self.r2, network=n2)
+        _, eth2 = connect(self.r2, self.h2, network=n3)
 
         AddressHelper.assign_addresses()
         RoutingHelper(protocol="static").populate_routing_tables()

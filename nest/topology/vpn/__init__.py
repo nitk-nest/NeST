@@ -4,4 +4,5 @@
 """
 This module provides a high-level API for connecting to a VPN.
 """
+
 from .vpn import connect_vpn

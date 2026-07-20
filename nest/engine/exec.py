@@ -9,8 +9,8 @@ import subprocess
 from subprocess import Popen, PIPE
 import time
 
-
 logger = logging.getLogger(__name__)
+
 
 # pylint: disable=inconsistent-return-statements
 def exec_subprocess(cmd, shell=False, output=False):
@@ -44,7 +44,7 @@ def exec_subprocess(cmd, shell=False, output=False):
 
     with Popen(temp_cmd, stdout=PIPE, stderr=PIPE, shell=shell) as proc:
 
-        (stdout, _) = proc.communicate()
+        stdout, _ = proc.communicate()
         logger.trace(cmd)
 
         if output:

@@ -133,30 +133,30 @@ class HTTPRunner(Runner):
             output_pattern["test_duration[s]"], raw_stats_out
         ).group("testDuration")
 
-        output_pattern[
-            "connection_rate"
-        ] = r"Connection rate: (?P<connectionRate>\d+.\d*)"
+        output_pattern["connection_rate"] = (
+            r"Connection rate: (?P<connectionRate>\d+.\d*)"
+        )
         output_value["connection_rate"] = re.search(
             output_pattern["connection_rate"], raw_stats_out
         ).group("connectionRate")
 
-        output_pattern[
-            "min_connection_time"
-        ] = r"Connection time \[ms\]: min (?P<minConnectionTime>\d+.\d*)"
+        output_pattern["min_connection_time"] = (
+            r"Connection time \[ms\]: min (?P<minConnectionTime>\d+.\d*)"
+        )
         output_value["min_connection_time"] = re.search(
             output_pattern["min_connection_time"], raw_stats_out
         ).group("minConnectionTime")
 
-        output_pattern[
-            "avg_connection_time"
-        ] = r"Connection time \[ms\]: min \d+.\d* avg (?P<avgConnectionTime>\d+.\d*)"
+        output_pattern["avg_connection_time"] = (
+            r"Connection time \[ms\]: min \d+.\d* avg (?P<avgConnectionTime>\d+.\d*)"
+        )
         output_value["avg_connection_time"] = re.search(
             output_pattern["avg_connection_time"], raw_stats_out
         ).group("avgConnectionTime")
 
-        output_pattern[
-            "max_connection_time"
-        ] = r"Connection time \[ms\]: min \d+.\d* avg \d+.\d* max (?P<maxConnectionTime>\d+.\d*)"
+        output_pattern["max_connection_time"] = (
+            r"Connection time \[ms\]: min \d+.\d* avg \d+.\d* max (?P<maxConnectionTime>\d+.\d*)"
+        )
         output_value["max_connection_time"] = re.search(
             output_pattern["max_connection_time"], raw_stats_out
         ).group("maxConnectionTime")
@@ -177,9 +177,9 @@ class HTTPRunner(Runner):
             output_pattern["stddev_connection_time"], raw_stats_out
         ).group("stddevConnectionTime")
 
-        output_pattern[
-            "connection_length"
-        ] = r"Connection length \[replies/conn\]: (?P<connectionLength>\d+.\d*)"
+        output_pattern["connection_length"] = (
+            r"Connection length \[replies/conn\]: (?P<connectionLength>\d+.\d*)"
+        )
         output_value["connection_length"] = re.search(
             output_pattern["connection_length"], raw_stats_out
         ).group("connectionLength")
@@ -194,16 +194,16 @@ class HTTPRunner(Runner):
             output_pattern["request_size"], raw_stats_out
         ).group("requestSize")
 
-        output_pattern[
-            "min_reply_rate"
-        ] = r"Reply rate \[replies/s\]: min (?P<minReplyRate>\d+.\d*)"
+        output_pattern["min_reply_rate"] = (
+            r"Reply rate \[replies/s\]: min (?P<minReplyRate>\d+.\d*)"
+        )
         output_value["min_reply_rate"] = re.search(
             output_pattern["min_reply_rate"], raw_stats_out
         ).group("minReplyRate")
 
-        output_pattern[
-            "avg_reply_rate"
-        ] = r"Reply rate \[replies/s\]: min \d+.\d+ avg (?P<avgReplyRate>\d+.\d*)"
+        output_pattern["avg_reply_rate"] = (
+            r"Reply rate \[replies/s\]: min \d+.\d+ avg (?P<avgReplyRate>\d+.\d*)"
+        )
         output_value["avg_reply_rate"] = re.search(
             output_pattern["avg_reply_rate"], raw_stats_out
         ).group("avgReplyRate")
@@ -226,16 +226,16 @@ class HTTPRunner(Runner):
             output_pattern["stddev_reply_rate"], raw_stats_out
         ).group("stddevReplyRate")
 
-        output_pattern[
-            "response_reply_time"
-        ] = r"response (?P<responseReplyTime>\d+.\d*)"
+        output_pattern["response_reply_time"] = (
+            r"response (?P<responseReplyTime>\d+.\d*)"
+        )
         output_value["response_reply_time"] = re.search(
             output_pattern["response_reply_time"], raw_stats_out
         ).group("responseReplyTime")
 
-        output_pattern[
-            "transfer_reply_time"
-        ] = r"transfer (?P<transferReplyTime>\d+.\d*)"
+        output_pattern["transfer_reply_time"] = (
+            r"transfer (?P<transferReplyTime>\d+.\d*)"
+        )
         output_value["transfer_reply_time"] = re.search(
             output_pattern["transfer_reply_time"], raw_stats_out
         ).group("transferReplyTime")
@@ -330,9 +330,9 @@ class HTTPRunner(Runner):
             output_pattern["fd_unavail_errors"], raw_stats_out
         ).group("fdUnavailErrors")
 
-        output_pattern[
-            "addr_unavail_errors"
-        ] = r"addrunavail (?P<addrUnavailErrors>\d+)"
+        output_pattern["addr_unavail_errors"] = (
+            r"addrunavail (?P<addrUnavailErrors>\d+)"
+        )
         output_value["addr_unavail_errors"] = re.search(
             output_pattern["addr_unavail_errors"], raw_stats_out
         ).group("addrUnavailErrors")

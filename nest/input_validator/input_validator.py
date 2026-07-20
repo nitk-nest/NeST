@@ -55,7 +55,7 @@ def input_validator(func):
         casted_args = []
         casted_kwargs = {}
 
-        for (arg_name, arg_value) in zip(argspec.args, args):
+        for arg_name, arg_value in zip(argspec.args, args):
             casted_arg_value = arg_value
             if arg_name in annotations:
                 casted_arg_value = validate_input_and_cast(

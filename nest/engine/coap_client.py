@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2022 NITK Surathkal
 
-""" Constructs CoAP client and sends GET/PUT requests to the server """
+"""Constructs CoAP client and sends GET/PUT requests to the server"""
 
 # Below implementation is based on the examples from:
 # https://aiocoap.readthedocs.io/en/latest/examples.html
@@ -245,7 +245,7 @@ async def main():
 
     # Split the final results into outputs and errors
     for i in results:
-        (output, error) = i
+        output, error = i
         outputs.append(output)
         errors.append(error)
 

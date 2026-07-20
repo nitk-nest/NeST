@@ -32,7 +32,7 @@ h2 = Node("h2")
 # `eth2` interface is at `h2`.
 # The `connect` API takes two hosts as the parameters and returns
 # the pair of interfaces.
-(eth1, eth2) = connect(h1, h2)
+eth1, eth2 = connect(h1, h2)
 
 # Assign IPv4 address to both the interfaces.
 # The `set_address` API takes the address as a string.

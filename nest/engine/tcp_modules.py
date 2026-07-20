@@ -2,10 +2,12 @@
 # Copyright (c) 2019-2022 NITK Surathkal
 
 """TCP module commands"""
+
 import logging
 from .exec import exec_subprocess
 
 logger = logging.getLogger(__name__)
+
 
 # pylint: disable=line-too-long
 def is_module_loaded(cong_algo):

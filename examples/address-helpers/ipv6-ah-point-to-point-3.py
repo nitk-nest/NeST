@@ -45,9 +45,9 @@ n3 = Network("2001:3::/122")  # network on the right of `r2`
 # `etr1b` is the second interface at `r1` which connects it with `r2`
 # `etr2a` is the first interface at `r2` which connects it with `r1`
 # `etr2b` is the second interface at `r2` which connects it with `h2`
-(eth1, etr1a) = connect(h1, r1, network=n1)
-(etr1b, etr2a) = connect(r1, r2, network=n2)
-(etr2b, eth2) = connect(r2, h2, network=n3)
+eth1, etr1a = connect(h1, r1, network=n1)
+etr1b, etr2a = connect(r1, r2, network=n2)
+etr2b, eth2 = connect(r2, h2, network=n3)
 
 # Assign IPv6 addresses to all the interfaces in the network.
 AddressHelper.assign_addresses()

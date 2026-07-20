@@ -65,13 +65,13 @@ n1 = Network("2001:1::/122")
 # Note: Since all the interfaces in this example belong to the same
 # network, we demonstrate a simpler approach to use the `Network` API.
 with n1:
-    (eth1, ets1a) = connect(h1, s1)
-    (eth2, ets1b) = connect(h2, s1)
-    (eth3, ets1c) = connect(h3, s1)
-    (eth4, ets2a) = connect(h4, s2)
-    (eth5, ets2b) = connect(h5, s2)
-    (eth6, ets2c) = connect(h6, s2)
-    (ets1d, ets2d) = connect(s1, s2)
+    eth1, ets1a = connect(h1, s1)
+    eth2, ets1b = connect(h2, s1)
+    eth3, ets1c = connect(h3, s1)
+    eth4, ets2a = connect(h4, s2)
+    eth5, ets2b = connect(h5, s2)
+    eth6, ets2c = connect(h6, s2)
+    ets1d, ets2d = connect(s1, s2)
 
 # Assign IPv6 addresses to all the interfaces in the network.
 AddressHelper.assign_addresses()

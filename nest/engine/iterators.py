@@ -1,8 +1,10 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright (c) 2019-2020 NITK Surathkal
 
-""" exectute iterator scripts """
+"""exectute iterator scripts"""
+
 from .exec import exec_exp_commands
+
 
 # pylint: disable=too-many-arguments
 def run_ss(

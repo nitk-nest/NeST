@@ -2,6 +2,7 @@
 # Copyright (c) 2019-2024 NITK Surathkal
 
 """Custom HTTP Server"""
+
 import http.server
 import sys
 import os

@@ -49,7 +49,7 @@ h1 = Node("h1")
 h2 = Node("h2")
 
 # Connect the above two hosts using a veth (virtual Ethernet) pair.
-(eth1, eth2) = connect(h1, h2)
+eth1, eth2 = connect(h1, h2)
 
 # Assign IPv4 address to both the interfaces.
 # We assume that the IPv4 address of this network is `192.168.1.0/24`.

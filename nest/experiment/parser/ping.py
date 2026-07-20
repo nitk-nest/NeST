@@ -85,7 +85,7 @@ class PingRunner(Runner):
         # First item as "meta" item with user given information
         stats_list = [self.get_meta_item()]
 
-        for (timestamp, rtt) in timestamps_and_rtts:
+        for timestamp, rtt in timestamps_and_rtts:
             stats_list.append({"timestamp": timestamp, "rtt": rtt})
 
         stats_dict = {self.destination_address.get_addr(with_subnet=False): stats_list}

@@ -102,10 +102,8 @@ class MpegDashEncoder:
                 raise KeyError('"resolution" or "bitrate" key not found')
 
             if not re.match(resolution_pattern, video_repr["resolution"]):
-                raise ValueError(
-                    '''"resolution" is not in the specified format.
-                    i.e. "<width>x<height>". E.g. "1920x1080"'''
-                )
+                raise ValueError('''"resolution" is not in the specified format.
+                    i.e. "<width>x<height>". E.g. "1920x1080"''')
 
             if not re.match(bitrate_pattern, video_repr["bitrate"]):
                 raise ValueError(
