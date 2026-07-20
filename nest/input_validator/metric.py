@@ -8,6 +8,7 @@ metrics in NeST. For eg., Bandwidth and Delay
 
 import re
 import os
+import pathlib
 from nest.exception import DistributionOptionError
 from .input_validator import input_validator
 
@@ -183,7 +184,7 @@ class Distribution:
     if machine["NAME"] == "Arch Linux":
         files = [f for f in os.listdir("/usr/share/tc") if f.endswith(".dist")]
     else:
-        files = [f for f in os.listdir("/usr/lib/tc") if f.endswith(".dist")]
+        files = [f.name for f in pathlib.Path("/usr/lib/").glob("*/**/*.dist")]
 
     for i in files:
         valid_options.append(os.path.splitext(i)[0])
