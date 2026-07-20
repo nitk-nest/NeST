@@ -1,4 +1,4 @@
-Sphinx>=3.1.2
+sphinx < 9 # https://github.com/sphinx-contrib/multiversion/issues/201
 sphinx-rtd-theme
 furo
 sphinx-multiversion
