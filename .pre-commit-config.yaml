@@ -1,7 +1,7 @@
-default_stages: [commit]
+default_stages: [pre-commit]
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.2.0
+    rev: v6.0.0
     hooks:
     -   id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
@@ -11,12 +11,12 @@ repos:
     -   id: check-merge-conflict
     -   id: check-added-large-files
 -   repo: https://github.com/psf/black
-    rev: 22.3.0
+    rev: 26.5.1
     hooks:
     -   id: black
         name: Black code formatter
 -   repo: https://github.com/PyCQA/pylint
-    rev: v2.12.2
+    rev: v4.0.5
     hooks:
     -   id: pylint
         name: Pylint code linter
