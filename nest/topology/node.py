@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# Copyright (c) 2019-2020 NITK Surathkal
+# Copyright (c) 2019-2026 NITK Surathkal
 
 """API related to node creation in topology"""
 
@@ -559,7 +559,7 @@ class Node:
 
         Parameters
         ----------
-        destination_address: Address/str
+        destination_address: Address
             IP address to ping to
         preload: int (Default is 1)
             Number of packets sent as fast as possible without
@@ -582,12 +582,21 @@ class Node:
                 f"Verbose parameter value is {verbose}. It should be 0, 1 or 2."
             )
 
+        try:
+            destination_node = TopologyMap.get_node_from_address(destination_address)
+        except ValueError as error:
+            logger.warning("Ping destination node resolution failed: %s", error)
+            destination_node = None
+
+        ping_print_destination = (
+            f"{destination_node.name} ({destination_address.get_addr(with_subnet=False)}) ==="
+            if destination_node is not None
+            else f"{destination_address.get_addr(with_subnet=False)} ==="
+        )
+
         if verbose == 2:
             print()
-            print(
-                f"=== PING from {self.name} to "
-                f"{destination_address.get_addr(with_subnet=False)} ==="
-            )
+            print(f"=== PING from {self.name} to", ping_print_destination)
             print()
 
         status = engine.ping(
@@ -602,15 +611,9 @@ class Node:
         if verbose == 1:
             print()
             if status is True:
-                print(
-                    f"SUCCESS : === PING from {self.name} to "
-                    f"{destination_address.get_addr(with_subnet=False)} ==="
-                )
+                print(f"SUCCESS : === PING from {self.name} to", ping_print_destination)
             elif status is False:
-                print(
-                    f"FAILURE: === PING from {self.name} to "
-                    f"{destination_address.get_addr(with_subnet=False)} ==="
-                )
+                print(f"FAILURE: === PING from {self.name} to", ping_print_destination)
             print()
 
         return status
