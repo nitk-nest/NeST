@@ -16,6 +16,7 @@ from nest.input_validator import input_validator
 from nest.topology import Node, Address
 from nest.topology.interface import BaseInterface
 from nest.topology_map import TopologyMap
+from nest.clean_up import old_cong_algos, new_cong_algos
 from .run_exp import run_experiment
 from .pack import Pack
 from .tools import Iperf3Options
@@ -627,8 +628,8 @@ class Experiment:
     """Handles experiment to be run on topology"""
 
     # Stores configuration of old and new congestion algorithms for cleanup
-    old_cong_algos = defaultdict(dict)
-    new_cong_algos = []
+    old_cong_algos = old_cong_algos
+    new_cong_algos = new_cong_algos
 
     @input_validator
     def __init__(self, name: str, save_path: str = None, return_results: bool = False):

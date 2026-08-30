@@ -7,6 +7,7 @@ and delete all namespaces after the experiment is complete.
 """
 
 import atexit
+from collections import defaultdict
 import logging
 import shutil
 from pathlib import Path
@@ -20,6 +21,10 @@ from .topology_map import TopologyMap
 
 logger = logging.getLogger(__name__)
 
+# Stores configuration of old and new congestion algorithms for cleanup
+old_cong_algos = defaultdict(dict)
+new_cong_algos = []
+
 
 # pylint: disable=import-outside-toplevel
 # pylint: disable=cyclic-import
@@ -27,17 +32,15 @@ logger = logging.getLogger(__name__)
 def tcp_modules_clean_up():
     """Clean up the modified TCP modules"""
 
-    from .experiment.experiment import Experiment
-
     # Remove newly loaded modules
-    for cong_algo in Experiment.new_cong_algos:
+    for cong_algo in new_cong_algos:
         engine.remove_tcp_module(cong_algo)
-    (Experiment.new_cong_algos).clear()
+    new_cong_algos.clear()
 
     # Reset old modules with original params
-    for cong_algo, params in (Experiment.old_cong_algos).items():
+    for cong_algo, params in old_cong_algos.items():
         engine.set_tcp_params(cong_algo, params, True)
-    (Experiment.old_cong_algos).clear()
+    old_cong_algos.clear()
 
 
 def kill_processes():
