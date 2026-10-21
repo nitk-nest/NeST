@@ -10,6 +10,12 @@ workflow:
 
 
 default:
+  retry:
+    max: 1
+    when:
+      - no_updates_running
+      - server_timeout_running
+      - stuck_pending_with_matching_runners
   tags:
     - nest
   image: docker:25.0.1
